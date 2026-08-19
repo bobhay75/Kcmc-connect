@@ -1,0 +1,72 @@
+{
+  "meta": {
+    "version": "2.0.0-phase6-recreated",
+    "updated_at": "2026-08-18T21:33:00-05:00",
+    "updated_by": "recovery"
+  },
+  "contact": {
+    "phone": "417-739-4395",
+    "email": "secretary@umckc.org",
+    "address": "57 Kimberling City Center Lane, Kimberling City, MO 65686",
+    "office_hours": "Tue–Thu • 8:00 AM–4:00 PM",
+    "website": "https://www.kimberlingcitymethodist.com/"
+  },
+  "announcements": [
+    {
+      "id": "aug-news-15",
+      "title": "August Church News • Issue #15",
+      "body": "20 baptisms so far this year, July average attendance of 319, next-generation ministry updates, facility progress and ways to connect.",
+      "priority": 100,
+      "status": "published",
+      "starts_at": "2026-08-01T00:00:00-05:00",
+      "expires_at": "2026-09-01T00:00:00-05:00",
+      "link": "#news"
+    }
+  ],
+  "bulletin": {
+    "title": "Sunday at KCMC",
+    "date": "2026-08-23",
+    "welcome": "Come as you are. Grow in faith. Serve the Ozarks.",
+    "services": [
+      {"time":"8:00 AM","name":"Front Porch Gospel","detail":"Old-time country and bluegrass gospel with an uplifting biblical message."},
+      {"time":"9:15 AM","name":"Traditional Worship","detail":"Beloved hymns, choir, piano and organ in a traditional sanctuary setting."},
+      {"time":"10:30 AM","name":"Contemporary Worship","detail":"Relaxed café setting, modern worship and Launch Kids children’s church."}
+    ],
+    "notes": [
+      "20 people baptized so far this year.",
+      "July average attendance across four weekly worship gatherings: 319.",
+      "Prayer, care, serving and giving are available through KCMC Connect."
+    ]
+  },
+  "events": [
+    {"id":"gathering-place-0820","title":"The Gathering Place","date":"2026-08-20","time":"10:00 AM","location":"KCMC","status":"published","expires_at":"2026-08-21T00:00:00-05:00"},
+    {"id":"bell-choir-0825","title":"Bell Choir Rehearsal","date":"2026-08-25","time":"5:15 PM","location":"KCMC","status":"published","expires_at":"2026-08-26T00:00:00-05:00"},
+    {"id":"choir-0826","title":"Choir Rehearsal","date":"2026-08-26","time":"7:00 PM","location":"KCMC","status":"published","expires_at":"2026-08-27T00:00:00-05:00"}
+  ],
+  "news": {
+    "issue": "15",
+    "month": "August 2026",
+    "title": "The Bridge…To Salvation",
+    "highlights": [
+      {"stat":"20","label":"Baptized this year","detail":"Celebrating new life and public commitments across KCMC."},
+      {"stat":"319","label":"July attendance","detail":"Average combined attendance across four weekly worship gatherings."},
+      {"stat":"8–14","label":"Rooted Youth","detail":"Current attendance range for ages 12+."},
+      {"stat":"12–25","label":"Launch Kids","detail":"Current school-age participation."},
+      {"stat":"30","label":"Vacation Bible School","detail":"Children who participated."}
+    ],
+    "facilities": [
+      "The church remains on solid financial ground with no building debt, no loans and healthy reserves.",
+      "Lower-level pipe repairs expected by the end of August.",
+      "Parking lot paved; curbstones still pending.",
+      "Propane tank and concrete base replaced.",
+      "Continued cleanup and improvements to the grounds."
+    ],
+    "staffing": ["Communication & Media Leader","Youth Leader","Children’s Ministry Leader"],
+    "preschool": "Quest Preschool is a KCMC ministry to the community. Contact Kim Cahill at 314-369-9043."
+  },
+  "sponsors": {
+    "enabled": true,
+    "policy": "Clearly labeled. Privacy respected. Never shown during prayer or worship video.",
+    "placements": ["Church News","Community impact","Events and ministry support"]
+  }
+}

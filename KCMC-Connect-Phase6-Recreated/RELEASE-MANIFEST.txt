@@ -1,0 +1,21 @@
+KCMC CONNECT PHASE 6 — RECREATED MASTER
+=======================================
+Release: 2.0.0-phase6-recreated
+Recovery basis:
+- Current public KCMC Connect structure and copy
+- Verified v1.2.1 August News source and exact newsletter imagery
+- Prior Phase 6 requirements: owner-only publishing; priority; expiration; publish/hide; bulletin; backups
+
+Production model:
+- Apache + PHP 8.x (cPanel/Namecheap compatible)
+- JSON content store (no database required)
+- Password-protected owner desk at /admin/
+- CSRF protection, password_hash/password_verify, session regeneration
+- Automatic content backups before each publish
+- No analytics/advertising trackers by default
+- No prayer-request database by default; care handoff uses church email to minimize sensitive-data storage
+
+IMPORTANT:
+Do not overwrite an existing production install until backed up.
+Use HTTPS.
+Complete /admin/setup.php immediately after deployment.
