@@ -1,6 +1,7 @@
 (() => {
   'use strict';
   const OFFICE_EMAIL = 'secretary@umckc.org';
+  const FACEBOOK_LIVE_URL = 'https://www.facebook.com/share/1DLmoALnSj/';
   const views = [...document.querySelectorAll('[data-view]')];
   const routeLinks = [...document.querySelectorAll('[data-route]')];
   const allowed = new Set(views.map(v => v.dataset.view));
@@ -17,6 +18,16 @@
   }
   window.addEventListener('hashchange', renderRoute);
   renderRoute();
+
+  // Keep every livestream call-to-action pointed at the current official Facebook Live destination.
+  document.querySelectorAll('a[href*="facebook.com"]').forEach(link => {
+    const text=(link.textContent || '').toLowerCase();
+    const href=(link.getAttribute('href') || '').toLowerCase();
+    if(text.includes('live') || text.includes('watch') || text.includes('featured') || href.includes('/live_videos') || href.includes('/share/v/')){
+      link.href=FACEBOOK_LIVE_URL;
+      if(text.includes('open live room')) link.textContent='Watch KCMC Live';
+    }
+  });
 
   // Make the current announcement actionable and surface the newest real ministry story on Home.
   async function hydrateCurrentStory(){
@@ -98,8 +109,6 @@
   modal?.addEventListener('click',e=>{if(e.target===modal)closeModal();});
   document.addEventListener('keydown',e=>{if(e.key==='Escape')closeModal();});
 
-  // Forms are production-safe for the current static host: validate locally and hand off a fully composed request to the church office email.
-  // Replace sendFormByEmail() with a ChMS/API endpoint later to enable staff dashboards and automatic confirmation emails without changing the forms.
   function sendFormByEmail(form){
     const status=form.querySelector('.form-status');
     if(!form.checkValidity()){ form.reportValidity(); status.textContent='Please complete the required fields.'; status.className='form-status error'; return; }
