@@ -20,7 +20,7 @@ require_once __DIR__ . '/lib/bootstrap.php';
 <main class="story-shell">
 <a class="story-back" href="./#home">← KCMC Connect</a>
 <section class="story-hero">
-<img src="assets/visuals/kcmc-ministry-group.jpg" alt="Children and ministry leaders at Kimberling City Methodist Church" loading="eager" decoding="async">
+<img src="assets/visuals/backpack-hero.webp" alt="KCMC Back-to-School Backpack Blessing with local students and church volunteers" loading="eager" decoding="async">
 </section>
 <article class="story-copy">
 <div class="story-label">KCMC in Action • Launch Kids</div>
@@ -39,7 +39,7 @@ require_once __DIR__ . '/lib/bootstrap.php';
 <p><strong>Joshua 1:9</strong></p>
 </section>
 </div>
-<div class="story-note"><strong>Photo gallery coming next.</strong> This story page is ready for the original Backpack Blessing photographs. The real event photos will replace the temporary ministry image and populate the gallery without altering anyone’s face.</div>
+<div class="story-note"><strong>Real KCMC ministry.</strong> The feature image above is from the Backpack Blessing event and is optimized for the Connect app without changing anyone’s face.</div>
 </article>
 </main>
 </body>
