@@ -1,0 +1,6 @@
+---
+deployment:
+  tasks:
+    - export DEPLOYPATH=/home/bobsome1/public_html/kcmc-connect/
+    - /bin/mkdir -p $DEPLOYPATH
+    - /bin/cp -R KCMC-Connect-Phase6-Recreated/. $DEPLOYPATH
