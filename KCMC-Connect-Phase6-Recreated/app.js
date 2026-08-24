@@ -10,6 +10,7 @@
   window.addEventListener('hashchange',renderRoute); renderRoute();
 
   document.querySelectorAll('a[href*="facebook.com"]').forEach(link=>{ const text=(link.textContent||'').toLowerCase(),href=(link.getAttribute('href')||'').toLowerCase(); if(text.includes('live')||text.includes('watch')||text.includes('featured')||href.includes('/live_videos')||href.includes('/share/v/')){link.href=FACEBOOK_LIVE_URL;if(text.includes('open live room'))link.textContent='Watch KCMC Live';} });
+  document.querySelectorAll('.phase6-bulletin-fab').forEach(link=>{link.href='bulletin.php';link.textContent='Today’s Bulletin';});
 
   async function hydrateCurrentStory(){
     let top=null; try{const response=await fetch('./api/content.php',{cache:'no-store'});if(response.ok){const payload=await response.json();const announcements=Array.isArray(payload?.announcements)?payload.announcements:[];const now=Date.now();top=announcements.filter(item=>{if(item?.status&&item.status!=='published')return false;const start=item?.starts_at?Date.parse(item.starts_at):-Infinity,end=item?.expires_at?Date.parse(item.expires_at):Infinity;return now>=start&&now<end;}).sort((a,b)=>(Number(b?.priority)||0)-(Number(a?.priority)||0))[0]||null;}}catch(_){}
