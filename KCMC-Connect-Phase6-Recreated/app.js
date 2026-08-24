@@ -5,150 +5,49 @@
   const views = [...document.querySelectorAll('[data-view]')];
   const routeLinks = [...document.querySelectorAll('[data-route]')];
   const allowed = new Set(views.map(v => v.dataset.view));
-  const normalize = () => {
-    const raw = location.hash.replace(/^#/, '').trim().toLowerCase();
-    return allowed.has(raw) ? raw : 'home';
-  };
-  function renderRoute(){
-    const route = normalize();
-    views.forEach(v => v.classList.toggle('active', v.dataset.view === route));
-    routeLinks.forEach(a => { const active=a.dataset.route===route; a.classList.toggle('active',active); if(active) a.setAttribute('aria-current','page'); else a.removeAttribute('aria-current'); });
-    document.title = route === 'home' ? 'KCMC Connect' : `${route[0].toUpperCase()+route.slice(1)} • KCMC Connect`;
-    window.scrollTo({top:0,behavior:'instant'});
-  }
-  window.addEventListener('hashchange', renderRoute);
-  renderRoute();
+  const normalize = () => { const raw=location.hash.replace(/^#/,'').trim().toLowerCase(); return allowed.has(raw)?raw:'home'; };
+  function renderRoute(){ const route=normalize(); views.forEach(v=>v.classList.toggle('active',v.dataset.view===route)); routeLinks.forEach(a=>{const active=a.dataset.route===route;a.classList.toggle('active',active);if(active)a.setAttribute('aria-current','page');else a.removeAttribute('aria-current');}); document.title=route==='home'?'KCMC Connect':`${route[0].toUpperCase()+route.slice(1)} • KCMC Connect`; window.scrollTo({top:0,behavior:'instant'}); }
+  window.addEventListener('hashchange',renderRoute); renderRoute();
 
-  // Keep every livestream call-to-action pointed at the current official Facebook Live destination.
-  document.querySelectorAll('a[href*="facebook.com"]').forEach(link => {
-    const text=(link.textContent || '').toLowerCase();
-    const href=(link.getAttribute('href') || '').toLowerCase();
-    if(text.includes('live') || text.includes('watch') || text.includes('featured') || href.includes('/live_videos') || href.includes('/share/v/')){
-      link.href=FACEBOOK_LIVE_URL;
-      if(text.includes('open live room')) link.textContent='Watch KCMC Live';
-    }
-  });
+  document.querySelectorAll('a[href*="facebook.com"]').forEach(link=>{ const text=(link.textContent||'').toLowerCase(),href=(link.getAttribute('href')||'').toLowerCase(); if(text.includes('live')||text.includes('watch')||text.includes('featured')||href.includes('/live_videos')||href.includes('/share/v/')){link.href=FACEBOOK_LIVE_URL;if(text.includes('open live room'))link.textContent='Watch KCMC Live';} });
 
-  // Make the current announcement actionable and surface the newest real ministry story on Home.
   async function hydrateCurrentStory(){
-    let top = null;
-    try {
-      const response = await fetch('./api/content.php', {cache:'no-store'});
-      if(response.ok){
-        const payload = await response.json();
-        const announcements = Array.isArray(payload?.announcements) ? payload.announcements : [];
-        const now = Date.now();
-        const active = announcements.filter(item => {
-          if(item?.status && item.status !== 'published') return false;
-          const start = item?.starts_at ? Date.parse(item.starts_at) : -Infinity;
-          const end = item?.expires_at ? Date.parse(item.expires_at) : Infinity;
-          return now >= start && now < end;
-        }).sort((a,b)=>(Number(b?.priority)||0)-(Number(a?.priority)||0));
-        top = active[0] || null;
-      }
-    } catch (_) {}
-
-    const announcement = document.querySelector('.phase6-announcement');
-    const href = top?.link || (announcement?.textContent?.toLowerCase().includes('backpack blessing') ? 'backpack-blessing.php' : '');
-    if(announcement && href){
-      announcement.classList.add('is-actionable');
-      announcement.setAttribute('role','link');
-      announcement.setAttribute('tabindex','0');
-      announcement.setAttribute('aria-label',`${top?.title || 'Current KCMC story'} — open story`);
-      announcement.title='Open this story';
-      const open=()=>{ window.location.href=href; };
-      announcement.addEventListener('click',open);
-      announcement.addEventListener('keydown',e=>{ if(e.key==='Enter'||e.key===' '){ e.preventDefault(); open(); } });
-    }
-
-    const visualStory = document.querySelector('[data-view="home"] .visual-story');
-    if(visualStory && !document.getElementById('backpackBlessingFeature')){
-      const feature = document.createElement('a');
-      feature.id='backpackBlessingFeature';
-      feature.className='backpack-feature';
-      feature.href='backpack-blessing.php';
-      feature.innerHTML=`
-        <img src="./assets/visuals/backpack-hero.webp" alt="Children and ministry leaders during KCMC's Back-to-School Backpack Blessing" loading="eager" decoding="async">
-        <span class="backpack-feature-copy">
-          <span class="eyebrow">KCMC in Action • Launch Kids</span>
-          <strong>Back-to-School Backpack Blessing</strong>
-          <span>KCMC prayed over local students, their backpacks, teachers and families as a new school year begins.</span>
-          <b>See the story →</b>
-        </span>`;
-      visualStory.appendChild(feature);
-    }
-
-    if(!document.getElementById('backpackFeatureStyles')){
-      const style=document.createElement('style');
-      style.id='backpackFeatureStyles';
-      style.textContent=`
-        .phase6-announcement.is-actionable{cursor:pointer}.phase6-announcement.is-actionable:hover strong{text-decoration:underline}.phase6-announcement.is-actionable:focus-visible{outline:3px solid currentColor;outline-offset:-3px}
-        .backpack-feature{grid-column:1/-1;display:grid;grid-template-columns:minmax(0,1.15fr) minmax(260px,.85fr);text-decoration:none;color:inherit;background:linear-gradient(135deg,rgba(14,40,59,.98),rgba(23,62,86,.96));border:1px solid rgba(255,255,255,.12);border-radius:24px;overflow:hidden;box-shadow:0 18px 48px rgba(0,0,0,.2)}
-        .backpack-feature img{width:100%;height:100%;min-height:300px;object-fit:cover;display:block}.backpack-feature-copy{display:flex;flex-direction:column;justify-content:center;gap:12px;padding:34px}.backpack-feature-copy strong{font-family:Georgia,serif;font-size:clamp(2rem,4vw,3.25rem);line-height:1.02;font-weight:400}.backpack-feature-copy>span:not(.eyebrow){line-height:1.65;opacity:.86}.backpack-feature-copy b{margin-top:6px}.backpack-feature:hover .backpack-feature-copy b{text-decoration:underline}
-        @media(max-width:760px){.backpack-feature{grid-template-columns:1fr}.backpack-feature img{min-height:0;aspect-ratio:16/9}.backpack-feature-copy{padding:24px}}
-      `;
-      document.head.appendChild(style);
-    }
+    let top=null; try{const response=await fetch('./api/content.php',{cache:'no-store'});if(response.ok){const payload=await response.json();const announcements=Array.isArray(payload?.announcements)?payload.announcements:[];const now=Date.now();top=announcements.filter(item=>{if(item?.status&&item.status!=='published')return false;const start=item?.starts_at?Date.parse(item.starts_at):-Infinity,end=item?.expires_at?Date.parse(item.expires_at):Infinity;return now>=start&&now<end;}).sort((a,b)=>(Number(b?.priority)||0)-(Number(a?.priority)||0))[0]||null;}}catch(_){}
+    const announcement=document.querySelector('.phase6-announcement'); const href=top?.link||(announcement?.textContent?.toLowerCase().includes('backpack blessing')?'backpack-blessing.php':'');
+    if(announcement&&href){announcement.classList.add('is-actionable');announcement.setAttribute('role','link');announcement.setAttribute('tabindex','0');announcement.setAttribute('aria-label',`${top?.title||'Current KCMC story'} — open story`);announcement.title='Open this story';const open=()=>{window.location.href=href;};announcement.addEventListener('click',open);announcement.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();open();}});}
+    const visualStory=document.querySelector('[data-view="home"] .visual-story'); if(visualStory&&!document.getElementById('backpackBlessingFeature')){const feature=document.createElement('a');feature.id='backpackBlessingFeature';feature.className='backpack-feature';feature.href='backpack-blessing.php';feature.innerHTML=`<img src="./assets/visuals/backpack-hero.webp" alt="Children and ministry leaders during KCMC's Back-to-School Backpack Blessing" loading="eager" decoding="async"><span class="backpack-feature-copy"><span class="eyebrow">KCMC in Action • Launch Kids</span><strong>Back-to-School Backpack Blessing</strong><span>KCMC prayed over local students, their backpacks, teachers and families as a new school year begins.</span><b>See the story →</b></span>`;visualStory.appendChild(feature);}
+    if(!document.getElementById('backpackFeatureStyles')){const style=document.createElement('style');style.id='backpackFeatureStyles';style.textContent=`.phase6-announcement.is-actionable{cursor:pointer}.phase6-announcement.is-actionable:hover strong{text-decoration:underline}.phase6-announcement.is-actionable:focus-visible{outline:3px solid currentColor;outline-offset:-3px}.backpack-feature{grid-column:1/-1;display:grid;grid-template-columns:minmax(0,1.15fr) minmax(260px,.85fr);text-decoration:none;color:inherit;background:linear-gradient(135deg,rgba(14,40,59,.98),rgba(23,62,86,.96));border:1px solid rgba(255,255,255,.12);border-radius:24px;overflow:hidden;box-shadow:0 18px 48px rgba(0,0,0,.2)}.backpack-feature img{width:100%;height:100%;min-height:300px;object-fit:cover;display:block}.backpack-feature-copy{display:flex;flex-direction:column;justify-content:center;gap:12px;padding:34px}.backpack-feature-copy strong{font-family:Georgia,serif;font-size:clamp(2rem,4vw,3.25rem);line-height:1.02;font-weight:400}.backpack-feature-copy>span:not(.eyebrow){line-height:1.65;opacity:.86}.backpack-feature-copy b{margin-top:6px}.backpack-feature:hover .backpack-feature-copy b{text-decoration:underline}@media(max-width:760px){.backpack-feature{grid-template-columns:1fr}.backpack-feature img{min-height:0;aspect-ratio:16/9}.backpack-feature-copy{padding:24px}}`;document.head.appendChild(style);}
   }
   hydrateCurrentStory();
 
-  let deferredPrompt = null;
-  const installBtn = document.getElementById('installBtn');
-  window.addEventListener('beforeinstallprompt', e => { e.preventDefault(); deferredPrompt=e; if(installBtn) installBtn.style.display='inline-flex'; });
-  installBtn?.addEventListener('click', async () => { if(!deferredPrompt) return; deferredPrompt.prompt(); await deferredPrompt.userChoice; deferredPrompt=null; installBtn.style.display='none'; });
-  window.addEventListener('appinstalled', () => { if(installBtn) installBtn.style.display='none'; });
-
-  const modal = document.getElementById('imageModal');
-  const modalImg = modal?.querySelector('img');
-  let modalReturnFocus = null;
-  document.querySelectorAll('[data-img]').forEach(btn => btn.addEventListener('click', () => {
-    modalReturnFocus=btn; modalImg.src=btn.dataset.img; modal.classList.add('open'); document.body.style.overflow='hidden'; modal.querySelector('button')?.focus();
-  }));
-  const closeModal=()=>{ modal?.classList.remove('open'); document.body.style.overflow=''; modalReturnFocus?.focus(); };
-  modal?.querySelector('button')?.addEventListener('click',closeModal);
-  modal?.addEventListener('click',e=>{if(e.target===modal)closeModal();});
-  document.addEventListener('keydown',e=>{if(e.key==='Escape')closeModal();});
-
-  function sendFormByEmail(form){
-    const status=form.querySelector('.form-status');
-    if(!form.checkValidity()){ form.reportValidity(); status.textContent='Please complete the required fields.'; status.className='form-status error'; return; }
-    const data=new FormData(form);
-    const lines=[];
-    for(const [key,value] of data.entries()) if(String(value).trim()) lines.push(`${key}: ${value}`);
-    const subject=form.dataset.subject || 'KCMC Connect Form';
-    const href=`mailto:${OFFICE_EMAIL}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(lines.join('\n'))}`;
-    status.textContent='Opening your email app with this request ready to send…'; status.className='form-status success';
-    window.location.href=href;
+  // Installation: keep the in-app button visible and useful even before Chrome exposes its native PWA prompt.
+  let deferredPrompt=null;
+  const installBtn=document.getElementById('installBtn');
+  const isStandalone=()=>window.matchMedia('(display-mode: standalone)').matches||window.navigator.standalone===true;
+  const isAndroid=/Android/i.test(navigator.userAgent);
+  const isIOS=/iPad|iPhone|iPod/i.test(navigator.userAgent);
+  function showInstallHelp(){
+    let box=document.getElementById('installHelp');
+    if(!box){box=document.createElement('div');box.id='installHelp';box.setAttribute('role','dialog');box.setAttribute('aria-modal','true');box.innerHTML=`<div class="install-help-card"><button type="button" class="install-help-close" aria-label="Close">×</button><div class="eyebrow">Put KCMC Connect on your phone</div><h2>Install KCMC Connect</h2><p class="install-help-copy"></p><button type="button" class="btn gold install-help-native">Install now</button><p class="muted install-help-note">Once installed, KCMC Connect opens from your home screen like an app.</p></div>`;document.body.appendChild(box);const style=document.createElement('style');style.textContent=`#installHelp{position:fixed;inset:0;z-index:10000;background:rgba(4,15,24,.78);display:grid;place-items:end center;padding:18px}.install-help-card{position:relative;width:min(560px,100%);background:#102b3d;color:#fff;border:1px solid rgba(255,255,255,.15);border-radius:24px;padding:28px;box-shadow:0 24px 80px rgba(0,0,0,.45)}.install-help-card h2{font-family:Georgia,serif;font-size:2rem;margin:.3em 0}.install-help-card p{line-height:1.6}.install-help-close{position:absolute;right:14px;top:10px;border:0;background:transparent;color:#fff;font-size:2rem;cursor:pointer}.install-help-native[hidden]{display:none}`;document.head.appendChild(style);box.querySelector('.install-help-close').addEventListener('click',()=>box.remove());box.addEventListener('click',e=>{if(e.target===box)box.remove();});box.querySelector('.install-help-native').addEventListener('click',async()=>{if(deferredPrompt){deferredPrompt.prompt();await deferredPrompt.userChoice;deferredPrompt=null;box.remove();}});}
+    const copy=box.querySelector('.install-help-copy'),native=box.querySelector('.install-help-native');
+    if(deferredPrompt){copy.textContent='Your phone is ready to install KCMC Connect. Tap Install now.';native.hidden=false;}
+    else if(isAndroid){copy.innerHTML='Open this page in <strong>Chrome</strong>. Then tap Chrome’s menu and choose <strong>Install app</strong> or <strong>Add to Home screen</strong>. If this page opened inside Facebook, ChatGPT, or another app, first choose <strong>Open in Chrome</strong>.';native.hidden=true;}
+    else if(isIOS){copy.innerHTML='Open this page in <strong>Safari</strong>, tap <strong>Share</strong>, then choose <strong>Add to Home Screen</strong>.';native.hidden=true;}
+    else{copy.innerHTML='Open this page in your main browser, then use its <strong>Install app</strong> or <strong>Add to Home screen</strong> command.';native.hidden=true;}
   }
+  if(installBtn){installBtn.style.display=isStandalone()?'none':'inline-flex';installBtn.textContent='Install KCMC Connect';installBtn.addEventListener('click',async()=>{if(deferredPrompt){deferredPrompt.prompt();await deferredPrompt.userChoice;deferredPrompt=null;}else showInstallHelp();});}
+  window.addEventListener('beforeinstallprompt',e=>{e.preventDefault();deferredPrompt=e;if(installBtn&&!isStandalone())installBtn.style.display='inline-flex';});
+  window.addEventListener('appinstalled',()=>{deferredPrompt=null;if(installBtn)installBtn.style.display='none';document.getElementById('installHelp')?.remove();});
+
+  const modal=document.getElementById('imageModal'),modalImg=modal?.querySelector('img');let modalReturnFocus=null;document.querySelectorAll('[data-img]').forEach(btn=>btn.addEventListener('click',()=>{modalReturnFocus=btn;modalImg.src=btn.dataset.img;modal.classList.add('open');document.body.style.overflow='hidden';modal.querySelector('button')?.focus();}));const closeModal=()=>{modal?.classList.remove('open');document.body.style.overflow='';modalReturnFocus?.focus();};modal?.querySelector('button')?.addEventListener('click',closeModal);modal?.addEventListener('click',e=>{if(e.target===modal)closeModal();});document.addEventListener('keydown',e=>{if(e.key==='Escape')closeModal();});
+
+  function sendFormByEmail(form){const status=form.querySelector('.form-status');if(!form.checkValidity()){form.reportValidity();status.textContent='Please complete the required fields.';status.className='form-status error';return;}const data=new FormData(form),lines=[];for(const [key,value] of data.entries())if(String(value).trim())lines.push(`${key}: ${value}`);const subject=form.dataset.subject||'KCMC Connect Form';status.textContent='Opening your email app with this request ready to send…';status.className='form-status success';window.location.href=`mailto:${OFFICE_EMAIL}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(lines.join('\n'))}`;}
   document.querySelectorAll('[data-kcmc-form]').forEach(form=>form.addEventListener('submit',e=>{e.preventDefault();sendFormByEmail(form);}));
-
-  const eventName=document.getElementById('eventName'), eventDisplay=document.getElementById('eventDisplay');
-  document.querySelectorAll('.event-rsvp').forEach(btn=>btn.addEventListener('click',()=>{
-    const card=btn.closest('.event-card'), name=card?.dataset.event || '';
-    if(eventName) eventName.value=name; if(eventDisplay) eventDisplay.value=name;
-    document.getElementById('eventForm')?.scrollIntoView({behavior:'smooth',block:'center'});
-  }));
-  function toICSDate(date,time){
-    const [y,m,d]=date.split('-').map(Number); const match=time.match(/(\d+):(\d+)\s*(AM|PM)/i); if(!match)return `${y}${String(m).padStart(2,'0')}${String(d).padStart(2,'0')}`;
-    let h=Number(match[1]); const min=Number(match[2]); const ap=match[3].toUpperCase(); if(ap==='PM'&&h!==12)h+=12;if(ap==='AM'&&h===12)h=0;
-    return `${y}${String(m).padStart(2,'0')}${String(d).padStart(2,'0')}T${String(h).padStart(2,'0')}${String(min).padStart(2,'0')}00`;
-  }
-  document.querySelectorAll('.add-calendar').forEach(btn=>btn.addEventListener('click',()=>{
-    const card=btn.closest('.event-card'); if(!card)return; const start=toICSDate(card.dataset.date,card.dataset.time);
-    const ics=['BEGIN:VCALENDAR','VERSION:2.0','PRODID:-//KCMC Connect//EN','BEGIN:VEVENT',`DTSTART:${start}`,`SUMMARY:${card.dataset.event}`,'LOCATION:57 Kimberling City Center Lane, Kimberling City, MO 65686','END:VEVENT','END:VCALENDAR'].join('\r\n');
-    const a=document.createElement('a'); a.href=URL.createObjectURL(new Blob([ics],{type:'text/calendar'})); a.download=`kcmc-${card.dataset.date}-${card.dataset.event.toLowerCase().replace(/[^a-z0-9]+/g,'-')}.ics`; a.click(); setTimeout(()=>URL.revokeObjectURL(a.href),1000);
-  }));
-
-  const sermonSearch=document.getElementById('sermonSearch'), sermonFilter=document.getElementById('sermonFilter');
-  function filterSermons(){ const q=(sermonSearch?.value||'').trim().toLowerCase(), type=sermonFilter?.value||'all'; document.querySelectorAll('.sermon-card').forEach(card=>{card.hidden=!!((q&&!card.dataset.search.includes(q))||(type!=='all'&&card.dataset.type!==type));}); }
-  sermonSearch?.addEventListener('input',filterSermons); sermonFilter?.addEventListener('change',filterSermons);
-
-  const preferred=document.getElementById('preferredService');
-  if(preferred){ preferred.value=localStorage.getItem('kcmcPreferredService')||''; preferred.addEventListener('change',()=>localStorage.setItem('kcmcPreferredService',preferred.value)); }
-
-  const banner=document.getElementById('offlineBanner');
-  const updateOnline=()=>banner?.classList.toggle('show',!navigator.onLine);
-  window.addEventListener('online',updateOnline); window.addEventListener('offline',updateOnline); updateOnline();
-
-  if('serviceWorker' in navigator) window.addEventListener('load',()=>navigator.serviceWorker.register('./sw.js').catch(()=>{}));
+  const eventName=document.getElementById('eventName'),eventDisplay=document.getElementById('eventDisplay');document.querySelectorAll('.event-rsvp').forEach(btn=>btn.addEventListener('click',()=>{const card=btn.closest('.event-card'),name=card?.dataset.event||'';if(eventName)eventName.value=name;if(eventDisplay)eventDisplay.value=name;document.getElementById('eventForm')?.scrollIntoView({behavior:'smooth',block:'center'});}));
+  function toICSDate(date,time){const [y,m,d]=date.split('-').map(Number);const match=time.match(/(\d+):(\d+)\s*(AM|PM)/i);if(!match)return`${y}${String(m).padStart(2,'0')}${String(d).padStart(2,'0')}`;let h=Number(match[1]);const min=Number(match[2]),ap=match[3].toUpperCase();if(ap==='PM'&&h!==12)h+=12;if(ap==='AM'&&h===12)h=0;return`${y}${String(m).padStart(2,'0')}${String(d).padStart(2,'0')}T${String(h).padStart(2,'0')}${String(min).padStart(2,'0')}00`;}
+  document.querySelectorAll('.add-calendar').forEach(btn=>btn.addEventListener('click',()=>{const card=btn.closest('.event-card');if(!card)return;const start=toICSDate(card.dataset.date,card.dataset.time),ics=['BEGIN:VCALENDAR','VERSION:2.0','PRODID:-//KCMC Connect//EN','BEGIN:VEVENT',`DTSTART:${start}`,`SUMMARY:${card.dataset.event}`,'LOCATION:57 Kimberling City Center Lane, Kimberling City, MO 65686','END:VEVENT','END:VCALENDAR'].join('\r\n');const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([ics],{type:'text/calendar'}));a.download=`kcmc-${card.dataset.date}-${card.dataset.event.toLowerCase().replace(/[^a-z0-9]+/g,'-')}.ics`;a.click();setTimeout(()=>URL.revokeObjectURL(a.href),1000);}));
+  const sermonSearch=document.getElementById('sermonSearch'),sermonFilter=document.getElementById('sermonFilter');function filterSermons(){const q=(sermonSearch?.value||'').trim().toLowerCase(),type=sermonFilter?.value||'all';document.querySelectorAll('.sermon-card').forEach(card=>{card.hidden=!!((q&&!card.dataset.search.includes(q))||(type!=='all'&&card.dataset.type!==type));});}sermonSearch?.addEventListener('input',filterSermons);sermonFilter?.addEventListener('change',filterSermons);
+  const preferred=document.getElementById('preferredService');if(preferred){preferred.value=localStorage.getItem('kcmcPreferredService')||'';preferred.addEventListener('change',()=>localStorage.setItem('kcmcPreferredService',preferred.value));}
+  const banner=document.getElementById('offlineBanner');const updateOnline=()=>banner?.classList.toggle('show',!navigator.onLine);window.addEventListener('online',updateOnline);window.addEventListener('offline',updateOnline);updateOnline();
+  if('serviceWorker'in navigator)window.addEventListener('load',()=>navigator.serviceWorker.register('./sw.js').catch(()=>{}));
 })();
