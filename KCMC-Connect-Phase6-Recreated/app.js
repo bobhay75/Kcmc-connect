@@ -19,24 +19,102 @@
   }
   hydrateCurrentStory();
 
-  // Installation: keep the in-app button visible and useful even before Chrome exposes its native PWA prompt.
+  // PWA installation: Chromium can open its native prompt; iOS requires Safari's Share menu.
   let deferredPrompt=null;
-  const installBtn=document.getElementById('installBtn');
-  const isStandalone=()=>window.matchMedia('(display-mode: standalone)').matches||window.navigator.standalone===true;
-  const isAndroid=/Android/i.test(navigator.userAgent);
-  const isIOS=/iPad|iPhone|iPod/i.test(navigator.userAgent);
-  function showInstallHelp(){
-    let box=document.getElementById('installHelp');
-    if(!box){box=document.createElement('div');box.id='installHelp';box.setAttribute('role','dialog');box.setAttribute('aria-modal','true');box.innerHTML=`<div class="install-help-card"><button type="button" class="install-help-close" aria-label="Close">×</button><div class="eyebrow">Put KCMC Connect on your phone</div><h2>Install KCMC Connect</h2><p class="install-help-copy"></p><button type="button" class="btn gold install-help-native">Install now</button><p class="muted install-help-note">Once installed, KCMC Connect opens from your home screen like an app.</p></div>`;document.body.appendChild(box);const style=document.createElement('style');style.textContent=`#installHelp{position:fixed;inset:0;z-index:10000;background:rgba(4,15,24,.78);display:grid;place-items:end center;padding:18px}.install-help-card{position:relative;width:min(560px,100%);background:#102b3d;color:#fff;border:1px solid rgba(255,255,255,.15);border-radius:24px;padding:28px;box-shadow:0 24px 80px rgba(0,0,0,.45)}.install-help-card h2{font-family:Georgia,serif;font-size:2rem;margin:.3em 0}.install-help-card p{line-height:1.6}.install-help-close{position:absolute;right:14px;top:10px;border:0;background:transparent;color:#fff;font-size:2rem;cursor:pointer}.install-help-native[hidden]{display:none}`;document.head.appendChild(style);box.querySelector('.install-help-close').addEventListener('click',()=>box.remove());box.addEventListener('click',e=>{if(e.target===box)box.remove();});box.querySelector('.install-help-native').addEventListener('click',async()=>{if(deferredPrompt){deferredPrompt.prompt();await deferredPrompt.userChoice;deferredPrompt=null;box.remove();}});}
-    const copy=box.querySelector('.install-help-copy'),native=box.querySelector('.install-help-native');
-    if(deferredPrompt){copy.textContent='Your phone is ready to install KCMC Connect. Tap Install now.';native.hidden=false;}
-    else if(isAndroid){copy.innerHTML='Open this page in <strong>Chrome</strong>. Then tap Chrome’s menu and choose <strong>Install app</strong> or <strong>Add to Home screen</strong>. If this page opened inside Facebook, ChatGPT, or another app, first choose <strong>Open in Chrome</strong>.';native.hidden=true;}
-    else if(isIOS){copy.innerHTML='Open this page in <strong>Safari</strong>, tap <strong>Share</strong>, then choose <strong>Add to Home Screen</strong>.';native.hidden=true;}
-    else{copy.innerHTML='Open this page in your main browser, then use its <strong>Install app</strong> or <strong>Add to Home screen</strong> command.';native.hidden=true;}
+  let installationCompleted=false;
+  let installReturnFocus=null;
+  const installButtons=[...document.querySelectorAll('[data-install-app]')];
+  const installCallout=document.querySelector('[data-install-callout]');
+  const installMessage=document.querySelector('[data-install-message]');
+  const installSheet=document.getElementById('installSheet');
+  const installSheetCard=installSheet?.querySelector('.install-sheet-card');
+  const installSheetCopy=installSheet?.querySelector('[data-install-sheet-copy]');
+  const installNativeButton=installSheet?.querySelector('[data-install-native]');
+  const userAgent=navigator.userAgent||'';
+  const isIOS=/iPad|iPhone|iPod/i.test(userAgent)||(navigator.platform==='MacIntel'&&navigator.maxTouchPoints>1);
+  const isIOSSafari=isIOS&&/Safari/i.test(userAgent)&&!/CriOS|FxiOS|EdgiOS|OPiOS/i.test(userAgent);
+  const isAndroid=/Android/i.test(userAgent);
+  const isStandalone=()=>window.matchMedia('(display-mode: standalone)').matches||navigator.standalone===true;
+
+  function updateInstallUI(){
+    const installed=isStandalone()||installationCompleted;
+    installButtons.forEach(button=>{button.hidden=installed;});
+    if(installCallout)installCallout.hidden=installed;
+    if(installMessage){
+      if(isIOS)installMessage.textContent='Add KCMC Connect to your iPhone or iPad Home Screen.';
+      else if(deferredPrompt)installMessage.textContent='Install KCMC Connect now for quick, app-like access.';
+      else if(isAndroid)installMessage.textContent='Add KCMC Connect to your Android Home Screen.';
+      else installMessage.textContent='Install KCMC Connect on this computer for quick access.';
+    }
   }
-  if(installBtn){installBtn.style.display=isStandalone()?'none':'inline-flex';installBtn.textContent='Install KCMC Connect';installBtn.addEventListener('click',async()=>{if(deferredPrompt){deferredPrompt.prompt();await deferredPrompt.userChoice;deferredPrompt=null;}else showInstallHelp();});}
-  window.addEventListener('beforeinstallprompt',e=>{e.preventDefault();deferredPrompt=e;if(installBtn&&!isStandalone())installBtn.style.display='inline-flex';});
-  window.addEventListener('appinstalled',()=>{deferredPrompt=null;if(installBtn)installBtn.style.display='none';document.getElementById('installHelp')?.remove();});
+
+  function closeInstallSheet(){
+    if(!installSheet||installSheet.hidden)return;
+    installSheet.hidden=true;
+    document.documentElement.classList.remove('install-sheet-open');
+    installReturnFocus?.focus();
+    installReturnFocus=null;
+  }
+
+  function showInstallSheet(trigger){
+    if(!installSheet||!installSheetCopy||!installNativeButton)return;
+    installReturnFocus=trigger||document.activeElement;
+    installNativeButton.hidden=true;
+    if(deferredPrompt){
+      installSheet.querySelector('[data-install-eyebrow]').textContent='Ready to install';
+      installSheet.querySelector('#installSheetTitle').textContent='Install KCMC Connect';
+      installSheetCopy.innerHTML='<p>Your browser is ready. Select the button below, then confirm the native install prompt.</p>';
+      installNativeButton.hidden=false;
+    }else if(isIOS){
+      installSheet.querySelector('[data-install-eyebrow]').textContent='iPhone & iPad';
+      installSheet.querySelector('#installSheetTitle').textContent='Add KCMC to your Home Screen';
+      installSheetCopy.innerHTML=isIOSSafari
+        ?'<ol class="install-sheet-steps"><li><span>Tap the <strong>Share <span class="install-sheet-share" aria-label="Share icon">↑</span></strong> button in Safari.</span></li><li><span>Scroll and tap <strong>Add to Home Screen</strong>.</span></li><li><span>Tap <strong>Add</strong>.</span></li></ol>'
+        :'<ol class="install-sheet-steps"><li><span>Open this page in <strong>Safari</strong>.</span></li><li><span>Tap <strong>Share</strong>, then <strong>Add to Home Screen</strong>.</span></li><li><span>Tap <strong>Add</strong>.</span></li></ol>';
+    }else if(isAndroid){
+      installSheet.querySelector('[data-install-eyebrow]').textContent='Android';
+      installSheet.querySelector('#installSheetTitle').textContent='Add KCMC to your Home Screen';
+      installSheetCopy.innerHTML='<p>Open this page in <strong>Chrome</strong>, open the browser menu, then choose <strong>Install app</strong> or <strong>Add to Home screen</strong>.</p>';
+    }else{
+      installSheet.querySelector('[data-install-eyebrow]').textContent='Desktop';
+      installSheet.querySelector('#installSheetTitle').textContent='Install KCMC Connect';
+      installSheetCopy.innerHTML='<p>Use your browser’s <strong>Install app</strong> command. In Chrome or Edge, look for the install icon near the address bar or open the browser menu.</p>';
+    }
+    installSheet.hidden=false;
+    document.documentElement.classList.add('install-sheet-open');
+    installSheetCard?.focus();
+  }
+
+  async function requestInstall(trigger){
+    if(isStandalone())return;
+    if(!deferredPrompt){showInstallSheet(trigger);return;}
+    const promptEvent=deferredPrompt;
+    deferredPrompt=null;
+    await promptEvent.prompt();
+    const choice=await promptEvent.userChoice;
+    installationCompleted=choice?.outcome==='accepted';
+    updateInstallUI();
+  }
+
+  installButtons.forEach(button=>button.addEventListener('click',()=>requestInstall(button)));
+  installNativeButton?.addEventListener('click',async()=>{const trigger=installReturnFocus;closeInstallSheet();await requestInstall(trigger);});
+  installSheet?.querySelector('[data-install-close]')?.addEventListener('click',closeInstallSheet);
+  installSheet?.addEventListener('click',event=>{if(event.target===installSheet)closeInstallSheet();});
+  document.addEventListener('keydown',event=>{
+    if(installSheet?.hidden)return;
+    if(event.key==='Escape'){closeInstallSheet();return;}
+    if(event.key==='Tab'){
+      const focusable=[...installSheet.querySelectorAll('button:not([hidden]),a[href],[tabindex]:not([tabindex="-1"])')];
+      if(!focusable.length)return;
+      const first=focusable[0],last=focusable[focusable.length-1];
+      if(event.shiftKey&&document.activeElement===first){event.preventDefault();last.focus();}
+      else if(!event.shiftKey&&document.activeElement===last){event.preventDefault();first.focus();}
+    }
+  });
+  window.addEventListener('beforeinstallprompt',event=>{event.preventDefault();deferredPrompt=event;updateInstallUI();});
+  window.addEventListener('appinstalled',()=>{deferredPrompt=null;installationCompleted=true;closeInstallSheet();updateInstallUI();});
+  window.matchMedia('(display-mode: standalone)').addEventListener?.('change',updateInstallUI);
+  updateInstallUI();
 
   const modal=document.getElementById('imageModal'),modalImg=modal?.querySelector('img');let modalReturnFocus=null;document.querySelectorAll('[data-img]').forEach(btn=>btn.addEventListener('click',()=>{modalReturnFocus=btn;modalImg.src=btn.dataset.img;modal.classList.add('open');document.body.style.overflow='hidden';modal.querySelector('button')?.focus();}));const closeModal=()=>{modal?.classList.remove('open');document.body.style.overflow='';modalReturnFocus?.focus();};modal?.querySelector('button')?.addEventListener('click',closeModal);modal?.addEventListener('click',e=>{if(e.target===modal)closeModal();});document.addEventListener('keydown',e=>{if(e.key==='Escape')closeModal();});
 

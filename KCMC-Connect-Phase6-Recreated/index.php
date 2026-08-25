@@ -10,6 +10,9 @@ usort($kcmcAnnouncements, fn($a,$b)=>(int)($b['priority']??0)<=>(int)($a['priori
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#0d2235">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="KCMC Connect">
 <meta name="description" content="KCMC Connect — plan a visit, worship, church news, events, prayer, serving and giving for Kimberling City Methodist Church in Kimberling City, Missouri.">
 <meta name="robots" content="index,follow">
 <meta name="color-scheme" content="dark">
@@ -21,8 +24,9 @@ usort($kcmcAnnouncements, fn($a,$b)=>(int)($b['priority']??0)<=>(int)($a['priori
 <script type="application/ld+json">{"@context":"https://schema.org","@type":"Church","name":"Kimberling City Methodist Church","address":{"@type":"PostalAddress","streetAddress":"57 Kimberling City Center Lane","addressLocality":"Kimberling City","addressRegion":"MO","postalCode":"65686","addressCountry":"US"},"telephone":"+1-417-739-4395","email":"secretary@umckc.org"}</script>
 <title>KCMC Connect</title>
 <link rel="manifest" href="manifest.webmanifest">
-<link rel="stylesheet" href="styles.css">
+<link rel="stylesheet" href="styles.css?v=2.1.0">
 <link rel="icon" href="assets/icons/icon-192.png">
+<link rel="apple-touch-icon" href="assets/icons/icon-192.png">
 </head>
 <body>
 <?php if (!empty($kcmcAnnouncements)): $top=$kcmcAnnouncements[0]; ?>
@@ -36,7 +40,7 @@ usort($kcmcAnnouncements, fn($a,$b)=>(int)($b['priority']??0)<=>(int)($a['priori
     <nav class="desktop-nav" aria-label="Primary">
       <a href="#visit" data-route="visit">I’m New</a><a href="#watch" data-route="watch">Watch</a><a href="#news" data-route="news">News</a><a href="#events" data-route="events">Events</a><a href="#serve" data-route="serve">Serve</a><a href="#partner" data-route="partner">Connect</a>
     </nav>
-    <button class="install" id="installBtn" type="button">Install app</button>
+    <button class="install" type="button" data-install-app>Save app</button>
   </div>
 </header>
 
@@ -49,6 +53,11 @@ usort($kcmcAnnouncements, fn($a,$b)=>(int)($b['priority']??0)<=>(int)($a['priori
         <div class="eyebrow">Kimberling City • Table Rock Lake</div>
         <h1>One church.<br>Connected all week.</h1>
         <p class="lead">Worship, church news, events, care, serving and giving—all in one simple place.</p>
+        <div class="install-callout" data-install-callout>
+          <span class="install-callout-icon" aria-hidden="true">↓</span>
+          <span class="install-callout-copy"><strong>Keep KCMC one touch away</strong><span data-install-message>Save KCMC Connect to this device for quick access.</span></span>
+          <button class="btn gold install-callout-button" type="button" data-install-app>Save to Home Screen</button>
+        </div>
         <div class="actions">
           <a class="action" href="#watch" data-route="watch"><b>Watch</b><span>Live & recent worship</span></a>
           <a class="action" href="https://www.simplechurchgiving.net/app/giving/umckc" target="_blank" rel="noopener"><b>Give</b><span>Secure online giving</span></a>
@@ -220,6 +229,16 @@ usort($kcmcAnnouncements, fn($a,$b)=>(int)($b['priority']??0)<=>(int)($a['priori
 
 <nav class="mobile-nav" aria-label="Mobile navigation"><a href="#home" data-route="home"><span>⌂</span>Home</a><a href="#visit" data-route="visit"><span>◎</span>Visit</a><a href="#watch" data-route="watch"><span>▶</span>Watch</a><a href="#events" data-route="events"><span>◇</span>Events</a><a href="#partner" data-route="partner"><span>✦</span>Connect</a></nav>
 <div class="modal" id="imageModal" role="dialog" aria-modal="true" aria-label="Newsletter page viewer"><button type="button" aria-label="Close">×</button><img alt="Expanded newsletter page"></div>
-<script src="app.js?v=2.0.2" defer></script>
+<div class="install-sheet" id="installSheet" role="dialog" aria-modal="true" aria-labelledby="installSheetTitle" hidden>
+  <div class="install-sheet-card" tabindex="-1">
+    <button class="install-sheet-close" type="button" aria-label="Close install instructions" data-install-close>×</button>
+    <div class="eyebrow" data-install-eyebrow>Keep KCMC close</div>
+    <h2 id="installSheetTitle">Add KCMC to your Home Screen</h2>
+    <div class="install-sheet-copy" data-install-sheet-copy></div>
+    <button class="btn gold install-sheet-native" type="button" data-install-native hidden>Install KCMC Connect</button>
+    <p class="install-sheet-note">After it is saved, KCMC Connect opens from your screen like an app.</p>
+  </div>
+</div>
+<script src="app.js?v=2.1.0" defer></script>
 <a class="phase6-bulletin-fab" href="bulletin.php">Latest Bulletin</a>
 </body></html>

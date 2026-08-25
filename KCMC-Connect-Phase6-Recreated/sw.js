@@ -1,4 +1,4 @@
-const CACHE='kcmc-connect-phase6-v2.0.2';
+const CACHE='kcmc-connect-phase6-v2.1.0';
 const CORE=[
   './','./styles.css','./app.js','./manifest.webmanifest',
   './bulletin.php','./news.php','./events.php','./care.php','./connect.php',

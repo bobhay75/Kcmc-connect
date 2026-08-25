@@ -1,4 +1,13 @@
-# KCMC Connect v1.2.0 — Publishing Pass
+# KCMC Connect Release Notes
+
+## 2.1.0 — One-touch PWA installation
+- Added a prominent Save to Home Screen call-to-action on the home view and a compact header action.
+- Connected Android Chrome and installable desktop browsers directly to the native PWA install prompt.
+- Added concise, platform-aware iPhone and iPad Safari instructions for Add to Home Screen.
+- Hides install controls when KCMC Connect is already running as an installed app.
+- Bumped the service-worker cache so the new interface is delivered immediately after deployment.
+
+## 1.2.0 — Publishing Pass
 
 ## Visitor-first experience
 - Added a complete in-app **I’m New / Plan a Visit** journey.
