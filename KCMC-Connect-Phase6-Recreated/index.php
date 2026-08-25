@@ -23,10 +23,10 @@ usort($kcmcAnnouncements, fn($a,$b)=>(int)($b['priority']??0)<=>(int)($a['priori
 <meta name="twitter:card" content="summary_large_image">
 <script type="application/ld+json">{"@context":"https://schema.org","@type":"Church","name":"Kimberling City Methodist Church","address":{"@type":"PostalAddress","streetAddress":"57 Kimberling City Center Lane","addressLocality":"Kimberling City","addressRegion":"MO","postalCode":"65686","addressCountry":"US"},"telephone":"+1-417-739-4395","email":"secretary@umckc.org"}</script>
 <title>KCMC Connect</title>
-<link rel="manifest" href="manifest.webmanifest">
+<link rel="manifest" href="manifest.webmanifest?v=2.1.1">
 <link rel="stylesheet" href="styles.css?v=2.1.0">
-<link rel="icon" href="assets/icons/icon-192.png">
-<link rel="apple-touch-icon" href="assets/icons/icon-192.png">
+<link rel="icon" href="assets/icons/icon-192.png?v=2.1.1">
+<link rel="apple-touch-icon" href="assets/icons/icon-192.png?v=2.1.1">
 </head>
 <body>
 <?php if (!empty($kcmcAnnouncements)): $top=$kcmcAnnouncements[0]; ?>

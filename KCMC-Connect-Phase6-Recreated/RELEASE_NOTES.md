@@ -1,5 +1,10 @@
 # KCMC Connect Release Notes
 
+## 2.1.1 — KCMC Ichthys app icon
+- Replaced the installed-app artwork with a bold KCMC wordmark and Christian Ichthys symbol.
+- Added versioned manifest and Apple touch-icon URLs so Android, iPhone, iPad and desktop browsers discover the new artwork.
+- Bumped the service-worker cache while retaining the existing PWA caching strategy.
+
 ## 2.1.0 — One-touch PWA installation
 - Added a prominent Save to Home Screen call-to-action on the home view and a compact header action.
 - Connected Android Chrome and installable desktop browsers directly to the native PWA install prompt.
