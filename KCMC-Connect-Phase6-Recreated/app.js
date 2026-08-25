@@ -1,7 +1,6 @@
 (() => {
   'use strict';
   const OFFICE_EMAIL = 'secretary@umckc.org';
-  const FACEBOOK_LIVE_URL = 'https://www.facebook.com/share/1DLmoALnSj/';
   const views = [...document.querySelectorAll('[data-view]')];
   const routeLinks = [...document.querySelectorAll('[data-route]')];
   const allowed = new Set(views.map(v => v.dataset.view));
@@ -9,8 +8,7 @@
   function renderRoute(){ const route=normalize(); views.forEach(v=>v.classList.toggle('active',v.dataset.view===route)); routeLinks.forEach(a=>{const active=a.dataset.route===route;a.classList.toggle('active',active);if(active)a.setAttribute('aria-current','page');else a.removeAttribute('aria-current');}); document.title=route==='home'?'KCMC Connect':`${route[0].toUpperCase()+route.slice(1)} • KCMC Connect`; window.scrollTo({top:0,behavior:'instant'}); }
   window.addEventListener('hashchange',renderRoute); renderRoute();
 
-  document.querySelectorAll('a[href*="facebook.com"]').forEach(link=>{ const text=(link.textContent||'').toLowerCase(),href=(link.getAttribute('href')||'').toLowerCase(); if(text.includes('live')||text.includes('watch')||text.includes('featured')||href.includes('/live_videos')||href.includes('/share/v/')){link.href=FACEBOOK_LIVE_URL;if(text.includes('open live room'))link.textContent='Watch KCMC Live';} });
-  document.querySelectorAll('.phase6-bulletin-fab').forEach(link=>{link.href='bulletin.php';link.textContent='Today’s Bulletin';});
+  document.querySelectorAll('.phase6-bulletin-fab').forEach(link=>{link.href='bulletin.php';link.textContent='Latest Bulletin';});
 
   async function hydrateCurrentStory(){
     let top=null; try{const response=await fetch('./api/content.php',{cache:'no-store'});if(response.ok){const payload=await response.json();const announcements=Array.isArray(payload?.announcements)?payload.announcements:[];const now=Date.now();top=announcements.filter(item=>{if(item?.status&&item.status!=='published')return false;const start=item?.starts_at?Date.parse(item.starts_at):-Infinity,end=item?.expires_at?Date.parse(item.expires_at):Infinity;return now>=start&&now<end;}).sort((a,b)=>(Number(b?.priority)||0)-(Number(a?.priority)||0))[0]||null;}}catch(_){}
@@ -50,5 +48,5 @@
   const sermonSearch=document.getElementById('sermonSearch'),sermonFilter=document.getElementById('sermonFilter');function filterSermons(){const q=(sermonSearch?.value||'').trim().toLowerCase(),type=sermonFilter?.value||'all';document.querySelectorAll('.sermon-card').forEach(card=>{card.hidden=!!((q&&!card.dataset.search.includes(q))||(type!=='all'&&card.dataset.type!==type));});}sermonSearch?.addEventListener('input',filterSermons);sermonFilter?.addEventListener('change',filterSermons);
   const preferred=document.getElementById('preferredService');if(preferred){preferred.value=localStorage.getItem('kcmcPreferredService')||'';preferred.addEventListener('change',()=>localStorage.setItem('kcmcPreferredService',preferred.value));}
   const banner=document.getElementById('offlineBanner');const updateOnline=()=>banner?.classList.toggle('show',!navigator.onLine);window.addEventListener('online',updateOnline);window.addEventListener('offline',updateOnline);updateOnline();
-  if('serviceWorker'in navigator)window.addEventListener('load',()=>navigator.serviceWorker.register('./sw.js').catch(()=>{}));
+  if('serviceWorker'in navigator)window.addEventListener('load',()=>navigator.serviceWorker.register('./sw.js',{updateViaCache:'none'}).catch(()=>{}));
 })();

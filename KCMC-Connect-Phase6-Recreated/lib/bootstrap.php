@@ -17,7 +17,22 @@ function kcmc_config(): array {
         $cfg = require KCMC_CONFIG;
         if (is_array($cfg)) $defaults = array_replace($defaults, $cfg);
     }
+    // Setup keys are accepted only from the server environment, never from a deployed file.
+    $envSetupKey = getenv('KCMC_SETUP_KEY');
+    $defaults['setup_key'] = is_string($envSetupKey) ? trim($envSetupKey) : '';
     return $defaults;
+}
+
+function kcmc_base_path(): string {
+    $script = str_replace('\\\\', '/', (string)($_SERVER['SCRIPT_NAME'] ?? ''));
+    $adminPos = strpos($script, '/admin/');
+    if ($adminPos !== false) return rtrim(substr($script, 0, $adminPos), '/');
+    $dir = rtrim(str_replace('\\\\', '/', dirname($script)), '/');
+    return $dir === '.' ? '' : $dir;
+}
+
+function kcmc_url(string $path = ''): string {
+    return kcmc_base_path() . '/' . ltrim($path, '/');
 }
 
 function kcmc_session_start(): void {
@@ -28,7 +43,7 @@ function kcmc_session_start(): void {
         'httponly' => true,
         'secure' => (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off'),
         'samesite' => 'Strict',
-        'path' => '/',
+        'path' => kcmc_base_path() . '/',
     ]);
     session_start();
 }
@@ -66,7 +81,7 @@ function kcmc_owner_logged_in(): bool {
 
 function kcmc_require_owner(): void {
     if (!kcmc_owner_logged_in()) {
-        header('Location: /admin/login.php');
+        header('Location: ' . kcmc_url('admin/login.php'));
         exit;
     }
 }

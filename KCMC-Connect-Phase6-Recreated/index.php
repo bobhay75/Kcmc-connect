@@ -48,7 +48,7 @@ usort($kcmcAnnouncements, fn($a,$b)=>(int)($b['priority']??0)<=>(int)($a['priori
       <div>
         <div class="eyebrow">Kimberling City • Table Rock Lake</div>
         <h1>One church.<br>Connected all week.</h1>
-        <p class="lead">Worship, current church news, events, care, serving and giving—without hunting through five different places.</p>
+        <p class="lead">Worship, church news, events, care, serving and giving—all in one simple place.</p>
         <div class="actions">
           <a class="action" href="#watch" data-route="watch"><b>Watch</b><span>Live & recent worship</span></a>
           <a class="action" href="https://www.simplechurchgiving.net/app/giving/umckc" target="_blank" rel="noopener"><b>Give</b><span>Secure online giving</span></a>
@@ -68,12 +68,13 @@ usort($kcmcAnnouncements, fn($a,$b)=>(int)($b['priority']??0)<=>(int)($a['priori
 
   <section class="section visual-story-section" aria-label="KCMC in the Ozarks">
     <div class="wrap visual-story">
-      <figure class="vision-visual">
-        <img src="./assets/visuals/kcmc-vision-lake.png" loading="eager" decoding="async" alt="KCMC vision statement over Table Rock Lake and the Kimberling City Bridge at sunset">
+      <figure class="mission-visual">
+        <img src="./assets/visuals/cross-over-lake.jpg" loading="eager" decoding="async" alt="Cross overlooking Table Rock Lake and the Kimberling City Bridge">
+        <figcaption><span class="eyebrow">Mission statement</span><strong>Leading people to become deeply committed followers of Jesus Christ.</strong></figcaption>
       </figure>
       <figure class="ministry-visual">
         <img src="./assets/visuals/kcmc-ministry-group.jpg" loading="eager" decoding="async" alt="Children and ministry leaders featured in the August KCMC church newsletter">
-        <figcaption><span class="eyebrow">Real KCMC ministry</span><strong>People before stock photos.</strong><span>Current church imagery from the August newsletter keeps KCMC Connect grounded in the congregation it serves.</span></figcaption>
+        <figcaption><span class="eyebrow">Real KCMC ministry</span><strong>Real people. Real KCMC ministry.</strong><span>Current church imagery keeps KCMC Connect grounded in the congregation it serves.</span></figcaption>
       </figure>
     </div>
   </section>
@@ -110,7 +111,7 @@ usort($kcmcAnnouncements, fn($a,$b)=>(int)($b['priority']??0)<=>(int)($a['priori
   </section>
 
   <section class="section alt">
-    <div class="wrap contact-strip"><div><div class="eyebrow">Need a person?</div><h2>Call the church office.</h2><p class="muted">Tuesday–Thursday, 8:00 AM–4:00 PM • (417) 739-4395 • secretary@umckc.org</p></div><div class="btns" style="align-content:center"><a class="btn gold" href="tel:+14177394395">Call now</a><a class="btn secondary" href="mailto:secretary@umckc.org">Email</a></div></div>
+    <div class="wrap contact-strip"><div><div class="eyebrow">Need a person?</div><h2>Call the church office.</h2><p class="muted">Tuesday–Thursday, 9:00 AM–4:00 PM • (417) 739-4395 • secretary@umckc.org</p></div><div class="btns" style="align-content:center"><a class="btn gold" href="tel:+14177394395">Call now</a><a class="btn secondary" href="mailto:secretary@umckc.org">Email</a></div></div>
   </section>
 </section>
 
@@ -215,10 +216,10 @@ usort($kcmcAnnouncements, fn($a,$b)=>(int)($b['priority']??0)<=>(int)($a['priori
 </section>
 </main>
 
-<footer class="footer"><div class="wrap footer-grid"><div><strong>KCMC CONNECT</strong><p>Kimberling City Methodist Church<br>57 Kimberling City Center Lane<br>Kimberling City, MO 65686</p></div><div><p>(417) 739-4395<br><a href="mailto:secretary@umckc.org">secretary@umckc.org</a></p><p class="fine">This release uses no analytics or ad tracking by default. Giving, maps and video open the church’s existing external services.</p></div></div></footer>
+<footer class="footer"><div class="wrap footer-grid"><div><strong>KCMC CONNECT</strong><p>Kimberling City Methodist Church<br>57 Kimberling City Center Lane<br>Kimberling City, MO 65686</p></div><div><p>(417) 739-4395<br><a href="mailto:secretary@umckc.org">secretary@umckc.org</a><br><a href="https://www.facebook.com/KimberlingCityMethodistChurch" target="_blank" rel="noopener">KCMC on Facebook</a></p><p class="fine">This release uses no analytics or ad tracking by default. Giving, maps and video open the church’s existing external services.</p></div></div></footer>
 
 <nav class="mobile-nav" aria-label="Mobile navigation"><a href="#home" data-route="home"><span>⌂</span>Home</a><a href="#visit" data-route="visit"><span>◎</span>Visit</a><a href="#watch" data-route="watch"><span>▶</span>Watch</a><a href="#events" data-route="events"><span>◇</span>Events</a><a href="#partner" data-route="partner"><span>✦</span>Connect</a></nav>
 <div class="modal" id="imageModal" role="dialog" aria-modal="true" aria-label="Newsletter page viewer"><button type="button" aria-label="Close">×</button><img alt="Expanded newsletter page"></div>
 <script src="app.js" defer></script>
-<a class="phase6-bulletin-fab" href="/bulletin">Sunday Bulletin</a>
+<a class="phase6-bulletin-fab" href="bulletin.php">Latest Bulletin</a>
 </body></html>

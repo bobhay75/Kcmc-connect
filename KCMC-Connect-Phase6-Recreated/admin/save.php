@@ -21,4 +21,4 @@ $data['bulletin']['notes']=array_values(array_filter(array_map('trim',preg_split
 $postedEvents=$_POST['events']??[];
 foreach($postedEvents as $i=>$p){ if(!isset($data['events'][$i]))continue; $data['events'][$i]['title']=trim((string)($p['title']??''));$data['events'][$i]['date']=trim((string)($p['date']??''));$data['events'][$i]['time']=trim((string)($p['time']??''));$data['events'][$i]['priority']=max(0,min(100,(int)($p['priority']??50)));$data['events'][$i]['status']=($p['status']??'hidden')==='published'?'published':'hidden';$ex=trim((string)($p['expires']??''));$data['events'][$i]['expires_at']=$ex?date('c',strtotime($ex.' 23:59:59')):''; }
 kcmc_write_content($data,'owner');
-header('Location: /admin/?msg='.rawurlencode('Published successfully. Backup created automatically.'));
+header('Location: ' . kcmc_url('admin/?msg=' . rawurlencode('Published successfully. Backup created automatically.')));

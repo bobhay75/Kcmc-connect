@@ -1,18 +1,32 @@
-# KCMC Connect Phase 6 — cPanel Deployment
+# KCMC Connect — cPanel Deployment
 
-1. Back up the current KCMC production document root before replacing anything.
-2. Upload the **contents** of this folder to the KCMC subdomain/document root.
-3. In cPanel, select PHP 8.1+ for the site.
-4. Confirm HTTPS/SSL is active.
-5. Visit `/admin/setup.php` and use the private setup key from `SETUP-CREDENTIALS.txt` to create the owner password.
-6. Delete your local copy of `SETUP-CREDENTIALS.txt` after setup if you do not need it; the web server blocks direct access to it.
-7. Visit `/admin/`, publish a small test announcement, and confirm it appears on the homepage.
-8. Check `/bulletin`, `/church-news`, `/events`, `/care`, and `/connect` on phone and desktop.
-9. Keep the ZIP and Git bundle as recovery masters.
+The repository deploys to `/home/bobsome1/public_html/kcmc-connect/` through `.cpanel.yml`.
 
-## Server requirements
-- Apache/cPanel with `.htaccess` support
-- PHP 8.1 or newer
-- Writable `data/` and `backups/` directories for the PHP process (normally 755/775 depending on host)
+## What deployment preserves
+
+The deployment intentionally does not overwrite:
+
+- `config.php` — private owner credentials stored only on the server
+- `data/content.json` — live Publishing Desk content
+- `backups/` — automatic content backups
+
+A seed `data/content.json` is copied only when the live file does not exist. The retired `SETUP-CREDENTIALS.txt` file is removed from production during deployment.
+
+## First-time owner setup
+
+Use one of these private server-side methods; never commit credentials to GitHub:
+
+1. Set a long random `KCMC_SETUP_KEY` environment variable in cPanel, visit `/kcmc-connect/admin/setup.php`, create the owner password, then remove the environment variable.
+2. Copy `config.example.php` to live `config.php` and place a PHP `password_hash()` value in `admin_password_hash`.
+
+Without a server-only setup key or password hash, public pages continue to work and owner setup remains safely disabled.
+
+## Live checks
+
+1. Confirm the homepage, `bulletin.php`, and all six in-app navigation views.
+2. Confirm Chrome DevTools shows an active service worker and the app is installable on Android.
+3. Confirm `/kcmc-connect/admin/setup.php` does not show a setup form unless the private environment key is present.
+4. After owner login is configured, publish a small test change and verify it survives the next deployment.
+5. Confirm PHP 8.1+, HTTPS, and writable `data/` and `backups/` directories.
 
 No MySQL, Node.js, Wix, WordPress, plugin, or paid CMS is required.
