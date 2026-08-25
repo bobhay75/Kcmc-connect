@@ -220,6 +220,6 @@ usort($kcmcAnnouncements, fn($a,$b)=>(int)($b['priority']??0)<=>(int)($a['priori
 
 <nav class="mobile-nav" aria-label="Mobile navigation"><a href="#home" data-route="home"><span>⌂</span>Home</a><a href="#visit" data-route="visit"><span>◎</span>Visit</a><a href="#watch" data-route="watch"><span>▶</span>Watch</a><a href="#events" data-route="events"><span>◇</span>Events</a><a href="#partner" data-route="partner"><span>✦</span>Connect</a></nav>
 <div class="modal" id="imageModal" role="dialog" aria-modal="true" aria-label="Newsletter page viewer"><button type="button" aria-label="Close">×</button><img alt="Expanded newsletter page"></div>
-<script src="app.js" defer></script>
+<script src="app.js?v=2.0.2" defer></script>
 <a class="phase6-bulletin-fab" href="bulletin.php">Latest Bulletin</a>
 </body></html>
