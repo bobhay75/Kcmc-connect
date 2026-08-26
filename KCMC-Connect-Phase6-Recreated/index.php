@@ -24,7 +24,8 @@ usort($kcmcAnnouncements, fn($a,$b)=>(int)($b['priority']??0)<=>(int)($a['priori
 <script type="application/ld+json">{"@context":"https://schema.org","@type":"Church","name":"Kimberling City Methodist Church","address":{"@type":"PostalAddress","streetAddress":"57 Kimberling City Center Lane","addressLocality":"Kimberling City","addressRegion":"MO","postalCode":"65686","addressCountry":"US"},"telephone":"+1-417-739-4395","email":"secretary@umckc.org"}</script>
 <title>KCMC Connect</title>
 <link rel="manifest" href="manifest.webmanifest?v=2.1.1">
-<link rel="stylesheet" href="styles.css?v=2.1.0">
+<link rel="preload" as="image" href="assets/visuals/table-rock-bridge-v2.webp?v=2.1.2" type="image/webp" fetchpriority="high">
+<link rel="stylesheet" href="styles.css?v=2.1.2">
 <link rel="icon" href="assets/icons/icon-192.png?v=2.1.1">
 <link rel="apple-touch-icon" href="assets/icons/icon-192.png?v=2.1.1">
 </head>
@@ -47,7 +48,7 @@ usort($kcmcAnnouncements, fn($a,$b)=>(int)($b['priority']??0)<=>(int)($a['priori
 <main id="mainContent">
 <section class="view active" data-view="home">
   <section class="hero hero-imagery">
-    <img class="hero-photo" src="./assets/visuals/table-rock-bridge.jpg" alt="Table Rock Lake and Kimberling City Bridge in the Ozarks" loading="eager" decoding="async">
+    <img class="hero-photo" src="./assets/visuals/table-rock-bridge-v2.webp?v=2.1.2" alt="Table Rock Lake and Kimberling City Bridge in the Ozarks at sunset" loading="eager" decoding="async" fetchpriority="high">
     <div class="wrap hero-grid">
       <div>
         <div class="eyebrow">Kimberling City • Table Rock Lake</div>
@@ -239,6 +240,6 @@ usort($kcmcAnnouncements, fn($a,$b)=>(int)($b['priority']??0)<=>(int)($a['priori
     <p class="install-sheet-note">After it is saved, KCMC Connect opens from your screen like an app.</p>
   </div>
 </div>
-<script src="app.js?v=2.1.0" defer></script>
+<script src="app.js?v=2.1.2" defer></script>
 <a class="phase6-bulletin-fab" href="bulletin.php">Latest Bulletin</a>
 </body></html>

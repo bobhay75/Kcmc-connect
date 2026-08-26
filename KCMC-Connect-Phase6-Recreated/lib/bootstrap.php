@@ -5,6 +5,7 @@ const KCMC_ROOT = __DIR__ . '/..';
 const KCMC_DATA = KCMC_ROOT . '/data/content.json';
 const KCMC_CONFIG = KCMC_ROOT . '/config.php';
 const KCMC_BACKUPS = KCMC_ROOT . '/backups';
+const KCMC_RETIRED_CONTENT_IDS = ['backpack-blessing-2026'];
 
 function kcmc_config(): array {
     $defaults = [
@@ -102,6 +103,7 @@ function kcmc_h(string $value): string { return htmlspecialchars($value, ENT_QUO
 function kcmc_active_items(array $items): array {
     $now = time();
     return array_values(array_filter($items, function(array $item) use ($now): bool {
+        if (in_array((string)($item['id'] ?? ''), KCMC_RETIRED_CONTENT_IDS, true)) return false;
         if (($item['status'] ?? 'published') !== 'published') return false;
         if (!empty($item['starts_at']) && strtotime((string)$item['starts_at']) > $now) return false;
         if (!empty($item['expires_at']) && strtotime((string)$item['expires_at']) <= $now) return false;

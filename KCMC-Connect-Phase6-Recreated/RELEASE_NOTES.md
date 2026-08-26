@@ -1,5 +1,12 @@
 # KCMC Connect Release Notes
 
+## 2.1.2 — Sharper, richer Table Rock hero
+- Replaced the low-resolution hero with a sharper 1774 × 887 WebP scene of Table Rock Lake and the Kimberling City Bridge.
+- Restored natural lake blues, forest greens and golden-hour color by removing the faded image opacity and reducing the overly heavy navy overlay.
+- Added a responsive mobile crop and contrast treatment that keeps both the bridge and white interface text clear.
+- Preloads the hero and bumps the service-worker cache so the new background arrives immediately after deployment.
+- Retired the completed Backpack Blessing announcement and removed its promotional home-page feature while preserving the story page as an archive.
+
 ## 2.1.1 — KCMC Ichthys app icon
 - Replaced the installed-app artwork with a bold KCMC wordmark and Christian Ichthys symbol.
 - Added versioned manifest and Apple touch-icon URLs so Android, iPhone, iPad and desktop browsers discover the new artwork.
