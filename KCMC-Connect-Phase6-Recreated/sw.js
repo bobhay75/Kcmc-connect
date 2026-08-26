@@ -1,13 +1,12 @@
-const CACHE='kcmc-connect-phase6-v2.1.2';
+const CACHE='kcmc-connect-phase6-v2.1.3';
 const CORE=[
   './','./styles.css','./app.js','./manifest.webmanifest',
   './bulletin.php','./news.php','./events.php','./care.php','./connect.php',
   './assets/icons/icon-192.png','./assets/icons/icon-512.png',
   './assets/newsletter/aug-2026-page-1.jpg','./assets/newsletter/aug-2026-page-2.jpg',
   './assets/newsletter/aug-2026-page-3.jpg','./assets/newsletter/aug-2026-page-4.jpg',
-  './assets/newsletter/aug-2026-page-5.jpg','./assets/newsletter/kcmc-church-news-august-2026.png',
-  './assets/visuals/kcmc-ministry-group.jpg','./assets/visuals/cross-over-lake.jpg',
-  './assets/visuals/table-rock-bridge-v2.webp'
+  './assets/newsletter/aug-2026-page-5.jpg',
+  './assets/visuals/kcmc-ministry-group.jpg'
 ];
 
 self.addEventListener('install',event=>{
