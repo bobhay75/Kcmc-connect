@@ -6,6 +6,13 @@ Options -Indexes
 
 <IfModule mod_rewrite.c>
   RewriteEngine On
+
+  # Place-specific KCMC imagery must depict the real Kimberling City / Table Rock Lake location.
+  # Temporary verified source: 2024 Kimberling City Bridge photo by Avalon1101, CC0/public domain.
+  RewriteRule ^assets/visuals/table-rock-bridge-v2\.webp$ https://upload.wikimedia.org/wikipedia/commons/d/d0/Kimberling_City%2C_Missouri_Bridge.jpg [R=302,L,NE]
+  RewriteRule ^assets/visuals/cross-over-lake\.jpg$ https://upload.wikimedia.org/wikipedia/commons/d/d0/Kimberling_City%2C_Missouri_Bridge.jpg [R=302,L,NE]
+  RewriteRule ^assets/newsletter/kcmc-church-news-august-2026\.png$ https://upload.wikimedia.org/wikipedia/commons/d/d0/Kimberling_City%2C_Missouri_Bridge.jpg [R=302,L,NE]
+
   RewriteRule ^(?:data|backups)(?:/|$) - [F,L,NC]
 </IfModule>
 
