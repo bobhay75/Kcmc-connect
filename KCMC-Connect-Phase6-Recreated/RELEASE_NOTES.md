@@ -1,5 +1,12 @@
 # KCMC Connect Release Notes
 
+## 2.1.4 — Verified Kimberling City Bridge photography
+- Replaced every site use of the inaccurate or ambiguous scenic bridge/lake artwork with the verified 1920 × 1280 Wikimedia Commons photograph of the Kimberling City Bridge carrying Highway 13 across Table Rock Lake.
+- Uses the original 2024 photograph by Avalon1101, released under the CC0 1.0 Universal Public Domain Dedication.
+- Corrected image descriptions, social sharing artwork and Watch-page scenery while preserving real KCMC ministry photography.
+- Removed the suspect generated/lookalike scenic assets from the release.
+- Versioned page assets and bumped the service-worker cache to force installed PWAs to refresh.
+
 ## 2.1.2 — Sharper, richer Table Rock hero
 - Replaced the low-resolution hero with a sharper 1774 × 887 WebP scene of Table Rock Lake and the Kimberling City Bridge.
 - Restored natural lake blues, forest greens and golden-hour color by removing the faded image opacity and reducing the overly heavy navy overlay.

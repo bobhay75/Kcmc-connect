@@ -1,4 +1,4 @@
-const CACHE='kcmc-connect-phase6-v2.1.3';
+const CACHE='kcmc-connect-phase6-v2.1.4';
 const CORE=[
   './','./styles.css','./app.js','./manifest.webmanifest',
   './bulletin.php','./news.php','./events.php','./care.php','./connect.php',
@@ -6,6 +6,7 @@ const CORE=[
   './assets/newsletter/aug-2026-page-1.jpg','./assets/newsletter/aug-2026-page-2.jpg',
   './assets/newsletter/aug-2026-page-3.jpg','./assets/newsletter/aug-2026-page-4.jpg',
   './assets/newsletter/aug-2026-page-5.jpg',
+  './assets/visuals/kimberling-city-missouri-bridge-2024.jpg',
   './assets/visuals/kcmc-ministry-group.jpg'
 ];
 
