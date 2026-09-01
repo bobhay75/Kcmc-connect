@@ -3,9 +3,9 @@ deployment:
   tasks:
     - export DEPLOYPATH=/home/bobsome1/public_html/kcmc-connect/
     - /bin/mkdir -p $DEPLOYPATH
-    - /usr/bin/rsync -a --delete --exclude='config.php' --exclude='data/content.json' --exclude='backups/' --exclude='SETUP-CREDENTIALS.txt' KCMC-Connect-Phase6-Recreated/ $DEPLOYPATH
-    - /bin/mkdir -p ${DEPLOYPATH}data ${DEPLOYPATH}backups
+    - /usr/bin/rsync -a --delete --exclude='config.php' --exclude='data/content.json' --exclude='data/private/' --exclude='backups/' --exclude='SETUP-CREDENTIALS.txt' KCMC-Connect-Phase6-Recreated/ $DEPLOYPATH
+    - /bin/mkdir -p ${DEPLOYPATH}data ${DEPLOYPATH}data/private ${DEPLOYPATH}backups
     - if [ ! -f ${DEPLOYPATH}data/content.json ]; then /bin/cp KCMC-Connect-Phase6-Recreated/data/content.json ${DEPLOYPATH}data/content.json; fi
-    - /bin/chmod 750 ${DEPLOYPATH}data ${DEPLOYPATH}backups
+    - /bin/chmod 750 ${DEPLOYPATH}data ${DEPLOYPATH}data/private ${DEPLOYPATH}backups
     - /bin/chmod 640 ${DEPLOYPATH}data/content.json
     - /bin/rm -f ${DEPLOYPATH}SETUP-CREDENTIALS.txt

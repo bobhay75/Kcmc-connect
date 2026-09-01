@@ -1,6 +1,11 @@
 <?php
 require_once __DIR__ . '/lib/bootstrap.php';
 $kcmc = kcmc_content();
+$member = kcmc_current_user();
+$memberCanPray = $member !== null && kcmc_has_role(['member', 'prayer_team', 'pastor_admin'], $member);
+$kcmcNews = is_array($kcmc['news'] ?? null) ? $kcmc['news'] : [];
+$kcmcEvents = kcmc_active_items($kcmc['events'] ?? []);
+usort($kcmcEvents, fn($a,$b)=>strcmp((string)($a['date']??''),(string)($b['date']??'')));
 $kcmcAnnouncements = kcmc_active_items($kcmc['announcements'] ?? []);
 usort($kcmcAnnouncements, fn($a,$b)=>(int)($b['priority']??0)<=>(int)($a['priority']??0));
 ?>
@@ -19,15 +24,15 @@ usort($kcmcAnnouncements, fn($a,$b)=>(int)($b['priority']??0)<=>(int)($a['priori
 <meta property="og:title" content="KCMC Connect | Kimberling City Methodist Church">
 <meta property="og:description" content="Plan a visit, watch worship, find events, request prayer and connect with KCMC.">
 <meta property="og:type" content="website">
-<meta property="og:image" content="assets/visuals/kimberling-city-missouri-bridge-2024.jpg?v=2.1.4">
+<meta property="og:image" content="assets/visuals/kimberling-city-missouri-bridge-2024.jpg?v=3.0.0">
 <meta name="twitter:card" content="summary_large_image">
 <script type="application/ld+json">{"@context":"https://schema.org","@type":"Church","name":"Kimberling City Methodist Church","address":{"@type":"PostalAddress","streetAddress":"57 Kimberling City Center Lane","addressLocality":"Kimberling City","addressRegion":"MO","postalCode":"65686","addressCountry":"US"},"telephone":"+1-417-739-4395","email":"secretary@umckc.org"}</script>
 <title>KCMC Connect</title>
-<link rel="manifest" href="manifest.webmanifest?v=2.1.4">
-<link rel="preload" as="image" href="assets/visuals/kimberling-city-missouri-bridge-2024.jpg?v=2.1.4" type="image/jpeg" fetchpriority="high">
-<link rel="stylesheet" href="styles.css?v=2.1.4">
-<link rel="icon" href="assets/icons/icon-192.png?v=2.1.4">
-<link rel="apple-touch-icon" href="assets/icons/icon-192.png?v=2.1.4">
+<link rel="manifest" href="manifest.webmanifest?v=3.0.0">
+<link rel="preload" as="image" href="assets/visuals/kimberling-city-missouri-bridge-2024.jpg?v=3.0.0" type="image/jpeg" fetchpriority="high">
+<link rel="stylesheet" href="styles.css?v=3.0.0">
+<link rel="icon" href="assets/icons/icon-192.png?v=3.0.0">
+<link rel="apple-touch-icon" href="assets/icons/icon-192.png?v=3.0.0">
 </head>
 <body>
 <?php if (!empty($kcmcAnnouncements)): $top=$kcmcAnnouncements[0]; ?>
@@ -41,6 +46,7 @@ usort($kcmcAnnouncements, fn($a,$b)=>(int)($b['priority']??0)<=>(int)($a['priori
     <nav class="desktop-nav" aria-label="Primary">
       <a href="#visit" data-route="visit">I’m New</a><a href="#watch" data-route="watch">Watch</a><a href="#news" data-route="news">News</a><a href="#events" data-route="events">Events</a><a href="#serve" data-route="serve">Serve</a><a href="#partner" data-route="partner">Connect</a>
     </nav>
+    <a class="topbar-account" href="<?=kcmc_h(kcmc_url($member ? 'member/' : 'member/login.php'))?>"><?=$member ? 'Member home' : 'Member sign in'?></a>
     <button class="install" type="button" data-install-app>Save app</button>
   </div>
 </header>
@@ -48,7 +54,7 @@ usort($kcmcAnnouncements, fn($a,$b)=>(int)($b['priority']??0)<=>(int)($a['priori
 <main id="mainContent">
 <section class="view active" data-view="home">
   <section class="hero hero-imagery">
-    <img class="hero-photo" src="./assets/visuals/kimberling-city-missouri-bridge-2024.jpg?v=2.1.4" alt="Highway 13 crossing Table Rock Lake on the Kimberling City Bridge in Kimberling City, Missouri" loading="eager" decoding="async" fetchpriority="high">
+    <img class="hero-photo" src="./assets/visuals/kimberling-city-missouri-bridge-2024.jpg?v=3.0.0" alt="Highway 13 crossing Table Rock Lake on the Kimberling City Bridge in Kimberling City, Missouri" loading="eager" decoding="async" fetchpriority="high">
     <div class="wrap hero-grid">
       <div>
         <div class="eyebrow">Kimberling City • Table Rock Lake</div>
@@ -62,7 +68,7 @@ usort($kcmcAnnouncements, fn($a,$b)=>(int)($b['priority']??0)<=>(int)($a['priori
         <div class="actions">
           <a class="action" href="#watch" data-route="watch"><b>Watch</b><span>Live & recent worship</span></a>
           <a class="action" href="https://www.simplechurchgiving.net/app/giving/umckc" target="_blank" rel="noopener"><b>Give</b><span>Secure online giving</span></a>
-          <a class="action" href="#partner" data-route="partner"><b>Prayer</b><span>Private prayer or care request</span></a>
+          <a class="action" href="care.php"><b>Prayer</b><span>Verified members only</span></a>
           <a class="action" href="#visit" data-route="visit"><b>Visit</b><span>Plan your first Sunday</span></a>
         </div>
       </div>
@@ -79,26 +85,23 @@ usort($kcmcAnnouncements, fn($a,$b)=>(int)($b['priority']??0)<=>(int)($a['priori
   <section class="section visual-story-section" aria-label="KCMC in the Ozarks">
     <div class="wrap visual-story">
       <figure class="mission-visual">
-        <img src="./assets/visuals/kimberling-city-missouri-bridge-2024.jpg?v=2.1.4" loading="eager" decoding="async" alt="Kimberling City Bridge carrying Highway 13 across Table Rock Lake, photographed in 2024">
+        <img src="./assets/visuals/kimberling-city-missouri-bridge-2024.jpg?v=3.0.0" loading="eager" decoding="async" alt="Kimberling City Bridge carrying Highway 13 across Table Rock Lake, photographed in 2024">
         <figcaption><span class="eyebrow">Mission statement</span><strong>Leading people to become deeply committed followers of Jesus Christ.</strong></figcaption>
       </figure>
       <figure class="ministry-visual">
-        <img src="./assets/visuals/kcmc-ministry-group.jpg" loading="eager" decoding="async" alt="Children and ministry leaders featured in the August KCMC church newsletter">
+        <img src="./assets/visuals/kcmc-ministry-group.jpg" loading="eager" decoding="async" alt="Children and leaders taking part in KCMC ministry">
         <figcaption><span class="eyebrow">Real KCMC ministry</span><strong>Real people. Real KCMC ministry.</strong><span>Current church imagery keeps KCMC Connect grounded in the congregation it serves.</span></figcaption>
       </figure>
     </div>
   </section>
 
-  <section class="section current-update" aria-label="Current KCMC highlights">
+  <section class="section current-update" aria-label="Current KCMC ministry highlights">
     <div class="wrap">
-      <div class="section-head"><div><div class="eyebrow">August Church News</div><h2>What God is doing right now.</h2></div><p>Verified highlights from KCMC Church News, August 2026 • Issue #15.</p></div>
+      <div class="section-head"><div><div class="eyebrow"><?=kcmc_h((string)($kcmcNews['month']??'Church News'))?> • Issue #<?=kcmc_h((string)($kcmcNews['issue']??''))?></div><h2>New beginnings at KCMC.</h2></div><p>Newsletter content is presented as clean app text—never as photos of the printed pages.</p></div>
       <div class="stat-grid">
-        <article class="stat-card"><strong>20</strong><span>people baptized so far this year</span></article>
-        <article class="stat-card"><strong>319</strong><span>average total July attendance</span></article>
-        <article class="stat-card"><strong>12–25</strong><span>children currently attending Launch Kids</span></article>
-        <article class="stat-card"><strong>30</strong><span>children participated in Vacation Bible School</span></article>
+        <?php foreach(array_slice($kcmcNews['highlights']??[],0,4) as $highlight): ?><article class="stat-card"><strong><?=kcmc_h((string)($highlight['stat']??''))?></strong><span><?=kcmc_h((string)($highlight['label']??''))?></span></article><?php endforeach; ?>
       </div>
-      <div class="btns"><a class="btn gold" href="#news" data-route="news">Read August Church News</a><a class="btn secondary" href="#events" data-route="events">See upcoming dates</a></div>
+      <div class="btns"><a class="btn gold" href="#news" data-route="news">Read September news</a><a class="btn secondary" href="#events" data-route="events">See current events</a></div>
     </div>
   </section>
 
@@ -121,7 +124,7 @@ usort($kcmcAnnouncements, fn($a,$b)=>(int)($b['priority']??0)<=>(int)($a['priori
   </section>
 
   <section class="section alt">
-    <div class="wrap contact-strip"><div><div class="eyebrow">Need a person?</div><h2>Call the church office.</h2><p class="muted">Tuesday–Thursday, 9:00 AM–4:00 PM • (417) 739-4395 • secretary@umckc.org</p></div><div class="btns" style="align-content:center"><a class="btn gold" href="tel:+14177394395">Call now</a><a class="btn secondary" href="mailto:secretary@umckc.org">Email</a></div></div>
+    <div class="wrap contact-strip"><div><div class="eyebrow">Need a person?</div><h2>Call the church office.</h2><p class="muted">Tuesday–Thursday, 8:00 AM–4:00 PM • (417) 739-4395 • secretary@umckc.org</p></div><div class="btns" style="align-content:center"><a class="btn gold" href="tel:+14177394395">Call now</a><a class="btn secondary" href="mailto:secretary@umckc.org">Email</a></div></div>
   </section>
 </section>
 
@@ -160,67 +163,49 @@ usort($kcmcAnnouncements, fn($a,$b)=>(int)($b['priority']??0)<=>(int)($a['priori
 </section>
 
 <section class="view" data-view="news">
-  <div class="wrap partner-hero"><div class="eyebrow">Church News • August 2026 • Issue #15</div><h1 style="font-family:Georgia,serif;font-size:clamp(3rem,7vw,5rem);font-weight:400;margin:.1em 0">The Bridge to Salvation</h1><p class="lead muted">Current KCMC news, ministry momentum and upcoming dates—plus the five original newsletter pages you can open full-size.</p></div>
+  <div class="wrap partner-hero"><div class="eyebrow">Church News • <?=kcmc_h((string)($kcmcNews['month']??''))?> • Issue #<?=kcmc_h((string)($kcmcNews['issue']??''))?></div><h1 style="font-family:Georgia,serif;font-size:clamp(3rem,7vw,5rem);font-weight:400;margin:.1em 0"><?=kcmc_h((string)($kcmcNews['title']??'The Bridge to Salvation'))?></h1><p class="lead muted">The useful content from KCMC’s current newsletter, rebuilt for the app without publishing photos of the printed pages.</p></div>
   <section class="section">
-    <div class="wrap newsletter-visual-wrap"><img class="newsletter-visual" src="./assets/newsletter/kcmc-church-news-august-2026.png" loading="eager" decoding="async" alt="KCMC Church News August 2026 Issue 15 visual summary"></div>
-    <div class="wrap stat-grid news-stats" aria-label="August KCMC highlights">
-      <article class="stat-card"><strong>20</strong><span>people baptized so far this year</span></article>
-      <article class="stat-card"><strong>319</strong><span>average total attendance for July</span></article>
-      <article class="stat-card"><strong>8–14</strong><span>Rooted Youth attendance range</span></article>
-      <article class="stat-card"><strong>12–25</strong><span>Launch Kids attendance range</span></article>
-    </div>
+    <div class="wrap stat-grid news-stats" aria-label="September KCMC highlights"><?php foreach(array_slice($kcmcNews['highlights']??[],0,4) as $highlight): ?><article class="stat-card"><strong><?=kcmc_h((string)($highlight['stat']??''))?></strong><span><?=kcmc_h((string)($highlight['label']??''))?></span></article><?php endforeach; ?></div>
     <div class="wrap news-layout">
-      <article class="news-feature"><div class="eyebrow">Pastoral reflection</div><h3>August… The End of a Season</h3><p>The August issue reflects on the seasons of life—spring, summer, fall and winter—and the steady promise that God remains present through every beginning, ending, joy and hardship.</p><p><b>Scripture:</b> Philippians 4:6–7.</p></article>
+      <?php $reflection=is_array($kcmcNews['reflection']??null)?$kcmcNews['reflection']:[]; ?><article class="news-feature"><div class="eyebrow">Pastoral reflection</div><h3><?=kcmc_h((string)($reflection['title']??'New Beginnings'))?></h3><p><?=kcmc_h((string)($reflection['body']??''))?></p><p><b>Scripture:</b> <?=kcmc_h((string)($reflection['scripture']??''))?>.</p></article>
       <div class="news-list">
-        <article class="news-item"><span class="pill important">Across the Bridge</span><h3>20 baptisms and growing participation</h3><p>KCMC reports 20 people baptized so far this year. July average attendance was 102 at Front Porch Gospel, 102 at Traditional, 84 at Contemporary, and 31 at Friday Night Freedom—319 total on average.</p></article>
-        <article class="news-item"><span class="pill">Children & youth</span><h3>Rooted Youth, Launch Kids and VBS</h3><p>Rooted Youth (ages 12+) is drawing 8–14 students. Launch Kids currently has 12–25 children attending, and Vacation Bible School served 30 children.</p></article>
-        <article class="news-item"><span class="pill">Way Forward</span><h3>Facilities and future growth</h3><p>KCMC reports no building debt or loans and healthy reserves. Lower-level pipe repairs are expected by the end of August; the parking lot has been paved, the propane tank and concrete base replaced, and grounds cleanup continues. Future ideas under consideration include the narthex, children’s zone, aging HVAC units and long-term use of the adjoining lot.</p></article>
-        <article class="news-item"><span class="pill">Staffing</span><h3>Ministry leadership opportunities</h3><p>The newsletter says KCMC is seeking a paid Communication & Media Leader, plus a Youth Leader and Children’s Ministry Leader as current leaders transition into new responsibilities.</p></article>
-        <article class="news-item"><span class="pill important">Community support</span><h3>Small items, real impact</h3><p>Save Best Choice barcodes for WEB Kids, full Kimberling City Harter House receipts for Methodist Women mission work, and aluminum pull tabs for Ronald McDonald House.</p></article>
-        <article class="news-item photo-news-item"><img src="./assets/newsletter/aug-2026-page-5.jpg" loading="lazy" decoding="async" alt="Quest Preschool ministry feature from the August KCMC newsletter"><div><span class="pill">Quest Preschool</span><h3>Supporting local children</h3><p>Quest Preschool is a KCMC ministry providing Christian early education. The newsletter notes strong demand and donor support for affordability, student aid, resources and teachers. Questions or involvement: Kim Cahill, 314-369-9043.</p></div></article>
-        <article class="news-item"><span class="pill">Weekly connection</span><h3>Groups already meeting</h3><p>Current newsletter listings include Coffee & Bible Study Tuesdays at 8:30 AM; The Gathering Place caregivers/support group on the third Thursday at 10:00 AM; Men’s Ministry breakfast on the first Saturday at 8:30 AM; Methodist Women on the third Thursday; Book Club on the first Monday; and Grief Share as a 13-week program offered twice a year.</p></article>
+        <?php foreach($kcmcNews['sections']??[] as $section): ?><article class="news-item"><span class="pill"><?=kcmc_h((string)($section['label']??'Church News'))?></span><h3><?=kcmc_h((string)($section['title']??''))?></h3><p><?=kcmc_h((string)($section['body']??''))?></p></article><?php endforeach; ?>
       </div>
     </div>
-    <div class="wrap original-pages-heading"><div class="eyebrow">Source newsletter</div><h2 class="section-title">Open the original pages.</h2><p class="muted">These are the exact five August 2026 newsletter photos supplied to KCMC Connect.</p></div>
-    <div class="wrap"><div class="gallery" aria-label="Original newsletter pages">
-      <button data-img="./assets/newsletter/aug-2026-page-1.jpg"><img src="./assets/newsletter/aug-2026-page-1.jpg" alt="August 2026 KCMC newsletter page 1"></button>
-      <button data-img="./assets/newsletter/aug-2026-page-2.jpg"><img src="./assets/newsletter/aug-2026-page-2.jpg" alt="August 2026 KCMC newsletter page 2"></button>
-      <button data-img="./assets/newsletter/aug-2026-page-3.jpg"><img src="./assets/newsletter/aug-2026-page-3.jpg" alt="August 2026 KCMC newsletter page 3"></button>
-      <button data-img="./assets/newsletter/aug-2026-page-4.jpg"><img src="./assets/newsletter/aug-2026-page-4.jpg" alt="August 2026 KCMC newsletter page 4"></button>
-      <button data-img="./assets/newsletter/aug-2026-page-5.jpg"><img src="./assets/newsletter/aug-2026-page-5.jpg" alt="August 2026 KCMC newsletter page 5"></button>
-    </div></div>
+    <div class="wrap newsletter-text-grid">
+      <article class="news-item"><span class="pill important">Groups</span><h3>Find your weekly rhythm</h3><ul><?php foreach($kcmcNews['groups']??[] as $item): ?><li><?=kcmc_h((string)$item)?></li><?php endforeach; ?></ul></article>
+      <article class="news-item"><span class="pill important">Ways to help</span><h3>Practical ministry this month</h3><ul><?php foreach($kcmcNews['outreach']??[] as $item): ?><li><?=kcmc_h((string)$item)?></li><?php endforeach; ?></ul></article>
+    </div>
   </section>
 </section>
 <section class="view" data-view="events">
-  <div class="wrap partner-hero"><div class="eyebrow">Events</div><h1 class="display-title">What’s next at KCMC.</h1><p class="lead muted">Current dated items from the August church newsletter, with one-tap calendar saves and RSVP contact.</p></div>
+  <div class="wrap partner-hero"><div class="eyebrow">Events</div><h1 class="display-title">What’s next at KCMC.</h1><p class="lead muted">Current dated items from the September church newsletter, with one-tap calendar saves and RSVP contact.</p></div>
   <section class="section"><div class="wrap grid3 event-grid">
-    <article class="card event-card" data-event="The Gathering Place" data-date="2026-08-20" data-time="10:00 AM"><span class="pill">Aug 20</span><h3>The Gathering Place</h3><p>10:00 AM. Care, support and connection.</p><div class="btns"><button class="btn event-rsvp" type="button">RSVP</button><button class="btn secondary add-calendar" type="button">Add to calendar</button></div></article>
-    <article class="card event-card" data-event="Bell Choir Rehearsal" data-date="2026-08-25" data-time="5:15 PM"><span class="pill">Aug 25</span><h3>Bell Choir Rehearsal</h3><p>5:15 PM.</p><div class="btns"><button class="btn event-rsvp" type="button">RSVP</button><button class="btn secondary add-calendar" type="button">Add to calendar</button></div></article>
-    <article class="card event-card" data-event="Choir Rehearsal" data-date="2026-08-26" data-time="7:00 PM"><span class="pill">Aug 26</span><h3>Choir Rehearsal</h3><p>7:00 PM.</p><div class="btns"><button class="btn event-rsvp" type="button">RSVP</button><button class="btn secondary add-calendar" type="button">Add to calendar</button></div></article>
-  </div><div class="wrap form-wrap"><form class="form-card compact" id="eventForm" data-kcmc-form="event" data-subject="KCMC Event RSVP" novalidate><div class="eyebrow">Event RSVP</div><h2>Let KCMC know you’re interested.</h2><input type="hidden" name="event" id="eventName"><div class="field-row"><label>Name<input name="name" autocomplete="name" required></label><label>Email<input type="email" name="email" autocomplete="email" required></label></div><label>Event<input id="eventDisplay" value="Choose RSVP above" readonly></label><label>Note<textarea name="message" rows="3" placeholder="Questions, number attending, or anything the team should know"></textarea></label><button class="btn gold" type="submit">Send RSVP</button><p class="form-status" role="status" aria-live="polite"></p></form></div><div class="wrap" style="margin-top:18px"><div class="notice">These dated items are from the August 2026 newsletter. The publishing workflow should replace expired events as new church calendar information is supplied.</div></div></section>
+    <?php if(!$kcmcEvents): ?><p>No current events are published.</p><?php endif; ?>
+    <?php foreach($kcmcEvents as $event): ?><article class="card event-card" data-event="<?=kcmc_h((string)($event['title']??''))?>" data-date="<?=kcmc_h((string)($event['date']??''))?>" data-time="<?=kcmc_h((string)($event['time']??''))?>"><span class="pill"><?=kcmc_h(date('M j',strtotime((string)($event['date']??''))))?></span><h3><?=kcmc_h((string)($event['title']??''))?></h3><p><?=kcmc_h((string)($event['time']??''))?> • <?=kcmc_h((string)($event['location']??'KCMC'))?></p><div class="btns"><button class="btn event-rsvp" type="button">RSVP</button><button class="btn secondary add-calendar" type="button">Add to calendar</button></div></article><?php endforeach; ?>
+  </div><div class="wrap form-wrap"><form class="form-card compact" id="eventForm" data-kcmc-form="event" data-subject="KCMC Event RSVP" novalidate><div class="eyebrow">Event RSVP</div><h2>Let KCMC know you’re interested.</h2><input type="hidden" name="event" id="eventName"><div class="field-row"><label>Name<input name="name" autocomplete="name" required></label><label>Email<input type="email" name="email" autocomplete="email" required></label></div><label>Event<input id="eventDisplay" value="Choose RSVP above" readonly></label><label>Note<textarea name="message" rows="3" placeholder="Questions, number attending, or anything the team should know"></textarea></label><button class="btn gold" type="submit">Send RSVP</button><p class="form-status" role="status" aria-live="polite"></p></form></div><div class="wrap" style="margin-top:18px"><div class="notice">Newsletter page photos are not published. Current event details are presented as app-native text and can be updated in the Publishing Desk.</div></div></section>
 </section>
 
 <section class="view" data-view="serve">
-  <div class="wrap partner-hero"><div class="eyebrow">Serve</div><h1 style="font-family:Georgia,serif;font-size:clamp(3rem,7vw,5rem);font-weight:400;margin:.1em 0">Turn everyday things into ministry.</h1><p class="lead muted">A few practical ways the August newsletter says the congregation can help.</p></div>
+  <div class="wrap partner-hero"><div class="eyebrow">Serve</div><h1 style="font-family:Georgia,serif;font-size:clamp(3rem,7vw,5rem);font-weight:400;margin:.1em 0">Turn everyday things into ministry.</h1><p class="lead muted">Practical ways the September newsletter says the congregation can help.</p></div>
   <section class="section"><div class="wrap serve-grid">
+    <article class="serve-card"><span class="pill important">WEB Kids</span><h3>Pack weekend food bags</h3><p>Volunteers meet Thursdays at 9:00 AM at Reeds Spring Primary to pack 100 bags for K–4 students.</p></article>
     <article class="serve-card"><span class="pill">WEB Kids</span><h3>Best Choice barcodes</h3><p>Save Best Choice barcodes from boxes and cans; proceeds support the WEB Kids program.</p></article>
     <article class="serve-card"><span class="pill">Methodist Women</span><h3>Harter House receipts</h3><p>Save full receipts from the Kimberling City Harter House for mission work.</p></article>
     <article class="serve-card"><span class="pill">Ronald McDonald House</span><h3>Aluminum pull tabs</h3><p>Save aluminum pull tabs from soda cans for Ronald McDonald House support.</p></article>
-    <article class="serve-card"><span class="pill">Quest Preschool</span><h3>Support early education</h3><p>Help sustain affordable Christian preschool, student aid and classroom resources.</p></article>
-    <article class="serve-card"><span class="pill important">Open role</span><h3>Communication & Media Leader</h3><p>The August newsletter lists this as a paid position. Contact the church office for current application status.</p></article>
-    <article class="serve-card"><span class="pill important">Open role</span><h3>Youth Leader</h3><p>KCMC is seeking leadership for Rooted Youth as Pastor Barry transitions toward outreach.</p></article>
-    <article class="serve-card"><span class="pill important">Open role</span><h3>Children’s Ministry Leader</h3><p>KCMC is seeking a new children’s ministry leader as current leadership transitions.</p></article>
+    <article class="serve-card"><span class="pill">Music</span><h3>Join choir or handbells</h3><p>Bring your voice or learn to ring handbells as KCMC prepares music that leads the church in worship.</p></article>
+    <article class="serve-card"><span class="pill">Church life</span><h3>Find your place</h3><p>Call the church office to ask about current volunteer openings across KCMC ministries.</p></article>
   </div><div class="wrap form-wrap"><form class="form-card compact" data-kcmc-form="serve" data-subject="I Want to Serve at KCMC" novalidate><div class="eyebrow">Volunteer</div><h2>Find a place to serve.</h2><div class="field-row"><label>Name<input name="name" autocomplete="name" required></label><label>Email<input type="email" name="email" autocomplete="email" required></label></div><label>I’m interested in<select name="interest"><option>Not sure — help me find a fit</option><option>Kids / Youth</option><option>Worship / Music</option><option>Hospitality / Welcome</option><option>Care / Prayer</option><option>Community Outreach</option><option>Facilities / Practical Help</option></select></label><label>Tell us a little about your availability or interests<textarea name="message" rows="4"></textarea></label><button class="btn gold" type="submit">Send my interest</button><p class="form-status" role="status" aria-live="polite"></p></form></div></section>
 </section>
 
 <section class="view" data-view="partner">
   <div class="wrap partner-hero"><div class="eyebrow">Partner Hub</div><h1 style="font-family:Georgia,serif;font-size:clamp(3rem,7vw,5rem);font-weight:400;margin:.1em 0">Your church week, in one place.</h1><p class="lead muted">Announcements, serving, prayer, giving and the latest Church News.</p></div>
   <section class="section"><div class="wrap announcement-stack">
-    <article class="announcement"><span class="pill important">August Church News</span><h3>20 baptisms • July attendance 319</h3><p>The latest Issue #15 data, youth updates, facilities progress, Quest Preschool, staffing needs and the five original newsletter pages are now inside KCMC Connect.</p><div class="btns"><a class="btn" href="#news" data-route="news">Open Church News</a></div></article>
+    <article class="announcement"><span class="pill important">September News</span><h3>New beginnings • outreach • fall connection</h3><p>Issue #16 brings current ministry updates, September events, Bible studies, music and practical ways to serve—presented as app content, not newsletter page photos.</p><div class="btns"><a class="btn" href="#news" data-route="news">Read current news</a></div></article>
     <article class="announcement"><span class="pill">This week</span><h3>Use the app for worship, care and current links</h3><p>The official livestream, online giving, visit planning, office contact and current service information are all one tap away.</p></article>
     <article class="announcement"><span class="pill">Find Your People</span><h3>Groups and connection</h3><p>Looking for a small group, care connection, Bible study or ministry community? Send an interest note below and the church can help connect you.</p></article>
   </div><div class="wrap connection-grid form-wrap">
-    <form class="form-card" data-kcmc-form="prayer" data-subject="Private Prayer / Care Request" novalidate><div class="eyebrow">Prayer & care</div><h2>How can we pray for you?</h2><label>Name <span class="muted">(optional)</span><input name="name" autocomplete="name"></label><label>Email or phone <span class="muted">(optional)</span><input name="contact"></label><label>Prayer or care request<textarea name="message" rows="6" required></textarea></label><label class="check"><input type="checkbox" name="private" value="Please keep this request private" checked><span>Keep this request private</span></label><button class="btn gold" type="submit">Send request</button><p class="form-status" role="status" aria-live="polite"></p></form>
+    <article class="form-card"><div class="eyebrow">Prayer & care</div><h2>A trusted room for prayer.</h2><div class="privacy-lock"><span class="privacy-lock-icon" aria-hidden="true">🔒</span><div><h3>Members only</h3><p>Prayer names, medical details and request content stay behind verified sign-in. Tony or Barry approves anything shared with members.</p></div></div><div class="btns"><?php if($memberCanPray): ?><a class="btn gold" href="<?=kcmc_h(kcmc_url('member/'))?>">Open member prayer</a><?php elseif($member): ?><a class="btn gold" href="<?=kcmc_h(kcmc_url('member/'))?>">Open secure account</a><?php else: ?><a class="btn gold" href="<?=kcmc_h(kcmc_url('member/login.php'))?>">Member sign in</a><?php endif; ?><a class="btn secondary" href="care.php">Prayer privacy</a></div></article>
     <form class="form-card" data-kcmc-form="groups" data-subject="KCMC Connection / Group Interest" novalidate><div class="eyebrow">Find Your People</div><h2>Help me get connected.</h2><label>Name<input name="name" autocomplete="name" required></label><label>Email<input type="email" name="email" autocomplete="email" required></label><label>I’m looking for<select name="interest"><option>Small group / Bible study</option><option>Kids / family connection</option><option>Youth</option><option>Care / support</option><option>Men’s ministry</option><option>Women’s ministry</option><option>I’m new and not sure yet</option></select></label><label>Anything else?<textarea name="message" rows="4"></textarea></label><button class="btn gold" type="submit">Help me connect</button><p class="form-status" role="status" aria-live="polite"></p></form>
   </div><div class="wrap preferences"><div><div class="eyebrow">This device</div><h2>Remember my preferred service</h2><p class="muted">Optional preference is stored only on this device.</p></div><label>Preferred Sunday service<select id="preferredService"><option value="">No preference</option><option>8:00 AM — Front Porch Gospel</option><option>9:15 AM — Traditional Worship</option><option>10:30 AM — Contemporary Worship</option></select></label></div></section>
 </section>
@@ -229,7 +214,6 @@ usort($kcmcAnnouncements, fn($a,$b)=>(int)($b['priority']??0)<=>(int)($a['priori
 <footer class="footer"><div class="wrap footer-grid"><div><strong>KCMC CONNECT</strong><p>Kimberling City Methodist Church<br>57 Kimberling City Center Lane<br>Kimberling City, MO 65686</p></div><div><p>(417) 739-4395<br><a href="mailto:secretary@umckc.org">secretary@umckc.org</a><br><a href="https://www.facebook.com/KimberlingCityMethodistChurch" target="_blank" rel="noopener">KCMC on Facebook</a></p><p class="fine">This release uses no analytics or ad tracking by default. Giving, maps and video open the church’s existing external services.</p></div></div></footer>
 
 <nav class="mobile-nav" aria-label="Mobile navigation"><a href="#home" data-route="home"><span>⌂</span>Home</a><a href="#visit" data-route="visit"><span>◎</span>Visit</a><a href="#watch" data-route="watch"><span>▶</span>Watch</a><a href="#events" data-route="events"><span>◇</span>Events</a><a href="#partner" data-route="partner"><span>✦</span>Connect</a></nav>
-<div class="modal" id="imageModal" role="dialog" aria-modal="true" aria-label="Newsletter page viewer"><button type="button" aria-label="Close">×</button><img alt="Expanded newsletter page"></div>
 <div class="install-sheet" id="installSheet" role="dialog" aria-modal="true" aria-labelledby="installSheetTitle" hidden>
   <div class="install-sheet-card" tabindex="-1">
     <button class="install-sheet-close" type="button" aria-label="Close install instructions" data-install-close>×</button>
@@ -240,6 +224,6 @@ usort($kcmcAnnouncements, fn($a,$b)=>(int)($b['priority']??0)<=>(int)($a['priori
     <p class="install-sheet-note">After it is saved, KCMC Connect opens from your screen like an app.</p>
   </div>
 </div>
-<script src="app.js?v=2.1.4" defer></script>
+<script src="app.js?v=3.0.0" defer></script>
 <a class="phase6-bulletin-fab" href="bulletin.php">Latest Bulletin</a>
 </body></html>

@@ -1,5 +1,21 @@
 # KCMC Connect Release Notes
 
+## 3.0.0 — Private member prayer and individual access
+
+- Moved prayer submission, prayer details and the approved prayer wall behind verified member sign-in.
+- Added separate email/password accounts with seven-day, one-time invitation links.
+- Added member, prayer-team, pastor-administrator and recovery-administrator roles with explicit privacy boundaries.
+- Added pastor approval before any request can appear on the members-only prayer wall.
+- Added confidential prayer-team inbox, account enable/disable controls and individual sign-out.
+- Added CSRF protection, secure session settings, login throttling, atomic private JSON storage and privacy-safe auditing.
+- Prevented the recovery-administrator role from reading, submitting or moderating prayer requests.
+- Changed private pages to `no-store`/`noindex` and excluded them from the service worker cache.
+- Replaced the stale static sermon bulletin with live Publishing Desk content.
+- Replaced the August newsletter page gallery with September Issue #16 app-native text, current events and ministry highlights.
+- Removed all complete newsletter page photographs from the release and added a permanent content policy: page scans are prohibited; separately approved individual ministry photos remain allowed.
+- Updated navigation, care messaging, current-content labels and Version 3 portal styling.
+- Preserved private production data during cPanel deployments.
+
 ## 2.1.4 — Verified Kimberling City Bridge photography
 - Replaced every site use of the inaccurate or ambiguous scenic bridge/lake artwork with the verified 1920 × 1280 Wikimedia Commons photograph of the Kimberling City Bridge carrying Highway 13 across Table Rock Lake.
 - Uses the original 2024 photograph by Avalon1101, released under the CC0 1.0 Universal Public Domain Dedication.

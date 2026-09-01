@@ -1,21 +1,36 @@
-KCMC CONNECT PHASE 6 — RECREATED MASTER
-=======================================
-Release: 2.0.0-phase6-recreated
-Recovery basis:
-- Current public KCMC Connect structure and copy
-- Verified v1.2.1 August News source and exact newsletter imagery
-- Prior Phase 6 requirements: owner-only publishing; priority; expiration; publish/hide; bulletin; backups
+KCMC CONNECT — VERSION 3.0.0
+============================
 
-Production model:
-- Apache + PHP 8.x (cPanel/Namecheap compatible)
-- JSON content store (no database required)
-- Password-protected owner desk at /admin/
-- CSRF protection, password_hash/password_verify, session regeneration
-- Automatic content backups before each publish
-- No analytics/advertising trackers by default
-- No prayer-request database by default; care handoff uses church email to minimize sensitive-data storage
+Runtime:
+- Apache + PHP 8.1 or newer
+- HTTPS required in production
+- JSON content and private stores; no database required
 
-IMPORTANT:
-Do not overwrite an existing production install until backed up.
-Use HTTPS.
-Complete /admin/setup.php immediately after deployment.
+Public experience:
+- Public church information, worship, watch, visit, events, news, serve and giving
+- Installable PWA with public-only network-first caching
+- Public Prayer & Care page contains no request form and no prayer details
+- Newsletter information is app-native text; complete newsletter page photographs are prohibited
+- Separately approved individual ministry photos are allowed outside the newsletter-source directory
+
+Private experience:
+- Individual invited email/password accounts
+- Member prayer submission and pastor-approved members-only prayer wall
+- Confidential prayer-team inbox
+- Tony Blevins and Barry Smith intended as separate pastor-administrator accounts
+- Recovery administrator can maintain publishing and access but cannot access prayer content
+
+Security controls:
+- Role authorization on every private route
+- Secure session cookies, CSRF validation and login throttling
+- One-time, seven-day invitation tokens stored only as hashes
+- Private routes use no-store/noindex headers and bypass the service worker
+- Private data and backups are denied by Apache and preserved during deployment
+- Audit events never intentionally include prayer text, passwords or raw invitation tokens
+
+First run:
+1. Set server-only KCMC_SETUP_KEY.
+2. Create the recovery administrator at /admin/setup.php.
+3. Remove KCMC_SETUP_KEY.
+4. Invite Tony and Barry separately as Pastor administrator.
+5. Complete the privacy checks in DEPLOY.md before member rollout.

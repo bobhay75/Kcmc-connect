@@ -1,6 +1,7 @@
 <?php
 require_once __DIR__ . '/../lib/bootstrap.php';
-kcmc_require_owner();
+$user = kcmc_require_role(['pastor_admin', 'recovery_admin']);
+kcmc_private_headers();
 if ($_SERVER['REQUEST_METHOD']!=='POST' || !kcmc_verify_csrf($_POST['csrf']??null)) { http_response_code(403); exit('Invalid request'); }
 $data=kcmc_content();
 $data['contact']['phone']=trim((string)($_POST['contact_phone']??''));
@@ -20,5 +21,6 @@ $data['bulletin']['welcome']=trim((string)($_POST['bulletin_welcome']??''));
 $data['bulletin']['notes']=array_values(array_filter(array_map('trim',preg_split('/\R/',(string)($_POST['bulletin_notes']??'')))));
 $postedEvents=$_POST['events']??[];
 foreach($postedEvents as $i=>$p){ if(!isset($data['events'][$i]))continue; $data['events'][$i]['title']=trim((string)($p['title']??''));$data['events'][$i]['date']=trim((string)($p['date']??''));$data['events'][$i]['time']=trim((string)($p['time']??''));$data['events'][$i]['priority']=max(0,min(100,(int)($p['priority']??50)));$data['events'][$i]['status']=($p['status']??'hidden')==='published'?'published':'hidden';$ex=trim((string)($p['expires']??''));$data['events'][$i]['expires_at']=$ex?date('c',strtotime($ex.' 23:59:59')):''; }
-kcmc_write_content($data,'owner');
+kcmc_write_content($data,(string)$user['display_name']);
+kcmc_audit('content.published', ['content_version' => '3.0.0']);
 header('Location: ' . kcmc_url('admin/?msg=' . rawurlencode('Published successfully. Backup created automatically.')));

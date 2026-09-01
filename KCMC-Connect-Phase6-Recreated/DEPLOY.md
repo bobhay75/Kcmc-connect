@@ -1,32 +1,51 @@
-# KCMC Connect — cPanel Deployment
+# KCMC Connect 3.0 — cPanel Deployment
 
-The repository deploys to `/home/bobsome1/public_html/kcmc-connect/` through `.cpanel.yml`.
+The repository deploys this directory to `/home/bobsome1/public_html/kcmc-connect/` through the root `.cpanel.yml` file.
 
-## What deployment preserves
+## Preserved production data
 
-The deployment intentionally does not overwrite:
+Deployment intentionally preserves:
 
-- `config.php` — private owner credentials stored only on the server
+- `config.php` — optional server-only configuration
 - `data/content.json` — live Publishing Desk content
-- `backups/` — automatic content backups
+- `data/private/` — member accounts, invitations, prayer requests, login throttles and audit records
+- `backups/` — automatic public-content backups
 
-A seed `data/content.json` is copied only when the live file does not exist. The retired `SETUP-CREDENTIALS.txt` file is removed from production during deployment.
+Never copy `data/private/` into Git or a public download. Apache denies web access to both `data/` and `backups/`.
 
-## First-time owner setup
+Newsletter page photographs are also prohibited. Deployment removes the retired August page images; only extracted text and separately approved ministry photos belong in the app.
 
-Use one of these private server-side methods; never commit credentials to GitHub:
+## First-run recovery setup
 
-1. Set a long random `KCMC_SETUP_KEY` environment variable in cPanel, visit `/kcmc-connect/admin/setup.php`, create the owner password, then remove the environment variable.
-2. Copy `config.example.php` to live `config.php` and place a PHP `password_hash()` value in `admin_password_hash`.
+1. Confirm PHP 8.1+, HTTPS and writable `data/`, `data/private/` and `backups/` directories.
+2. Set a long, random `KCMC_SETUP_KEY` environment variable in cPanel. Do not commit or email it.
+3. Open `/kcmc-connect/admin/setup.php` and create the recovery-administrator account.
+4. Remove `KCMC_SETUP_KEY` from the server immediately after setup.
+5. From **Member access**, invite Tony Blevins and Barry Smith separately as **Pastor administrator**. Each invitation expires after seven days and creates a separate password.
+6. Invite members and prayer-team participants only after confirming their email addresses and roles.
 
-Without a server-only setup key or password hash, public pages continue to work and owner setup remains safely disabled.
+The recovery administrator can restore access and publish public content, but the application deliberately prevents that role from reading, submitting or moderating prayer requests.
 
-## Live checks
+## Prayer privacy checks
 
-1. Confirm the homepage, `bulletin.php`, and all six in-app navigation views.
-2. Confirm Chrome DevTools shows an active service worker and the app is installable on Android.
-3. Confirm `/kcmc-connect/admin/setup.php` does not show a setup form unless the private environment key is present.
-4. After owner login is configured, publish a small test change and verify it survives the next deployment.
-5. Confirm PHP 8.1+, HTTPS, and writable `data/` and `backups/` directories.
+Before launch, verify all of the following:
 
-No MySQL, Node.js, Wix, WordPress, plugin, or paid CMS is required.
+1. A signed-out visitor sees only the public Prayer & Care gateway and cannot submit or view a request.
+2. A member can submit a request. The default audience is pastors and the prayer team.
+3. A member request marked for sharing remains pending until a pastor administrator approves it.
+4. Tony or Barry can approve, keep private or close a request.
+5. A prayer-team account can view the confidential inbox but cannot approve publication.
+6. A recovery-administrator account receives HTTP 403 on prayer-team, prayer-submission and prayer-approval routes and sees no prayer wall.
+7. Private responses include `Cache-Control: no-store` and `X-Robots-Tag: noindex`.
+
+## Deployment checks
+
+1. Confirm the homepage, current bulletin and all navigation views.
+2. Confirm worship times are 8:00 AM, 9:15 AM and 10:30 AM against the church's current public schedule.
+3. Confirm Chrome DevTools shows the `kcmc-connect-v3.0.0` service worker cache.
+4. Publish a harmless bulletin-note change and verify it survives another deployment.
+5. Confirm `config.php`, `data/private/` and `backups/` were not overwritten.
+6. Confirm `/admin/setup.php` redirects to sign-in after the first account exists.
+7. Confirm no file or URL under `assets/newsletter/` is present in the deployed app.
+
+No shared administrator password or secret application backdoor is supported.

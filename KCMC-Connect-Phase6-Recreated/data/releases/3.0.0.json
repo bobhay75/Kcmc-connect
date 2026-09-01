@@ -1,28 +1,9 @@
 {
-  "meta": {
-    "version": "3.0.0",
-    "content_release": "3.0.0",
-    "updated_at": "2026-09-01T12:00:00-05:00",
-    "updated_by": "KCMC Connect"
-  },
+  "version": "3.0.0",
   "contact": {
-    "phone": "417-739-4395",
-    "email": "secretary@umckc.org",
-    "address": "57 Kimberling City Center Lane, Kimberling City, MO 65686",
-    "office_hours": "Tue–Thu • 8:00 AM–4:00 PM",
-    "website": "https://www.kimberlingcitymethodist.com/"
+    "office_hours": "Tue–Thu • 8:00 AM–4:00 PM"
   },
   "announcements": [
-    {
-      "id": "backpack-blessing-2026",
-      "title": "Back-to-School Backpack Blessing",
-      "body": "KCMC prayed over local students, teachers and families as a new school year begins. See the story, blessing and Joshua 1:9.",
-      "priority": 200,
-      "status": "hidden",
-      "starts_at": "2026-08-23T00:00:00-05:00",
-      "expires_at": "2026-08-25T17:00:00-05:00",
-      "link": "backpack-blessing.php"
-    },
     {
       "id": "sep-news-16",
       "title": "September Church News • Issue #16",
@@ -34,21 +15,6 @@
       "link": "#news"
     }
   ],
-  "bulletin": {
-    "title": "Sunday at KCMC",
-    "date": "",
-    "welcome": "Come as you are. Grow in faith. Serve the Ozarks.",
-    "services": [
-      {"time":"8:00 AM","name":"Front Porch Gospel","detail":"Old-time country and bluegrass gospel with an uplifting biblical message."},
-      {"time":"9:15 AM","name":"Traditional Worship","detail":"Beloved hymns, choir, piano and organ in a traditional sanctuary setting."},
-      {"time":"10:30 AM","name":"Contemporary Worship","detail":"Relaxed café setting, modern worship and Launch Kids children’s church."}
-    ],
-    "notes": [
-      "Three Sunday worship opportunities are available at 8:00, 9:15 and 10:30.",
-      "Prayer requests are protected inside verified member access.",
-      "Current events appear after KCMC leadership publishes them."
-    ]
-  },
   "events": [
     {"id":"griefshare-0902","title":"GriefShare begins","date":"2026-09-02","time":"9:30 AM","location":"KCMC","status":"published","expires_at":"2026-09-03T00:00:00-05:00"},
     {"id":"mens-breakfast-0905","title":"Men’s Ministry Breakfast","date":"2026-09-05","time":"8:30 AM","location":"KCMC Fellowship Hall","status":"published","expires_at":"2026-09-06T00:00:00-05:00"},
@@ -95,10 +61,5 @@
       "KCMC Ladies Fellowship meets September 17 at 12:30 PM; bring a sack lunch. Harbor House leadership will share the program.",
       "The September 29 potluck begins at 5:00 PM, followed by Michael Jaffe’s presentation at 6:00 PM."
     ]
-  },
-  "sponsors": {
-    "enabled": true,
-    "policy": "Clearly labeled. Privacy respected. Never shown during prayer or worship video.",
-    "placements": ["Church News","Community impact","Events and ministry support"]
   }
 }
