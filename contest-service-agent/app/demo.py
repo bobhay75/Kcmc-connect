@@ -4,8 +4,9 @@ from service_agent import build_editable_song_deck, quality_check_deck, write_ap
 ROOT = Path(__file__).resolve().parents[1]
 OUT = ROOT / "demo-output"
 
-lyrics = "Great are You, Lord\n\nIt's Your breath in our lungs\nSo we pour out our praise"
-deck = build_editable_song_deck("Great Are You Lord", lyrics, str(OUT / "great-are-you-lord.pptx"), "Contemporary")
+# Synthetic demo text keeps the public repository copyright-safe.
+lyrics = "Sample worship line one\nSample worship line two\n\nSample chorus line one\nSample chorus line two"
+deck = build_editable_song_deck("Sample Worship Song", lyrics, str(OUT / "sample-worship-song.pptx"), "Front Porch")
 qa = quality_check_deck(deck)
-manifest = write_approval_manifest("Sunday 10:30 Contemporary", [{"title": "Great Are You Lord", "deck": deck, "qa": qa}], str(OUT / "approval.json"))
+manifest = write_approval_manifest("Sunday Front Porch", [{"title": "Sample Worship Song", "deck": deck, "qa": qa}], str(OUT / "approval.json"))
 print({"deck": deck, "qa": qa, "approval_manifest": manifest})
