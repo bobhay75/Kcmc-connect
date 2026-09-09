@@ -7,6 +7,7 @@ const KCMC_RELEASE_CONTENT = KCMC_ROOT . '/data/releases/3.0.0.json';
 const KCMC_CONFIG = KCMC_ROOT . '/config.php';
 const KCMC_BACKUPS = KCMC_ROOT . '/backups';
 const KCMC_RETIRED_CONTENT_IDS = ['backpack-blessing-2026'];
+const KCMC_LOCAL_TIMEZONE = 'America/Chicago';
 
 $privateDataDir = trim((string)(getenv('KCMC_PRIVATE_DATA_DIR') ?: ''));
 define('KCMC_PRIVATE_DATA', $privateDataDir !== '' ? rtrim($privateDataDir, '/') : KCMC_ROOT . '/data/private');
@@ -76,6 +77,30 @@ function kcmc_h(string $value): string {
     return htmlspecialchars($value, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8');
 }
 
+function kcmc_local_date_value(string $value, string $format = 'Y-m-d'): string {
+    if (trim($value) === '') return '';
+    try {
+        $timezone = new DateTimeZone(KCMC_LOCAL_TIMEZONE);
+        return (new DateTimeImmutable($value, $timezone))
+            ->setTimezone($timezone)
+            ->format($format);
+    } catch (Throwable) {
+        return '';
+    }
+}
+
+function kcmc_local_datetime_iso(string $value, bool $endOfDay = false): string {
+    $value = trim($value);
+    if ($value === '') return '';
+    $format = $endOfDay ? '!Y-m-d' : '!Y-m-d\\TH:i';
+    $expected = $endOfDay ? 'Y-m-d' : 'Y-m-d\\TH:i';
+    $timezone = new DateTimeZone(KCMC_LOCAL_TIMEZONE);
+    $date = DateTimeImmutable::createFromFormat($format, $value, $timezone);
+    if ($date === false || $date->format($expected) !== $value) return '';
+    if ($endOfDay) $date = $date->setTime(23, 59, 59);
+    return $date->format(DateTimeInterface::ATOM);
+}
+
 function kcmc_text_length(string $value): int {
     return function_exists('mb_strlen') ? mb_strlen($value, 'UTF-8') : strlen($value);
 }
@@ -132,6 +157,42 @@ function kcmc_update_json_store(string $path, array $default, callable $callback
     }
 }
 
+function kcmc_apply_required_public_content(array &$data): bool {
+    $requiredEvents = [
+        [
+            'id' => 'trunk-or-treat-2026',
+            'title' => 'Trunk or Treat!',
+            'date' => '2026-10-31',
+            'time' => '4:30 PM',
+            'end_time' => '6:30 PM',
+            'location' => 'KCMC parking lot',
+            'address' => '57 Kimberling City Center Lane, Kimberling City, MO 65686',
+            'label' => 'Free community event',
+            'description' => 'Free candy, hot dogs, chips and drinks, plus music and family fun. All are welcome.',
+            'image' => 'assets/visuals/trunk-or-treat-2026.webp',
+            'image_alt' => 'Autumn Trunk or Treat graphic with friendly ghosts, pumpkins and an open car trunk filled with candy beside a lake.',
+            'rsvp' => false,
+            'priority' => 100,
+            'status' => 'published',
+            'expires_at' => '2026-10-31T23:59:59-05:00',
+        ],
+    ];
+
+    if (!isset($data['events']) || !is_array($data['events'])) $data['events'] = [];
+    $existingIds = [];
+    foreach ($data['events'] as $event) {
+        if (is_array($event) && isset($event['id'])) $existingIds[(string)$event['id']] = true;
+    }
+
+    $changed = false;
+    foreach ($requiredEvents as $event) {
+        if (isset($existingIds[$event['id']])) continue;
+        $data['events'][] = $event;
+        $changed = true;
+    }
+    return $changed;
+}
+
 function kcmc_sanitize_audit_context(array $context): array {
     $safe = [];
     foreach ($context as $key => $value) {
@@ -167,9 +228,11 @@ function kcmc_content(): array {
             }
             if (isset($release['contact']['office_hours'])) $data['contact']['office_hours'] = (string)$release['contact']['office_hours'];
             $data['meta']['content_release'] = '3.0.0';
-            try { kcmc_write_content($data, 'Version 3 content migration'); } catch (Throwable) { /* Serve the migrated view even if storage is temporarily read-only. */ }
         }
     }
+    // Serve migrations and approved release content without writing during a
+    // public request. The Publishing Desk persists the layered view on publish.
+    kcmc_apply_required_public_content($data);
     $date = (string)($data['bulletin']['date'] ?? '');
     if ($date !== '' && strtotime($date . ' 23:59:59') < strtotime('-7 days')) $data['bulletin']['date'] = '';
     $data['meta']['effective_version'] = '3.0.0';
@@ -355,7 +418,8 @@ function kcmc_update_user_login(string $id): void {
 
 function kcmc_active_items(array $items): array {
     $now = time();
-    return array_values(array_filter($items, function(array $item) use ($now): bool {
+    return array_values(array_filter($items, function($item) use ($now): bool {
+        if (!is_array($item)) return false;
         if (in_array((string)($item['id'] ?? ''), KCMC_RETIRED_CONTENT_IDS, true)) return false;
         if (($item['status'] ?? 'published') !== 'published') return false;
         if (!empty($item['starts_at']) && strtotime((string)$item['starts_at']) > $now) return false;

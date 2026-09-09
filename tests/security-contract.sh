@@ -41,6 +41,20 @@ fi
 
 jq empty "$app_dir/data/content.json" "$app_dir/manifest.webmanifest"
 jq empty "$app_dir/data/releases/3.0.0.json"
+jq -e '[.events[] | select(.id == "trunk-or-treat-2026" and .date == "2026-10-31" and .time == "4:30 PM" and .end_time == "6:30 PM" and .status == "published")] | length == 1' "$app_dir/data/content.json" >/dev/null || fail "Trunk or Treat event is missing or incomplete"
+jq -e '[.events[] | select(.id == "trunk-or-treat-2026")] | length == 1' "$app_dir/data/releases/3.0.0.json" >/dev/null || fail "Trunk or Treat release seed is missing"
+test -s "$app_dir/assets/visuals/trunk-or-treat-2026.webp" || fail "Trunk or Treat flyer asset is missing"
+grep -q "kcmc_apply_required_public_content" "$app_dir/lib/bootstrap.php" || fail "Preserved production content migration is missing"
+grep -q "data-end-time" "$app_dir/index.php" || fail "Event end time is not exposed to calendar export"
+grep -q "DTEND" "$app_dir/app.js" || fail "Calendar export does not include event end time"
+grep -q "BEGIN:VTIMEZONE" "$app_dir/app.js" || fail "Calendar export does not define its America/Chicago timezone"
+grep -q "KCMC_LOCAL_TIMEZONE = 'America/Chicago'" "$app_dir/lib/bootstrap.php" || fail "Publishing Desk timezone is not explicit"
+grep -Fq 'kcmc_local_datetime_iso($ex,true)' "$app_dir/admin/save.php" || fail "Event expiry is not saved in KCMC local time"
+if grep -q "Version 3 content migration" "$app_dir/lib/bootstrap.php"; then
+  fail "Public content reads can still trigger a release migration write"
+fi
+grep -q "ignoreSearch:true" "$app_dir/sw.js" || fail "Offline cache does not normalize versioned asset requests"
+grep -q "key.startsWith('kcmc-connect-')" "$app_dir/sw.js" || fail "Service worker cache cleanup is not isolated to KCMC Connect"
 node --check "$app_dir/app.js"
 node --check "$app_dir/sw.js"
 command -v php >/dev/null || fail "PHP is required for syntax verification"
