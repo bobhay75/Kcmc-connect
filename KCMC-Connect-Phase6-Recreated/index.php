@@ -4,6 +4,8 @@ $kcmc = kcmc_content();
 $member = kcmc_current_user();
 $memberCanPray = $member !== null && kcmc_has_role(['member', 'prayer_team', 'pastor_admin'], $member);
 $kcmcNews = is_array($kcmc['news'] ?? null) ? $kcmc['news'] : [];
+$kcmcPhone = (string)($kcmc['contact']['phone'] ?? '417-739-4395');
+$kcmcPhoneHref = 'tel:' . preg_replace('/[^0-9+]/', '', $kcmcPhone);
 $kcmcEvents = kcmc_active_items($kcmc['events'] ?? []);
 usort($kcmcEvents, fn($a,$b)=>strcmp((string)($a['date']??''),(string)($b['date']??'')));
 $kcmcHasRsvpEvents = count(array_filter($kcmcEvents, fn($event)=>!array_key_exists('rsvp',$event)||$event['rsvp']!==false)) > 0;
@@ -191,7 +193,9 @@ usort($kcmcAnnouncements, fn($a,$b)=>(int)($b['priority']??0)<=>(int)($a['priori
       $eventTime=(string)($event['time']??'');
       $eventEndTime=(string)($event['end_time']??'');
       $eventTimeLabel=$eventEndTime!==''?$eventTime.'–'.$eventEndTime:$eventTime;
+      $eventLocation=(string)($event['location']??'KCMC');
       $eventAddress=(string)($event['address']??($kcmc['contact']['address']??'57 Kimberling City Center Lane, Kimberling City, MO 65686'));
+      $calendarLocation=$eventLocation.($eventAddress!==''?', '.$eventAddress:'');
       $rsvpEnabled=!array_key_exists('rsvp',$event)||$event['rsvp']!==false;
     ?>
       <article class="card event-card<?=$hasEventImage?' has-image':''?>"
@@ -199,19 +203,19 @@ usort($kcmcAnnouncements, fn($a,$b)=>(int)($b['priority']??0)<=>(int)($a['priori
         data-date="<?=kcmc_h($eventDate)?>"
         data-time="<?=kcmc_h($eventTime)?>"
         data-end-time="<?=kcmc_h($eventEndTime)?>"
-        data-location="<?=kcmc_h($eventAddress)?>"
+        data-location="<?=kcmc_h($calendarLocation)?>"
         data-description="<?=kcmc_h((string)($event['description']??''))?>">
         <?php if($hasEventImage): ?><img class="event-image" src="<?=kcmc_h($eventImage)?>" alt="<?=kcmc_h((string)($event['image_alt']??''))?>" loading="lazy" decoding="async"><?php endif; ?>
         <div class="event-card-copy">
           <div class="event-pills"><time class="pill" datetime="<?=kcmc_h($eventDate)?>"><?=kcmc_h(date('D, M j',strtotime($eventDate)))?></time><?php if(!empty($event['label'])): ?><span class="pill important"><?=kcmc_h((string)$event['label'])?></span><?php endif; ?></div>
           <h3><?=kcmc_h($eventTitle)?></h3>
-          <p class="event-when"><strong><?=kcmc_h($eventTimeLabel)?></strong> • <?=kcmc_h((string)($event['location']??'KCMC'))?></p>
+          <p class="event-when"><strong><?=kcmc_h($eventTimeLabel)?></strong> • <?=kcmc_h($eventLocation)?></p>
           <?php if(!empty($event['description'])): ?><p class="event-description"><?=kcmc_h((string)$event['description'])?></p><?php endif; ?>
-          <div class="btns"><?php if($rsvpEnabled): ?><button class="btn event-rsvp" type="button" aria-label="RSVP for <?=kcmc_h($eventTitle)?>">RSVP</button><?php else: ?><a class="btn" href="tel:+14177394395" aria-label="Call KCMC with questions about <?=kcmc_h($eventTitle)?>">Event questions</a><?php endif; ?><button class="btn secondary add-calendar" type="button" aria-label="Add <?=kcmc_h($eventTitle)?> to calendar">Add to calendar</button></div>
+          <div class="btns"><?php if($rsvpEnabled): ?><button class="btn event-rsvp" type="button" aria-label="RSVP for <?=kcmc_h($eventTitle)?>">RSVP</button><?php else: ?><a class="btn" href="<?=kcmc_h($kcmcPhoneHref)?>" aria-label="Call KCMC with questions about <?=kcmc_h($eventTitle)?>">Event questions</a><?php endif; ?><button class="btn secondary add-calendar" type="button" aria-label="Add <?=kcmc_h($eventTitle)?> to calendar">Add to calendar</button></div>
         </div>
       </article>
     <?php endforeach; ?>
-  </div><?php if($kcmcHasRsvpEvents): ?><div class="wrap form-wrap"><form class="form-card compact" id="eventForm" data-kcmc-form="event" data-subject="KCMC Event RSVP" novalidate><div class="eyebrow">Event RSVP</div><h2>Let KCMC know you’re interested.</h2><input type="hidden" name="event" id="eventName"><div class="field-row"><label>Name<input name="name" autocomplete="name" required></label><label>Email<input type="email" name="email" autocomplete="email" required></label></div><label>Event<input id="eventDisplay" value="Choose RSVP above" readonly></label><label>Note<textarea name="message" rows="3" placeholder="Questions, number attending, or anything the team should know"></textarea></label><button class="btn gold" type="submit">Send RSVP</button><p class="form-status" role="status" aria-live="polite"></p></form></div><?php endif; ?><div class="wrap" style="margin-top:18px"><div class="notice">Questions about an event? Call the church office at (417) 739-4395.</div></div></section>
+  </div><?php if($kcmcHasRsvpEvents): ?><div class="wrap form-wrap"><form class="form-card compact" id="eventForm" data-kcmc-form="event" data-subject="KCMC Event RSVP" novalidate><div class="eyebrow">Event RSVP</div><h2>Let KCMC know you’re interested.</h2><input type="hidden" name="event" id="eventName"><div class="field-row"><label>Name<input name="name" autocomplete="name" required></label><label>Email<input type="email" name="email" autocomplete="email" required></label></div><label>Event<input id="eventDisplay" value="Choose RSVP above" readonly></label><label>Note<textarea name="message" rows="3" placeholder="Questions, number attending, or anything the team should know"></textarea></label><button class="btn gold" type="submit">Send RSVP</button><p class="form-status" role="status" aria-live="polite"></p></form></div><?php endif; ?><div class="wrap" style="margin-top:18px"><div class="notice">Questions about an event? Call the church office at <?=kcmc_h($kcmcPhone)?>.</div></div></section>
 </section>
 
 <section class="view" data-view="serve">

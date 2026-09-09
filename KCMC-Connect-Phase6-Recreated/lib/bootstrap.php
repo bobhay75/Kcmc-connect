@@ -7,6 +7,7 @@ const KCMC_RELEASE_CONTENT = KCMC_ROOT . '/data/releases/3.0.0.json';
 const KCMC_CONFIG = KCMC_ROOT . '/config.php';
 const KCMC_BACKUPS = KCMC_ROOT . '/backups';
 const KCMC_RETIRED_CONTENT_IDS = ['backpack-blessing-2026'];
+const KCMC_LOCAL_TIMEZONE = 'America/Chicago';
 
 $privateDataDir = trim((string)(getenv('KCMC_PRIVATE_DATA_DIR') ?: ''));
 define('KCMC_PRIVATE_DATA', $privateDataDir !== '' ? rtrim($privateDataDir, '/') : KCMC_ROOT . '/data/private');
@@ -74,6 +75,30 @@ function kcmc_private_headers(): void {
 
 function kcmc_h(string $value): string {
     return htmlspecialchars($value, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8');
+}
+
+function kcmc_local_date_value(string $value, string $format = 'Y-m-d'): string {
+    if (trim($value) === '') return '';
+    try {
+        $timezone = new DateTimeZone(KCMC_LOCAL_TIMEZONE);
+        return (new DateTimeImmutable($value, $timezone))
+            ->setTimezone($timezone)
+            ->format($format);
+    } catch (Throwable) {
+        return '';
+    }
+}
+
+function kcmc_local_datetime_iso(string $value, bool $endOfDay = false): string {
+    $value = trim($value);
+    if ($value === '') return '';
+    $format = $endOfDay ? '!Y-m-d' : '!Y-m-d\\TH:i';
+    $expected = $endOfDay ? 'Y-m-d' : 'Y-m-d\\TH:i';
+    $timezone = new DateTimeZone(KCMC_LOCAL_TIMEZONE);
+    $date = DateTimeImmutable::createFromFormat($format, $value, $timezone);
+    if ($date === false || $date->format($expected) !== $value) return '';
+    if ($endOfDay) $date = $date->setTime(23, 59, 59);
+    return $date->format(DateTimeInterface::ATOM);
 }
 
 function kcmc_text_length(string $value): int {
@@ -203,11 +228,10 @@ function kcmc_content(): array {
             }
             if (isset($release['contact']['office_hours'])) $data['contact']['office_hours'] = (string)$release['contact']['office_hours'];
             $data['meta']['content_release'] = '3.0.0';
-            try { kcmc_write_content($data, 'Version 3 content migration'); } catch (Throwable) { /* Serve the migrated view even if storage is temporarily read-only. */ }
         }
     }
-    // Layer approved release content over the preserved production file. The
-    // Publishing Desk persists any owner edits without a request-time rewrite.
+    // Serve migrations and approved release content without writing during a
+    // public request. The Publishing Desk persists the layered view on publish.
     kcmc_apply_required_public_content($data);
     $date = (string)($data['bulletin']['date'] ?? '');
     if ($date !== '' && strtotime($date . ' 23:59:59') < strtotime('-7 days')) $data['bulletin']['date'] = '';
@@ -394,7 +418,8 @@ function kcmc_update_user_login(string $id): void {
 
 function kcmc_active_items(array $items): array {
     $now = time();
-    return array_values(array_filter($items, function(array $item) use ($now): bool {
+    return array_values(array_filter($items, function($item) use ($now): bool {
+        if (!is_array($item)) return false;
         if (in_array((string)($item['id'] ?? ''), KCMC_RETIRED_CONTENT_IDS, true)) return false;
         if (($item['status'] ?? 'published') !== 'published') return false;
         if (!empty($item['starts_at']) && strtotime((string)$item['starts_at']) > $now) return false;

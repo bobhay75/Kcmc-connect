@@ -13,7 +13,7 @@ $a['title']=trim((string)($_POST['announcement_title']??''));
 $a['body']=trim((string)($_POST['announcement_body']??''));
 $a['priority']=max(0,min(100,(int)($_POST['announcement_priority']??50)));
 $a['status']=($_POST['announcement_status']??'hidden')==='published'?'published':'hidden';
-$exp=trim((string)($_POST['announcement_expires']??'')); $a['expires_at']=$exp?date('c',strtotime($exp)):'';
+$exp=trim((string)($_POST['announcement_expires']??'')); $a['expires_at']=kcmc_local_datetime_iso($exp);
 $data['announcements'][0]=$a;
 $data['bulletin']['title']=trim((string)($_POST['bulletin_title']??''));
 $data['bulletin']['date']=trim((string)($_POST['bulletin_date']??''));
@@ -31,7 +31,7 @@ foreach($postedEvents as $i=>$p){
     $data['events'][$i]['priority']=max(0,min(100,(int)($p['priority']??50)));
     $data['events'][$i]['status']=($p['status']??'hidden')==='published'?'published':'hidden';
     $ex=trim((string)($p['expires']??''));
-    $data['events'][$i]['expires_at']=$ex?date('c',strtotime($ex.' 23:59:59')):'';
+    $data['events'][$i]['expires_at']=kcmc_local_datetime_iso($ex,true);
 }
 kcmc_write_content($data,(string)$user['display_name']);
 kcmc_audit('content.published', ['content_version' => '3.0.0']);
