@@ -1,10 +1,11 @@
-const CACHE='kcmc-connect-v3.0.0';
+const CACHE='kcmc-connect-v3.0.0-trunk-or-treat';
 const CORE=[
   './','./styles.css','./app.js','./manifest.webmanifest',
   './bulletin.php','./news.php','./events.php','./care.php','./connect.php',
   './assets/icons/icon-192.png','./assets/icons/icon-512.png',
   './assets/visuals/kimberling-city-missouri-bridge-2024.jpg',
-  './assets/visuals/kcmc-ministry-group.jpg'
+  './assets/visuals/kcmc-ministry-group.jpg',
+  './assets/visuals/trunk-or-treat-2026.webp'
 ];
 
 self.addEventListener('install',event=>{

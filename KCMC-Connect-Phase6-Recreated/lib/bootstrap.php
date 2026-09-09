@@ -132,6 +132,42 @@ function kcmc_update_json_store(string $path, array $default, callable $callback
     }
 }
 
+function kcmc_apply_required_public_content(array &$data): bool {
+    $requiredEvents = [
+        [
+            'id' => 'trunk-or-treat-2026',
+            'title' => 'Trunk or Treat!',
+            'date' => '2026-10-31',
+            'time' => '4:30 PM',
+            'end_time' => '6:30 PM',
+            'location' => 'KCMC parking lot',
+            'address' => '57 Kimberling City Center Lane, Kimberling City, MO 65686',
+            'label' => 'Free community event',
+            'description' => 'Free candy, hot dogs, chips and drinks, plus music and family fun. All are welcome.',
+            'image' => 'assets/visuals/trunk-or-treat-2026.webp',
+            'image_alt' => 'Autumn Trunk or Treat graphic with friendly ghosts, pumpkins and an open car trunk filled with candy beside a lake.',
+            'rsvp' => false,
+            'priority' => 100,
+            'status' => 'published',
+            'expires_at' => '2026-11-01T00:00:00-05:00',
+        ],
+    ];
+
+    if (!isset($data['events']) || !is_array($data['events'])) $data['events'] = [];
+    $existingIds = [];
+    foreach ($data['events'] as $event) {
+        if (is_array($event) && isset($event['id'])) $existingIds[(string)$event['id']] = true;
+    }
+
+    $changed = false;
+    foreach ($requiredEvents as $event) {
+        if (isset($existingIds[$event['id']])) continue;
+        $data['events'][] = $event;
+        $changed = true;
+    }
+    return $changed;
+}
+
 function kcmc_sanitize_audit_context(array $context): array {
     $safe = [];
     foreach ($context as $key => $value) {
@@ -169,6 +205,9 @@ function kcmc_content(): array {
             $data['meta']['content_release'] = '3.0.0';
             try { kcmc_write_content($data, 'Version 3 content migration'); } catch (Throwable) { /* Serve the migrated view even if storage is temporarily read-only. */ }
         }
+    }
+    if (kcmc_apply_required_public_content($data)) {
+        try { kcmc_write_content($data, 'KCMC Connect content migration'); } catch (Throwable) { /* Serve approved content even if storage is temporarily read-only. */ }
     }
     $date = (string)($data['bulletin']['date'] ?? '');
     if ($date !== '' && strtotime($date . ' 23:59:59') < strtotime('-7 days')) $data['bulletin']['date'] = '';

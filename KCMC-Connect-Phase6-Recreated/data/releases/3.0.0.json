@@ -20,7 +20,24 @@
     {"id":"mens-breakfast-0905","title":"Men’s Ministry Breakfast","date":"2026-09-05","time":"8:30 AM","location":"KCMC Fellowship Hall","status":"published","expires_at":"2026-09-06T00:00:00-05:00"},
     {"id":"adult-bible-study-0913","title":"Adult Bible Study with Linda Rann","date":"2026-09-13","time":"10:15 AM","location":"KCMC","status":"published","expires_at":"2026-09-14T00:00:00-05:00"},
     {"id":"ladies-fellowship-0917","title":"KCMC Ladies Fellowship","date":"2026-09-17","time":"12:30 PM","location":"KCMC Fellowship Hall","status":"published","expires_at":"2026-09-18T00:00:00-05:00"},
-    {"id":"jaffe-potluck-0929","title":"Potluck and Michael Jaffe presentation","date":"2026-09-29","time":"5:00 PM","location":"KCMC","status":"published","expires_at":"2026-09-30T00:00:00-05:00"}
+    {"id":"jaffe-potluck-0929","title":"Potluck and Michael Jaffe presentation","date":"2026-09-29","time":"5:00 PM","location":"KCMC","status":"published","expires_at":"2026-09-30T00:00:00-05:00"},
+    {
+      "id": "trunk-or-treat-2026",
+      "title": "Trunk or Treat!",
+      "date": "2026-10-31",
+      "time": "4:30 PM",
+      "end_time": "6:30 PM",
+      "location": "KCMC parking lot",
+      "address": "57 Kimberling City Center Lane, Kimberling City, MO 65686",
+      "label": "Free community event",
+      "description": "Free candy, hot dogs, chips and drinks, plus music and family fun. All are welcome.",
+      "image": "assets/visuals/trunk-or-treat-2026.webp",
+      "image_alt": "Autumn Trunk or Treat graphic with friendly ghosts, pumpkins and an open car trunk filled with candy beside a lake.",
+      "rsvp": false,
+      "priority": 100,
+      "status": "published",
+      "expires_at": "2026-11-01T00:00:00-05:00"
+    }
   ],
   "news": {
     "issue": "16",

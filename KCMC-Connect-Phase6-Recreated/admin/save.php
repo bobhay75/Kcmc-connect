@@ -20,7 +20,19 @@ $data['bulletin']['date']=trim((string)($_POST['bulletin_date']??''));
 $data['bulletin']['welcome']=trim((string)($_POST['bulletin_welcome']??''));
 $data['bulletin']['notes']=array_values(array_filter(array_map('trim',preg_split('/\R/',(string)($_POST['bulletin_notes']??'')))));
 $postedEvents=$_POST['events']??[];
-foreach($postedEvents as $i=>$p){ if(!isset($data['events'][$i]))continue; $data['events'][$i]['title']=trim((string)($p['title']??''));$data['events'][$i]['date']=trim((string)($p['date']??''));$data['events'][$i]['time']=trim((string)($p['time']??''));$data['events'][$i]['priority']=max(0,min(100,(int)($p['priority']??50)));$data['events'][$i]['status']=($p['status']??'hidden')==='published'?'published':'hidden';$ex=trim((string)($p['expires']??''));$data['events'][$i]['expires_at']=$ex?date('c',strtotime($ex.' 23:59:59')):''; }
+foreach($postedEvents as $i=>$p){
+    if(!isset($data['events'][$i]))continue;
+    $data['events'][$i]['title']=trim((string)($p['title']??''));
+    $data['events'][$i]['date']=trim((string)($p['date']??''));
+    $data['events'][$i]['time']=trim((string)($p['time']??''));
+    $data['events'][$i]['end_time']=trim((string)($p['end_time']??''));
+    $data['events'][$i]['location']=trim((string)($p['location']??'KCMC'));
+    $data['events'][$i]['description']=trim((string)($p['description']??''));
+    $data['events'][$i]['priority']=max(0,min(100,(int)($p['priority']??50)));
+    $data['events'][$i]['status']=($p['status']??'hidden')==='published'?'published':'hidden';
+    $ex=trim((string)($p['expires']??''));
+    $data['events'][$i]['expires_at']=$ex?date('c',strtotime($ex.' 23:59:59')):'';
+}
 kcmc_write_content($data,(string)$user['display_name']);
 kcmc_audit('content.published', ['content_version' => '3.0.0']);
 header('Location: ' . kcmc_url('admin/?msg=' . rawurlencode('Published successfully. Backup created automatically.')));
