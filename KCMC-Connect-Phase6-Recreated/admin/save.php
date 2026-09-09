@@ -25,9 +25,9 @@ foreach($postedEvents as $i=>$p){
     $data['events'][$i]['title']=trim((string)($p['title']??''));
     $data['events'][$i]['date']=trim((string)($p['date']??''));
     $data['events'][$i]['time']=trim((string)($p['time']??''));
-    $data['events'][$i]['end_time']=trim((string)($p['end_time']??''));
-    $data['events'][$i]['location']=trim((string)($p['location']??'KCMC'));
-    $data['events'][$i]['description']=trim((string)($p['description']??''));
+    if(array_key_exists('end_time',$p))$data['events'][$i]['end_time']=trim((string)$p['end_time']);
+    if(array_key_exists('location',$p))$data['events'][$i]['location']=trim((string)$p['location']);
+    if(array_key_exists('description',$p))$data['events'][$i]['description']=trim((string)$p['description']);
     $data['events'][$i]['priority']=max(0,min(100,(int)($p['priority']??50)));
     $data['events'][$i]['status']=($p['status']??'hidden')==='published'?'published':'hidden';
     $ex=trim((string)($p['expires']??''));

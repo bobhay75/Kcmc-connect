@@ -149,7 +149,7 @@ function kcmc_apply_required_public_content(array &$data): bool {
             'rsvp' => false,
             'priority' => 100,
             'status' => 'published',
-            'expires_at' => '2026-11-01T00:00:00-05:00',
+            'expires_at' => '2026-10-31T23:59:59-05:00',
         ],
     ];
 
@@ -206,9 +206,9 @@ function kcmc_content(): array {
             try { kcmc_write_content($data, 'Version 3 content migration'); } catch (Throwable) { /* Serve the migrated view even if storage is temporarily read-only. */ }
         }
     }
-    if (kcmc_apply_required_public_content($data)) {
-        try { kcmc_write_content($data, 'KCMC Connect content migration'); } catch (Throwable) { /* Serve approved content even if storage is temporarily read-only. */ }
-    }
+    // Layer approved release content over the preserved production file. The
+    // Publishing Desk persists any owner edits without a request-time rewrite.
+    kcmc_apply_required_public_content($data);
     $date = (string)($data['bulletin']['date'] ?? '');
     if ($date !== '' && strtotime($date . ' 23:59:59') < strtotime('-7 days')) $data['bulletin']['date'] = '';
     $data['meta']['effective_version'] = '3.0.0';

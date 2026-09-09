@@ -47,6 +47,8 @@ test -s "$app_dir/assets/visuals/trunk-or-treat-2026.webp" || fail "Trunk or Tre
 grep -q "kcmc_apply_required_public_content" "$app_dir/lib/bootstrap.php" || fail "Preserved production content migration is missing"
 grep -q "data-end-time" "$app_dir/index.php" || fail "Event end time is not exposed to calendar export"
 grep -q "DTEND" "$app_dir/app.js" || fail "Calendar export does not include event end time"
+grep -q "ignoreSearch:true" "$app_dir/sw.js" || fail "Offline cache does not normalize versioned asset requests"
+grep -q "key.startsWith('kcmc-connect-')" "$app_dir/sw.js" || fail "Service worker cache cleanup is not isolated to KCMC Connect"
 node --check "$app_dir/app.js"
 node --check "$app_dir/sw.js"
 command -v php >/dev/null || fail "PHP is required for syntax verification"
