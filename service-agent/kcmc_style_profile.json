@@ -1,0 +1,25 @@
+{
+  "source": "KCMC service deck 0ee226ec-77c5-4aa5-a98c-853f9ad805b8.pptx",
+  "slide_count": 103,
+  "aspect_ratio": "16:9",
+  "slide_size_emu": {"width": 12192000, "height": 6858000},
+  "dominant_typography": {
+    "font": "Arial Narrow",
+    "body_size_pt": 60,
+    "secondary_sizes_pt": [66, 72, 44, 54],
+    "alignment": "center"
+  },
+  "observed_fonts": ["Arial Narrow", "Narkisim", "Arial", "Tempus Sans ITC", "Calibri"],
+  "observed_content": {
+    "songs": ["Keep On the Sunny Side", "Ain't No Grave", "Going Down to the River", "What a Friend We Have in Jesus", "They're Holding Up the Ladder"],
+    "sermon_material": true,
+    "scripture_material": true
+  },
+  "agent_policy": {
+    "archive_first": true,
+    "preserve_editable_text": true,
+    "prefer_existing_song_slides": true,
+    "human_approval_required": true,
+    "autopublish": false
+  }
+}
