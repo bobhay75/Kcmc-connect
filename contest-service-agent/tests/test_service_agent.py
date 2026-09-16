@@ -1,23 +1,118 @@
-from pathlib import Path
+import json
 import sys
+import tempfile
+import unittest
+from pathlib import Path
+
+from PIL import Image
+from pptx import Presentation
+from pptx.util import Inches
+
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "app"))
 
-from service_agent import normalize, build_editable_song_deck, quality_check_deck, find_song_in_archive
+from service_agent import (  # noqa: E402
+    append_slides_from_deck,
+    build_editable_song_deck,
+    find_song_in_archive,
+    find_song_in_catalog,
+    normalize,
+    quality_check_deck,
+    resolve_archive_source,
+)
 
 
-def test_normalize():
-    assert normalize("Great Are You, Lord!") == "greatareyoulord"
+class ServiceAgentTests(unittest.TestCase):
+    def test_normalize(self):
+        self.assertEqual(normalize("Great Are You, Lord!"), "greatareyoulord")
+
+    def test_build_and_qa_black_white_editable_deck(self):
+        with tempfile.TemporaryDirectory() as temp:
+            deck = build_editable_song_deck("Test", "Verse one\nVerse two\n\nChorus", str(Path(temp) / "test.pptx"))
+            qa = quality_check_deck(deck)
+            self.assertTrue(qa["ok"], qa)
+            self.assertEqual(qa["slides"], 2)
+            self.assertGreaterEqual(qa["editable_text_shapes"], 2)
+            prs = Presentation(deck)
+            self.assertEqual(str(prs.slides[0].background.fill.fore_color.rgb), "000000")
+
+    def test_catalog_supports_public_songs_schema(self):
+        with tempfile.TemporaryDirectory() as temp:
+            catalog = Path(temp) / "catalog.json"
+            catalog.write_text(json.dumps({
+                "source_deck": "service.pptx",
+                "songs": [{"title": "Welcome Table", "start_slide": 5, "end_slide": 13}],
+            }), encoding="utf-8")
+            result = find_song_in_catalog("Welcome Table", str(catalog))
+            self.assertEqual(result["status"], "found")
+            self.assertEqual(result["source"], "service.pptx")
+            self.assertEqual(result["start_slide"], 5)
+
+    def test_archive_search_and_slide_assembly(self):
+        with tempfile.TemporaryDirectory() as temp:
+            root = Path(temp)
+            source = build_editable_song_deck("Amazing Grace", "Amazing grace", str(root / "Amazing Grace.pptx"))
+            result = find_song_in_archive("Amazing Grace", str(root))
+            self.assertEqual(result["status"], "found")
+            destination = Presentation()
+            destination.slide_width = Presentation(source).slide_width
+            destination.slide_height = Presentation(source).slide_height
+            copied = append_slides_from_deck(destination, source)
+            self.assertTrue(copied["ok"], copied)
+            assembled = root / "assembled.pptx"
+            destination.save(assembled)
+            self.assertTrue(quality_check_deck(str(assembled))["ok"])
+
+    def test_assembly_keeps_distinct_images_from_multiple_decks(self):
+        with tempfile.TemporaryDirectory() as temp:
+            root = Path(temp)
+            destination = Presentation()
+            destination.slide_width = Inches(13.333)
+            destination.slide_height = Inches(7.5)
+            expected_hashes = []
+
+            for color in ("red", "blue"):
+                image_path = root / f"{color}.png"
+                Image.new("RGB", (80, 80), color).save(image_path)
+                source = Presentation()
+                source.slide_width = destination.slide_width
+                source.slide_height = destination.slide_height
+                slide = source.slides.add_slide(source.slide_layouts[6])
+                picture = slide.shapes.add_picture(str(image_path), 0, 0)
+                expected_hashes.append(picture.image.sha1)
+                source_path = root / f"{color}.pptx"
+                source.save(source_path)
+                copied = append_slides_from_deck(destination, str(source_path))
+                self.assertTrue(copied["ok"], copied)
+
+            assembled = root / "images.pptx"
+            destination.save(assembled)
+            reopened = Presentation(assembled)
+            actual_hashes = [
+                shape.image.sha1
+                for slide in reopened.slides
+                for shape in slide.shapes
+                if getattr(shape, "image", None) is not None
+            ]
+            self.assertEqual(actual_hashes, expected_hashes)
+
+    def test_catalog_path_cannot_escape_archive(self):
+        with tempfile.TemporaryDirectory() as temp:
+            root = Path(temp)
+            archive = root / "archive"
+            archive.mkdir()
+            outside = build_editable_song_deck("Outside", "Text", str(root / "outside.pptx"))
+            result = resolve_archive_source(outside, str(archive))
+            self.assertEqual(result["status"], "blocked_path")
+
+    def test_invalid_catalog_slide_range_is_reported(self):
+        with tempfile.TemporaryDirectory() as temp:
+            catalog = Path(temp) / "catalog.json"
+            catalog.write_text(json.dumps({
+                "songs": [{"title": "Bad Range", "source_deck": "deck.pptx", "start_slide": "oops", "end_slide": 4}],
+            }), encoding="utf-8")
+            result = find_song_in_catalog("Bad Range", str(catalog))
+            self.assertEqual(result["status"], "invalid_catalog")
 
 
-def test_build_and_qa(tmp_path):
-    deck = build_editable_song_deck("Test", "Verse one\n\nVerse two", str(tmp_path / "test.pptx"))
-    qa = quality_check_deck(deck)
-    assert qa["ok"] is True
-    assert qa["slides"] == 2
-    assert qa["editable_text_shapes"] >= 2
-
-
-def test_archive_search(tmp_path):
-    build_editable_song_deck("Amazing Grace", "Amazing grace", str(tmp_path / "Amazing Grace.pptx"))
-    result = find_song_in_archive("Amazing Grace", str(tmp_path))
-    assert result["status"] == "found"
+if __name__ == "__main__":
+    unittest.main()

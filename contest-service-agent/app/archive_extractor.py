@@ -150,14 +150,87 @@ def extract_catalog(path: Path) -> dict:
     }
 
 
+def build_archive_catalog(archive_root: Path) -> dict:
+    """Index every PPTX under an approved archive without exporting lyric text."""
+    root = archive_root.expanduser().resolve()
+    if not root.is_dir():
+        raise ValueError(f"Archive directory does not exist: {root}")
+
+    decks: list[dict] = []
+    songs: list[dict] = []
+    errors: list[dict] = []
+    paths: list[Path] = []
+    for candidate in root.rglob("*.pptx"):
+        try:
+            resolved = candidate.resolve(strict=True)
+        except OSError:
+            continue
+        if resolved.is_file() and resolved.is_relative_to(root):
+            paths.append(resolved)
+
+    for path in sorted(set(paths), key=lambda item: str(item).lower()):
+        relative = str(path.relative_to(root))
+        try:
+            catalog = extract_catalog(path)
+        except Exception as exc:
+            errors.append({"source_deck": relative, "error": type(exc).__name__})
+            continue
+        decks.append(
+            {
+                "source_deck": relative,
+                "slide_count": catalog["slide_count"],
+                "source_sha256": catalog["source_sha256"],
+                "song_count": len(catalog["segments"]),
+            }
+        )
+        for segment in catalog["segments"]:
+            item = dict(segment)
+            item["source_deck"] = relative
+            item["normalized_title"] = re.sub(r"[^a-z0-9]+", "", item["title"].lower())
+            songs.append(item)
+
+    by_title: dict[str, list[dict]] = {}
+    for song in songs:
+        by_title.setdefault(song["normalized_title"], []).append(song)
+    duplicates = [
+        {
+            "normalized_title": title,
+            "title": occurrences[0]["title"],
+            "occurrences": [
+                {
+                    "source_deck": item["source_deck"],
+                    "start_slide": item["start_slide"],
+                    "end_slide": item["end_slide"],
+                }
+                for item in occurrences
+            ],
+        }
+        for title, occurrences in sorted(by_title.items())
+        if title and len(occurrences) > 1
+    ]
+    return {
+        "schema_version": 2,
+        "archive_root_name": root.name,
+        "deck_count": len(decks),
+        "song_count": len(songs),
+        "decks": decks,
+        "songs": songs,
+        "duplicates": duplicates,
+        "errors": errors,
+        "copyright_note": "Metadata only. Lyrics, speaker notes, and slide images are not exported.",
+    }
+
+
 def main() -> None:
     parser = argparse.ArgumentParser(description="Build a searchable KCMC PowerPoint song catalog without exporting lyrics.")
-    parser.add_argument("pptx", type=Path)
+    parser.add_argument("source", type=Path, help="One PPTX file or an approved archive directory")
     parser.add_argument("--out", type=Path, default=Path("song_catalog.json"))
     args = parser.parse_args()
-    catalog = extract_catalog(args.pptx)
+    catalog = build_archive_catalog(args.source) if args.source.is_dir() else extract_catalog(args.source)
+    args.out.parent.mkdir(parents=True, exist_ok=True)
     args.out.write_text(json.dumps(catalog, indent=2, ensure_ascii=False), encoding="utf-8")
-    print(f"Wrote {len(catalog['segments'])} segments to {args.out}")
+    count = catalog.get("song_count", len(catalog.get("segments", [])))
+    print(f"Wrote {count} song records to {args.out}")
 
 
 if __name__ == "__main__":
