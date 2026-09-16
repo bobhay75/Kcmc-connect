@@ -20,7 +20,7 @@ $firstName = trim(explode(' ', (string)$user['display_name'])[0]);
     <?php if (kcmc_can_publish($user)): ?><a class="btn secondary" href="<?=kcmc_h(kcmc_url('admin/'))?>">Publishing</a><?php endif; ?>
     <?php if (kcmc_can_manage_users($user)): ?><a class="btn secondary" href="<?=kcmc_h(kcmc_url('admin/users.php'))?>">Members</a><?php endif; ?>
     <?php if (kcmc_can_view_private_prayers($user)): ?><a class="btn secondary" href="<?=kcmc_h(kcmc_url('member/prayer-team.php'))?>">Prayer team</a><?php endif; ?>
-    <a class="btn secondary" href="<?=kcmc_h(kcmc_url('member/logout.php'))?>">Sign out</a>
+    <form method="post" action="<?=kcmc_h(kcmc_url('member/logout.php'))?>"><input type="hidden" name="csrf" value="<?=kcmc_h(kcmc_csrf())?>"><button class="btn secondary" type="submit">Sign out</button></form>
   </nav></header>
   <?php if (!$prayerAccess): ?>
   <section class="portal-card portal-section"><p class="eyebrow">RECOVERY ACCESS</p><h2>Prayer content is intentionally unavailable.</h2><p>This account can maintain member access and publish public church information, but it cannot read, submit or moderate prayer requests.</p><div class="portal-actions"><a class="btn gold" href="<?=kcmc_h(kcmc_url('admin/users.php'))?>">Manage member access</a><a class="btn secondary" href="<?=kcmc_h(kcmc_url('admin/'))?>">Open publishing</a></div></section>

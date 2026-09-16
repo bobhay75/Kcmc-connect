@@ -14,6 +14,7 @@ grep -q "data/private/" "$repo_dir/.gitignore" || fail "Private data is not igno
 grep -q "assets/newsletter/" "$repo_dir/.gitignore" || fail "Newsletter source pages are not blocked by Git"
 grep -q -- "--exclude='data/private/'" "$repo_dir/.cpanel.yml" || fail "Deployment does not preserve private data"
 grep -Eq "RewriteRule \^\(\?:data\|backups\)" "$app_dir/.htaccess" || fail "Apache does not block data and backups"
+grep -Fq '<FilesMatch "(?:\.json(?:\.tmp-[A-Fa-f0-9]+)?|\.ndjson|\.lock)$">' "$app_dir/.htaccess" || fail "Apache file-level private-data fallback is missing"
 
 grep -q "kcmc_require_role(\['member', 'prayer_team', 'pastor_admin'\])" "$app_dir/member/submit-prayer.php" || fail "Prayer submission role gate is missing"
 grep -q "kcmc_require_role(\['prayer_team', 'pastor_admin'\])" "$app_dir/member/prayer-team.php" || fail "Prayer-team role gate is missing"
@@ -34,6 +35,8 @@ fi
 grep -Fq 'privateRoute=/\/(?:member|admin)' "$app_dir/sw.js" || fail "Service worker private-route bypass is missing"
 grep -q "Cache-Control: no-store" "$app_dir/lib/bootstrap.php" || fail "Private no-store headers are missing"
 grep -q "X-Robots-Tag: noindex" "$app_dir/lib/bootstrap.php" || fail "Private noindex headers are missing"
+grep -q "kcmc_current_user_if_session" "$app_dir/index.php" || fail "Public homepage still creates anonymous sessions"
+grep -q "kcmc_current_user_if_session" "$app_dir/care.php" || fail "Public care page still creates anonymous sessions"
 
 if grep -R -Eq --exclude='RELEASE_NOTES.md' "admin_password_hash|shared_admin_password" "$app_dir"; then
   fail "Legacy shared-password configuration remains"
@@ -45,6 +48,15 @@ jq -e '[.events[] | select(.id == "trunk-or-treat-2026" and .date == "2026-10-31
 jq -e '[.events[] | select(.id == "trunk-or-treat-2026")] | length == 1' "$app_dir/data/releases/3.0.0.json" >/dev/null || fail "Trunk or Treat release seed is missing"
 test -s "$app_dir/assets/visuals/trunk-or-treat-2026.webp" || fail "Trunk or Treat flyer asset is missing"
 grep -q "kcmc_apply_required_public_content" "$app_dir/lib/bootstrap.php" || fail "Preserved production content migration is missing"
+grep -q "kcmc_featured_announcement_index" "$app_dir/admin/index.php" || fail "Publishing Desk does not select the current announcement"
+grep -q 'name="announcement_id"' "$app_dir/admin/index.php" || fail "Publishing Desk announcement identity is missing"
+grep -Fq "date('l, F j, Y'" "$app_dir/bulletin.php" || fail "Bulletin date format is invalid"
+if grep -Fq "date('Sunday, F j, Y'" "$app_dir/bulletin.php"; then
+  fail "Broken literal Sunday date format remains"
+fi
+grep -Fq 'document.body.dataset.officeEmail' "$app_dir/app.js" || fail "Public forms ignore the published church email"
+grep -q "REQUEST_METHOD.*POST" "$app_dir/member/logout.php" || fail "Sign-out is not restricted to POST"
+grep -q "kcmc_verify_csrf" "$app_dir/member/logout.php" || fail "Sign-out CSRF protection is missing"
 grep -q "data-end-time" "$app_dir/index.php" || fail "Event end time is not exposed to calendar export"
 grep -q "DTEND" "$app_dir/app.js" || fail "Calendar export does not include event end time"
 grep -q "BEGIN:VTIMEZONE" "$app_dir/app.js" || fail "Calendar export does not define its America/Chicago timezone"
@@ -57,7 +69,9 @@ grep -q "ignoreSearch:true" "$app_dir/sw.js" || fail "Offline cache does not nor
 grep -q "key.startsWith('kcmc-connect-')" "$app_dir/sw.js" || fail "Service worker cache cleanup is not isolated to KCMC Connect"
 node --check "$app_dir/app.js"
 node --check "$app_dir/sw.js"
+bash -n "$repo_dir/tests/live-smoke.sh"
 command -v php >/dev/null || fail "PHP is required for syntax verification"
 find "$app_dir" -type f -name '*.php' -print0 | xargs -0 -n1 php -l >/dev/null
+php "$repo_dir/tests/php-behavior.php"
 
 echo "KCMC Version 3 security contract passed."

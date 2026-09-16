@@ -1,6 +1,6 @@
 (() => {
   'use strict';
-  const OFFICE_EMAIL = 'secretary@umckc.org';
+  const OFFICE_EMAIL = document.body.dataset.officeEmail || 'secretary@umckc.org';
   const views = [...document.querySelectorAll('[data-view]')];
   const routeLinks = [...document.querySelectorAll('[data-route]')];
   const allowed = new Set(views.map(v => v.dataset.view));

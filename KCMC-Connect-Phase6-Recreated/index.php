@@ -1,11 +1,24 @@
 <?php
 require_once __DIR__ . '/lib/bootstrap.php';
 $kcmc = kcmc_content();
-$member = kcmc_current_user();
+$member = kcmc_current_user_if_session();
 $memberCanPray = $member !== null && kcmc_has_role(['member', 'prayer_team', 'pastor_admin'], $member);
 $kcmcNews = is_array($kcmc['news'] ?? null) ? $kcmc['news'] : [];
+$kcmcContact = is_array($kcmc['contact'] ?? null) ? $kcmc['contact'] : [];
 $kcmcPhone = (string)($kcmc['contact']['phone'] ?? '417-739-4395');
 $kcmcPhoneHref = 'tel:' . preg_replace('/[^0-9+]/', '', $kcmcPhone);
+$kcmcEmail = kcmc_valid_email((string)($kcmcContact['email'] ?? '')) ? kcmc_normalize_email((string)$kcmcContact['email']) : 'secretary@umckc.org';
+$kcmcEmailHref = 'mailto:' . $kcmcEmail;
+$kcmcAddress = trim((string)($kcmcContact['address'] ?? '57 Kimberling City Center Lane, Kimberling City, MO 65686'));
+$kcmcOfficeHours = trim((string)($kcmcContact['office_hours'] ?? 'Tuesday–Thursday, 8:00 AM–4:00 PM'));
+$kcmcSchema = json_encode([
+  '@context' => 'https://schema.org',
+  '@type' => 'Church',
+  'name' => 'Kimberling City Methodist Church',
+  'address' => $kcmcAddress,
+  'telephone' => $kcmcPhone,
+  'email' => $kcmcEmail,
+], JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE | JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT) ?: '{}';
 $kcmcEvents = kcmc_active_items($kcmc['events'] ?? []);
 usort($kcmcEvents, fn($a,$b)=>strcmp((string)($a['date']??''),(string)($b['date']??'')));
 $kcmcHasRsvpEvents = count(array_filter($kcmcEvents, fn($event)=>!array_key_exists('rsvp',$event)||$event['rsvp']!==false)) > 0;
@@ -29,7 +42,7 @@ usort($kcmcAnnouncements, fn($a,$b)=>(int)($b['priority']??0)<=>(int)($a['priori
 <meta property="og:type" content="website">
 <meta property="og:image" content="assets/visuals/kimberling-city-missouri-bridge-2024.jpg?v=3.0.0">
 <meta name="twitter:card" content="summary_large_image">
-<script type="application/ld+json">{"@context":"https://schema.org","@type":"Church","name":"Kimberling City Methodist Church","address":{"@type":"PostalAddress","streetAddress":"57 Kimberling City Center Lane","addressLocality":"Kimberling City","addressRegion":"MO","postalCode":"65686","addressCountry":"US"},"telephone":"+1-417-739-4395","email":"secretary@umckc.org"}</script>
+<script type="application/ld+json"><?=$kcmcSchema?></script>
 <title>KCMC Connect</title>
 <link rel="manifest" href="manifest.webmanifest?v=3.0.0">
 <link rel="preload" as="image" href="assets/visuals/kimberling-city-missouri-bridge-2024.jpg?v=3.0.0" type="image/jpeg" fetchpriority="high">
@@ -37,7 +50,7 @@ usort($kcmcAnnouncements, fn($a,$b)=>(int)($b['priority']??0)<=>(int)($a['priori
 <link rel="icon" href="assets/icons/icon-192.png?v=3.0.0">
 <link rel="apple-touch-icon" href="assets/icons/icon-192.png?v=3.0.0">
 </head>
-<body>
+<body data-office-email="<?=kcmc_h($kcmcEmail)?>">
 <?php if (!empty($kcmcAnnouncements)): $top=$kcmcAnnouncements[0]; ?>
 <div class="phase6-announcement" role="status"><div class="shell"><strong><?=kcmc_h((string)($top['title']??''))?></strong><span><?=kcmc_h((string)($top['body']??''))?></span></div></div>
 <?php endif; ?>
@@ -110,7 +123,7 @@ usort($kcmcAnnouncements, fn($a,$b)=>(int)($b['priority']??0)<=>(int)($a['priori
 
   <section class="section alt">
     <div class="wrap">
-      <div class="section-head"><div><div class="eyebrow">Sunday worship</div><h2>Choose your experience</h2></div><p>All three Sunday services are at Kimberling City Methodist Church, 57 Kimberling City Center Lane.</p></div>
+      <div class="section-head"><div><div class="eyebrow">Sunday worship</div><h2>Choose your experience</h2></div><p>All three Sunday services are at Kimberling City Methodist Church, <?=kcmc_h($kcmcAddress)?>.</p></div>
       <div class="grid3">
         <article class="card"><div class="time">8:00 AM</div><h3>Front Porch Gospel</h3><p>Old-time country and bluegrass Gospel music with an uplifting Bible-based message.</p></article>
         <article class="card"><div class="time">9:15 AM</div><h3>Traditional Worship</h3><p>Hymns, piano, organ and choir in a traditional worship setting.</p></article>
@@ -127,7 +140,7 @@ usort($kcmcAnnouncements, fn($a,$b)=>(int)($b['priority']??0)<=>(int)($a['priori
   </section>
 
   <section class="section alt">
-    <div class="wrap contact-strip"><div><div class="eyebrow">Need a person?</div><h2>Call the church office.</h2><p class="muted">Tuesday–Thursday, 8:00 AM–4:00 PM • (417) 739-4395 • secretary@umckc.org</p></div><div class="btns" style="align-content:center"><a class="btn gold" href="tel:+14177394395">Call now</a><a class="btn secondary" href="mailto:secretary@umckc.org">Email</a></div></div>
+    <div class="wrap contact-strip"><div><div class="eyebrow">Need a person?</div><h2>Call the church office.</h2><p class="muted"><?=kcmc_h($kcmcOfficeHours)?> • <?=kcmc_h($kcmcPhone)?> • <?=kcmc_h($kcmcEmail)?></p></div><div class="btns" style="align-content:center"><a class="btn gold" href="<?=kcmc_h($kcmcPhoneHref)?>">Call now</a><a class="btn secondary" href="<?=kcmc_h($kcmcEmailHref)?>">Email</a></div></div>
   </section>
 </section>
 
@@ -194,7 +207,7 @@ usort($kcmcAnnouncements, fn($a,$b)=>(int)($b['priority']??0)<=>(int)($a['priori
       $eventEndTime=(string)($event['end_time']??'');
       $eventTimeLabel=$eventEndTime!==''?$eventTime.'–'.$eventEndTime:$eventTime;
       $eventLocation=(string)($event['location']??'KCMC');
-      $eventAddress=(string)($event['address']??($kcmc['contact']['address']??'57 Kimberling City Center Lane, Kimberling City, MO 65686'));
+      $eventAddress=(string)($event['address']??$kcmcAddress);
       $calendarLocation=$eventLocation.($eventAddress!==''?', '.$eventAddress:'');
       $rsvpEnabled=!array_key_exists('rsvp',$event)||$event['rsvp']!==false;
     ?>
@@ -243,7 +256,7 @@ usort($kcmcAnnouncements, fn($a,$b)=>(int)($b['priority']??0)<=>(int)($a['priori
 </section>
 </main>
 
-<footer class="footer"><div class="wrap footer-grid"><div><strong>KCMC CONNECT</strong><p>Kimberling City Methodist Church<br>57 Kimberling City Center Lane<br>Kimberling City, MO 65686</p></div><div><p>(417) 739-4395<br><a href="mailto:secretary@umckc.org">secretary@umckc.org</a><br><a href="https://www.facebook.com/KimberlingCityMethodistChurch" target="_blank" rel="noopener">KCMC on Facebook</a></p><p class="fine">Leading people to become deeply committed followers of Jesus Christ.</p></div></div></footer>
+<footer class="footer"><div class="wrap footer-grid"><div><strong>KCMC CONNECT</strong><p>Kimberling City Methodist Church<br><?=kcmc_h($kcmcAddress)?></p></div><div><p><?=kcmc_h($kcmcPhone)?><br><a href="<?=kcmc_h($kcmcEmailHref)?>"><?=kcmc_h($kcmcEmail)?></a><br><a href="https://www.facebook.com/KimberlingCityMethodistChurch" target="_blank" rel="noopener">KCMC on Facebook</a></p><p class="fine">Leading people to become deeply committed followers of Jesus Christ.</p></div></div></footer>
 
 <nav class="mobile-nav" aria-label="Mobile navigation"><a href="#home" data-route="home"><span>⌂</span>Home</a><a href="#visit" data-route="visit"><span>◎</span>Visit</a><a href="#watch" data-route="watch"><span>▶</span>Watch</a><a href="#events" data-route="events"><span>◇</span>Events</a><a href="#partner" data-route="partner"><span>✦</span>Connect</a></nav>
 <div class="install-sheet" id="installSheet" role="dialog" aria-modal="true" aria-labelledby="installSheetTitle" hidden>
