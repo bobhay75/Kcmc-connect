@@ -4,17 +4,28 @@ $user = kcmc_require_role(['pastor_admin', 'recovery_admin']);
 kcmc_private_headers();
 if ($_SERVER['REQUEST_METHOD']!=='POST' || !kcmc_verify_csrf($_POST['csrf']??null)) { http_response_code(403); exit('Invalid request'); }
 $data=kcmc_content();
+$contactEmail=kcmc_normalize_email((string)($_POST['contact_email']??''));
+if(!kcmc_valid_email($contactEmail)){http_response_code(422);exit('Enter a valid church contact email.');}
 $data['contact']['phone']=trim((string)($_POST['contact_phone']??''));
-$data['contact']['email']=trim((string)($_POST['contact_email']??''));
+$data['contact']['email']=$contactEmail;
 $data['contact']['office_hours']=trim((string)($_POST['contact_hours']??''));
 $data['contact']['address']=trim((string)($_POST['contact_address']??''));
-$a=$data['announcements'][0]??['id'=>'owner-announcement'];
+$announcements=is_array($data['announcements']??null)?$data['announcements']:[];
+$requestedAnnouncementId=(string)($_POST['announcement_id']??'');
+$announcementIndex=null;
+foreach($announcements as $i=>$announcement){
+    if(is_array($announcement)&&($announcement['id']??'')===$requestedAnnouncementId&&!in_array($requestedAnnouncementId,KCMC_RETIRED_CONTENT_IDS,true)){$announcementIndex=(int)$i;break;}
+}
+if($announcementIndex===null)$announcementIndex=kcmc_featured_announcement_index($announcements);
+if($announcementIndex===null){$announcements[]=['id'=>'owner-announcement'];$announcementIndex=array_key_last($announcements);}
+$a=$announcements[$announcementIndex];
 $a['title']=trim((string)($_POST['announcement_title']??''));
 $a['body']=trim((string)($_POST['announcement_body']??''));
 $a['priority']=max(0,min(100,(int)($_POST['announcement_priority']??50)));
 $a['status']=($_POST['announcement_status']??'hidden')==='published'?'published':'hidden';
 $exp=trim((string)($_POST['announcement_expires']??'')); $a['expires_at']=kcmc_local_datetime_iso($exp);
-$data['announcements'][0]=$a;
+$announcements[$announcementIndex]=$a;
+$data['announcements']=$announcements;
 $data['bulletin']['title']=trim((string)($_POST['bulletin_title']??''));
 $data['bulletin']['date']=trim((string)($_POST['bulletin_date']??''));
 $data['bulletin']['welcome']=trim((string)($_POST['bulletin_welcome']??''));

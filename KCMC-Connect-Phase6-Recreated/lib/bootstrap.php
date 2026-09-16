@@ -66,6 +66,11 @@ function kcmc_session_start(): void {
     session_start();
 }
 
+function kcmc_session_cookie_present(): bool {
+    $name = (string)(kcmc_config()['session_name'] ?? '');
+    return $name !== '' && isset($_COOKIE[$name]) && is_string($_COOKIE[$name]) && $_COOKIE[$name] !== '';
+}
+
 function kcmc_private_headers(): void {
     header('Cache-Control: no-store, max-age=0');
     header('Pragma: no-cache');
@@ -193,6 +198,26 @@ function kcmc_apply_required_public_content(array &$data): bool {
     return $changed;
 }
 
+function kcmc_featured_announcement_index(array $announcements): ?int {
+    foreach ($announcements as $index => $announcement) {
+        if (is_array($announcement) && ($announcement['id'] ?? '') === 'owner-announcement') return (int)$index;
+    }
+
+    $selected = null;
+    $selectedPriority = PHP_INT_MIN;
+    foreach ($announcements as $index => $announcement) {
+        if (!is_array($announcement)) continue;
+        $id = (string)($announcement['id'] ?? '');
+        if ($id === '' || in_array($id, KCMC_RETIRED_CONTENT_IDS, true)) continue;
+        $priority = (int)($announcement['priority'] ?? 0);
+        if ($selected === null || $priority > $selectedPriority) {
+            $selected = (int)$index;
+            $selectedPriority = $priority;
+        }
+    }
+    return $selected;
+}
+
 function kcmc_sanitize_audit_context(array $context): array {
     $safe = [];
     foreach ($context as $key => $value) {
@@ -297,6 +322,13 @@ function kcmc_current_user(): ?array {
     return $user;
 }
 
+function kcmc_current_user_if_session(): ?array {
+    if (!kcmc_session_cookie_present()) return null;
+    header('Cache-Control: private, no-store, max-age=0');
+    header('Vary: Cookie');
+    return kcmc_current_user();
+}
+
 function kcmc_login_user(array $user): void {
     kcmc_session_start();
     session_regenerate_id(true);
@@ -309,7 +341,14 @@ function kcmc_logout_user(): void {
     $_SESSION = [];
     if (ini_get('session.use_cookies')) {
         $p = session_get_cookie_params();
-        setcookie(session_name(), '', time() - 42000, $p['path'], $p['domain'] ?? '', (bool)$p['secure'], (bool)$p['httponly']);
+        setcookie(session_name(), '', [
+            'expires' => time() - 42000,
+            'path' => (string)$p['path'],
+            'domain' => (string)($p['domain'] ?? ''),
+            'secure' => (bool)$p['secure'],
+            'httponly' => (bool)$p['httponly'],
+            'samesite' => (string)($p['samesite'] ?? 'Lax'),
+        ]);
     }
     session_destroy();
 }

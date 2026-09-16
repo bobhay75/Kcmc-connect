@@ -5,7 +5,7 @@ $bulletin = is_array($content['bulletin'] ?? null) ? $content['bulletin'] : [];
 $services = array_values(array_filter($bulletin['services'] ?? [], 'is_array'));
 $notes = array_values(array_filter($bulletin['notes'] ?? [], fn($note): bool => is_string($note) && trim($note) !== ''));
 $date = trim((string)($bulletin['date'] ?? ''));
-$dateLabel = $date !== '' && strtotime($date) !== false ? date('Sunday, F j, Y', strtotime($date)) : 'Current Sunday information';
+$dateLabel = $date !== '' && strtotime($date) !== false ? date('l, F j, Y', strtotime($date)) : 'Current Sunday information';
 ?><!doctype html>
 <html lang="en">
 <head>
