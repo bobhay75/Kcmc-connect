@@ -1,0 +1,42 @@
+name: KCMC browser acceptance
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: kcmc-browser-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  browser:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - name: Install isolated browser test dependencies
+        run: |
+          python3 -m venv /tmp/kcmc-browser-venv
+          /tmp/kcmc-browser-venv/bin/python -m pip install playwright==1.55.0
+          /tmp/kcmc-browser-venv/bin/python -m playwright install --with-deps chromium
+      - name: Verify harness syntax
+        run: /tmp/kcmc-browser-venv/bin/python -m py_compile tests/browser-acceptance.py
+      - name: Run actual PHP app with synthetic accounts on localhost only
+        run: /tmp/kcmc-browser-venv/bin/python tests/browser-acceptance.py
+      - name: Preserve synthetic acceptance evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: kcmc-browser-acceptance-${{ github.sha }}
+          path: |
+            test-results/browser-acceptance/*.json
+            test-results/browser-acceptance/*.png
+          retention-days: 7
+          if-no-files-found: warn
