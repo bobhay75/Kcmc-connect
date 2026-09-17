@@ -14,7 +14,9 @@ from pptx import Presentation
 from pptx.dml.color import RGBColor
 from pptx.enum.shapes import MSO_SHAPE
 from pptx.enum.text import MSO_ANCHOR, PP_ALIGN
+from pptx.opc.constants import CONTENT_TYPE as CT
 from pptx.opc.constants import RELATIONSHIP_TARGET_MODE as RTM
+from pptx.opc.constants import RELATIONSHIP_TYPE as RT
 from pptx.opc.package import Part, _Relationship
 from pptx.opc.packuri import PackURI
 from pptx.util import Inches, Pt
@@ -27,6 +29,8 @@ SUPPORTED_SERVICE_STYLES = {"Front Porch"}
 SUPPORTED_ITEM_TYPES = {"service_title", "song", "scripture", "sermon_title", "announcement", "blank"}
 SLIDE_LAYOUT_REL = "http://schemas.openxmlformats.org/officeDocument/2006/relationships/slideLayout"
 NOTES_SLIDE_REL = "http://schemas.openxmlformats.org/officeDocument/2006/relationships/notesSlide"
+SLIDE_REL = "http://schemas.openxmlformats.org/officeDocument/2006/relationships/slide"
+SAFE_REUSED_SLIDE_RELATIONSHIPS = {RT.IMAGE}
 UNSAFE_RELATIONSHIP_MARKERS = (
     "oleobject",
     "package",
@@ -349,6 +353,24 @@ def inspect_deck_security(prs: Presentation) -> list[str]:
                 findings.add("unsafe_external_relationship")
             if any(marker in reltype for marker in UNSAFE_RELATIONSHIP_MARKERS):
                 findings.add("unsafe_embedded_relationship")
+            # The presentation part is expected to enumerate its slides. Any
+            # other part that targets a slide can pull an unselected slide and
+            # its private assets into the recursive clone graph, directly or
+            # through an intermediate custom part.
+            target_is_slide = (
+                not relationship.is_external
+                and (
+                    getattr(relationship.target_part, "content_type", None) == CT.PML_SLIDE
+                    or str(getattr(relationship.target_part, "partname", "")).startswith("/ppt/slides/")
+                )
+            )
+            owner_is_notes = getattr(part, "content_type", None) == CT.PML_NOTES_SLIDE
+            if (
+                part is not prs.part
+                and not owner_is_notes
+                and (relationship.reltype == SLIDE_REL or target_is_slide)
+            ):
+                findings.add("unsafe_slide_to_slide_relationship")
     return sorted(findings)
 
 
@@ -441,6 +463,56 @@ def _replace_relationship_ids(element, relationship_ids: dict[str, str]) -> None
                 node.set(attribute, relationship_ids[value])
 
 
+def _referenced_relationship_ids(element, relationship_ids: set[str]) -> set[str]:
+    """Return only relationship IDs actually referenced by this XML element."""
+    return {
+        value
+        for node in element.iter()
+        for value in node.attrib.values()
+        if value in relationship_ids
+    }
+
+
+def _selected_slide_relationship_findings(slides: list) -> list[str]:
+    """Preflight the complete selected graph before mutating the destination.
+
+    Archive song slides currently need only editable XML plus referenced image
+    parts. Other relationship graphs (charts, custom XML, media, actions, and
+    nested related parts) fail closed until explicitly supported and tested.
+    """
+    findings: set[str] = set()
+    for slide in slides:
+        relationships = list(slide.part.rels.values())
+        referenced_ids = _referenced_relationship_ids(
+            slide._element,
+            {relationship.rId for relationship in relationships},
+        )
+        for relationship in relationships:
+            if relationship.reltype in {SLIDE_LAYOUT_REL, NOTES_SLIDE_REL}:
+                continue
+            if relationship.is_external:
+                findings.add("unsafe_external_relationship")
+                continue
+            target_part = relationship.target_part
+            target_is_slide = (
+                getattr(target_part, "content_type", None) == CT.PML_SLIDE
+                or str(getattr(target_part, "partname", "")).startswith("/ppt/slides/")
+            )
+            if relationship.reltype == SLIDE_REL or target_is_slide:
+                findings.add("unsafe_slide_to_slide_relationship")
+                continue
+            if relationship.reltype not in SAFE_REUSED_SLIDE_RELATIONSHIPS:
+                findings.add("unsafe_unsupported_slide_relationship")
+                continue
+            if relationship.rId not in referenced_ids:
+                # Ignore a dangling known-safe image relationship rather than
+                # copying an asset that the selected slide does not use.
+                continue
+            if target_part.rels:
+                findings.add("unsafe_nested_relationship_graph")
+    return sorted(findings)
+
+
 def _part_namespace(source_path: str) -> str:
     return sha256_file(source_path)[:16]
 
@@ -506,8 +578,15 @@ def _copy_slide(
 ) -> None:
     target = destination.slides.add_slide(destination.slide_layouts[6])
     relationship_ids: dict[str, str] = {}
-    for relationship in source_slide.part.rels.values():
+    relationships = list(source_slide.part.rels.values())
+    referenced_ids = _referenced_relationship_ids(
+        source_slide._element,
+        {relationship.rId for relationship in relationships},
+    )
+    for relationship in relationships:
         if relationship.reltype in {SLIDE_LAYOUT_REL, NOTES_SLIDE_REL}:
+            continue
+        if relationship.rId not in referenced_ids:
             continue
         if relationship.is_external:
             new_id = target.part.rels.get_or_add_ext_rel(relationship.reltype, relationship.target_ref)
@@ -549,10 +628,19 @@ def append_slides_from_deck(
         return {"ok": False, "error": "invalid_slide_range", "slides_added": 0}
     if abs((float(source.slide_width) / float(source.slide_height)) - (16 / 9)) > 0.01:
         return {"ok": False, "error": "source_not_widescreen_16_9", "slides_added": 0}
+    selected_slides = list(source.slides)[first - 1 : last]
+    selected_findings = _selected_slide_relationship_findings(selected_slides)
+    if selected_findings:
+        return {
+            "ok": False,
+            "error": "unsafe_powerpoint_relationships",
+            "security_findings": selected_findings,
+            "slides_added": 0,
+        }
     namespace = _part_namespace(source_path)
     cache: dict[int, Part] = {}
-    for number in range(first, last + 1):
-        _copy_slide(source.slides[number - 1], destination, namespace, cache)
+    for slide in selected_slides:
+        _copy_slide(slide, destination, namespace, cache)
     return {
         "ok": True,
         "slides_added": last - first + 1,
@@ -568,6 +656,7 @@ def write_approval_manifest(
     final_deck: str | None = None,
     final_deck_sha256: str | None = None,
     final_qa: dict | None = None,
+    ready_for_approval: bool = False,
 ) -> str:
     """Create the human approval gate. Nothing is published automatically."""
     payload = {
@@ -579,6 +668,7 @@ def write_approval_manifest(
         "final_deck": final_deck,
         "final_deck_sha256": final_deck_sha256,
         "final_qa": final_qa,
+        "ready_for_approval": bool(ready_for_approval),
         "approval": {"decision": None, "approved_by": None, "decided_at": None, "notes": None},
         "autopublish": False,
     }

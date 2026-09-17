@@ -3,10 +3,14 @@ import json
 import sys
 import tempfile
 import unittest
+import zipfile
 from pathlib import Path
 
 from PIL import Image
 from pptx import Presentation
+from pptx.opc.constants import RELATIONSHIP_TYPE as RT
+from pptx.opc.package import Part
+from pptx.opc.packuri import PackURI
 from pptx.util import Inches
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "app"))
@@ -161,6 +165,189 @@ class ServiceAgentTests(unittest.TestCase):
             copied = append_slides_from_deck(destination, str(source_path))
             self.assertFalse(copied["ok"])
             self.assertEqual(copied["error"], "unsafe_powerpoint_relationships")
+
+    def test_slide_to_slide_relationship_deck_is_rejected(self):
+        with tempfile.TemporaryDirectory() as temp:
+            root = Path(temp)
+            source = Presentation()
+            source.slide_width = Inches(13.333)
+            source.slide_height = Inches(7.5)
+            selected = source.slides.add_slide(source.slide_layouts[6])
+            selected_box = selected.shapes.add_textbox(Inches(1), Inches(1), Inches(8), Inches(2))
+            selected_box.text = "Selected text"
+            private = source.slides.add_slide(source.slide_layouts[6])
+            private.shapes.add_textbox(Inches(1), Inches(1), Inches(8), Inches(2)).text = "PRIVATE target text"
+            selected_box.click_action.target_slide = private
+            source_path = root / "slide-link.pptx"
+            source.save(source_path)
+
+            qa = quality_check_deck(
+                str(source_path),
+                expected_font=None,
+                expected_font_size_pt=None,
+                start_slide=1,
+                end_slide=1,
+            )
+            self.assertIn("unsafe_slide_to_slide_relationship", qa["errors"])
+            destination = Presentation()
+            destination.slide_width = source.slide_width
+            destination.slide_height = source.slide_height
+            copied = append_slides_from_deck(destination, str(source_path), 1, 1)
+            self.assertFalse(copied["ok"])
+            self.assertEqual(copied["error"], "unsafe_powerpoint_relationships")
+            self.assertIn("unsafe_slide_to_slide_relationship", copied["security_findings"])
+
+    def test_range_copy_package_excludes_unselected_text_and_assets(self):
+        with tempfile.TemporaryDirectory() as temp:
+            root = Path(temp)
+            selected_image = root / "selected.png"
+            private_image = root / "private.png"
+            Image.new("RGB", (81, 79), "green").save(selected_image)
+            Image.new("RGB", (83, 77), "purple").save(private_image)
+
+            source = Presentation()
+            source.slide_width = Inches(13.333)
+            source.slide_height = Inches(7.5)
+            selected = source.slides.add_slide(source.slide_layouts[6])
+            selected.shapes.add_textbox(Inches(1), Inches(1), Inches(8), Inches(2)).text = "APPROVED_RANGE_MARKER"
+            selected.shapes.add_picture(str(selected_image), Inches(1), Inches(3))
+            private = source.slides.add_slide(source.slide_layouts[6])
+            private.shapes.add_textbox(Inches(1), Inches(1), Inches(8), Inches(2)).text = "UNSELECTED_PRIVATE_MARKER"
+            private.shapes.add_picture(str(private_image), Inches(1), Inches(3))
+            source_path = root / "mixed-service.pptx"
+            source.save(source_path)
+
+            destination = Presentation()
+            destination.slide_width = source.slide_width
+            destination.slide_height = source.slide_height
+            copied = append_slides_from_deck(destination, str(source_path), 1, 1)
+            self.assertTrue(copied["ok"], copied)
+            assembled = root / "selected-only.pptx"
+            destination.save(assembled)
+
+            with zipfile.ZipFile(assembled) as package:
+                package_blobs = [package.read(name) for name in package.namelist()]
+            package_bytes = b"\n".join(package_blobs)
+            self.assertIn(b"APPROVED_RANGE_MARKER", package_bytes)
+            self.assertNotIn(b"UNSELECTED_PRIVATE_MARKER", package_bytes)
+            self.assertIn(selected_image.read_bytes(), package_blobs)
+            self.assertNotIn(private_image.read_bytes(), package_blobs)
+
+    def test_indirect_slide_relationship_cannot_clone_unselected_slide(self):
+        with tempfile.TemporaryDirectory() as temp:
+            root = Path(temp)
+            source = Presentation()
+            source.slide_width = Inches(13.333)
+            source.slide_height = Inches(7.5)
+            selected = source.slides.add_slide(source.slide_layouts[6])
+            selected.shapes.add_textbox(Inches(1), Inches(1), Inches(8), Inches(2)).text = "SELECTED_MARKER"
+            private = source.slides.add_slide(source.slide_layouts[6])
+            private.shapes.add_textbox(Inches(1), Inches(1), Inches(8), Inches(2)).text = "PRIVATE_INDIRECT_MARKER"
+
+            carrier = Part(
+                PackURI("/ppt/kcmc-test/carrier.xml"),
+                "application/xml",
+                source.part.package,
+                b"<carrier/>",
+            )
+            carrier.relate_to(private.part, RT.SLIDE)
+            selected.part.relate_to(carrier, "urn:kcmc:test:carrier")
+            source_path = root / "indirect-slide-link.pptx"
+            source.save(source_path)
+
+            destination = Presentation()
+            destination.slide_width = source.slide_width
+            destination.slide_height = source.slide_height
+            copied = append_slides_from_deck(destination, str(source_path), 1, 1)
+            self.assertFalse(copied["ok"])
+            self.assertIn("unsafe_slide_to_slide_relationship", copied["security_findings"])
+            self.assertEqual(len(destination.slides), 0)
+
+            assembled = root / "rejected-output.pptx"
+            destination.save(assembled)
+            with zipfile.ZipFile(assembled) as package:
+                package_names = package.namelist()
+                package_bytes = b"\n".join(package.read(name) for name in package.namelist())
+            self.assertNotIn(b"PRIVATE_INDIRECT_MARKER", package_bytes)
+            self.assertFalse(any("kcmc-test" in name for name in package_names))
+
+    def test_custom_relationship_type_targeting_slide_is_rejected(self):
+        with tempfile.TemporaryDirectory() as temp:
+            root = Path(temp)
+            source = Presentation()
+            source.slide_width = Inches(13.333)
+            source.slide_height = Inches(7.5)
+            selected = source.slides.add_slide(source.slide_layouts[6])
+            selected.shapes.add_textbox(Inches(1), Inches(1), Inches(8), Inches(2)).text = "SELECTED_CUSTOM_MARKER"
+            private = source.slides.add_slide(source.slide_layouts[6])
+            private.shapes.add_textbox(Inches(1), Inches(1), Inches(8), Inches(2)).text = "PRIVATE_CUSTOM_MARKER"
+            selected.part.relate_to(private.part, "urn:kcmc:malicious:custom")
+            source_path = root / "custom-slide-target.pptx"
+            source.save(source_path)
+
+            destination = Presentation()
+            destination.slide_width = source.slide_width
+            destination.slide_height = source.slide_height
+            copied = append_slides_from_deck(destination, str(source_path), 1, 1)
+            self.assertFalse(copied["ok"])
+            self.assertIn("unsafe_slide_to_slide_relationship", copied["security_findings"])
+            self.assertEqual(len(destination.slides), 0)
+
+    def test_dangling_image_relationship_does_not_copy_private_asset(self):
+        with tempfile.TemporaryDirectory() as temp:
+            root = Path(temp)
+            private_image = root / "unselected-private.png"
+            Image.new("RGB", (91, 89), "orange").save(private_image)
+            source = Presentation()
+            source.slide_width = Inches(13.333)
+            source.slide_height = Inches(7.5)
+            selected = source.slides.add_slide(source.slide_layouts[6])
+            selected.shapes.add_textbox(Inches(1), Inches(1), Inches(8), Inches(2)).text = "SELECTED_TEXT_ONLY"
+            private = source.slides.add_slide(source.slide_layouts[6])
+            private.shapes.add_picture(str(private_image), Inches(1), Inches(1))
+            private_image_part = next(
+                relationship.target_part
+                for relationship in private.part.rels.values()
+                if relationship.reltype == RT.IMAGE
+            )
+            selected.part.relate_to(private_image_part, RT.IMAGE)
+            source_path = root / "dangling-image.pptx"
+            source.save(source_path)
+
+            destination = Presentation()
+            destination.slide_width = source.slide_width
+            destination.slide_height = source.slide_height
+            copied = append_slides_from_deck(destination, str(source_path), 1, 1)
+            self.assertTrue(copied["ok"], copied)
+            assembled = root / "dangling-image-output.pptx"
+            destination.save(assembled)
+            with zipfile.ZipFile(assembled) as package:
+                package_blobs = [package.read(name) for name in package.namelist()]
+            self.assertNotIn(private_image.read_bytes(), package_blobs)
+
+    def test_speaker_notes_are_not_copied_or_treated_as_cross_slide_links(self):
+        with tempfile.TemporaryDirectory() as temp:
+            root = Path(temp)
+            source = Presentation()
+            source.slide_width = Inches(13.333)
+            source.slide_height = Inches(7.5)
+            slide = source.slides.add_slide(source.slide_layouts[6])
+            slide.shapes.add_textbox(Inches(1), Inches(1), Inches(8), Inches(2)).text = "VISIBLE_SLIDE_TEXT"
+            slide.notes_slide.notes_text_frame.text = "PRIVATE_SPEAKER_NOTE"
+            source_path = root / "speaker-notes.pptx"
+            source.save(source_path)
+
+            destination = Presentation()
+            destination.slide_width = source.slide_width
+            destination.slide_height = source.slide_height
+            copied = append_slides_from_deck(destination, str(source_path), 1, 1)
+            self.assertTrue(copied["ok"], copied)
+            assembled = root / "notes-output.pptx"
+            destination.save(assembled)
+            with zipfile.ZipFile(assembled) as package:
+                package_bytes = b"\n".join(package.read(name) for name in package.namelist())
+            self.assertIn(b"VISIBLE_SLIDE_TEXT", package_bytes)
+            self.assertNotIn(b"PRIVATE_SPEAKER_NOTE", package_bytes)
 
     def test_catalog_path_cannot_escape_archive(self):
         with tempfile.TemporaryDirectory() as temp:

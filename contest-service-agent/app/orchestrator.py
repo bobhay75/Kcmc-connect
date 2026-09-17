@@ -375,6 +375,7 @@ def prepare_service(
         final_path.name if final_path else None,
         final_deck_sha256,
         final_qa,
+        ready_for_approval,
     )
     approval_ui = write_approval_ui(
         service_name,

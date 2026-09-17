@@ -32,6 +32,9 @@ jq -e '.events | type == "array"' "$tmp_dir/api.body" >/dev/null || fail 'Public
 if jq -e 'has("prayers") or has("users") or has("invites")' "$tmp_dir/api.body" >/dev/null; then
   fail 'Public content API exposed a private-data key'
 fi
+if jq -e '.. | objects | keys[] | select(test("sermon|deck|job"; "i"))' "$tmp_dir/api.body" >/dev/null; then
+  fail 'Public content API exposed a Sermon Assistant field'
+fi
 
 for path in data/content.json data/private/ backups/; do
   name=${path//\//_}
@@ -44,5 +47,11 @@ status=$(fetch 'member/prayer-team.php' private)
 grep -Fqi 'Member Sign In' "$tmp_dir/private.body" || fail 'Signed-out private route did not show the login page'
 grep -Eqi '^cache-control:.*no-store' "$tmp_dir/private.headers" || fail 'Private route is missing no-store caching'
 grep -Eqi '^x-robots-tag:.*noindex' "$tmp_dir/private.headers" || fail 'Private route is missing noindex protection'
+
+status=$(fetch 'admin/service-decks.php' sermon_private)
+[[ $status == 200 ]] || fail "Signed-out Sermon Assistant route did not reach the login page (HTTP $status)"
+grep -Fqi 'Member Sign In' "$tmp_dir/sermon_private.body" || fail 'Signed-out Sermon Assistant route did not show the login page'
+grep -Eqi '^cache-control:.*no-store' "$tmp_dir/sermon_private.headers" || fail 'Signed-out Sermon Assistant route is missing no-store caching'
+grep -Eqi '^x-robots-tag:.*noindex' "$tmp_dir/sermon_private.headers" || fail 'Signed-out Sermon Assistant route is missing noindex protection'
 
 echo "KCMC live smoke checks passed for $base_url"

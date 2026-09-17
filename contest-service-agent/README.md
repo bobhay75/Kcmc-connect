@@ -12,12 +12,14 @@ KCMC Service Agent turns an ordered Front Porch service request into one editabl
 - creates missing lyric slides only from text supplied by an authorized human
 - applies the verified KCMC lyric baseline: 16:9, black background, centered white Arial Narrow at 60 pt
 - checks PowerPoint readability, editable text, geometry, typography, and probable overflow
-- rejects external links, embedded packages, OLE objects, macros, and ActiveX relationships before reuse
+- rejects external links, embedded packages, OLE objects, macros, ActiveX, and slide-to-slide relationships before reuse
+- copies only the selected slide range and referenced image assets; dangling relationships, nested relationship graphs, and unselected slide text/media are not packaged
 - assembles one complete service deck in request order
 - supports ordered service-title, song, Scripture, sermon-title, announcement, and intentional-blank items
 - creates a fresh private `0700` run directory per build and writes artifacts as `0600`
 - writes a production report, approval manifest, and offline approval page
-- binds the approval manifest and downloaded decision to the exact final-deck SHA-256
+- records explicit `ready_for_approval` state and binds the approval manifest and downloaded decision to the exact final-deck SHA-256
+- can write a hash-bound, HMAC-signed `kcmc-import.json` handoff for an approval-ready KCMC Connect job
 - blocks archive path traversal and prevents output from being written inside the private source archive
 - keeps `autopublish` false and never sends, uploads, or publishes a result
 
@@ -56,6 +58,18 @@ The command exits with status 0 when every requested item is ready for review an
 - `production-report.json` — progress, QA, blockers, and counts
 - `approval.json` — approval state initialized with no decision
 - `approval.html` — offline review page that only downloads a decision file
+
+For a request initiated by KCMC Connect, include the server-issued `kcmc_job_id` in the exact form `sdj_` plus 32 lowercase hexadecimal characters, and provide an integration secret of at least 32 characters through `KCMC_SERMON_IMPORT_KEY`. The key must remain outside the request, repository, and generated files. An invalid job ID or missing/short key stops the CLI before it creates a build.
+
+```bash
+export KCMC_SERMON_IMPORT_KEY='replace-with-a-private-32-character-or-longer-secret'
+python app/cli.py /private/path/kcmc-job-request.json \
+  --catalog data/private/kcmc-song-catalog.json \
+  --archive /absolute/path/to/approved-private-archive \
+  --out build/kcmc-jobs
+```
+
+Only a build whose manifest says `ready_for_approval: true` receives `kcmc-import.json`. That envelope carries the job ID, SHA-256 values for the exact request bytes, final deck, and approval manifest, plus an HMAC-SHA256 signature over those values. The receiving server must recompute the file hashes and signature before accepting the handoff; the envelope does not approve or publish the deck.
 
 ## Build a private archive catalog
 

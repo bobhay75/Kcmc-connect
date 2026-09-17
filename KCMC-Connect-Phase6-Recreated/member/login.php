@@ -53,7 +53,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
       <label>Password<input type="password" name="password" autocomplete="current-password" required></label>
       <button class="btn gold" type="submit">Sign in securely</button>
     </form>
-    <p class="portal-fine"><strong>Pastor Tony or Pastor Barry signing in for the first time?</strong> <a href="<?=kcmc_h(kcmc_url('member/first-login.php'))?>">Personalize your pastor account here.</a></p>
-    <p class="portal-fine">Other new members receive a one-time invitation from a KCMC administrator to create their password.</p>
+    <p class="portal-fine"><strong>Pastor Tony or Pastor Barry signing in for the first time?</strong> A recovery administrator must send each pastor a separate one-time invitation for their verified email address. Use that personal link to create your password, then return here.</p>
+    <p class="portal-fine">Every other new member also receives an individual one-time invitation from a KCMC administrator.</p>
   </section>
 </main></body></html>

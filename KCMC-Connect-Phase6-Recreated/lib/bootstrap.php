@@ -9,8 +9,34 @@ const KCMC_BACKUPS = KCMC_ROOT . '/backups';
 const KCMC_RETIRED_CONTENT_IDS = ['backpack-blessing-2026'];
 const KCMC_LOCAL_TIMEZONE = 'America/Chicago';
 
-$privateDataDir = trim((string)(getenv('KCMC_PRIVATE_DATA_DIR') ?: ''));
-define('KCMC_PRIVATE_DATA', $privateDataDir !== '' ? rtrim($privateDataDir, '/') : KCMC_ROOT . '/data/private');
+$privateDataEnv = getenv('KCMC_PRIVATE_DATA_DIR');
+$privateDataDir = is_string($privateDataEnv) ? trim($privateDataEnv) : '';
+if ($privateDataDir !== '') {
+    $privateDataDir = rtrim($privateDataDir, '/');
+    if ($privateDataDir === '') $privateDataDir = '/';
+    if (!str_starts_with($privateDataDir, '/') || !is_dir($privateDataDir) || is_link($privateDataDir)) {
+        throw new RuntimeException('KCMC_PRIVATE_DATA_DIR must be an existing absolute directory, not a symbolic link.');
+    }
+    $resolvedPrivateDataDir = realpath($privateDataDir);
+    $resolvedAppRoot = realpath(KCMC_ROOT);
+    if ($resolvedPrivateDataDir === false || $resolvedAppRoot === false || $resolvedPrivateDataDir === '/') {
+        throw new RuntimeException('KCMC_PRIVATE_DATA_DIR must resolve outside the public application directory.');
+    }
+    $publicRoots = [$resolvedAppRoot];
+    $documentRoot = $_SERVER['DOCUMENT_ROOT'] ?? '';
+    if (is_string($documentRoot) && trim($documentRoot) !== '') {
+        $resolvedDocumentRoot = realpath(trim($documentRoot));
+        if ($resolvedDocumentRoot !== false) $publicRoots[] = $resolvedDocumentRoot;
+    }
+    foreach (array_unique($publicRoots) as $publicRoot) {
+        $publicRootPrefix = $publicRoot === '/' ? '/' : $publicRoot . '/';
+        if ($resolvedPrivateDataDir === $publicRoot || str_starts_with($resolvedPrivateDataDir, $publicRootPrefix)) {
+            throw new RuntimeException('KCMC_PRIVATE_DATA_DIR must resolve outside every public web directory.');
+        }
+    }
+    $privateDataDir = $resolvedPrivateDataDir;
+}
+define('KCMC_PRIVATE_DATA', $privateDataDir !== '' ? $privateDataDir : KCMC_ROOT . '/data/private');
 define('KCMC_USERS', KCMC_PRIVATE_DATA . '/users.json');
 define('KCMC_INVITES', KCMC_PRIVATE_DATA . '/invites.json');
 define('KCMC_PRAYERS', KCMC_PRIVATE_DATA . '/prayers.json');

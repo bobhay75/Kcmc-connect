@@ -252,6 +252,7 @@ class OrchestratorTests(unittest.TestCase):
             self.assertFalse(result["autopublish"])
             manifest = json.loads(Path(result["approval_manifest"]).read_text(encoding="utf-8"))
             self.assertEqual(manifest["schema_version"], 3)
+            self.assertTrue(manifest["ready_for_approval"])
             self.assertEqual(manifest["items"][0]["item_type"], "song")
             self.assertNotIn("songs", manifest)
             self.assertIsNone(manifest["approval"]["decision"])
@@ -316,6 +317,8 @@ class OrchestratorTests(unittest.TestCase):
             self.assertNotEqual(first["output_directory"], second["output_directory"])
             self.assertTrue(Path(first["final_deck"]).is_file())
             self.assertIsNone(second["final_deck"])
+            second_manifest = json.loads(Path(second["approval_manifest"]).read_text(encoding="utf-8"))
+            self.assertFalse(second_manifest["ready_for_approval"])
             second_page = Path(second["approval_ui"]).read_text(encoding="utf-8")
             self.assertNotIn("Record approval recommendation", second_page)
 
