@@ -69,6 +69,7 @@ grep -q "ignoreSearch:true" "$app_dir/sw.js" || fail "Offline cache does not nor
 grep -q "key.startsWith('kcmc-connect-')" "$app_dir/sw.js" || fail "Service worker cache cleanup is not isolated to KCMC Connect"
 node --check "$app_dir/app.js"
 node --check "$app_dir/sw.js"
+node --test "$repo_dir/tests/pwa-behavior.cjs"
 bash -n "$repo_dir/tests/live-smoke.sh"
 command -v php >/dev/null || fail "PHP is required for syntax verification"
 find "$app_dir" -type f -name '*.php' -print0 | xargs -0 -n1 php -l >/dev/null

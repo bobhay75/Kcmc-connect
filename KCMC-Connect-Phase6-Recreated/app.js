@@ -72,7 +72,7 @@
     }else if(isAndroid){
       installSheet.querySelector('[data-install-eyebrow]').textContent='Android';
       installSheet.querySelector('#installSheetTitle').textContent='Add KCMC to your Home Screen';
-      installSheetCopy.innerHTML='<p>Open this page in <strong>Chrome</strong>, open the browser menu, then choose <strong>Install app</strong> or <strong>Add to Home screen</strong>.</p>';
+      installSheetCopy.innerHTML='<p>Open this page in <strong>Chrome</strong>, open the browser menu, then choose <strong>Install app</strong> or <strong>Add to home screen</strong>.</p>';
     }else{
       installSheet.querySelector('[data-install-eyebrow]').textContent='Desktop';
       installSheet.querySelector('#installSheetTitle').textContent='Install KCMC Connect';
@@ -99,7 +99,7 @@
   installSheet?.querySelector('[data-install-close]')?.addEventListener('click',closeInstallSheet);
   installSheet?.addEventListener('click',event=>{if(event.target===installSheet)closeInstallSheet();});
   document.addEventListener('keydown',event=>{
-    if(installSheet?.hidden)return;
+    if(!installSheet||installSheet.hidden)return;
     if(event.key==='Escape'){closeInstallSheet();return;}
     if(event.key==='Tab'){
       const focusable=[...installSheet.querySelectorAll('button:not([hidden]),a[href],[tabindex]:not([tabindex="-1"])')];
@@ -121,7 +121,109 @@
   function icsEscape(value){return String(value||'').replace(/\\/g,'\\\\').replace(/\r?\n/g,'\\n').replace(/([,;])/g,'\\$1');}
   document.querySelectorAll('.add-calendar').forEach(btn=>btn.addEventListener('click',()=>{const card=btn.closest('.event-card');if(!card)return;const start=toICSDate(card.dataset.date,card.dataset.time),end=card.dataset.endTime?toICSDate(card.dataset.date,card.dataset.endTime):'',stamp=new Date().toISOString().replace(/[-:]/g,'').replace(/\.\d{3}/,''),eventName=card.dataset.event||'KCMC event',location=card.dataset.location||'57 Kimberling City Center Lane, Kimberling City, MO 65686',description=card.dataset.description||'',uid=`${card.dataset.date}-${eventName.toLowerCase().replace(/[^a-z0-9]+/g,'-')}@kcmc-connect`,startLine=start.includes('T')?`DTSTART;TZID=America/Chicago:${start}`:`DTSTART;VALUE=DATE:${start}`;const lines=['BEGIN:VCALENDAR','VERSION:2.0','CALSCALE:GREGORIAN','PRODID:-//KCMC Connect//EN','X-WR-TIMEZONE:America/Chicago','BEGIN:VTIMEZONE','TZID:America/Chicago','X-LIC-LOCATION:America/Chicago','BEGIN:DAYLIGHT','TZOFFSETFROM:-0600','TZOFFSETTO:-0500','TZNAME:CDT','DTSTART:20070311T020000','RRULE:FREQ=YEARLY;BYMONTH=3;BYDAY=2SU','END:DAYLIGHT','BEGIN:STANDARD','TZOFFSETFROM:-0500','TZOFFSETTO:-0600','TZNAME:CST','DTSTART:20071104T020000','RRULE:FREQ=YEARLY;BYMONTH=11;BYDAY=1SU','END:STANDARD','END:VTIMEZONE','BEGIN:VEVENT',`UID:${icsEscape(uid)}`,`DTSTAMP:${stamp}`,startLine];if(end)lines.push(`DTEND;TZID=America/Chicago:${end}`);lines.push(`SUMMARY:${icsEscape(eventName)}`,`LOCATION:${icsEscape(location)}`);if(description)lines.push(`DESCRIPTION:${icsEscape(description)}`);lines.push('END:VEVENT','END:VCALENDAR');const ics=lines.join('\r\n');const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([ics],{type:'text/calendar'}));a.download=`kcmc-${card.dataset.date}-${eventName.toLowerCase().replace(/[^a-z0-9]+/g,'-')}.ics`;a.click();setTimeout(()=>URL.revokeObjectURL(a.href),1000);}));
   const sermonSearch=document.getElementById('sermonSearch'),sermonFilter=document.getElementById('sermonFilter');function filterSermons(){const q=(sermonSearch?.value||'').trim().toLowerCase(),type=sermonFilter?.value||'all';document.querySelectorAll('.sermon-card').forEach(card=>{card.hidden=!!((q&&!card.dataset.search.includes(q))||(type!=='all'&&card.dataset.type!==type));});}sermonSearch?.addEventListener('input',filterSermons);sermonFilter?.addEventListener('change',filterSermons);
-  const preferred=document.getElementById('preferredService');if(preferred){preferred.value=localStorage.getItem('kcmcPreferredService')||'';preferred.addEventListener('change',()=>localStorage.setItem('kcmcPreferredService',preferred.value));}
+  const preferred=document.getElementById('preferredService');
+  if(preferred){
+    try{preferred.value=localStorage.getItem('kcmcPreferredService')||'';}catch(_){preferred.value='';}
+    preferred.addEventListener('change',()=>{try{localStorage.setItem('kcmcPreferredService',preferred.value);}catch(_){/* Optional preference storage must not break the app. */}});
+  }
   const banner=document.getElementById('offlineBanner');const updateOnline=()=>banner?.classList.toggle('show',!navigator.onLine);window.addEventListener('online',updateOnline);window.addEventListener('offline',updateOnline);updateOnline();
   if('serviceWorker'in navigator)window.addEventListener('load',()=>navigator.serviceWorker.register('./sw.js',{updateViaCache:'none'}).catch(()=>{}));
+})();
+
+// Public sharing is intentionally independent of the current URL and member state.
+(() => {
+  'use strict';
+  const anchor=document.querySelector('[data-install-callout]');
+  if(!anchor||document.querySelector('[data-public-share]'))return;
+  const shareData=Object.freeze({
+    title:'KCMC Connect',
+    text:'Explore worship, events, and ways to connect with Kimberling City Methodist Church.',
+    url:'https://bobsome1.com/kcmc-connect/'
+  });
+  const region=document.createElement('section');
+  region.dataset.publicShare='';
+  region.setAttribute('aria-label','Share KCMC Connect');
+  region.style.marginBlock='1rem';
+  const button=document.createElement('button');
+  button.type='button';
+  button.className='btn secondary';
+  button.dataset.shareApp='';
+  button.textContent='Share KCMC Connect';
+  button.setAttribute('aria-describedby','kcmcPublicShareStatus');
+  const status=document.createElement('p');
+  status.id='kcmcPublicShareStatus';
+  status.className='muted';
+  status.dataset.shareStatus='';
+  status.setAttribute('role','status');
+  status.setAttribute('aria-live','polite');
+  status.setAttribute('aria-atomic','true');
+  status.textContent='Share the public app. Member access stays private.';
+  const fallback=document.createElement('div');
+  fallback.dataset.shareFallback='';
+  fallback.hidden=true;
+  const label=document.createElement('label');
+  label.htmlFor='kcmcPublicShareURL';
+  label.textContent='Public KCMC link';
+  const field=document.createElement('input');
+  field.type='url';
+  field.id='kcmcPublicShareURL';
+  field.dataset.shareUrl='';
+  field.readOnly=true;
+  field.value=shareData.url;
+  field.style.width='100%';
+  field.style.maxWidth='32rem';
+  field.style.boxSizing='border-box';
+  const copy=document.createElement('button');
+  copy.type='button';
+  copy.className='btn secondary';
+  copy.dataset.copyShareUrl='';
+  copy.textContent='Copy public link';
+  copy.setAttribute('aria-describedby',status.id);
+  fallback.append(label,field,copy);
+  region.append(button,status,fallback);
+  // Keep sharing visible even when installation hides its own callout.
+  anchor.insertAdjacentElement('afterend',region);
+
+  function showFallback(message){
+    fallback.hidden=false;
+    status.textContent=message;
+    field.focus();
+    field.select();
+  }
+  let sharing=false;
+  button.addEventListener('click',async()=>{
+    if(sharing)return;
+    if(typeof navigator.share!=='function'){
+      showFallback('Copy the public link below, then paste it into your message.');
+      return;
+    }
+    sharing=true;
+    button.disabled=true;
+    button.setAttribute('aria-busy','true');
+    try{
+      // Only this explicit click opens the device chooser. No contacts or codes are read.
+      await navigator.share(shareData);
+      status.textContent='Share window opened. Complete sharing in your chosen app.';
+    }catch(error){
+      if(error?.name==='AbortError')status.textContent='Share window closed. You can try again.';
+      else showFallback('Sharing is unavailable here. Copy the public link below instead.');
+    }finally{
+      sharing=false;
+      button.disabled=false;
+      button.removeAttribute('aria-busy');
+    }
+  });
+  copy.addEventListener('click',async()=>{
+    if(copy.disabled)return;
+    copy.disabled=true;
+    try{
+      if(typeof navigator.clipboard?.writeText!=='function')throw new Error('Clipboard unavailable');
+      await navigator.clipboard.writeText(shareData.url);
+      status.textContent='Public link copied. Paste it into your message when you are ready.';
+    }catch(_){
+      showFallback('Automatic copying is unavailable. Select and copy the public link manually.');
+    }finally{
+      copy.disabled=false;
+    }
+  });
 })();
