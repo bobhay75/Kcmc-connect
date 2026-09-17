@@ -1,6 +1,6 @@
 # KCMC Service Agent — Agents for Humans 2026
 
-KCMC Service Agent turns a service request into one editable, QA-checked PowerPoint draft and then stops for human approval. The working local pipeline is deterministic and does not need cloud credentials.
+KCMC Service Agent turns an ordered Front Porch service request into one editable, QA-checked PowerPoint draft and then stops for human approval. The working local pipeline is deterministic and does not need cloud credentials.
 
 ## What is complete
 
@@ -14,6 +14,8 @@ KCMC Service Agent turns a service request into one editable, QA-checked PowerPo
 - checks PowerPoint readability, editable text, geometry, typography, and probable overflow
 - rejects external links, embedded packages, OLE objects, macros, and ActiveX relationships before reuse
 - assembles one complete service deck in request order
+- supports ordered service-title, song, Scripture, sermon-title, announcement, and intentional-blank items
+- creates a fresh private `0700` run directory per build and writes artifacts as `0600`
 - writes a production report, approval manifest, and offline approval page
 - binds the approval manifest and downloaded decision to the exact final-deck SHA-256
 - blocks archive path traversal and prevents output from being written inside the private source archive
@@ -44,12 +46,13 @@ python app/cli.py data/service-request.sample.json \
   --out build/sunday-front-porch
 ```
 
-The request JSON contains `service_name`, `service_style`, and a `songs` array. Each song needs a title and may include authorized lyrics. Missing lyrics are not fetched, inferred, or invented.
+The request JSON contains `service_name`, the currently verified `Front Porch` style, and an ordered `items` array. Supported types are `service_title`, `song`, `scripture`, `sermon_title`, `announcement`, and `blank`. Songs need a title and may include authorized lyrics; Scripture and announcements require authorized `text`. Missing words are not fetched, inferred, or invented. Traditional and Contemporary fail closed until their real KCMC templates are privately validated.
 
-The command exits with status 0 when every requested item is ready for review and status 2 when human input or selection is still required. Either way, it writes a report and approval materials. A complete run produces:
+The command exits with status 0 when every requested item is ready for review and status 2 when human input or selection is still required. Either way, it writes a report and approval materials. Each run creates a unique private subdirectory beneath `--out` containing:
 
 - `<service-name>.pptx` — editable assembled draft
-- `draft-assets/` — newly generated song decks
+- `draft-assets/` — newly generated editable item decks
+- `source-snapshots/` — private temporary area; each exact hash-verified source snapshot is deleted after its reviewed range is assembled
 - `production-report.json` — progress, QA, blockers, and counts
 - `approval.json` — approval state initialized with no decision
 - `approval.html` — offline review page that only downloads a decision file
@@ -67,16 +70,28 @@ The confirmation manifest is private JSON in this form:
 ```json
 {
   "approved_decks": [
-    {"source_deck": "relative/path/service.pptx", "sha256": "64-character-sha256"}
+    {
+      "source_deck": "relative/path/service.pptx",
+      "sha256": "64-character-sha256",
+      "segments": [
+        {
+          "title": "Human-confirmed song title",
+          "role": "song",
+          "service_style": "Front Porch",
+          "start_slide": 5,
+          "end_slide": 13
+        }
+      ]
+    }
   ]
 }
 ```
 
-Only exact path-and-hash matches are indexed. Missing entries and changed files are reported as unconfirmed and excluded. The catalog contains metadata only. Generated decks can contain supplied lyrics, so generated output, the confirmation manifest, and the source archive must remain private unless a human explicitly approves their destination.
+Only exact path-and-hash matches and explicit human-reviewed ranges are indexed. The extractor never guesses song boundaries from slide text. Missing entries and changed files are reported as unconfirmed and excluded. The catalog contains metadata only. Generated decks can contain supplied lyrics, so generated output, the confirmation manifest, and the source archive must remain private unless a human explicitly approves their destination.
 
 ## Human authority and scope
 
-Every run ends in `AWAITING_PASTOR_APPROVAL`; `approved` and `autopublish` remain false. The approval page has no network access and cannot send or publish. Live KCMC Connect integration, deployment, AgentCore hosting, and tracing are separate operations and are not performed by this local build.
+Every run ends in `AWAITING_PASTOR_APPROVAL`; `approved` and `autopublish` remain false. The approval page has no network access and cannot send or publish. Automated QA is structural, so a pastor must still visually review the rendered deck. Validation against KCMC's real private archive and full service template, live KCMC Connect integration, deployment, AgentCore hosting, and tracing are separate operations and are not performed by this local build.
 
 ## Hackathon disclosure
 

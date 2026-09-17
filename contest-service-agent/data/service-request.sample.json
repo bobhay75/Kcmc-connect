@@ -1,10 +1,33 @@
 {
   "service_name": "Sunday Front Porch Demo",
   "service_style": "Front Porch",
-  "songs": [
+  "items": [
     {
+      "type": "service_title",
+      "title": "Sunday Front Porch"
+    },
+    {
+      "type": "song",
       "title": "Sample Worship Song",
       "lyrics": "Sample worship line one\nSample worship line two\n\nSample chorus line one\nSample chorus line two"
+    },
+    {
+      "type": "scripture",
+      "title": "Scripture reference",
+      "text": "Authorized Scripture text supplied by KCMC."
+    },
+    {
+      "type": "sermon_title",
+      "title": "Sermon title"
+    },
+    {
+      "type": "announcement",
+      "title": "Church announcement",
+      "text": "Authorized announcement text supplied by KCMC."
+    },
+    {
+      "type": "blank",
+      "title": "Intentional transition blank"
     }
   ]
 }

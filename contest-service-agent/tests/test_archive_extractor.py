@@ -28,7 +28,19 @@ class ArchiveExtractorTests(unittest.TestCase):
             root = Path(temp)
             make_source_deck(root / "one.pptx", "Same Song")
             make_source_deck(root / "two.pptx", "Same Song")
-            approved = {name: sha256(root / name) for name in ("one.pptx", "two.pptx")}
+            approved = {
+                name: {
+                    "sha256": sha256(root / name),
+                    "segments": [{
+                        "title": "Same Song",
+                        "role": "song",
+                        "service_style": "Front Porch",
+                        "start_slide": 1,
+                        "end_slide": 2,
+                    }],
+                }
+                for name in ("one.pptx", "two.pptx")
+            }
             catalog = build_archive_catalog(root, approved)
             self.assertEqual(catalog["schema_version"], 2)
             self.assertEqual(catalog["deck_count"], 2)
@@ -50,6 +62,40 @@ class ArchiveExtractorTests(unittest.TestCase):
             reasons = {item["source_deck"]: item["reason"] for item in catalog["unconfirmed_decks"]}
             self.assertEqual(reasons["approved.pptx"], "hash_mismatch")
             self.assertEqual(reasons["unknown.pptx"], "not_in_manifest")
+
+    def test_confirmed_deck_without_reviewed_ranges_is_not_guessed(self):
+        with tempfile.TemporaryDirectory() as temp:
+            root = Path(temp)
+            make_source_deck(root / "service.pptx", "Looks Like a Song Title")
+            catalog = build_archive_catalog(root, {
+                "service.pptx": {"sha256": sha256(root / "service.pptx"), "segments": []},
+            })
+            self.assertEqual(catalog["deck_count"], 1)
+            self.assertEqual(catalog["song_count"], 0)
+            self.assertEqual(catalog["songs"], [])
+
+    def test_reviewed_ranges_reject_boolean_and_fractional_boundaries(self):
+        with tempfile.TemporaryDirectory() as temp:
+            root = Path(temp)
+            deck = root / "service.pptx"
+            make_source_deck(deck, "Approved Song")
+            for invalid_start in (True, 1.9):
+                with self.subTest(invalid_start=invalid_start):
+                    catalog = build_archive_catalog(root, {
+                        deck.name: {
+                            "sha256": sha256(deck),
+                            "segments": [{
+                                "title": "Approved Song",
+                                "role": "song",
+                                "service_style": "Front Porch",
+                                "start_slide": invalid_start,
+                                "end_slide": 2,
+                            }],
+                        },
+                    })
+                    self.assertEqual(catalog["deck_count"], 0)
+                    self.assertEqual(catalog["song_count"], 0)
+                    self.assertEqual(catalog["errors"][0]["error"], "ValueError")
 
 
 if __name__ == "__main__":

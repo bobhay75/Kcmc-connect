@@ -12,9 +12,9 @@ from pptx.util import Inches
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "app"))
 
 from service_agent import (  # noqa: E402
+    append_blank_slide,
     append_slides_from_deck,
     build_editable_song_deck,
-    find_song_in_archive,
     find_song_in_catalog,
     normalize,
     quality_check_deck,
@@ -36,14 +36,29 @@ class ServiceAgentTests(unittest.TestCase):
             prs = Presentation(deck)
             self.assertEqual(str(prs.slides[0].background.fill.fore_color.rgb), "000000")
 
-    def test_catalog_supports_public_songs_schema(self):
+    def test_blank_service_slide_is_black_and_structurally_drawable(self):
+        prs = Presentation()
+        prs.slide_width = Inches(13.333)
+        prs.slide_height = Inches(7.5)
+        self.assertEqual(append_blank_slide(prs), 1)
+        slide = prs.slides[0]
+        self.assertEqual(str(slide.background.fill.fore_color.rgb), "000000")
+        self.assertEqual(len(slide.shapes), 1)
+
+    def test_catalog_supports_reviewed_songs_schema(self):
         with tempfile.TemporaryDirectory() as temp:
             catalog = Path(temp) / "catalog.json"
             catalog.write_text(json.dumps({
                 "source_deck": "service.pptx",
                 "source_sha256": "a" * 64,
-                "confirmation": {"status": "confirmed", "method": "sha256-manifest"},
-                "songs": [{"title": "Welcome Table", "start_slide": 5, "end_slide": 13}],
+                "confirmation": {"status": "confirmed", "method": "sha256-and-human-reviewed-ranges"},
+                "songs": [{
+                    "title": "Welcome Table",
+                    "role": "song",
+                    "service_style": "Front Porch",
+                    "start_slide": 5,
+                    "end_slide": 13,
+                }],
             }), encoding="utf-8")
             result = find_song_in_catalog("Welcome Table", str(catalog))
             self.assertEqual(result["status"], "found")
@@ -55,9 +70,11 @@ class ServiceAgentTests(unittest.TestCase):
             catalog = Path(temp) / "catalog.json"
             fingerprint = hashlib.sha256(b"welcometable").hexdigest()
             catalog.write_text(json.dumps({
-                "confirmation": {"status": "confirmed", "method": "sha256-manifest"},
+                "confirmation": {"status": "confirmed", "method": "sha256-and-human-reviewed-ranges"},
                 "songs": [{
                     "title_fingerprint": fingerprint,
+                    "role": "song",
+                    "service_style": "Front Porch",
                     "source_deck": "service.pptx",
                     "source_sha256": "a" * 64,
                     "start_slide": 5,
@@ -77,12 +94,10 @@ class ServiceAgentTests(unittest.TestCase):
             result = find_song_in_catalog("Unverified Song", str(catalog))
             self.assertEqual(result["status"], "unconfirmed_catalog")
 
-    def test_archive_search_and_slide_assembly(self):
+    def test_slide_assembly(self):
         with tempfile.TemporaryDirectory() as temp:
             root = Path(temp)
             source = build_editable_song_deck("Amazing Grace", "Amazing grace", str(root / "Amazing Grace.pptx"))
-            result = find_song_in_archive("Amazing Grace", str(root))
-            self.assertEqual(result["status"], "found")
             destination = Presentation()
             destination.slide_width = Presentation(source).slide_width
             destination.slide_height = Presentation(source).slide_height
@@ -160,11 +175,73 @@ class ServiceAgentTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as temp:
             catalog = Path(temp) / "catalog.json"
             catalog.write_text(json.dumps({
-                "confirmation": {"status": "confirmed", "method": "sha256-manifest"},
-                "songs": [{"title": "Bad Range", "source_deck": "deck.pptx", "source_sha256": "a" * 64, "start_slide": "oops", "end_slide": 4}],
+                "confirmation": {"status": "confirmed", "method": "sha256-and-human-reviewed-ranges"},
+                "songs": [{
+                    "title": "Bad Range",
+                    "role": "song",
+                    "service_style": "Front Porch",
+                    "source_deck": "deck.pptx",
+                    "source_sha256": "a" * 64,
+                    "start_slide": "oops",
+                    "end_slide": 4,
+                }],
             }), encoding="utf-8")
             result = find_song_in_catalog("Bad Range", str(catalog))
             self.assertEqual(result["status"], "invalid_catalog")
+
+    def test_catalog_range_rejects_boolean_and_fractional_boundaries(self):
+        with tempfile.TemporaryDirectory() as temp:
+            catalog = Path(temp) / "catalog.json"
+            for invalid_start in (True, 1.9):
+                with self.subTest(invalid_start=invalid_start):
+                    catalog.write_text(json.dumps({
+                        "confirmation": {"status": "confirmed", "method": "sha256-and-human-reviewed-ranges"},
+                        "songs": [{
+                            "title": "Exact Range",
+                            "role": "song",
+                            "service_style": "Front Porch",
+                            "source_deck": "deck.pptx",
+                            "source_sha256": "a" * 64,
+                            "start_slide": invalid_start,
+                            "end_slide": 2,
+                        }],
+                    }), encoding="utf-8")
+                    result = find_song_in_catalog("Exact Range", str(catalog))
+                    self.assertEqual(result["status"], "invalid_catalog")
+
+    def test_catalog_entry_without_reviewed_range_is_rejected(self):
+        with tempfile.TemporaryDirectory() as temp:
+            catalog = Path(temp) / "catalog.json"
+            catalog.write_text(json.dumps({
+                "confirmation": {"status": "confirmed", "method": "sha256-and-human-reviewed-ranges"},
+                "songs": [{
+                    "title": "Unsafe Whole Deck",
+                    "role": "song",
+                    "service_style": "Front Porch",
+                    "source_deck": "service.pptx",
+                    "source_sha256": "a" * 64,
+                }],
+            }), encoding="utf-8")
+            result = find_song_in_catalog("Unsafe Whole Deck", str(catalog))
+            self.assertEqual(result["status"], "invalid_catalog")
+
+    def test_legacy_hash_only_confirmation_method_is_rejected(self):
+        with tempfile.TemporaryDirectory() as temp:
+            catalog = Path(temp) / "catalog.json"
+            catalog.write_text(json.dumps({
+                "confirmation": {"status": "confirmed", "method": "sha256-manifest"},
+                "songs": [{
+                    "title": "Legacy Entry",
+                    "role": "song",
+                    "service_style": "Front Porch",
+                    "source_deck": "service.pptx",
+                    "source_sha256": "a" * 64,
+                    "start_slide": 1,
+                    "end_slide": 1,
+                }],
+            }), encoding="utf-8")
+            result = find_song_in_catalog("Legacy Entry", str(catalog))
+            self.assertEqual(result["status"], "unconfirmed_catalog")
 
 
 if __name__ == "__main__":

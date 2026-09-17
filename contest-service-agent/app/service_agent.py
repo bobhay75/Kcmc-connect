@@ -12,6 +12,7 @@ from typing import Iterable
 
 from pptx import Presentation
 from pptx.dml.color import RGBColor
+from pptx.enum.shapes import MSO_SHAPE
 from pptx.enum.text import MSO_ANCHOR, PP_ALIGN
 from pptx.opc.constants import RELATIONSHIP_TARGET_MODE as RTM
 from pptx.opc.package import Part, _Relationship
@@ -22,6 +23,8 @@ KCMC_FONT = "Arial Narrow"
 KCMC_FONT_SIZE_PT = 60
 KCMC_SLIDE_WIDTH = Inches(13.333)
 KCMC_SLIDE_HEIGHT = Inches(7.5)
+SUPPORTED_SERVICE_STYLES = {"Front Porch"}
+SUPPORTED_ITEM_TYPES = {"service_title", "song", "scripture", "sermon_title", "announcement", "blank"}
 SLIDE_LAYOUT_REL = "http://schemas.openxmlformats.org/officeDocument/2006/relationships/slideLayout"
 NOTES_SLIDE_REL = "http://schemas.openxmlformats.org/officeDocument/2006/relationships/notesSlide"
 UNSAFE_RELATIONSHIP_MARKERS = (
@@ -77,11 +80,13 @@ def _catalog_entries(data: dict) -> Iterable[dict]:
 
 
 def _slide_number(value: object) -> int | None:
-    if value in (None, ""):
+    if isinstance(value, bool):
         return None
-    try:
-        number = int(value)
-    except (TypeError, ValueError):
+    if isinstance(value, int):
+        number = value
+    elif isinstance(value, str) and re.fullmatch(r"[1-9][0-9]*", value.strip()):
+        number = int(value.strip())
+    else:
         return None
     return number if number > 0 else None
 
@@ -95,12 +100,18 @@ def find_song_in_catalog(title: str, catalog_path: str) -> dict:
         data = json.loads(path.read_text(encoding="utf-8"))
     except (OSError, json.JSONDecodeError):
         return {"title": title, "status": "invalid_catalog"}
+    if not isinstance(data, dict):
+        return {"title": title, "status": "invalid_catalog"}
     confirmation = data.get("confirmation")
-    if not isinstance(confirmation, dict) or confirmation.get("status") != "confirmed":
+    if (
+        not isinstance(confirmation, dict)
+        or confirmation.get("status") != "confirmed"
+        or confirmation.get("method") != "sha256-and-human-reviewed-ranges"
+    ):
         return {
             "title": title,
             "status": "unconfirmed_catalog",
-            "detail": "Catalog reuse is blocked until its source decks are hash-confirmed by an authorized human.",
+            "detail": "Catalog reuse requires exact source hashes and human-reviewed slide ranges.",
         }
 
     target = normalize(title)
@@ -161,19 +172,31 @@ def find_song_in_catalog(title: str, catalog_path: str) -> dict:
         }
     start_slide = _slide_number(entry.get("start_slide"))
     end_slide = _slide_number(entry.get("end_slide"))
-    has_range_value = entry.get("start_slide") not in (None, "") or entry.get("end_slide") not in (None, "")
-    if has_range_value and (start_slide is None or end_slide is None or end_slide < start_slide):
+    if start_slide is None or end_slide is None or end_slide < start_slide:
         return {
             "title": title,
             "status": "invalid_catalog",
-            "detail": "Matched catalog entry has an invalid slide range.",
+            "detail": "Matched catalog entry requires an explicit valid human-reviewed slide range.",
+        }
+    if entry.get("role") != "song" or entry.get("service_style") != "Front Porch":
+        return {
+            "title": title,
+            "status": "invalid_catalog",
+            "detail": "Matched catalog entry is not approved as a Front Porch song segment.",
+        }
+    source_deck = str(entry.get("source_deck") or "").strip()
+    if not source_deck:
+        return {
+            "title": title,
+            "status": "invalid_catalog",
+            "detail": "Matched catalog entry has no approved source deck.",
         }
     style = entry.get("style") if isinstance(entry.get("style"), dict) else {}
     return {
         "title": title,
         "matched_title": entry.get("title"),
         "status": "found",
-        "source": entry.get("source_deck"),
+        "source": source_deck,
         "source_sha256": source_sha256,
         "start_slide": start_slide,
         "end_slide": end_slide,
@@ -184,39 +207,6 @@ def find_song_in_catalog(title: str, catalog_path: str) -> dict:
             "alignment": entry.get("dominant_alignment") or style.get("alignment"),
         },
     }
-
-
-def _safe_archive_files(archive_root: str) -> list[Path]:
-    root = Path(archive_root).expanduser().resolve()
-    if not root.is_dir():
-        return []
-    files: list[Path] = []
-    for candidate in root.rglob("*.pptx"):
-        try:
-            resolved = candidate.resolve(strict=True)
-        except OSError:
-            continue
-        if resolved.is_file() and resolved.is_relative_to(root):
-            files.append(resolved)
-    return sorted(set(files), key=lambda path: str(path).lower())
-
-
-def find_song_in_archive(title: str, archive_root: str) -> dict:
-    """Find an existing editable PowerPoint song deck by normalized title."""
-    target = normalize(title)
-    ranked: list[tuple[int, Path]] = []
-    for path in _safe_archive_files(archive_root):
-        score = _match_score(target, normalize(path.stem))
-        if score:
-            ranked.append((score, path))
-    if not ranked:
-        return asdict(SongMatch(title, "missing"))
-    ranked.sort(key=lambda pair: (-pair[0], str(pair[1]).lower()))
-    best_score = ranked[0][0]
-    best = [path for score, path in ranked if score == best_score]
-    if len(best) > 1:
-        return {"title": title, "status": "ambiguous", "matches": [path.name for path in best]}
-    return asdict(SongMatch(title, "found", str(best[0])))
 
 
 def resolve_archive_source(source: str | None, archive_root: str) -> dict:
@@ -248,20 +238,66 @@ def _lyric_blocks(lyrics: str, max_lines: int = 4) -> list[str]:
     return blocks
 
 
-def build_editable_song_deck(
+def _private_file(path: Path) -> None:
+    path.chmod(0o600)
+
+
+def append_blank_slide(destination: Presentation) -> int:
+    slide = destination.slides.add_slide(destination.slide_layouts[6])
+    background = slide.background.fill
+    background.solid()
+    background.fore_color.rgb = RGBColor(0, 0, 0)
+    # Keep the service cue visually blank while retaining one harmless drawable
+    # object so package-integrity tooling can distinguish it from a broken slide.
+    field = slide.shapes.add_shape(
+        MSO_SHAPE.RECTANGLE,
+        0,
+        0,
+        destination.slide_width,
+        destination.slide_height,
+    )
+    field.fill.solid()
+    field.fill.fore_color.rgb = RGBColor(0, 0, 0)
+    field.line.fill.background()
+    return 1
+
+
+def build_editable_text_deck(
     title: str,
-    lyrics: str,
+    text: str,
     output_path: str,
+    item_type: str,
     service_style: str = "Front Porch",
 ) -> str:
-    """Create an editable 16:9 lyric deck using verified KCMC black/white typography."""
+    """Create approved Front Porch text slides for a known service item role."""
+    if service_style not in SUPPORTED_SERVICE_STYLES:
+        raise ValueError(f"Unsupported service style: {service_style}")
+    if item_type not in SUPPORTED_ITEM_TYPES - {"song", "blank"}:
+        raise ValueError(f"Unsupported service item type: {item_type}")
+    body = text.strip()
+    if item_type in {"service_title", "sermon_title"} and not body:
+        body = title.strip()
+    if not body:
+        raise ValueError(f"Text is required for {item_type}.")
+    return _build_editable_blocks(title, body, output_path, service_style, item_type)
+
+
+def _build_editable_blocks(
+    title: str,
+    text: str,
+    output_path: str,
+    service_style: str,
+    item_type: str,
+) -> str:
+    if service_style not in SUPPORTED_SERVICE_STYLES:
+        raise ValueError(f"Unsupported service style: {service_style}")
+    blocks = _lyric_blocks(text) or [title]
     prs = Presentation()
     prs.slide_width = KCMC_SLIDE_WIDTH
     prs.slide_height = KCMC_SLIDE_HEIGHT
     prs.core_properties.title = title
-    prs.core_properties.subject = f"KCMC {service_style} lyric draft"
+    prs.core_properties.subject = f"KCMC {service_style} {item_type} draft"
     layout = prs.slide_layouts[6]
-    blocks = _lyric_blocks(lyrics) or [title]
     for block in blocks:
         slide = prs.slides.add_slide(layout)
         background = slide.background.fill
@@ -283,9 +319,21 @@ def build_editable_song_deck(
         p.font.color.rgb = RGBColor(255, 255, 255)
         p.alignment = PP_ALIGN.CENTER
     out = Path(output_path)
-    out.parent.mkdir(parents=True, exist_ok=True)
+    out.parent.mkdir(parents=True, exist_ok=True, mode=0o700)
+    out.parent.chmod(0o700)
     prs.save(out)
+    _private_file(out)
     return str(out)
+
+
+def build_editable_song_deck(
+    title: str,
+    lyrics: str,
+    output_path: str,
+    service_style: str = "Front Porch",
+) -> str:
+    """Create an editable 16:9 lyric deck using verified KCMC black/white typography."""
+    return _build_editable_blocks(title, lyrics, output_path, service_style, "song")
 
 
 def inspect_deck_security(prs: Presentation) -> list[str]:
@@ -308,8 +356,10 @@ def quality_check_deck(
     pptx_path: str,
     expected_font: str | None = KCMC_FONT,
     expected_font_size_pt: float | None = KCMC_FONT_SIZE_PT,
+    start_slide: int | None = None,
+    end_slide: int | None = None,
 ) -> dict:
-    """Check readability, editability, 16:9 geometry, typography, and likely overflow."""
+    """Check readability, editability, geometry, typography, and likely overflow."""
     path = Path(pptx_path)
     if not path.is_file():
         return {"ok": False, "errors": ["file_missing"], "warnings": []}
@@ -321,7 +371,22 @@ def quality_check_deck(
     errors: list[str] = []
     warnings: list[str] = []
     errors.extend(inspect_deck_security(prs))
-    if len(prs.slides) == 0:
+    selected_slides = list(prs.slides)
+    if start_slide is not None or end_slide is not None:
+        if (
+            isinstance(start_slide, bool)
+            or isinstance(end_slide, bool)
+            or not isinstance(start_slide, int)
+            or not isinstance(end_slide, int)
+            or start_slide < 1
+            or end_slide < start_slide
+            or end_slide > len(prs.slides)
+        ):
+            errors.append("invalid_slide_range")
+            selected_slides = []
+        else:
+            selected_slides = list(prs.slides)[start_slide - 1 : end_slide]
+    if not selected_slides:
         errors.append("no_slides")
     ratio = float(prs.slide_width) / float(prs.slide_height)
     if abs(ratio - (16 / 9)) > 0.01:
@@ -331,7 +396,7 @@ def quality_check_deck(
     off_style_runs = 0
     off_size_runs = 0
     likely_overflow = 0
-    for slide in prs.slides:
+    for slide in selected_slides:
         for shape in slide.shapes:
             if not getattr(shape, "has_text_frame", False) or not shape.text.strip():
                 continue
@@ -359,7 +424,8 @@ def quality_check_deck(
         "ok": not errors,
         "errors": errors,
         "warnings": warnings,
-        "slides": len(prs.slides),
+        "slides": len(selected_slides),
+        "source_slides": len(prs.slides),
         "editable_text_shapes": editable_text,
         "off_style_runs": off_style_runs,
         "off_size_runs": off_size_runs,
@@ -497,7 +563,7 @@ def append_slides_from_deck(
 
 def write_approval_manifest(
     service_name: str,
-    songs: list[dict],
+    items: list[dict],
     output_path: str,
     final_deck: str | None = None,
     final_deck_sha256: str | None = None,
@@ -505,11 +571,11 @@ def write_approval_manifest(
 ) -> str:
     """Create the human approval gate. Nothing is published automatically."""
     payload = {
-        "schema_version": 2,
+        "schema_version": 3,
         "service": service_name,
         "status": "AWAITING_PASTOR_APPROVAL",
         "generated_at": datetime.now(timezone.utc).isoformat(),
-        "songs": songs,
+        "items": items,
         "final_deck": final_deck,
         "final_deck_sha256": final_deck_sha256,
         "final_qa": final_qa,
@@ -519,24 +585,27 @@ def write_approval_manifest(
     out = Path(output_path)
     out.parent.mkdir(parents=True, exist_ok=True)
     out.write_text(json.dumps(payload, indent=2), encoding="utf-8")
+    _private_file(out)
     return str(out)
 
 
 def write_approval_ui(
     service_name: str,
-    songs: list[dict],
+    items: list[dict],
     output_path: str,
     final_deck: str | None = None,
     final_deck_sha256: str | None = None,
+    ready_for_approval: bool = False,
 ) -> str:
     """Write an offline approval page that downloads, but never submits, a human decision."""
     rows = []
-    for song in songs:
+    for item in items:
         rows.append(
             "<tr>"
-            f"<td>{html.escape(str(song.get('title') or ''))}</td>"
-            f"<td>{html.escape(str(song.get('status') or ''))}</td>"
-            f"<td>{html.escape(str(song.get('slides_added') or 0))}</td>"
+            f"<td>{html.escape(str(item.get('item_type') or 'song'))}</td>"
+            f"<td>{html.escape(str(item.get('title') or ''))}</td>"
+            f"<td>{html.escape(str(item.get('status') or ''))}</td>"
+            f"<td>{html.escape(str(item.get('slides_added') or 0))}</td>"
             "</tr>"
         )
     service_json = json.dumps(service_name).replace("</", "<\\/")
@@ -544,6 +613,12 @@ def write_approval_ui(
     hash_json = json.dumps(final_deck_sha256).replace("</", "<\\/")
     deck_label = html.escape(final_deck or "No completed deck")
     hash_label = html.escape(final_deck_sha256 or "Unavailable")
+    approve_button = (
+        '<button class="approve" type="button" onclick="saveDecision(\'APPROVAL_RECOMMENDED\')">'
+        "Record approval recommendation</button>"
+        if ready_for_approval
+        else '<p class="notice">Approval recommendation is unavailable because this build has blockers.</p>'
+    )
     page = f"""<!doctype html>
 <html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src 'unsafe-inline'; script-src 'unsafe-inline'">
@@ -556,10 +631,10 @@ button{{margin:18px 10px 0 0;padding:12px 18px;font:700 16px Arial;cursor:pointe
 </style></head><body><main><h1>{html.escape(service_name)}</h1>
 <p class="notice">Review the exact PowerPoint first. This page cannot publish or send anything. It only downloads your decision as a JSON file.</p>
 <p><strong>Deck:</strong> {deck_label}<br><strong>SHA-256:</strong> <code>{hash_label}</code></p>
-<table><thead><tr><th>Song</th><th>Status</th><th>Slides</th></tr></thead><tbody>{''.join(rows)}</tbody></table>
+<table><thead><tr><th>Type</th><th>Item</th><th>Status</th><th>Slides</th></tr></thead><tbody>{''.join(rows)}</tbody></table>
 <label for="reviewer">Reviewer name <small>(identity is not verified by this offline page)</small></label><input id="reviewer" autocomplete="name">
 <label for="notes">Notes</label><textarea id="notes" rows="5"></textarea>
-<button class="approve" type="button" onclick="saveDecision('APPROVAL_RECOMMENDED')">Record approval recommendation</button>
+{approve_button}
 <button class="changes" type="button" onclick="saveDecision('CHANGES_REQUESTED')">Request changes</button>
 <script>
 const service={service_json};const finalDeck={deck_json};const finalDeckSha256={hash_json};
@@ -574,4 +649,5 @@ function saveDecision(decision){{
     out = Path(output_path)
     out.parent.mkdir(parents=True, exist_ok=True)
     out.write_text(page, encoding="utf-8")
+    _private_file(out)
     return str(out)
