@@ -35,6 +35,8 @@ class ArchiveExtractorTests(unittest.TestCase):
             self.assertEqual(catalog["song_count"], 2)
             self.assertEqual(len(catalog["duplicates"]), 1)
             self.assertNotIn("Authorized source text", str(catalog))
+            self.assertNotIn("Same Song", str(catalog))
+            self.assertRegex(catalog["songs"][0]["title_fingerprint"], r"^[a-f0-9]{64}$")
 
     def test_unconfirmed_and_changed_decks_are_not_indexed(self):
         with tempfile.TemporaryDirectory() as temp:

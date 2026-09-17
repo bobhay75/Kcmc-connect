@@ -17,7 +17,7 @@ CCLI_RE = re.compile(r"\bCCLI\b", re.I)
 
 @dataclass
 class Segment:
-    title: str
+    title_fingerprint: str
     start_slide: int
     end_slide: int
     slide_count: int
@@ -96,6 +96,11 @@ def sha256(path: Path) -> str:
     return h.hexdigest()
 
 
+def title_fingerprint(title: str) -> str:
+    normalized = re.sub(r"[^a-z0-9]+", "", title.lower())
+    return hashlib.sha256(normalized.encode("utf-8")).hexdigest()
+
+
 def extract_catalog(path: Path, confirmed: bool = False) -> dict:
     prs = Presentation(str(path))
     text_flags = [bool(slide_lines(s)) for s in prs.slides]
@@ -127,7 +132,7 @@ def extract_catalog(path: Path, confirmed: bool = False) -> dict:
         font, size, alignment = style_fingerprint(subset)
         segments.append(
             Segment(
-                title=title,
+                title_fingerprint=title_fingerprint(title),
                 start_slide=start,
                 end_slide=end,
                 slide_count=end - start + 1,
@@ -150,7 +155,7 @@ def extract_catalog(path: Path, confirmed: bool = False) -> dict:
             "status": "confirmed" if confirmed else "unconfirmed",
             "method": "sha256-manifest" if confirmed else None,
         },
-        "copyright_note": "Catalog stores titles, slide ranges, and style metadata only; lyric text is intentionally excluded.",
+        "privacy_note": "Candidate slide text is stored only as a one-way normalized SHA-256 fingerprint; readable slide text is excluded.",
     }
 
 
@@ -220,16 +225,14 @@ def build_archive_catalog(archive_root: Path, approved_decks: dict[str, str]) ->
         for segment in catalog["segments"]:
             item = dict(segment)
             item["source_deck"] = relative
-            item["normalized_title"] = re.sub(r"[^a-z0-9]+", "", item["title"].lower())
             songs.append(item)
 
     by_title: dict[str, list[dict]] = {}
     for song in songs:
-        by_title.setdefault(song["normalized_title"], []).append(song)
+        by_title.setdefault(song["title_fingerprint"], []).append(song)
     duplicates = [
         {
-            "normalized_title": title,
-            "title": occurrences[0]["title"],
+            "title_fingerprint": fingerprint,
             "occurrences": [
                 {
                     "source_deck": item["source_deck"],
@@ -239,8 +242,8 @@ def build_archive_catalog(archive_root: Path, approved_decks: dict[str, str]) ->
                 for item in occurrences
             ],
         }
-        for title, occurrences in sorted(by_title.items())
-        if title and len(occurrences) > 1
+        for fingerprint, occurrences in sorted(by_title.items())
+        if fingerprint and len(occurrences) > 1
     ]
     return {
         "schema_version": 2,
@@ -253,7 +256,7 @@ def build_archive_catalog(archive_root: Path, approved_decks: dict[str, str]) ->
         "errors": errors,
         "unconfirmed_decks": unconfirmed_decks,
         "confirmation": {"status": "confirmed", "method": "sha256-manifest"},
-        "copyright_note": "Metadata only. Lyrics, speaker notes, and slide images are not exported.",
+        "privacy_note": "Readable slide text, speaker notes, and slide images are not exported. Candidate titles are one-way normalized SHA-256 fingerprints.",
     }
 
 

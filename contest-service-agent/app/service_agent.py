@@ -18,21 +18,21 @@ from pptx.opc.package import Part, _Relationship
 from pptx.opc.packuri import PackURI
 from pptx.util import Inches, Pt
 
-try:
-    from strands import Agent, tool
-except Exception:  # permits local archive/PPT tests without AWS credentials
-    Agent = None
-
-    def tool(fn):
-        return fn
-
-
 KCMC_FONT = "Arial Narrow"
 KCMC_FONT_SIZE_PT = 60
 KCMC_SLIDE_WIDTH = Inches(13.333)
 KCMC_SLIDE_HEIGHT = Inches(7.5)
 SLIDE_LAYOUT_REL = "http://schemas.openxmlformats.org/officeDocument/2006/relationships/slideLayout"
 NOTES_SLIDE_REL = "http://schemas.openxmlformats.org/officeDocument/2006/relationships/notesSlide"
+UNSAFE_RELATIONSHIP_MARKERS = (
+    "oleobject",
+    "package",
+    "externallink",
+    "attachedtemplate",
+    "vbaproject",
+    "activex",
+)
+UNSAFE_CONTENT_MARKERS = ("vbaproject", "oleobject", "activex", "macroenabled")
 
 
 @dataclass
@@ -44,6 +44,14 @@ class SongMatch:
 
 def normalize(text: str) -> str:
     return "".join(ch.lower() for ch in text if ch.isalnum())
+
+
+def sha256_file(path: str | Path) -> str:
+    digest = hashlib.sha256()
+    with Path(path).open("rb") as source_file:
+        for chunk in iter(lambda: source_file.read(1024 * 1024), b""):
+            digest.update(chunk)
+    return digest.hexdigest()
 
 
 def _match_score(target: str, candidate: str) -> int:
@@ -78,7 +86,6 @@ def _slide_number(value: object) -> int | None:
     return number if number > 0 else None
 
 
-@tool
 def find_song_in_catalog(title: str, catalog_path: str) -> dict:
     """Search a metadata-only KCMC catalog without reading or exporting lyrics."""
     path = Path(catalog_path)
@@ -97,8 +104,14 @@ def find_song_in_catalog(title: str, catalog_path: str) -> dict:
         }
 
     target = normalize(title)
+    target_fingerprint = hashlib.sha256(target.encode("utf-8")).hexdigest()
     ranked: list[tuple[int, dict]] = []
     for entry in _catalog_entries(data):
+        fingerprint = str(entry.get("title_fingerprint") or "").lower()
+        if re.fullmatch(r"[a-f0-9]{64}", fingerprint):
+            if fingerprint == target_fingerprint:
+                ranked.append((1000, entry))
+            continue
         candidate = normalize(str(entry.get("normalized_title") or entry.get("title") or ""))
         score = _match_score(target, candidate)
         if score:
@@ -139,6 +152,13 @@ def find_song_in_catalog(title: str, catalog_path: str) -> dict:
         }
 
     entry = best[0]
+    source_sha256 = str(entry.get("source_sha256") or data.get("source_sha256") or "").lower()
+    if not re.fullmatch(r"[a-f0-9]{64}", source_sha256):
+        return {
+            "title": title,
+            "status": "invalid_catalog",
+            "detail": "Matched catalog entry has no valid confirmed source hash.",
+        }
     start_slide = _slide_number(entry.get("start_slide"))
     end_slide = _slide_number(entry.get("end_slide"))
     has_range_value = entry.get("start_slide") not in (None, "") or entry.get("end_slide") not in (None, "")
@@ -154,6 +174,7 @@ def find_song_in_catalog(title: str, catalog_path: str) -> dict:
         "matched_title": entry.get("title"),
         "status": "found",
         "source": entry.get("source_deck"),
+        "source_sha256": source_sha256,
         "start_slide": start_slide,
         "end_slide": end_slide,
         "style": {
@@ -180,7 +201,6 @@ def _safe_archive_files(archive_root: str) -> list[Path]:
     return sorted(set(files), key=lambda path: str(path).lower())
 
 
-@tool
 def find_song_in_archive(title: str, archive_root: str) -> dict:
     """Find an existing editable PowerPoint song deck by normalized title."""
     target = normalize(title)
@@ -214,11 +234,6 @@ def resolve_archive_source(source: str | None, archive_root: str) -> dict:
     if candidate.is_file():
         return {"status": "found", "path": str(candidate)}
 
-    matches = [path for path in _safe_archive_files(str(root)) if path.name.lower() == raw.name.lower()]
-    if len(matches) == 1:
-        return {"status": "found", "path": str(matches[0])}
-    if len(matches) > 1:
-        return {"status": "ambiguous", "matches": [str(path.relative_to(root)) for path in matches]}
     return {"status": "missing"}
 
 
@@ -233,7 +248,6 @@ def _lyric_blocks(lyrics: str, max_lines: int = 4) -> list[str]:
     return blocks
 
 
-@tool
 def build_editable_song_deck(
     title: str,
     lyrics: str,
@@ -274,7 +288,22 @@ def build_editable_song_deck(
     return str(out)
 
 
-@tool
+def inspect_deck_security(prs: Presentation) -> list[str]:
+    """Reject active, embedded, or externally linked package content before reuse."""
+    findings: set[str] = set()
+    for part in prs.part.package.iter_parts():
+        content_type = str(getattr(part, "content_type", "")).lower()
+        if any(marker in content_type for marker in UNSAFE_CONTENT_MARKERS):
+            findings.add("unsafe_embedded_content")
+        for relationship in part.rels.values():
+            reltype = str(relationship.reltype).lower()
+            if relationship.is_external:
+                findings.add("unsafe_external_relationship")
+            if any(marker in reltype for marker in UNSAFE_RELATIONSHIP_MARKERS):
+                findings.add("unsafe_embedded_relationship")
+    return sorted(findings)
+
+
 def quality_check_deck(
     pptx_path: str,
     expected_font: str | None = KCMC_FONT,
@@ -291,6 +320,7 @@ def quality_check_deck(
 
     errors: list[str] = []
     warnings: list[str] = []
+    errors.extend(inspect_deck_security(prs))
     if len(prs.slides) == 0:
         errors.append("no_slides")
     ratio = float(prs.slide_width) / float(prs.slide_height)
@@ -346,11 +376,7 @@ def _replace_relationship_ids(element, relationship_ids: dict[str, str]) -> None
 
 
 def _part_namespace(source_path: str) -> str:
-    digest = hashlib.sha256()
-    with Path(source_path).open("rb") as source_file:
-        for chunk in iter(lambda: source_file.read(1024 * 1024), b""):
-            digest.update(chunk)
-    return digest.hexdigest()[:16]
+    return sha256_file(source_path)[:16]
 
 
 def _clone_related_part(
@@ -443,6 +469,14 @@ def append_slides_from_deck(
 ) -> dict:
     """Append an approved slide range while keeping slide objects editable."""
     source = Presentation(source_path)
+    security_findings = inspect_deck_security(source)
+    if security_findings:
+        return {
+            "ok": False,
+            "error": "unsafe_powerpoint_relationships",
+            "security_findings": security_findings,
+            "slides_added": 0,
+        }
     first = start_slide or 1
     last = end_slide or len(source.slides)
     if first < 1 or last < first or last > len(source.slides):
@@ -461,12 +495,12 @@ def append_slides_from_deck(
     }
 
 
-@tool
 def write_approval_manifest(
     service_name: str,
     songs: list[dict],
     output_path: str,
     final_deck: str | None = None,
+    final_deck_sha256: str | None = None,
     final_qa: dict | None = None,
 ) -> str:
     """Create the human approval gate. Nothing is published automatically."""
@@ -477,6 +511,7 @@ def write_approval_manifest(
         "generated_at": datetime.now(timezone.utc).isoformat(),
         "songs": songs,
         "final_deck": final_deck,
+        "final_deck_sha256": final_deck_sha256,
         "final_qa": final_qa,
         "approval": {"decision": None, "approved_by": None, "decided_at": None, "notes": None},
         "autopublish": False,
@@ -487,8 +522,13 @@ def write_approval_manifest(
     return str(out)
 
 
-@tool
-def write_approval_ui(service_name: str, songs: list[dict], output_path: str) -> str:
+def write_approval_ui(
+    service_name: str,
+    songs: list[dict],
+    output_path: str,
+    final_deck: str | None = None,
+    final_deck_sha256: str | None = None,
+) -> str:
     """Write an offline approval page that downloads, but never submits, a human decision."""
     rows = []
     for song in songs:
@@ -500,6 +540,10 @@ def write_approval_ui(service_name: str, songs: list[dict], output_path: str) ->
             "</tr>"
         )
     service_json = json.dumps(service_name).replace("</", "<\\/")
+    deck_json = json.dumps(final_deck).replace("</", "<\\/")
+    hash_json = json.dumps(final_deck_sha256).replace("</", "<\\/")
+    deck_label = html.escape(final_deck or "No completed deck")
+    hash_label = html.escape(final_deck_sha256 or "Unavailable")
     page = f"""<!doctype html>
 <html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src 'unsafe-inline'; script-src 'unsafe-inline'">
@@ -510,18 +554,19 @@ label{{display:block;margin:18px 0 6px}}input,textarea{{width:100%;box-sizing:bo
 button{{margin:18px 10px 0 0;padding:12px 18px;font:700 16px Arial;cursor:pointer}}.approve{{background:#d7b25b;border:0}}.changes{{background:#fff;border:0}}
 .notice{{padding:14px;border:1px solid #d7b25b;background:#1b2b37}}
 </style></head><body><main><h1>{html.escape(service_name)}</h1>
-<p class="notice">Review the PowerPoint first. This page cannot publish or send anything. It only downloads your decision as a JSON file.</p>
+<p class="notice">Review the exact PowerPoint first. This page cannot publish or send anything. It only downloads your decision as a JSON file.</p>
+<p><strong>Deck:</strong> {deck_label}<br><strong>SHA-256:</strong> <code>{hash_label}</code></p>
 <table><thead><tr><th>Song</th><th>Status</th><th>Slides</th></tr></thead><tbody>{''.join(rows)}</tbody></table>
-<label for="reviewer">Reviewer name</label><input id="reviewer" autocomplete="name">
+<label for="reviewer">Reviewer name <small>(identity is not verified by this offline page)</small></label><input id="reviewer" autocomplete="name">
 <label for="notes">Notes</label><textarea id="notes" rows="5"></textarea>
-<button class="approve" type="button" onclick="saveDecision('APPROVED')">Approve</button>
+<button class="approve" type="button" onclick="saveDecision('APPROVAL_RECOMMENDED')">Record approval recommendation</button>
 <button class="changes" type="button" onclick="saveDecision('CHANGES_REQUESTED')">Request changes</button>
 <script>
-const service={service_json};
+const service={service_json};const finalDeck={deck_json};const finalDeckSha256={hash_json};
 function saveDecision(decision){{
  const reviewer=document.getElementById('reviewer').value.trim();
  if(!reviewer){{alert('Enter the reviewer name.');return;}}
- const payload={{service,decision,approved_by:reviewer,decided_at:new Date().toISOString(),notes:document.getElementById('notes').value.trim(),autopublish:false}};
+ const payload={{service,final_deck:finalDeck,final_deck_sha256:finalDeckSha256,decision,reviewer_name:reviewer,identity_verified:false,authoritative:false,decided_at:new Date().toISOString(),notes:document.getElementById('notes').value.trim(),autopublish:false}};
  const link=document.createElement('a');link.href=URL.createObjectURL(new Blob([JSON.stringify(payload,null,2)],{{type:'application/json'}}));
  link.download='approval-decision.json';link.click();setTimeout(()=>URL.revokeObjectURL(link.href),1000);
 }}
@@ -530,36 +575,3 @@ function saveDecision(decision){{
     out.parent.mkdir(parents=True, exist_ok=True)
     out.write_text(page, encoding="utf-8")
     return str(out)
-
-
-SYSTEM_PROMPT = """
-You are KCMC Service Agent, a production assistant for worship-service preparation.
-Reduce repetitive production work while preserving human authority.
-Search the metadata catalog first, then the approved private archive, before creating a draft.
-Use only lyrics supplied by an authorized human. Never fetch, infer, or reproduce missing lyrics.
-Prefer editable PPTX assets and preserve verified KCMC formatting.
-Run quality checks before handoff. Never publish, send, or mark a service final without explicit pastor approval.
-Return a concise report of reused assets, created drafts, QA failures, blocked paths, and decisions still needed.
-""".strip()
-
-
-def make_agent():
-    if Agent is None:
-        raise RuntimeError("Install strands-agents before running the autonomous agent")
-    return Agent(
-        system_prompt=SYSTEM_PROMPT,
-        tools=[
-            find_song_in_catalog,
-            find_song_in_archive,
-            build_editable_song_deck,
-            quality_check_deck,
-            write_approval_manifest,
-            write_approval_ui,
-        ],
-        callback_handler=None,
-    )
-
-
-def run_service_request(request: str):
-    agent = make_agent()
-    return agent(request)

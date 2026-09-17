@@ -13,10 +13,10 @@ from service_agent import (
     KCMC_SLIDE_WIDTH,
     append_slides_from_deck,
     build_editable_song_deck,
-    find_song_in_archive,
     find_song_in_catalog,
     quality_check_deck,
     resolve_archive_source,
+    sha256_file,
     write_approval_manifest,
     write_approval_ui,
 )
@@ -64,6 +64,23 @@ def _append_existing(
     if source_result.get("status") != "found":
         return None
     source_path = str(source_result["path"])
+    expected_sha256 = str(match.get("source_sha256") or "").lower()
+    if not re.fullmatch(r"[a-f0-9]{64}", expected_sha256):
+        return ServiceItem(
+            title=title,
+            status="SOURCE_CONFIRMATION_FAILED",
+            source=_source_label(source_path, archive_root),
+            needs_selection=True,
+            detail="Catalog match is missing its confirmed source hash.",
+        )
+    if sha256_file(source_path) != expected_sha256:
+        return ServiceItem(
+            title=title,
+            status="SOURCE_CONFIRMATION_FAILED",
+            source=_source_label(source_path, archive_root),
+            needs_selection=True,
+            detail="Archive deck changed after confirmation; re-confirm and rebuild the private catalog.",
+        )
     source_qa = quality_check_deck(source_path, expected_font=None, expected_font_size_pt=None)
     if not source_qa.get("ok"):
         return ServiceItem(
@@ -107,7 +124,7 @@ def prepare_service(
     """Build one editable service deck and stop at the human approval gate.
 
     Each song requires a title and may include authorized lyrics. The pipeline searches
-    metadata first, then the private archive. It never fetches or invents lyrics.
+    confirmed metadata before creating a draft. It never fetches or invents lyrics.
     """
     service_name = service_name.strip()
     if not service_name:
@@ -117,7 +134,9 @@ def prepare_service(
     started = time.monotonic()
     out = Path(output_root).expanduser().resolve()
     archive = Path(archive_root).expanduser().resolve()
-    if archive.is_dir() and out.is_relative_to(archive):
+    if not archive.is_dir():
+        raise ValueError("Approved private archive directory does not exist.")
+    if out == archive or out.is_relative_to(archive):
         raise ValueError("Output directory must be outside the private source archive.")
     out.mkdir(parents=True, exist_ok=True)
     asset_dir = out / "draft-assets"
@@ -161,20 +180,6 @@ def prepare_service(
             continue
 
         existing = _append_existing(final_deck, title, match, str(archive)) if match.get("status") == "found" else None
-        if existing is None:
-            archive_match = find_song_in_archive(title, str(archive))
-            if archive_match.get("status") == "ambiguous":
-                items.append(
-                    ServiceItem(
-                        title=title,
-                        status="NEEDS_HUMAN_SELECTION",
-                        needs_selection=True,
-                        detail="More than one archive file matches this title.",
-                    )
-                )
-                continue
-            if archive_match.get("status") == "found":
-                existing = _append_existing(final_deck, title, archive_match, str(archive))
 
         if existing is not None:
             items.append(existing)
@@ -223,12 +228,14 @@ def prepare_service(
 
     payload = [asdict(item) for item in items]
     final_path: Path | None = None
+    final_deck_sha256: str | None = None
     final_qa: dict | None = None
     if len(final_deck.slides):
         final_path = out / f"{safe_slug(service_name, 'kcmc-service')}.pptx"
         final_deck.core_properties.title = service_name
         final_deck.core_properties.subject = "KCMC approval draft; human approval required"
         final_deck.save(final_path)
+        final_deck_sha256 = sha256_file(final_path)
         final_qa = quality_check_deck(str(final_path), expected_font=None, expected_font_size_pt=None)
 
     complete_statuses = {"REUSED_EXISTING", "CREATED_DRAFT"}
@@ -242,9 +249,16 @@ def prepare_service(
         payload,
         str(manifest_path),
         final_path.name if final_path else None,
+        final_deck_sha256,
         final_qa,
     )
-    approval_ui = write_approval_ui(service_name, payload, str(out / "approval.html"))
+    approval_ui = write_approval_ui(
+        service_name,
+        payload,
+        str(out / "approval.html"),
+        final_path.name if final_path else None,
+        final_deck_sha256,
+    )
     result = {
         "schema_version": 2,
         "service": service_name,
@@ -259,6 +273,7 @@ def prepare_service(
             "assembled_slides": len(final_deck.slides),
         },
         "final_deck": str(final_path) if final_path else None,
+        "final_deck_sha256": final_deck_sha256,
         "final_qa": final_qa,
         "approval_manifest": manifest,
         "approval_ui": approval_ui,

@@ -1,3 +1,4 @@
+import hashlib
 import json
 import sys
 import tempfile
@@ -40,6 +41,7 @@ class ServiceAgentTests(unittest.TestCase):
             catalog = Path(temp) / "catalog.json"
             catalog.write_text(json.dumps({
                 "source_deck": "service.pptx",
+                "source_sha256": "a" * 64,
                 "confirmation": {"status": "confirmed", "method": "sha256-manifest"},
                 "songs": [{"title": "Welcome Table", "start_slide": 5, "end_slide": 13}],
             }), encoding="utf-8")
@@ -47,6 +49,24 @@ class ServiceAgentTests(unittest.TestCase):
             self.assertEqual(result["status"], "found")
             self.assertEqual(result["source"], "service.pptx")
             self.assertEqual(result["start_slide"], 5)
+
+    def test_catalog_supports_private_title_fingerprints(self):
+        with tempfile.TemporaryDirectory() as temp:
+            catalog = Path(temp) / "catalog.json"
+            fingerprint = hashlib.sha256(b"welcometable").hexdigest()
+            catalog.write_text(json.dumps({
+                "confirmation": {"status": "confirmed", "method": "sha256-manifest"},
+                "songs": [{
+                    "title_fingerprint": fingerprint,
+                    "source_deck": "service.pptx",
+                    "source_sha256": "a" * 64,
+                    "start_slide": 5,
+                    "end_slide": 13,
+                }],
+            }), encoding="utf-8")
+            result = find_song_in_catalog("Welcome Table", str(catalog))
+            self.assertEqual(result["status"], "found")
+            self.assertEqual(result["source"], "service.pptx")
 
     def test_unconfirmed_catalog_cannot_supply_archive_slides(self):
         with tempfile.TemporaryDirectory() as temp:
@@ -105,6 +125,28 @@ class ServiceAgentTests(unittest.TestCase):
             ]
             self.assertEqual(actual_hashes, expected_hashes)
 
+    def test_external_relationship_deck_is_rejected(self):
+        with tempfile.TemporaryDirectory() as temp:
+            root = Path(temp)
+            source = Presentation()
+            source.slide_width = Inches(13.333)
+            source.slide_height = Inches(7.5)
+            slide = source.slides.add_slide(source.slide_layouts[6])
+            box = slide.shapes.add_textbox(Inches(1), Inches(1), Inches(8), Inches(2))
+            box.text = "Linked text"
+            box.click_action.hyperlink.address = "https://example.invalid/tracker"
+            source_path = root / "external-link.pptx"
+            source.save(source_path)
+
+            qa = quality_check_deck(str(source_path), expected_font=None, expected_font_size_pt=None)
+            self.assertIn("unsafe_external_relationship", qa["errors"])
+            destination = Presentation()
+            destination.slide_width = source.slide_width
+            destination.slide_height = source.slide_height
+            copied = append_slides_from_deck(destination, str(source_path))
+            self.assertFalse(copied["ok"])
+            self.assertEqual(copied["error"], "unsafe_powerpoint_relationships")
+
     def test_catalog_path_cannot_escape_archive(self):
         with tempfile.TemporaryDirectory() as temp:
             root = Path(temp)
@@ -119,7 +161,7 @@ class ServiceAgentTests(unittest.TestCase):
             catalog = Path(temp) / "catalog.json"
             catalog.write_text(json.dumps({
                 "confirmation": {"status": "confirmed", "method": "sha256-manifest"},
-                "songs": [{"title": "Bad Range", "source_deck": "deck.pptx", "start_slide": "oops", "end_slide": 4}],
+                "songs": [{"title": "Bad Range", "source_deck": "deck.pptx", "source_sha256": "a" * 64, "start_slide": "oops", "end_slide": 4}],
             }), encoding="utf-8")
             result = find_song_in_catalog("Bad Range", str(catalog))
             self.assertEqual(result["status"], "invalid_catalog")

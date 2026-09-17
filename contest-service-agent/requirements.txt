@@ -1,4 +1,1 @@
-strands-agents>=1.0.0
-strands-agents-tools>=0.2.0
-python-pptx>=1.0.2,<2
-pydantic>=2.8.0
+python-pptx==1.0.2

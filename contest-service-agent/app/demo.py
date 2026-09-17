@@ -16,7 +16,7 @@ result = prepare_service(
         }
     ],
     catalog_path=str(ROOT / "data" / "kcmc_song_catalog.sample.json"),
-    archive_root=str(ROOT / "data" / "empty-archive"),
+    archive_root=str(ROOT / "data"),
     output_root=str(OUT),
     service_style="Front Porch",
 )

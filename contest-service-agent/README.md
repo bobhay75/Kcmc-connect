@@ -4,16 +4,18 @@ KCMC Service Agent turns a service request into one editable, QA-checked PowerPo
 
 ## What is complete
 
-- searches a metadata catalog first, then an approved private PowerPoint archive
+- reuses archive content only through a confirmed metadata catalog; filename matching cannot bypass confirmation
 - refuses to reuse catalog records unless the source deck path and SHA-256 were explicitly confirmed
-- indexes archive titles, slide ranges, style metadata, and duplicates without exporting lyrics, notes, or images
+- indexes one-way normalized title fingerprints, slide ranges, style metadata, and duplicates without exporting readable slide text, notes, or images
 - reuses an entire deck or an indexed slide range
 - safely imports editable slide content and keeps identically named images from different source decks distinct
 - creates missing lyric slides only from text supplied by an authorized human
 - applies the verified KCMC lyric baseline: 16:9, black background, centered white Arial Narrow at 60 pt
 - checks PowerPoint readability, editable text, geometry, typography, and probable overflow
+- rejects external links, embedded packages, OLE objects, macros, and ActiveX relationships before reuse
 - assembles one complete service deck in request order
 - writes a production report, approval manifest, and offline approval page
+- binds the approval manifest and downloaded decision to the exact final-deck SHA-256
 - blocks archive path traversal and prevents output from being written inside the private source archive
 - keeps `autopublish` false and never sends, uploads, or publishes a result
 
@@ -29,7 +31,7 @@ pip install -r requirements-test.txt
 python -m unittest discover -s tests -v
 ```
 
-Install `requirements.txt` instead when using the optional Strands/Amazon Bedrock entry point.
+The production path is deterministic. No model is given arbitrary filesystem tools or permission to select output paths.
 
 ## Build a service draft
 
@@ -75,8 +77,6 @@ Only exact path-and-hash matches are indexed. Missing entries and changed files 
 ## Human authority and scope
 
 Every run ends in `AWAITING_PASTOR_APPROVAL`; `approved` and `autopublish` remain false. The approval page has no network access and cannot send or publish. Live KCMC Connect integration, deployment, AgentCore hosting, and tracing are separate operations and are not performed by this local build.
-
-The optional Strands entry point remains in `app/service_agent.py`. Amazon Bedrock use requires separately configured AWS credentials.
 
 ## Hackathon disclosure
 
