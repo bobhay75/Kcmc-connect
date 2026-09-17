@@ -1,0 +1,144 @@
+name: KCMC read-only public description audit
+
+on:
+  push:
+    branches: [audit/kcmc-public-descriptions-20260917]
+    paths: [.github/workflows/public-description-audit.yml]
+
+permissions:
+  contents: read
+
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 4
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: 904cc12080a8eff38f319fa4ef2afd985f8f8f64
+          persist-credentials: false
+      - name: Inspect only public content without credentials or writes
+        run: |
+          python3 - <<'PY'
+          import datetime, hashlib, html, json, os, pathlib, urllib.request, urllib.parse
+          from zoneinfo import ZoneInfo
+
+          BASE = 'https://bobsome1.com/kcmc-connect/'
+          SOURCE_SHA = '904cc12080a8eff38f319fa4ef2afd985f8f8f64'
+          now = datetime.datetime.now(datetime.timezone.utc)
+          report = {'checked_at_utc': now.isoformat(),
+                    'checked_at_central': now.astimezone(ZoneInfo('America/Chicago')).isoformat(),
+                    'source_commit': SOURCE_SHA, 'method': 'Anonymous GET only; no login, cookies, POST, or deployment',
+                    'scope_limit': 'Public API excludes hidden and expired events; private live editor and local backup are not inspected.',
+                    'requests': []}
+          class NoRedirect(urllib.request.HTTPRedirectHandler):
+              def redirect_request(self, req, fp, code, msg, headers, newurl):
+                  raise RuntimeError('Unexpected redirect refused')
+          opener = urllib.request.build_opener(NoRedirect())
+          def get(path):
+              url = BASE + path
+              request = urllib.request.Request(url, headers={
+                  'User-Agent': 'KCMC-Owner-ReadOnly-Description-Audit/1.0',
+                  'Cache-Control': 'no-cache', 'Accept': 'application/json, text/html;q=0.9'})
+              with opener.open(request, timeout=20) as response:
+                  raw = response.read(2_000_001)
+                  if len(raw) > 2_000_000:
+                      raise RuntimeError('Response size limit exceeded')
+                  if response.status != 200:
+                      raise RuntimeError('Unexpected response status')
+                  report['requests'].append({'path': path, 'status': response.status,
+                      'sha256': hashlib.sha256(raw).hexdigest(), 'bytes': len(raw),
+                      'cache_control': response.headers.get('Cache-Control', ''),
+                      'content_type': response.headers.get('Content-Type', '')})
+                  return raw.decode('utf-8-sig')
+          def text(value):
+              return value.strip() if isinstance(value, str) else ''
+          def required_blanks(data):
+              blanks = []
+              for field in ('phone', 'email', 'office_hours', 'address'):
+                  if not text(data.get('contact', {}).get(field)):
+                      blanks.append('contact.' + field)
+              for field in ('title', 'welcome'):
+                  if not text(data.get('bulletin', {}).get(field)):
+                      blanks.append('bulletin.' + field)
+              for i, service in enumerate(data.get('bulletin', {}).get('services', [])):
+                  if not text(service.get('detail')):
+                      blanks.append(f'bulletin.services[{i}].detail')
+              for i, announcement in enumerate(data.get('announcements', [])):
+                  if not text(announcement.get('body')):
+                      blanks.append(f'announcements[{i}].body')
+              news = data.get('news', {})
+              if not text(news.get('reflection', {}).get('body')):
+                  blanks.append('news.reflection.body')
+              for i, section in enumerate(news.get('sections', [])):
+                  if not text(section.get('body')):
+                      blanks.append(f'news.sections[{i}].body')
+              for i, item in enumerate(news.get('highlights', [])):
+                  if not text(item.get('detail')):
+                      blanks.append(f'news.highlights[{i}].detail')
+              return blanks
+          def event_rows(data):
+              result = []
+              for event in data.get('events', []):
+                  if not isinstance(event, dict):
+                      raise RuntimeError('Invalid event shape')
+                  row = {key: text(event.get(key))[:200] for key in ('id', 'title', 'date', 'time', 'location')}
+                  row['description_missing'] = not bool(text(event.get('description')))
+                  row['end_time_missing'] = not bool(text(event.get('end_time')))
+                  row['status'] = text(event.get('status'))
+                  row['expires_at'] = text(event.get('expires_at'))
+                  result.append(row)
+              return result
+          source = json.loads(pathlib.Path('KCMC-Connect-Phase6-Recreated/data/content.json').read_text())
+          report['source_events'] = event_rows(source)
+          report['source_other_description_blanks'] = required_blanks(source)
+          source_by_id = {e['id']: e for e in source['events']}
+          try:
+              live = json.loads(get('api/content.php'))
+              if not isinstance(live, dict) or not isinstance(live.get('events'), list):
+                  raise RuntimeError('Public API shape mismatch')
+              if any(key in live for key in ('users', 'prayers', 'invites', 'password', 'password_hash', 'setup_key')):
+                  raise RuntimeError('Unexpected private-data field; raw response will not be recorded')
+              report['live_events'] = event_rows(live)
+              report['live_other_description_blanks'] = required_blanks(live)
+              report['live_event_count'] = len(live['events'])
+              report['live_missing_description_count'] = sum(row['description_missing'] for row in report['live_events'])
+              report['other_sections_checked'] = ['contact', 'announcements.body', 'bulletin.title/welcome',
+                  'bulletin.services.detail', 'news.reflection.body', 'news.sections.body', 'news.highlights.detail']
+              report['bulletin_date'] = text(live.get('bulletin', {}).get('date'))
+              report['bulletin_date_note'] = 'An unscheduled/stale bulletin date may be intentionally blank; no date was invented.'
+              report['end_time_note'] = 'Missing optional end times are not treated as lost descriptions.'
+              for row in report['live_events']:
+                  ref = source_by_id.get(row['id'])
+                  row['matches_reviewed_source_identity'] = bool(ref) and all(
+                      row[key] == text(ref.get(key)) for key in ('title', 'date', 'time', 'location'))
+              pages = {'events_page': html.unescape(get('events.php')), 'home_page': html.unescape(get(''))}
+              for row, event in zip(report['live_events'], live['events']):
+                  row['rendered'] = {name: {'title_present': text(event.get('title')) in page,
+                      'description_present': (text(event.get('description')) in page) if text(event.get('description')) else None}
+                      for name, page in pages.items()}
+              # Recovery text is only copied from source data already in the repository.
+              # Do not fill, write, merge, or publish anything.
+              report['status'] = 'live_public_inspection_completed'
+          except Exception as error:
+              report['status'] = 'live_inspection_incomplete'
+              report['error_type'] = type(error).__name__
+              report['error'] = str(error)[:300]
+          output = pathlib.Path('audit-results')
+          output.mkdir(exist_ok=True)
+          serialized = json.dumps(report, indent=2, ensure_ascii=True)
+          (output / 'public-description-audit.json').write_text(serialized + '\n')
+          print('PUBLIC_DESCRIPTION_AUDIT=' + json.dumps(report, ensure_ascii=True))
+          with open(os.environ['GITHUB_STEP_SUMMARY'], 'a') as summary:
+              summary.write('## Read-only KCMC description audit\n\n```json\n' + serialized + '\n```\n')
+          if report['status'] != 'live_public_inspection_completed':
+              raise SystemExit(1)
+          PY
+      - name: Retain sanitized public-content audit only
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: kcmc-public-description-audit
+          path: audit-results/public-description-audit.json
+          retention-days: 7
+          if-no-files-found: warn
