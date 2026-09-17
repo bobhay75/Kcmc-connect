@@ -1,0 +1,16 @@
+{
+  "schema_version": 1,
+  "source_deck": "0ee226ec-77c5-4aa5-a98c-853f9ad805b8.pptx",
+  "slide_count": 103,
+  "source_sha256": "4e56fab05a86439aaa839da91d7771b4895cd0d2da3d7c981e5d22490c126524",
+  "segments": [
+    {"title":"Welcome Table","start_slide":5,"end_slide":13,"slide_count":9,"blank_slides":2,"dominant_font":"Arial Narrow","dominant_font_size_pt":60.0,"dominant_alignment":"CENTER (2)"},
+    {"title":"When Jesus Swings the Wreckin’ Ball","start_slide":14,"end_slide":22,"slide_count":9,"blank_slides":2,"dominant_font":"Arial Narrow","dominant_font_size_pt":60.0,"dominant_alignment":"CENTER (2)"},
+    {"title":"Keep On the Sunny Side","start_slide":23,"end_slide":36,"slide_count":14,"blank_slides":2,"dominant_font":"Arial Narrow","dominant_font_size_pt":60.0,"dominant_alignment":"CENTER (2)"},
+    {"title":"Ain’t No Grave","start_slide":37,"end_slide":51,"slide_count":15,"blank_slides":1,"dominant_font":"Arial Narrow","dominant_font_size_pt":60.0,"dominant_alignment":"CENTER (2)"},
+    {"title":"Going Down to the River","start_slide":52,"end_slide":62,"slide_count":11,"blank_slides":1,"dominant_font":"Arial Narrow","dominant_font_size_pt":60.0,"dominant_alignment":"CENTER (2)"},
+    {"title":"What a Friend We Have in Jesus","start_slide":63,"end_slide":73,"slide_count":11,"blank_slides":3,"dominant_font":"Arial Narrow","dominant_font_size_pt":60.0,"dominant_alignment":"CENTER (2)"},
+    {"title":"They’re Holding Up the Ladder","start_slide":81,"end_slide":102,"slide_count":22,"blank_slides":4,"dominant_font":"Arial Narrow","dominant_font_size_pt":60.0,"dominant_alignment":"CENTER (2)"}
+  ],
+  "copyright_note":"Catalog stores titles, slide ranges, and style metadata only; lyric text is intentionally excluded."
+}
