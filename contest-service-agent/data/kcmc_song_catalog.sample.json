@@ -1,0 +1,11 @@
+{
+  "schema_version": 2,
+  "sample_only": true,
+  "source_deck": "synthetic-example.pptx",
+  "segments": [],
+  "confirmation": {
+    "status": "unconfirmed",
+    "method": null
+  },
+  "copyright_note": "Synthetic empty example. It contains no claims about KCMC archive files and cannot be used for archive reuse."
+}
