@@ -1,0 +1,11 @@
+'use strict';
+const test = require('node:test');
+const assert = require('node:assert/strict');
+const { canFill } = require('../KCMC-Connect-Phase6-Recreated/admin/event-descriptions.js');
+const expected = Object.freeze({id:'ladies-fellowship-0917',title:'KCMC Ladies Fellowship',date:'2026-09-17',time:'12:30 PM',location:'KCMC Fellowship Hall'});
+test('allows blank matching record',()=>assert.equal(canFill('',expected,{...expected}),true));
+test('allows whitespace-only field',()=>assert.equal(canFill(' \n\t',expected,{...expected}),true));
+for(const value of ['Owner edit','0',null,undefined,[],3])test(`keeps existing or malformed value ${JSON.stringify(value)}`,()=>assert.equal(canFill(value,expected,{...expected}),false));
+for(const key of Object.keys(expected))test(`rejects changed live form ${key}`,()=>assert.equal(canFill('',expected,{...expected,[key]:'changed'}),false));
+for(const value of [null,{},[],3])test(`rejects malformed reference ${JSON.stringify(value)}`,()=>assert.equal(canFill('',value,{...expected}),false));
+test('does not alter metadata',()=>{const current={...expected,status:'hidden',expires:'2026-09-18'};const before=JSON.stringify(current);canFill('',expected,current);assert.equal(JSON.stringify(current),before);});

@@ -1,0 +1,22 @@
+name: KCMC description recovery
+on:
+  pull_request:
+  push:
+    branches: [main]
+permissions:
+  contents: read
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - name: Check editor-only recovery and unchanged source content
+        run: |
+          php -l KCMC-Connect-Phase6-Recreated/admin/index.php
+          php -l KCMC-Connect-Phase6-Recreated/lib/event-description-suggestions.php
+          php tests/event-description-behavior.php
+          node --check KCMC-Connect-Phase6-Recreated/admin/event-descriptions.js
+          node --test tests/event-description-behavior.cjs
