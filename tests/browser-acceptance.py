@@ -93,20 +93,24 @@ return false;
         base = origin + '/kcmc-connect/'
         env = {'PATH': os.environ['PATH'], 'KCMC_PRIVATE_DATA_DIR': str(private), 'KCMC_SETUP_KEY': ''}
         with (OUT / 'php-server.log').open('w') as logfile:
-            server = subprocess.Popen(['php', '-d', 'sendmail_path=/bin/false', '-S',
-                f'127.0.0.1:{port}', '-t', str(webroot), str(router)],
-                stdout=logfile, stderr=logfile, env=env)
-            try:
+            def start_server():
+                process = subprocess.Popen(['php', '-d', 'sendmail_path=/bin/false', '-S',
+                    f'127.0.0.1:{port}', '-t', str(webroot), str(router)],
+                    stdout=logfile, stderr=logfile, env=env)
                 for _ in range(100):
-                    if server.poll() is not None:
+                    if process.poll() is not None:
                         raise RuntimeError('Disposable PHP server exited early.')
                     try:
                         with urllib.request.urlopen(base, timeout=1):
-                            break
+                            return process
                     except OSError:
                         time.sleep(.1)
-                else:
-                    raise RuntimeError('Disposable PHP server did not become ready.')
+                process.terminate()
+                process.wait(timeout=5)
+                raise RuntimeError('Disposable PHP server did not become ready.')
+
+            server = start_server()
+            try:
                 with sync_playwright() as pw:
                     browser = pw.chromium.launch()
                     try:
@@ -236,10 +240,22 @@ return false;
                                 expect(page.get_by_role('button', name='Sign in securely')).to_be_visible()
                             check(f'{width}px protected sign-out and post-logout access', logout_test)
                             def offline_test():
+                                nonlocal server
                                 page.goto(base)
                                 page.evaluate('navigator.serviceWorker.ready')
-                                context.set_offline(True)
+                                require(page.evaluate('Boolean(navigator.serviceWorker.controller)'),
+                                        'Offline test requires a controlling service worker')
+                                # Emulation alone left worker network requests reachable in the
+                                # initial run. Stop OUR disposable origin, verify its port is closed,
+                                # then require public fallback and private-request rejection.
+                                server.terminate()
+                                server.wait(timeout=5)
                                 try:
+                                    with socket.socket() as probe:
+                                        probe.settimeout(1)
+                                        require(probe.connect_ex(('127.0.0.1', port)) != 0,
+                                                'Origin is still reachable; outage test is invalid')
+                                    context.set_offline(True)
                                     page.reload(wait_until='domcontentloaded')
                                     expect(page.locator('[data-share-app]')).to_be_visible()
                                     require(sentinel not in page.content(), 'Offline home contains private fixture')
@@ -252,7 +268,8 @@ return false;
                                     require(blocked, 'Private offline request unexpectedly returned content')
                                 finally:
                                     context.set_offline(False)
-                            check(f'{width}px real Chromium public offline/private network-only behavior', offline_test)
+                                    server = start_server()
+                            check(f'{width}px actual-origin-outage public fallback/private network-only behavior', offline_test)
                             check(f'{width}px no uncaught page JavaScript errors', lambda: require(not errors, str(errors)))
                             context.close()
                     finally:
