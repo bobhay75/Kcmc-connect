@@ -1,0 +1,19 @@
+/* Scoped to the private invitation card; no public app or other form styles change. */
+.invite-delivery{color:#eef5f8;background:#102638;overflow-wrap:anywhere}
+.invite-delivery h2{margin-top:.15em;line-height:1.2}
+.invite-recipient{display:grid;gap:5px;background:#07121c;border:1px solid #647d8d;border-radius:12px;padding:16px;margin:16px 0}
+.invite-recipient>strong{font-size:1.3rem}
+.invite-recipient small{color:#c6d5df}
+.invite-confirm{display:flex;gap:12px;align-items:flex-start;margin:16px 0}
+.invite-confirm input{flex:0 0 22px;width:22px;height:22px;margin:3px 0 0;accent-color:#d6ad62}
+.invite-actions{display:flex;flex-wrap:wrap;gap:10px;margin:14px 0}
+.invite-actions .btn{cursor:pointer;font:inherit;font-weight:750;min-height:46px;max-width:100%;white-space:normal;text-align:center}
+.invite-actions [disabled],.invite-actions [aria-disabled="true"]{opacity:.55;cursor:not-allowed}
+.invite-delivery :is(a,button,input,textarea,summary):focus-visible{outline:3px solid #f4d895;outline-offset:3px}
+.invite-status{border-left:4px solid #d6ad62;padding:10px 14px;background:#07121c}
+.invite-manual{margin-top:18px;border:1px solid #647d8d;border-radius:12px;padding:14px}
+.invite-manual summary{font-weight:750;cursor:pointer}
+.invite-manual label{display:block;margin:14px 0 5px;font-weight:700}
+.invite-manual :is(input,textarea){display:block;box-sizing:border-box;width:100%;max-width:100%;background:#fff;color:#17324c;border:1px solid #647d8d;border-radius:8px;padding:10px;font:inherit;line-height:1.5;resize:vertical;white-space:pre-wrap;overflow-wrap:anywhere}
+.invite-delivery [hidden]{display:none!important}
+@media(max-width:550px){.invite-actions .btn{width:100%}}
