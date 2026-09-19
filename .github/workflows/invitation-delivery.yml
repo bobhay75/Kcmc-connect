@@ -1,0 +1,43 @@
+name: KCMC invitation delivery
+
+on:
+  pull_request:
+    paths:
+      - 'KCMC-Connect-Phase6-Recreated/admin/users.php'
+      - '**/invitation-delivery*'
+  push:
+    branches: [main]
+    paths:
+      - 'KCMC-Connect-Phase6-Recreated/admin/users.php'
+      - '**/invitation-delivery*'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          persist-credentials: false
+      - name: Verify syntax, recipient binding and no-send behavior
+        run: |
+          php -l KCMC-Connect-Phase6-Recreated/admin/users.php
+          php -l KCMC-Connect-Phase6-Recreated/admin/invitation-delivery.php
+          php -l KCMC-Connect-Phase6-Recreated/lib/invitation-delivery.php
+          node --check KCMC-Connect-Phase6-Recreated/admin/invitation-delivery.js
+          php tests/invitation-delivery.php
+          node --test tests/invitation-delivery.cjs
+          git diff --check
+      - name: Require the complete browser runner before release
+        run: |
+          if [ ! -f tests/invitation-delivery-browser.py ]; then
+            echo 'Full-app browser runner upload is blocked. Keep this change in draft; component tests do not replace full-app acceptance.'
+            exit 1
+          fi
+          echo 'Full browser acceptance must be executed and its evidence reviewed before release.'
+          exit 1
