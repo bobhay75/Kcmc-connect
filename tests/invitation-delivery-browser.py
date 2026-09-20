@@ -17,7 +17,7 @@ import time
 import urllib.request
 
 ROOT = pathlib.Path(__file__).resolve().parents[1] / "KCMC-Connect-Phase6-Recreated"
-BASE = "http://127.0.0.1:8765/kcmc-connect"
+BASE = "http://127.0.0.1:8765/KCMC-Connect-Phase6-Recreated"
 
 def die(message: str) -> None:
     raise SystemExit(f"FAIL: {message}")
@@ -83,7 +83,7 @@ def main() -> int:
                 errors = []
                 page.on("pageerror", lambda exc: errors.append(str(exc)))
 
-                page.goto(BASE + "/member/login.php?next=%2Fkcmc-connect%2Fadmin%2Fusers.php", wait_until="domcontentloaded")
+                page.goto(BASE + "/member/login.php?next=%2FKCMC-Connect-Phase6-Recreated%2Fadmin%2Fusers.php", wait_until="domcontentloaded")
                 page.locator('input[name="email"]').fill("admin@example.invalid")
                 page.locator('input[name="password"]').fill(password)
                 page.locator('button[type="submit"]').click()
