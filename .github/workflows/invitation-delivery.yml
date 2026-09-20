@@ -4,12 +4,22 @@ on:
   pull_request:
     paths:
       - 'KCMC-Connect-Phase6-Recreated/admin/users.php'
-      - '**/invitation-delivery*'
+      - 'KCMC-Connect-Phase6-Recreated/admin/invitation-delivery.php'
+      - 'KCMC-Connect-Phase6-Recreated/admin/invitation-delivery.js'
+      - 'KCMC-Connect-Phase6-Recreated/admin/invitation-delivery.css'
+      - 'KCMC-Connect-Phase6-Recreated/lib/invitation-delivery.php'
+      - 'tests/invitation-delivery*'
+      - '.github/workflows/invitation-delivery.yml'
   push:
     branches: [main]
     paths:
       - 'KCMC-Connect-Phase6-Recreated/admin/users.php'
-      - '**/invitation-delivery*'
+      - 'KCMC-Connect-Phase6-Recreated/admin/invitation-delivery.php'
+      - 'KCMC-Connect-Phase6-Recreated/admin/invitation-delivery.js'
+      - 'KCMC-Connect-Phase6-Recreated/admin/invitation-delivery.css'
+      - 'KCMC-Connect-Phase6-Recreated/lib/invitation-delivery.php'
+      - 'tests/invitation-delivery*'
+      - '.github/workflows/invitation-delivery.yml'
   workflow_dispatch:
 
 permissions:
@@ -18,14 +28,16 @@ permissions:
 jobs:
   test:
     runs-on: ubuntu-latest
-    timeout-minutes: 10
+    timeout-minutes: 15
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
         with:
           ref: ${{ github.event.pull_request.head.sha || github.sha }}
           persist-credentials: false
-      - name: Verify syntax, recipient binding and no-send behavior
+
+      - name: Verify PHP, JavaScript and focused invitation contracts
         run: |
+          php -v
           php -l KCMC-Connect-Phase6-Recreated/admin/users.php
           php -l KCMC-Connect-Phase6-Recreated/admin/invitation-delivery.php
           php -l KCMC-Connect-Phase6-Recreated/lib/invitation-delivery.php
@@ -33,11 +45,11 @@ jobs:
           php tests/invitation-delivery.php
           node --test tests/invitation-delivery.cjs
           git diff --check
-      - name: Require the complete browser runner before release
+
+      - name: Install browser acceptance dependencies
         run: |
-          if [ ! -f tests/invitation-delivery-browser.py ]; then
-            echo 'Full-app browser runner upload is blocked. Keep this change in draft; component tests do not replace full-app acceptance.'
-            exit 1
-          fi
-          echo 'Full browser acceptance must be executed and its evidence reviewed before release.'
-          exit 1
+          python3 -m pip install --disable-pip-version-check --no-cache-dir playwright
+          python3 -m playwright install --with-deps chromium
+
+      - name: Run full-app invitation acceptance
+        run: python3 tests/invitation-delivery-browser.py
