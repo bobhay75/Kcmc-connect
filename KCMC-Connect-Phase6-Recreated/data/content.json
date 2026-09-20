@@ -2,7 +2,7 @@
   "meta": {
     "version": "3.0.0",
     "content_release": "3.0.0",
-    "updated_at": "2026-09-01T12:00:00-05:00",
+    "updated_at": "2026-09-20T09:18:00-05:00",
     "updated_by": "KCMC Connect"
   },
   "contact": {
@@ -36,7 +36,7 @@
   ],
   "bulletin": {
     "title": "Sunday at KCMC",
-    "date": "",
+    "date": "2026-09-20",
     "welcome": "Come as you are. Grow in faith. Serve the Ozarks.",
     "services": [
       {"time":"8:00 AM","name":"Front Porch Gospel","detail":"Old-time country and bluegrass gospel with an uplifting biblical message."},
@@ -50,6 +50,23 @@
     ]
   },
   "events": [
+    {"id":"front-porch-gospel-20260920","title":"Front Porch Gospel","date":"2026-09-20","time":"8:00 AM","location":"KCMC","description":"Sunday worship service from the weekly church calendar.","status":"published","expires_at":"2026-09-21T00:00:00-05:00"},
+    {"id":"traditional-worship-20260920","title":"Traditional Worship","date":"2026-09-20","time":"9:15 AM","location":"KCMC","description":"Sunday worship service from the weekly church calendar.","status":"published","expires_at":"2026-09-21T00:00:00-05:00"},
+    {"id":"contemporary-worship-20260920","title":"Contemporary Worship","date":"2026-09-20","time":"10:30 AM","location":"KCMC","description":"Sunday worship service from the weekly church calendar.","status":"published","expires_at":"2026-09-21T00:00:00-05:00"},
+    {"id":"launchkids-20260920","title":"LaunchKids Children’s Church","date":"2026-09-20","time":"10:30 AM","location":"KCMC","description":"Children’s church during the 10:30 AM Sunday worship time.","status":"published","expires_at":"2026-09-21T00:00:00-05:00"},
+    {"id":"quest-preschool-20260922","title":"Quest Preschool","date":"2026-09-22","time":"8:30 AM","location":"KCMC","description":"Quest Preschool from the weekly church calendar.","status":"published","expires_at":"2026-09-23T00:00:00-05:00"},
+    {"id":"staff-meeting-20260922","title":"Staff Meeting","date":"2026-09-22","time":"9:00 AM","location":"KCMC","description":"Church staff meeting from the weekly church calendar.","status":"published","expires_at":"2026-09-23T00:00:00-05:00"},
+    {"id":"bell-choir-rehearsal-20260922","title":"Bell Choir Rehearsal","date":"2026-09-22","time":"5:15 PM","location":"KCMC","description":"Bell Choir rehearsal from the weekly church calendar.","status":"published","expires_at":"2026-09-23T00:00:00-05:00"},
+    {"id":"quest-preschool-20260923","title":"Quest Preschool","date":"2026-09-23","time":"8:30 AM","location":"KCMC","description":"Quest Preschool from the weekly church calendar.","status":"published","expires_at":"2026-09-24T00:00:00-05:00"},
+    {"id":"griefshare-20260923","title":"GriefShare","date":"2026-09-23","time":"9:30 AM","location":"KCMC","description":"GriefShare from the weekly church calendar.","status":"published","expires_at":"2026-09-24T00:00:00-05:00"},
+    {"id":"salt-light-bible-study-20260923","title":"Salt & Light Adult Bible Study","date":"2026-09-23","time":"5:17 PM","location":"KCMC","description":"Adult Bible study from the weekly church calendar.","status":"published","expires_at":"2026-09-24T00:00:00-05:00"},
+    {"id":"launchpad-kids-20260923","title":"LaunchPad Kids","date":"2026-09-23","time":"5:17 PM","location":"KCMC","description":"LaunchPad Kids from the weekly church calendar.","status":"published","expires_at":"2026-09-24T00:00:00-05:00"},
+    {"id":"rooted-youth-20260923","title":"Rooted Youth","date":"2026-09-23","time":"5:17 PM","location":"KCMC","description":"Rooted Youth from the weekly church calendar.","status":"published","expires_at":"2026-09-24T00:00:00-05:00"},
+    {"id":"quest-preschool-20260924","title":"Quest Preschool","date":"2026-09-24","time":"8:30 AM","location":"KCMC","description":"Quest Preschool from the weekly church calendar.","status":"published","expires_at":"2026-09-25T00:00:00-05:00"},
+    {"id":"coffee-bible-study-20260924","title":"Coffee & Bible Study","date":"2026-09-24","time":"8:30 AM","location":"KCMC","description":"Coffee & Bible Study from the weekly church calendar.","status":"published","expires_at":"2026-09-25T00:00:00-05:00"},
+    {"id":"beginners-line-dancing-20260924","title":"Beginners Line Dancing","date":"2026-09-24","time":"5:45 PM","location":"KCMC","description":"Beginners Line Dancing from the weekly church calendar.","status":"published","expires_at":"2026-09-25T00:00:00-05:00"},
+    {"id":"intermediate-line-dancing-20260924","title":"Intermediate Line Dancing","date":"2026-09-24","time":"6:30 PM","location":"KCMC","description":"Intermediate Line Dancing from the weekly church calendar.","status":"published","expires_at":"2026-09-25T00:00:00-05:00"},
+    {"id":"friday-night-freedom-20260925","title":"Friday Night Freedom Worship Service","date":"2026-09-25","time":"6:00 PM","location":"KCMC","description":"Friday Night Freedom Worship Service from the weekly church calendar.","status":"published","expires_at":"2026-09-26T00:00:00-05:00"},
     {"id":"griefshare-0902","title":"GriefShare begins","date":"2026-09-02","time":"9:30 AM","location":"KCMC","status":"published","expires_at":"2026-09-03T00:00:00-05:00"},
     {"id":"mens-breakfast-0905","title":"Men’s Ministry Breakfast","date":"2026-09-05","time":"8:30 AM","location":"KCMC Fellowship Hall","status":"published","expires_at":"2026-09-06T00:00:00-05:00"},
     {"id":"adult-bible-study-0913","title":"Adult Bible Study with Linda Rann","date":"2026-09-13","time":"10:15 AM","location":"KCMC","status":"published","expires_at":"2026-09-14T00:00:00-05:00"},
