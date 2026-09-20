@@ -115,8 +115,9 @@ def main() -> int:
 
                 gmail = page.locator("[data-invite-gmail]")
                 href = gmail.get_attribute("href") or ""
-                if not href.startswith("https://mail.google.com/"):
-                    die("Gmail action did not point to the fixed Gmail origin")
+                resolved_href = gmail.evaluate("(a) => a.href")
+                if not str(resolved_href).startswith("https://mail.google.com/"):
+                    die(f"Gmail action did not point to the fixed Gmail origin; href={href!r} resolved={resolved_href!r}")
                 if "token=" in href or "body=" in href:
                     die("Gmail compose URL leaked the private invitation token/body")
 
