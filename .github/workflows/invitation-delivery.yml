@@ -8,7 +8,10 @@ on:
       - 'KCMC-Connect-Phase6-Recreated/admin/invitation-delivery.js'
       - 'KCMC-Connect-Phase6-Recreated/admin/invitation-delivery.css'
       - 'KCMC-Connect-Phase6-Recreated/lib/invitation-delivery.php'
+      - 'KCMC-Connect-Phase6-Recreated/member/activate.php'
+      - 'KCMC-Connect-Phase6-Recreated/lib/bootstrap.php'
       - 'tests/invitation-delivery*'
+      - 'tests/invitation-activation.php'
       - '.github/workflows/invitation-delivery.yml'
   push:
     branches: [main]
@@ -18,7 +21,10 @@ on:
       - 'KCMC-Connect-Phase6-Recreated/admin/invitation-delivery.js'
       - 'KCMC-Connect-Phase6-Recreated/admin/invitation-delivery.css'
       - 'KCMC-Connect-Phase6-Recreated/lib/invitation-delivery.php'
+      - 'KCMC-Connect-Phase6-Recreated/member/activate.php'
+      - 'KCMC-Connect-Phase6-Recreated/lib/bootstrap.php'
       - 'tests/invitation-delivery*'
+      - 'tests/invitation-activation.php'
       - '.github/workflows/invitation-delivery.yml'
   workflow_dispatch:
 
@@ -41,8 +47,12 @@ jobs:
           php -l KCMC-Connect-Phase6-Recreated/admin/users.php
           php -l KCMC-Connect-Phase6-Recreated/admin/invitation-delivery.php
           php -l KCMC-Connect-Phase6-Recreated/lib/invitation-delivery.php
+          php -l KCMC-Connect-Phase6-Recreated/member/activate.php
+          php -l KCMC-Connect-Phase6-Recreated/lib/bootstrap.php
+          php -l tests/invitation-activation.php
           node --check KCMC-Connect-Phase6-Recreated/admin/invitation-delivery.js
           php tests/invitation-delivery.php
+          php tests/invitation-activation.php
           node --test tests/invitation-delivery.cjs
           git diff --check
 
