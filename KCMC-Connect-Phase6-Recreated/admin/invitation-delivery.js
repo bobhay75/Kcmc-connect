@@ -18,11 +18,25 @@
   const destinations = new Map(compose.map(a => [a, a.dataset.composeUrl]));
   let copying = false;
   let copiedMessage = false;
+  const safeDestination = (anchor, value) => {
+    if (typeof value !== 'string' || /[\u0000-\u001F\u007F]/.test(value)) return false;
+    try {
+      const url = new URL(value, document.baseURI);
+      if (anchor.hasAttribute('data-invite-gmail')) {
+        return url.protocol === 'https:' && url.hostname === 'mail.google.com' &&
+          (url.pathname === '/mail/' || url.pathname === '/mail');
+      }
+      return url.protocol === 'mailto:';
+    } catch (_) {
+      return false;
+    }
+  };
   const update = () => {
     buttons.forEach(button => { button.disabled = !confirm.checked || copying; });
     compose.forEach(a => {
-      if (confirm.checked && !copying) {
-        a.href = destinations.get(a);
+      const destination = destinations.get(a);
+      if (confirm.checked && !copying && safeDestination(a, destination)) {
+        a.href = destination;
         a.removeAttribute('aria-disabled');
         a.removeAttribute('tabindex');
       } else {
@@ -65,7 +79,7 @@
     }
   }));
   compose.forEach(a => a.addEventListener('click', event => {
-    if (!confirm.checked || copying) { event.preventDefault(); return; }
+    if (!confirm.checked || copying || !safeDestination(a, destinations.get(a))) { event.preventDefault(); return; }
     const isGmail = a.hasAttribute('data-invite-gmail');
     status.textContent = `${isGmail ? 'In Gmail' : 'In your email app'}, ${copiedMessage ? 'paste the copied email' : 'paste the full invitation email from the manual-copy section'}, check To: ${email}, and click Send. ${isGmail ? 'If no compose window opens, open Gmail manually.' : 'If nothing opens, use Open Gmail or copy manually.'} This page cannot confirm delivery.`;
   }));
