@@ -22,15 +22,15 @@ function harness(options={}) {
   message.value='Hi Dana Example,\nFor dana@example.invalid only:\n'+link.value;
   recipient.textContent='dana@example.invalid';
   const buttons=['message','link'].map(kind=>{const b=new Element();b.dataset.copyInvitation=kind;return b;});
-  const gmail=new Element();gmail.dataset.composeUrl='https://mail.google.com/mail/?view=cm&fs=1&to=dana%40example.invalid&su=Invitation';gmail.attributes['data-invite-gmail']='';
-  const mail=new Element();mail.dataset.composeUrl='mailto:dana%40example.invalid?subject=Invitation';
+  const gmail=new Element();gmail.dataset.composeUrl=options.gmailUrl||'https://mail.google.com/mail/?view=cm&fs=1&to=dana%40example.invalid&su=Invitation';gmail.attributes['data-invite-gmail']='';
+  const mail=new Element();mail.dataset.composeUrl=options.mailUrl||'mailto:dana%40example.invalid?subject=Invitation';
   const controls=[new Element(),new Element(),new Element()];
   const mapping={'[data-invite-confirm]':confirm,'[data-invite-status]':status,'[data-invite-manual]':manual,'[data-invite-message]':message,'[data-invite-link]':link,'[data-invite-email]':recipient};
   const root={querySelector:s=>mapping[s]||null,querySelectorAll:s=>s==='[data-copy-invitation]'?buttons:s==='[data-compose-url]'?[gmail,mail]:controls};
   const calls=[];
   const navigator=options.noClipboard?{}:{clipboard:{writeText:async text=>{calls.push(text);return options.write?.(text);}}};
-  document={activeElement:null,querySelector:()=>options.noRoot?null:root};
-  vm.runInNewContext(source,{document,navigator,window:{isSecureContext:!options.insecure}});
+  document={activeElement:null,baseURI:'https://bobsome1.com/kcmc-connect/admin/users.php',querySelector:()=>options.noRoot?null:root};
+  vm.runInNewContext(source,{document,navigator,window:{isSecureContext:!options.insecure},URL});
   const check=(value=true)=>{confirm.checked=value;confirm.fire('change');};
   const click=async(index=0)=>{const x=buttons[index].fire('click');await x.result;return x.event;};
   return {confirm,status,manual,message,link,recipient,buttons,gmail,mail,controls,calls,document,check,click};
@@ -40,6 +40,9 @@ test('no clipboard write or compose href before explicit recipient check',()=>{
 });
 test('recipient confirmation enables controls and uses only fixed compose destinations',()=>{
  const h=harness();h.check();assert.ok(h.buttons.every(b=>!b.disabled));assert.match(h.gmail.href,/^https:\/\/mail.google.com\//);assert.doesNotMatch(h.gmail.href,/token|body=/);
+});
+test('unsafe compose destinations never become active links',()=>{
+ const h=harness({gmailUrl:'javascript:alert(1)',mailUrl:'https://evil.invalid/compose'});h.check();assert.equal(h.gmail.href,undefined);assert.equal(h.mail.href,undefined);assert.equal(h.gmail.attributes['aria-disabled'],'true');assert.equal(h.mail.attributes['aria-disabled'],'true');
 });
 test('disabled copy and compose clicks do nothing',async()=>{
  const h=harness();await h.click();assert.deepEqual(h.calls,[]);assert.equal(h.gmail.fire('click').event.prevented,true);
