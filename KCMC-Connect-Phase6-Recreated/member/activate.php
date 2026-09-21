@@ -76,7 +76,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $invite) {
 <html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="robots" content="noindex,nofollow"><meta name="referrer" content="no-referrer"><title>Create Password • KCMC Connect</title><link rel="stylesheet" href="<?=kcmc_h(kcmc_url('styles.css?v=3.0.0'))?>"></head>
 <body class="portal-body"><main class="portal-shell portal-narrow"><a class="portal-back" href="<?=kcmc_h(kcmc_url())?>">← KCMC Connect</a><section class="portal-card">
 <?php if (!$invite): ?>
-  <p class="eyebrow">INVITATION EXPIRED</p><h1>This link is no longer valid.</h1><p>Ask Tony, Barry or the KCMC system administrator for a new invitation.</p>
+  <p class="eyebrow">INVITATION EXPIRED</p><h1>This link is no longer valid.</h1><p>Ask a KCMC Pastor administrator or system administrator for a new invitation.</p>
 <?php else: ?>
   <p class="eyebrow">WELCOME TO KCMC CONNECT</p><h1>Create your password.</h1><p class="portal-lead">This one-time link is for <?=kcmc_h((string)$invite['display_name'])?>.</p>
   <?php if ($error): ?><p class="portal-alert error" role="alert"><?=kcmc_h($error)?></p><?php endif; ?>
