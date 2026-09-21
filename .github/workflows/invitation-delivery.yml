@@ -8,6 +8,7 @@ on:
       - 'KCMC-Connect-Phase6-Recreated/admin/invitation-delivery.js'
       - 'KCMC-Connect-Phase6-Recreated/admin/invitation-delivery.css'
       - 'KCMC-Connect-Phase6-Recreated/lib/invitation-delivery.php'
+      - 'KCMC-Connect-Phase6-Recreated/lib/invitation-mailer.php'
       - 'KCMC-Connect-Phase6-Recreated/member/activate.php'
       - 'KCMC-Connect-Phase6-Recreated/member/login.php'
       - 'KCMC-Connect-Phase6-Recreated/member/first-login.php'
@@ -18,6 +19,7 @@ on:
       - 'KCMC-Connect-Phase6-Recreated/admin/prayers.php'
       - 'KCMC-Connect-Phase6-Recreated/admin/index.php'
       - 'tests/invitation-delivery*'
+      - 'tests/invitation-mailer.php'
       - 'tests/invitation-activation.php'
       - 'tests/member-onboarding-contract.php'
       - 'tests/role-boundaries.php'
@@ -67,6 +69,7 @@ jobs:
           php -l KCMC-Connect-Phase6-Recreated/admin/users.php
           php -l KCMC-Connect-Phase6-Recreated/admin/invitation-delivery.php
           php -l KCMC-Connect-Phase6-Recreated/lib/invitation-delivery.php
+          php -l KCMC-Connect-Phase6-Recreated/lib/invitation-mailer.php
           php -l KCMC-Connect-Phase6-Recreated/member/activate.php
           php -l KCMC-Connect-Phase6-Recreated/member/login.php
           php -l KCMC-Connect-Phase6-Recreated/member/first-login.php
@@ -82,6 +85,7 @@ jobs:
           php -l tests/publishing-calendar-contract.php
           node --check KCMC-Connect-Phase6-Recreated/admin/invitation-delivery.js
           php tests/invitation-delivery.php
+          php tests/invitation-mailer.php
           php tests/invitation-activation.php
           php tests/member-onboarding-contract.php
           php tests/role-boundaries.php
