@@ -36,25 +36,28 @@ foreach ([
     expect_same($expected, kcmc_event_time_minutes($time), "Event time parsing for {$time}.");
 }
 
+// Keep visibility fixtures relative to the runtime clock so this contract does
+// not start failing merely because the calendar date advanced.
+$now = time();
 $content = [
     'events' => [
         [
             'id' => 'published',
-            'date' => '2026-09-20',
+            'date' => date('Y-m-d', $now),
             'time' => '8:00 AM',
             'status' => 'published',
-            'expires_at' => '2026-09-21T00:00:00-05:00',
+            'expires_at' => gmdate('c', $now + 86400),
         ],
         [
             'id' => 'expired',
-            'date' => '2026-09-01',
+            'date' => date('Y-m-d', $now - 172800),
             'time' => '8:00 AM',
             'status' => 'published',
-            'expires_at' => '2026-09-02T00:00:00-05:00',
+            'expires_at' => gmdate('c', $now - 86400),
         ],
         [
             'id' => 'hidden',
-            'date' => '2026-09-21',
+            'date' => date('Y-m-d', $now + 86400),
             'time' => '8:00 AM',
             'status' => 'hidden',
         ],
