@@ -55,6 +55,10 @@ if grep -Fq "date('Sunday, F j, Y'" "$app_dir/bulletin.php"; then
   fail "Broken literal Sunday date format remains"
 fi
 grep -Fq 'document.body.dataset.officeEmail' "$app_dir/app.js" || fail "Public forms ignore the published church email"
+grep -Fq 'data-share-app' "$app_dir/index.php" || fail "KCMC Connect share control is missing"
+grep -Fq "typeof navigator.share==='function'" "$app_dir/app.js" || fail "Native Web Share support is missing"
+grep -Fq 'navigator.clipboard?.writeText' "$app_dir/app.js" || fail "Share copy fallback is missing"
+grep -Fq "new URL('./',window.location.href).href" "$app_dir/app.js" || fail "Share target is not normalized to the KCMC app root"
 grep -q "REQUEST_METHOD.*POST" "$app_dir/member/logout.php" || fail "Sign-out is not restricted to POST"
 grep -q "kcmc_verify_csrf" "$app_dir/member/logout.php" || fail "Sign-out CSRF protection is missing"
 grep -q "data-end-time" "$app_dir/index.php" || fail "Event end time is not exposed to calendar export"
