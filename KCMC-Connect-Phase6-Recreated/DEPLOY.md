@@ -28,16 +28,41 @@ The recovery administrator can restore access and publish public content, but th
 
 ## Invitation email configuration
 
-Direct invitation email is **disabled by default**. Manual recipient-checked delivery remains available unless all of the following are configured on the server:
+Direct invitation email is **disabled by default**. Manual recipient-checked delivery remains available until direct mail is deliberately enabled.
+
+### cPanel-friendly path
+
+Because `config.php` is server-only, denied by Apache and preserved across deployments, shared cPanel hosting may configure direct mail there without committing settings to Git:
+
+```php
+<?php
+return [
+    'church_email' => 'secretary@umckc.org',
+    'session_name' => 'KCMC_CONNECT_V3',
+    'invitation_mail_enabled' => true,
+    'invitation_from' => 'AUTHORIZED-SENDER@YOUR-DOMAIN',
+    'invitation_from_name' => 'KCMC Connect',
+];
+```
+
+Use an address that the hosting account/domain is actually authorized to send as. Do not copy the placeholder address literally.
+
+### Environment-variable path
+
+Environment variables take precedence over `config.php` when present:
 
 1. Set `KCMC_INVITATION_MAIL_ENABLED=1`.
-2. Set `KCMC_INVITATION_FROM` to a valid sender address that this hosting account/domain is authorized to send as.
+2. Set `KCMC_INVITATION_FROM` to a valid authorized sender address.
 3. Optionally set `KCMC_INVITATION_FROM_NAME` (default: `KCMC Connect`).
-4. Create a test invitation to an address you control and explicitly check **Email this invitation now**.
-5. Verify the app reports that the configured server mail transport accepted the message, then independently confirm inbox receipt. A successful PHP `mail()` handoff is not proof of final delivery.
-6. If delivery fails, leave direct sending disabled and use the existing manual/Gmail handoff until cPanel mail routing, SPF/DKIM and sender authorization are verified.
 
-Do not configure a From address that the server is not authorized to send as. Never put invitation tokens, SMTP credentials or mail secrets in Git.
+### Verify before relying on direct mail
+
+1. Create a test invitation to an address you control and explicitly check **Email this invitation now**.
+2. Verify the app reports that the configured server mail transport accepted the message.
+3. Independently confirm inbox receipt. A successful PHP `mail()` handoff is not proof of final delivery.
+4. If delivery fails, disable direct sending and use the existing manual/Gmail handoff until cPanel mail routing, SPF/DKIM and sender authorization are verified.
+
+Never put invitation tokens, SMTP credentials or mail secrets in Git.
 
 ## Prayer privacy checks
 
@@ -56,7 +81,6 @@ Before launch, verify all of the following:
 1. Confirm the homepage, current bulletin and all navigation views.
 2. Confirm worship times are 8:00 AM, 9:15 AM and 10:30 AM against the church's current public schedule.
 3. Confirm office hours display Tuesday–Thursday, 9:00 AM–4:00 PM even though production `data/content.json` is preserved.
-
 4. Confirm Chrome DevTools shows the `kcmc-connect-v3.0.1` service worker cache.
 5. Publish a harmless bulletin-note change and verify it survives another deployment.
 6. Confirm `config.php`, `data/private/` and `backups/` were not overwritten.
