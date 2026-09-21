@@ -75,7 +75,7 @@ foreach ([
     "kcmc_valid_event_date",
     "kcmc_event_time_minutes",
     "Event end time must be later than the start time.",
-    "kcmc_local_datetime_iso($ex,true)",
+    'kcmc_local_datetime_iso($ex,true)',
 ] as $needle) {
     if (!str_contains($repo, $needle)) {
         fwrite(STDERR, "FAIL: Publishing Desk contract missing: {$needle}\n");
