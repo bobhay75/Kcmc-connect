@@ -106,6 +106,24 @@ function kcmc_local_datetime_iso(string $value, bool $endOfDay = false): string 
     return $date->format(DateTimeInterface::ATOM);
 }
 
+function kcmc_valid_event_date(string $value): bool {
+    $value = trim($value);
+    if ($value === '') return false;
+    $date = DateTimeImmutable::createFromFormat('!Y-m-d', $value, new DateTimeZone(KCMC_LOCAL_TIMEZONE));
+    return $date !== false && $date->format('Y-m-d') === $value;
+}
+
+function kcmc_event_time_minutes(string $value): ?int {
+    $value = trim($value);
+    if ($value === '') return null;
+    if (!preg_match('/\\A(0?[1-9]|1[0-2]):([0-5][0-9])\\s*([AaPp][Mm])\\z/', $value, $m)) return null;
+    $hour = (int)$m[1];
+    $minute = (int)$m[2];
+    if (strtolower($m[3]) === 'pm' && $hour !== 12) $hour += 12;
+    if (strtolower($m[3]) === 'am' && $hour === 12) $hour = 0;
+    return ($hour * 60) + $minute;
+}
+
 function kcmc_text_length(string $value): int {
     return function_exists('mb_strlen') ? mb_strlen($value, 'UTF-8') : strlen($value);
 }
