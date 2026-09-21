@@ -1,4 +1,4 @@
-KCMC CONNECT — VERSION 3.0.0
+KCMC CONNECT — VERSION 3.0.1
 ============================
 
 Runtime:
