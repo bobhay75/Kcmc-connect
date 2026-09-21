@@ -50,4 +50,24 @@ $throwing = static function (): bool { throw new RuntimeException('synthetic'); 
 $r = kcmc_send_invitation_email($delivery, $throwing, ['enabled' => true, 'from' => 'connect@example.org', 'from_name' => 'KCMC Connect']);
 check_mail(!$r['sent'] && $r['reason'] === 'transport_exception', 'transport exception fails closed');
 
+// Simulate the preserved cPanel config.php path without touching a real config file.
+if (!function_exists('kcmc_config')) {
+    function kcmc_config(): array {
+        return [
+            'invitation_mail_enabled' => true,
+            'invitation_from' => 'cpanel@example.org',
+            'invitation_from_name' => 'KCMC Mail',
+        ];
+    }
+}
+putenv('KCMC_INVITATION_MAIL_ENABLED');
+putenv('KCMC_INVITATION_FROM');
+putenv('KCMC_INVITATION_FROM_NAME');
+$settings = kcmc_invitation_mail_settings();
+check_mail($settings['ready'] && $settings['from'] === 'cpanel@example.org' && $settings['from_name'] === 'KCMC Mail', 'preserved cPanel config can enable direct mail');
+putenv('KCMC_INVITATION_MAIL_ENABLED=0');
+$settings = kcmc_invitation_mail_settings();
+check_mail(!$settings['ready'], 'environment setting overrides preserved cPanel config');
+putenv('KCMC_INVITATION_MAIL_ENABLED');
+
 echo "Invitation mailer checks passed: {$passed}\n";
