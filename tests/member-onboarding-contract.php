@@ -6,6 +6,7 @@ $activate = file_get_contents($root . '/member/activate.php');
 $login = file_get_contents($root . '/member/login.php');
 $first = file_get_contents($root . '/member/first-login.php');
 $bootstrap = file_get_contents($root . '/lib/bootstrap.php');
+$users = file_get_contents($root . '/admin/users.php');
 
 function verify(bool $condition, string $message): void {
     if (!$condition) {
@@ -14,7 +15,7 @@ function verify(bool $condition, string $message): void {
     }
 }
 
-foreach (['activate' => $activate, 'login' => $login, 'first-login' => $first, 'bootstrap' => $bootstrap] as $name => $source) {
+foreach (['activate' => $activate, 'login' => $login, 'first-login' => $first, 'bootstrap' => $bootstrap, 'users' => $users] as $name => $source) {
     verify(is_string($source) && $source !== '', "{$name} source is readable.");
 }
 
@@ -41,5 +42,12 @@ verify(str_contains($login, 'recipient-bound, one-time invitation'), 'Member log
 
 verify(str_contains($bootstrap, 'session_regenerate_id(true);'), 'Authentication regenerates the PHP session identifier.');
 verify(str_contains($bootstrap, "\$_SESSION['kcmc_user_id']"), 'Authentication stores only the user identifier in the session.');
+
+verify(str_contains($users, '$pendingInvites'), 'Member Access derives a pending invitation list.');
+verify(str_contains($users, 'PENDING INVITATIONS'), 'Member Access labels pending invitations clearly.');
+verify(str_contains($users, "!empty(\$invite['used_at'])"), 'Pending invitations exclude used or superseded records.');
+verify(str_contains($users, '$expiresAt > time()'), 'Pending invitations exclude expired records.');
+verify(!str_contains($users, "\$pending['token_hash']"), 'Pending invitation rows never render token hashes.');
+verify(!str_contains($users, "\$pending['id']"), 'Pending invitation rows do not expose internal invitation IDs.');
 
 echo "KCMC member onboarding contract checks passed.\n";
