@@ -1,5 +1,15 @@
 # KCMC Connect Release Notes
 
+## 3.0.1 — Invitation hardening, sharing and current contact data
+
+- Retired the legacy shared pastor first-sign-in code path; pastor administrators now onboard through recipient-bound one-time invitations.
+- Added explicit app-sent invitation capability behind fail-closed server mail configuration and administrator opt-in, while preserving manual delivery fallback.
+- Added native device sharing for KCMC Connect with an accessible copy-link fallback.
+- Updated public office hours to Tuesday–Thursday, 9:00 AM–4:00 PM to match the current official church website.
+- Made calendar visibility regression tests time-independent so release gates do not fail merely because the date advances.
+- Bumped PWA asset and service-worker cache versions so installed devices refresh the changed client code after deployment.
+
+
 ## 3.0.0 — Private member prayer and individual access
 
 - Moved prayer submission, prayer details and the approved prayer wall behind verified member sign-in.

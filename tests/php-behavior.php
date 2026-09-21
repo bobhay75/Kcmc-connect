@@ -26,8 +26,9 @@ expect_same(1, kcmc_featured_announcement_index($announcements), 'Publishing mus
 $announcements[] = ['id' => 'owner-announcement', 'priority' => 10, 'status' => 'hidden'];
 expect_same(3, kcmc_featured_announcement_index($announcements), 'The stable owner announcement must remain editable.');
 
-$content = ['events' => []];
+$content = ['events' => [], 'contact' => ['office_hours' => 'Tue–Thu • 8:00 AM–4:00 PM']];
 expect_same(true, kcmc_apply_required_public_content($content), 'Required public content must be added once.');
+expect_same('Tue–Thu • 9:00 AM–4:00 PM', $content['contact']['office_hours'], 'Required public content overlays verified office hours on preserved production content.');
 expect_same(false, kcmc_apply_required_public_content($content), 'Required public content migration must be idempotent.');
 
 expect_same('/kcmc-connect/admin/', kcmc_safe_next('/kcmc-connect/admin/'), 'Local redirects must remain available.');

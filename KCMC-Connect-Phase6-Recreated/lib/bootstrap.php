@@ -201,13 +201,27 @@ function kcmc_apply_required_public_content(array &$data): bool {
         ],
     ];
 
+    $changed = false;
+
+    // cPanel preserves production data/content.json across deployments. Layer
+    // verified must-have contact data here so current public facts reach the
+    // live app without overwriting other Publishing Desk content.
+    if (!isset($data['contact']) || !is_array($data['contact'])) {
+        $data['contact'] = [];
+        $changed = true;
+    }
+    $requiredOfficeHours = 'Tue–Thu • 9:00 AM–4:00 PM';
+    if (($data['contact']['office_hours'] ?? '') !== $requiredOfficeHours) {
+        $data['contact']['office_hours'] = $requiredOfficeHours;
+        $changed = true;
+    }
+
     if (!isset($data['events']) || !is_array($data['events'])) $data['events'] = [];
     $existingIds = [];
     foreach ($data['events'] as $event) {
         if (is_array($event) && isset($event['id'])) $existingIds[(string)$event['id']] = true;
     }
 
-    $changed = false;
     foreach ($requiredEvents as $event) {
         if (isset($existingIds[$event['id']])) continue;
         $data['events'][] = $event;

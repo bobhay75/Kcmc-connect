@@ -26,6 +26,19 @@ Newsletter page photographs are also prohibited. Deployment removes the retired 
 
 The recovery administrator can restore access and publish public content, but the application deliberately prevents that role from reading, submitting or moderating prayer requests.
 
+## Invitation email configuration
+
+Direct invitation email is **disabled by default**. Manual recipient-checked delivery remains available unless all of the following are configured on the server:
+
+1. Set `KCMC_INVITATION_MAIL_ENABLED=1`.
+2. Set `KCMC_INVITATION_FROM` to a valid sender address that this hosting account/domain is authorized to send as.
+3. Optionally set `KCMC_INVITATION_FROM_NAME` (default: `KCMC Connect`).
+4. Create a test invitation to an address you control and explicitly check **Email this invitation now**.
+5. Verify the app reports that the configured server mail transport accepted the message, then independently confirm inbox receipt. A successful PHP `mail()` handoff is not proof of final delivery.
+6. If delivery fails, leave direct sending disabled and use the existing manual/Gmail handoff until cPanel mail routing, SPF/DKIM and sender authorization are verified.
+
+Do not configure a From address that the server is not authorized to send as. Never put invitation tokens, SMTP credentials or mail secrets in Git.
+
 ## Prayer privacy checks
 
 Before launch, verify all of the following:
@@ -42,10 +55,12 @@ Before launch, verify all of the following:
 
 1. Confirm the homepage, current bulletin and all navigation views.
 2. Confirm worship times are 8:00 AM, 9:15 AM and 10:30 AM against the church's current public schedule.
-3. Confirm Chrome DevTools shows the `kcmc-connect-v3.0.0` service worker cache.
-4. Publish a harmless bulletin-note change and verify it survives another deployment.
-5. Confirm `config.php`, `data/private/` and `backups/` were not overwritten.
-6. Confirm `/admin/setup.php` redirects to sign-in after the first account exists.
-7. Confirm no file or URL under `assets/newsletter/` is present in the deployed app.
+3. Confirm office hours display Tuesday–Thursday, 9:00 AM–4:00 PM even though production `data/content.json` is preserved.
+
+4. Confirm Chrome DevTools shows the `kcmc-connect-v3.0.1` service worker cache.
+5. Publish a harmless bulletin-note change and verify it survives another deployment.
+6. Confirm `config.php`, `data/private/` and `backups/` were not overwritten.
+7. Confirm `/admin/setup.php` redirects to sign-in after the first account exists.
+8. Confirm no file or URL under `assets/newsletter/` is present in the deployed app.
 
 No shared administrator password or secret application backdoor is supported.
