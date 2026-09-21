@@ -26,7 +26,7 @@ Never publish or commit photographs/scans of complete newsletter pages. Rebuild 
 | Pastor administrator | All prayer access and approvals | Yes | Yes |
 | Recovery administrator | None | Yes | Yes |
 
-Tony Blevins and Barry Smith should each receive their own invitation and be assigned **Pastor administrator**. Do not share passwords.
+Each person serving as a **Pastor administrator** should receive their own invitation and create their own password. Do not share passwords.
 
 ## Runtime
 
