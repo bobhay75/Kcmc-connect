@@ -1,0 +1,26 @@
+name: KCMC production smoke
+
+on:
+  workflow_dispatch:
+    inputs:
+      base_url:
+        description: Production KCMC Connect base URL
+        required: false
+        default: https://bobsome1.com/kcmc-connect/
+
+permissions:
+  contents: read
+
+jobs:
+  smoke:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          persist-credentials: false
+      - name: Verify production KCMC Connect
+        env:
+          BASE_URL: ${{ inputs.base_url }}
+        run: |
+          bash tests/live-smoke.sh "$BASE_URL"
