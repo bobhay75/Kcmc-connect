@@ -9,7 +9,7 @@ fail() {
   exit 1
 }
 
-grep -q "3.0.1" "$app_dir/VERSION" || fail "Version 3.0.1 marker is missing"
+grep -q "3.0.2" "$app_dir/VERSION" || fail "Version 3.0.2 marker is missing"
 grep -q "data/private/" "$repo_dir/.gitignore" || fail "Private data is not ignored by Git"
 grep -q "assets/newsletter/" "$repo_dir/.gitignore" || fail "Newsletter source pages are not blocked by Git"
 grep -q -- "--exclude='data/private/'" "$repo_dir/.cpanel.yml" || fail "Deployment does not preserve private data"
@@ -66,6 +66,9 @@ grep -Fq '.topbar [data-install-app].install{display:none}' "$app_dir/styles.css
 grep -Fq "typeof navigator.share==='function'" "$app_dir/app.js" || fail "Native Web Share support is missing"
 grep -Fq 'navigator.clipboard?.writeText' "$app_dir/app.js" || fail "Share copy fallback is missing"
 grep -Fq "new URL('./',window.location.href).href" "$app_dir/app.js" || fail "Share target is not normalized to the KCMC app root"
+grep -Fq 'if(!installSheet||installSheet.hidden)return;' "$app_dir/app.js" || fail "Install keyboard guard is not safe when the dialog is absent"
+grep -Fq "try{preferred.value=localStorage.getItem('kcmcPreferredService')||'';}catch(_)" "$app_dir/app.js" || fail "Preferred-service storage read is not guarded"
+grep -Fq "try{localStorage.setItem('kcmcPreferredService',preferred.value);}catch(_)" "$app_dir/app.js" || fail "Preferred-service storage write is not guarded"
 grep -q "REQUEST_METHOD.*POST" "$app_dir/member/logout.php" || fail "Sign-out is not restricted to POST"
 grep -q "kcmc_verify_csrf" "$app_dir/member/logout.php" || fail "Sign-out CSRF protection is missing"
 grep -q "data-end-time" "$app_dir/index.php" || fail "Event end time is not exposed to calendar export"
@@ -77,11 +80,12 @@ if grep -q "Version 3 content migration" "$app_dir/lib/bootstrap.php"; then
   fail "Public content reads can still trigger a release migration write"
 fi
 grep -q "ignoreSearch:true" "$app_dir/sw.js" || fail "Offline cache does not normalize versioned asset requests"
-grep -q "kcmc-connect-v3.0.1" "$app_dir/sw.js" || fail "Service worker cache was not bumped for 3.0.1"
-grep -q "app.js?v=3.0.1" "$app_dir/index.php" || fail "Homepage still references stale app.js version"
+grep -q "kcmc-connect-v3.0.2-public-only" "$app_dir/sw.js" || fail "Service worker cache was not bumped for 3.0.2"
+grep -q "app.js?v=3.0.2" "$app_dir/sw.js" || fail "3.0.2 service worker does not precache the resilient client"
 grep -q "key.startsWith('kcmc-connect-')" "$app_dir/sw.js" || fail "Service worker cache cleanup is not isolated to KCMC Connect"
 node --check "$app_dir/app.js"
 node --check "$app_dir/sw.js"
+node --test "$repo_dir/tests/client-resilience.cjs"
 node --test "$repo_dir/tests/pwa-cache-privacy.cjs"
 bash -n "$repo_dir/tests/live-smoke.sh"
 command -v php >/dev/null || fail "PHP is required for syntax verification"

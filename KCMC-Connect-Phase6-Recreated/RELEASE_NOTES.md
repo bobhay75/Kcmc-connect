@@ -1,5 +1,13 @@
 # KCMC Connect Release Notes
 
+## 3.0.2 — Public-cache hardening and client resilience
+
+- Restricted service-worker runtime and offline caching to an explicit set of public KCMC routes; member, admin, API, data, backup, unknown and token-bearing page URLs remain network-only.
+- Precache requests now omit credentials and honor private/no-store/no-cache response policy before anything is written to Cache Storage.
+- Fixed the install-dialog keyboard handler so pages without that dialog cannot throw on Tab or Escape.
+- Guarded the optional preferred-service `localStorage` setting so blocked browser storage cannot abort the rest of client initialization or prevent service-worker registration.
+- Added regression coverage for the public-only cache boundary and client resilience, and bumped the PWA cache namespace so older broad cache entries are retired on activation.
+
 ## 3.0.1 — Invitation hardening, sharing and current contact data
 
 - Retired the legacy shared pastor first-sign-in code path; pastor administrators now onboard through recipient-bound one-time invitations.

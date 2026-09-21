@@ -95,6 +95,7 @@ test('precache fetches anonymously and reloads from network',async()=>{
   await h.lifecycle('install');
   assert.ok(h.calls.fetch.length>0);
   assert.ok(h.calls.fetch.every(request=>request.credentials==='omit'&&request.cache==='reload'));
+  assert.ok(h.calls.fetch.some(request=>request.url.endsWith('/app.js?v=3.0.2')));
 });
 
 for(const policy of ['no-store','private, max-age=0','no-cache']){
@@ -121,7 +122,7 @@ for(const route of [
   'backups/sample.json',
   './?token=TEST_SECRET',
   'index.php?code=TEST_SECRET',
-  'app.js?v=3.0.1&token=TEST_SECRET',
+  'app.js?v=3.0.2&token=TEST_SECRET',
   'unknown.php'
 ]){
   test(`${route} is network-only and receives no offline fallback`,async()=>{
@@ -136,8 +137,8 @@ for(const route of [
 test('versioned static asset offline lookup stays inside the current KCMC cache',async()=>{
   const h=harness({offline:true});
   await h.seed('other-project-cache','app.js?v=old','WRONG');
-  await h.seed(h.cacheName,'app.js?v=3.0.1','EXPECTED');
-  const result=await h.dispatch('app.js?v=3.0.2');
+  await h.seed(h.cacheName,'app.js?v=3.0.2','EXPECTED');
+  const result=await h.dispatch('app.js?v=3.0.3');
   assert.equal(await result.response.text(),'EXPECTED');
   assert.ok(h.calls.match.every(call=>call.name===h.cacheName));
 });
@@ -165,11 +166,11 @@ test('non-GET and cross-origin requests are untouched',async()=>{
 
 test('activation removes only old KCMC caches',async()=>{
   const h=harness();
-  await h.seed('kcmc-connect-v3.0.1','./');
+  await h.seed('kcmc-connect-v3.0.1-public-only','./');
   await h.seed('project-unveiled-cache','./');
   await h.seed(h.cacheName,'./');
   await h.lifecycle('activate');
-  assert.deepEqual(h.calls.deleted,['kcmc-connect-v3.0.1']);
+  assert.deepEqual(h.calls.deleted,['kcmc-connect-v3.0.1-public-only']);
   assert.ok(h.stores.has('project-unveiled-cache'));
   assert.ok(h.stores.has(h.cacheName));
   assert.equal(h.calls.claim,1);

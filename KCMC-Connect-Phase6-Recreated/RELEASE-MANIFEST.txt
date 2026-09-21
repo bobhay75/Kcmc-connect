@@ -1,4 +1,4 @@
-KCMC CONNECT — VERSION 3.0.1
+KCMC CONNECT — VERSION 3.0.2
 ============================
 
 Runtime:
@@ -8,7 +8,7 @@ Runtime:
 
 Public experience:
 - Public church information, worship, watch, visit, events, news, serve and giving
-- Installable PWA with public-only network-first caching
+- Installable PWA with explicit public-route network-first caching
 - Public Prayer & Care page contains no request form and no prayer details
 - Newsletter information is app-native text; complete newsletter page photographs are prohibited
 - Separately approved individual ministry photos are allowed outside the newsletter-source directory
@@ -24,6 +24,7 @@ Security controls:
 - Role authorization on every private route
 - Secure session cookies, CSRF validation and login throttling
 - One-time, seven-day invitation tokens stored only as hashes
+- Private, unknown, API/data/backup and token-bearing routes stay network-only and receive no offline fallback
 - Private routes use no-store/noindex headers and bypass the service worker
 - Private data and backups are denied by Apache and preserved during deployment
 - Audit events never intentionally include prayer text, passwords or raw invitation tokens
