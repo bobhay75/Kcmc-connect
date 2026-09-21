@@ -10,8 +10,14 @@ on:
       - 'KCMC-Connect-Phase6-Recreated/lib/invitation-delivery.php'
       - 'KCMC-Connect-Phase6-Recreated/member/activate.php'
       - 'KCMC-Connect-Phase6-Recreated/lib/bootstrap.php'
+      - 'KCMC-Connect-Phase6-Recreated/member/prayer-team.php'
+      - 'KCMC-Connect-Phase6-Recreated/member/submit-prayer.php'
+      - 'KCMC-Connect-Phase6-Recreated/member/index.php'
+      - 'KCMC-Connect-Phase6-Recreated/admin/prayers.php'
+      - 'KCMC-Connect-Phase6-Recreated/admin/index.php'
       - 'tests/invitation-delivery*'
       - 'tests/invitation-activation.php'
+      - 'tests/role-boundaries.php'
       - '.github/workflows/invitation-delivery.yml'
   push:
     branches: [main]
@@ -23,8 +29,14 @@ on:
       - 'KCMC-Connect-Phase6-Recreated/lib/invitation-delivery.php'
       - 'KCMC-Connect-Phase6-Recreated/member/activate.php'
       - 'KCMC-Connect-Phase6-Recreated/lib/bootstrap.php'
+      - 'KCMC-Connect-Phase6-Recreated/member/prayer-team.php'
+      - 'KCMC-Connect-Phase6-Recreated/member/submit-prayer.php'
+      - 'KCMC-Connect-Phase6-Recreated/member/index.php'
+      - 'KCMC-Connect-Phase6-Recreated/admin/prayers.php'
+      - 'KCMC-Connect-Phase6-Recreated/admin/index.php'
       - 'tests/invitation-delivery*'
       - 'tests/invitation-activation.php'
+      - 'tests/role-boundaries.php'
       - '.github/workflows/invitation-delivery.yml'
   workflow_dispatch:
 
@@ -49,10 +61,17 @@ jobs:
           php -l KCMC-Connect-Phase6-Recreated/lib/invitation-delivery.php
           php -l KCMC-Connect-Phase6-Recreated/member/activate.php
           php -l KCMC-Connect-Phase6-Recreated/lib/bootstrap.php
+          php -l KCMC-Connect-Phase6-Recreated/member/prayer-team.php
+          php -l KCMC-Connect-Phase6-Recreated/member/submit-prayer.php
+          php -l KCMC-Connect-Phase6-Recreated/member/index.php
+          php -l KCMC-Connect-Phase6-Recreated/admin/prayers.php
+          php -l KCMC-Connect-Phase6-Recreated/admin/index.php
           php -l tests/invitation-activation.php
+          php -l tests/role-boundaries.php
           node --check KCMC-Connect-Phase6-Recreated/admin/invitation-delivery.js
           php tests/invitation-delivery.php
           php tests/invitation-activation.php
+          php tests/role-boundaries.php
           node --test tests/invitation-delivery.cjs
           git diff --check
 
