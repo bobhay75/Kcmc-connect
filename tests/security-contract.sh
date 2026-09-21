@@ -33,6 +33,9 @@ if grep -R -Eq "assets/newsletter|aug-2026-page|newsletter page viewer" "$app_di
 fi
 
 grep -Fq 'privateRoute=/\/(?:member|admin)' "$app_dir/sw.js" || fail "Service worker private-route bypass is missing"
+grep -Fq 'const PUBLIC_PATHS=' "$app_dir/sw.js" || fail "Service worker public-route allowlist is missing"
+grep -Fq '!cacheableRequest(url)' "$app_dir/sw.js" || fail "Service worker unknown-route fail-closed gate is missing"
+grep -Fq "credentials:'omit'" "$app_dir/sw.js" || fail "Service worker precache does not explicitly omit credentials"
 grep -q "Cache-Control: no-store" "$app_dir/lib/bootstrap.php" || fail "Private no-store headers are missing"
 grep -q "X-Robots-Tag: noindex" "$app_dir/lib/bootstrap.php" || fail "Private noindex headers are missing"
 grep -q "kcmc_current_user_if_session" "$app_dir/index.php" || fail "Public homepage still creates anonymous sessions"
@@ -79,6 +82,7 @@ grep -q "app.js?v=3.0.1" "$app_dir/index.php" || fail "Homepage still references
 grep -q "key.startsWith('kcmc-connect-')" "$app_dir/sw.js" || fail "Service worker cache cleanup is not isolated to KCMC Connect"
 node --check "$app_dir/app.js"
 node --check "$app_dir/sw.js"
+node --test "$repo_dir/tests/pwa-cache-privacy.cjs"
 bash -n "$repo_dir/tests/live-smoke.sh"
 command -v php >/dev/null || fail "PHP is required for syntax verification"
 find "$app_dir" -type f -name '*.php' -print0 | xargs -0 -n1 php -l >/dev/null
