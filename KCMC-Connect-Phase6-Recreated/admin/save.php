@@ -40,7 +40,27 @@ foreach($postedEvents as $i=>$p){
     if(array_key_exists('location',$p))$data['events'][$i]['location']=trim((string)$p['location']);
     if(array_key_exists('description',$p))$data['events'][$i]['description']=trim((string)$p['description']);
     $data['events'][$i]['priority']=max(0,min(100,(int)($p['priority']??50)));
-    $data['events'][$i]['status']=($p['status']??'hidden')==='published'?'published':'hidden';
+    $status=($p['status']??'hidden')==='published'?'published':'hidden';
+    $date=$data['events'][$i]['date'];
+    $startMinutes=kcmc_event_time_minutes($data['events'][$i]['time']);
+    $endMinutes=kcmc_event_time_minutes((string)($data['events'][$i]['end_time']??''));
+    if($status==='published' && !kcmc_valid_event_date($date)){
+        http_response_code(422);
+        exit('Each published event must have a valid date.');
+    }
+    if($data['events'][$i]['time']!=='' && $startMinutes===null){
+        http_response_code(422);
+        exit('Event start time must use a format such as 4:30 PM.');
+    }
+    if((string)($data['events'][$i]['end_time']??'')!=='' && $endMinutes===null){
+        http_response_code(422);
+        exit('Event end time must use a format such as 6:30 PM.');
+    }
+    if($startMinutes!==null && $endMinutes!==null && $endMinutes<=$startMinutes){
+        http_response_code(422);
+        exit('Event end time must be later than the start time.');
+    }
+    $data['events'][$i]['status']=$status;
     $ex=trim((string)($p['expires']??''));
     $data['events'][$i]['expires_at']=kcmc_local_datetime_iso($ex,true);
 }
