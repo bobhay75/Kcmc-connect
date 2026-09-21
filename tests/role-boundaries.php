@@ -36,10 +36,10 @@ verify(str_contains($users, "kcmc_require_role(['pastor_admin', 'recovery_admin'
 verify(str_contains($prayers, "kcmc_require_role(['pastor_admin'])"), 'private prayer administration is pastor-only');
 verify(str_contains($team, "kcmc_require_role(['prayer_team', 'pastor_admin'])"), 'confidential prayer-team inbox excludes recovery administrators');
 verify(str_contains($submit, "kcmc_require_role(['member', 'prayer_team', 'pastor_admin'])"), 'prayer submission excludes recovery administrators');
-verify(str_contains($member, "kcmc_has_role(['member', 'prayer_team', 'pastor_admin'], $user)"), 'member prayer-wall access excludes recovery administrators');
-verify(str_contains($users, "if (kcmc_role($current) === 'recovery_admin') $allowed[] = 'recovery_admin';"), 'only recovery administrators can invite another recovery administrator');
-verify(str_contains($users, "kcmc_role($target) === 'pastor_admin' && kcmc_role($current) !== 'recovery_admin'"), 'pastor administrator disablement requires recovery administrator');
-verify(str_contains($users, "kcmc_role($target) === 'recovery_admin' && kcmc_role($current) !== 'recovery_admin'"), 'recovery administrator account changes require recovery administrator');
+verify(str_contains($member, "kcmc_has_role(['member', 'prayer_team', 'pastor_admin'], \$user)"), 'member prayer-wall access excludes recovery administrators');
+verify(str_contains($users, "if (kcmc_role(\$current) === 'recovery_admin') \$allowed[] = 'recovery_admin';"), 'only recovery administrators can invite another recovery administrator');
+verify(str_contains($users, "kcmc_role(\$target) === 'pastor_admin' && kcmc_role(\$current) !== 'recovery_admin'"), 'pastor administrator disablement requires recovery administrator');
+verify(str_contains($users, "kcmc_role(\$target) === 'recovery_admin' && kcmc_role(\$current) !== 'recovery_admin'"), 'recovery administrator account changes require recovery administrator');
 
 // The recovery role must never be granted access by broadening a prayer route.
 verify(!str_contains($prayers, "['pastor_admin', 'recovery_admin']"), 'private prayer administration does not include recovery administrator');

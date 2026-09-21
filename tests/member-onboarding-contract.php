@@ -32,13 +32,12 @@ verify(str_contains($login, 'kcmc_login_is_blocked($email)'), 'Member login appl
 verify(str_contains($login, 'kcmc_safe_next'), 'Member login constrains post-login redirects.');
 verify(str_contains($login, 'autocomplete="current-password"'), 'Member login uses current-password autocomplete.');
 
-verify(str_contains($first, "getenv('KCMC_STAFF_INITIAL_CODE')"), 'Pastor first-login requires a server-side initial code.');
-verify(str_contains($first, 'hash_equals($expectedCode, $code)'), 'Pastor first-login compares the initial code safely.');
-verify(str_contains($first, 'kcmc_login_is_blocked($rateKey)'), 'Pastor first-login applies a dedicated throttle key.');
-verify(str_contains($first, 'password_hash($password, PASSWORD_DEFAULT)'), 'Pastor first-login stores only a password hash.');
-verify(str_contains($first, 'onboarding_completed_at'), 'Pastor first-login records onboarding completion.');
-verify(str_contains($first, 'kcmc_login_user($user)'), 'Pastor first-login establishes the authenticated session.');
-verify(str_contains($first, 'auth.pastor_first_login_completed'), 'Pastor first-login creates an audit event.');
+verify(str_contains($first, 'http_response_code(410);'), 'Legacy pastor first-login route is permanently retired.');
+verify(!str_contains($first, "KCMC_STAFF_INITIAL_CODE"), 'Legacy shared pastor code is not accepted.');
+verify(!str_contains($first, '<form'), 'Retired first-login route exposes no account-creation form.');
+verify(str_contains($first, 'recipient-bound, one-time invitation'), 'Retired first-login route directs pastors to recipient-bound invitations.');
+verify(!str_contains($login, 'member/first-login.php'), 'Member login no longer links to the legacy shared-code route.');
+verify(str_contains($login, 'recipient-bound, one-time invitation'), 'Member login directs all new accounts to the invitation workflow.');
 
 verify(str_contains($bootstrap, 'session_regenerate_id(true);'), 'Authentication regenerates the PHP session identifier.');
 verify(str_contains($bootstrap, "\$_SESSION['kcmc_user_id']"), 'Authentication stores only the user identifier in the session.');
