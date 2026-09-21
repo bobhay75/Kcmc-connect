@@ -74,8 +74,11 @@ function kcmc_send_invitation_email(array $delivery, ?callable $transport = null
         'X-Mailer' => 'KCMC Connect',
     ];
 
-    $sender = $transport ?? static function (string $recipient, string $mailSubject, string $body, array $mailHeaders): bool {
-        return mail($recipient, $mailSubject, $body, $mailHeaders);
+    $sender = $transport ?? static function (string $recipient, string $mailSubject, string $body, array $mailHeaders) use ($settings): bool {
+        // Align the envelope sender with the already-validated local From mailbox.
+        // Shared cPanel/Exim installations may reject the handoff when PHP uses
+        // the account-level default envelope sender instead of the local mailbox.
+        return mail($recipient, $mailSubject, $body, $mailHeaders, '-f' . $settings['from']);
     };
 
     try {
