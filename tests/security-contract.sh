@@ -43,6 +43,8 @@ if grep -R -Eq --exclude='RELEASE_NOTES.md' "admin_password_hash|shared_admin_pa
 fi
 
 jq empty "$app_dir/data/content.json" "$app_dir/manifest.webmanifest"
+jq -e '.contact.office_hours == "Tue–Thu • 9:00 AM–4:00 PM"' "$app_dir/data/content.json" >/dev/null || fail "Published office hours are stale"
+jq -e '.contact.office_hours == "Tue–Thu • 9:00 AM–4:00 PM"' "$app_dir/data/releases/3.0.0.json" >/dev/null || fail "Release seed office hours are stale"
 jq empty "$app_dir/data/releases/3.0.0.json"
 jq -e '[.events[] | select(.id == "trunk-or-treat-2026" and .date == "2026-10-31" and .time == "4:30 PM" and .end_time == "6:30 PM" and .status == "published")] | length == 1' "$app_dir/data/content.json" >/dev/null || fail "Trunk or Treat event is missing or incomplete"
 jq -e '[.events[] | select(.id == "trunk-or-treat-2026")] | length == 1' "$app_dir/data/releases/3.0.0.json" >/dev/null || fail "Trunk or Treat release seed is missing"
