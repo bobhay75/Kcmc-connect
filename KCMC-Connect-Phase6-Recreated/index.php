@@ -40,15 +40,15 @@ usort($kcmcAnnouncements, fn($a,$b)=>(int)($b['priority']??0)<=>(int)($a['priori
 <meta property="og:title" content="KCMC Connect | Kimberling City Methodist Church">
 <meta property="og:description" content="Plan a visit, watch worship, find events, request prayer and connect with KCMC.">
 <meta property="og:type" content="website">
-<meta property="og:image" content="assets/visuals/kimberling-city-missouri-bridge-2024.jpg?v=3.0.0">
+<meta property="og:image" content="assets/visuals/kimberling-city-missouri-bridge-2024.jpg?v=3.0.1">
 <meta name="twitter:card" content="summary_large_image">
 <script type="application/ld+json"><?=$kcmcSchema?></script>
 <title>KCMC Connect</title>
-<link rel="manifest" href="manifest.webmanifest?v=3.0.0">
-<link rel="preload" as="image" href="assets/visuals/kimberling-city-missouri-bridge-2024.jpg?v=3.0.0" type="image/jpeg" fetchpriority="high">
-<link rel="stylesheet" href="styles.css?v=3.0.0">
-<link rel="icon" href="assets/icons/icon-192.png?v=3.0.0">
-<link rel="apple-touch-icon" href="assets/icons/icon-192.png?v=3.0.0">
+<link rel="manifest" href="manifest.webmanifest?v=3.0.1">
+<link rel="preload" as="image" href="assets/visuals/kimberling-city-missouri-bridge-2024.jpg?v=3.0.1" type="image/jpeg" fetchpriority="high">
+<link rel="stylesheet" href="styles.css?v=3.0.1">
+<link rel="icon" href="assets/icons/icon-192.png?v=3.0.1">
+<link rel="apple-touch-icon" href="assets/icons/icon-192.png?v=3.0.1">
 </head>
 <body data-office-email="<?=kcmc_h($kcmcEmail)?>">
 <?php if (!empty($kcmcAnnouncements)): $top=$kcmcAnnouncements[0]; ?>
@@ -72,7 +72,7 @@ usort($kcmcAnnouncements, fn($a,$b)=>(int)($b['priority']??0)<=>(int)($a['priori
 <main id="mainContent">
 <section class="view active" data-view="home">
   <section class="hero hero-imagery">
-    <img class="hero-photo" src="./assets/visuals/kimberling-city-missouri-bridge-2024.jpg?v=3.0.0" alt="Highway 13 crossing Table Rock Lake on the Kimberling City Bridge in Kimberling City, Missouri" loading="eager" decoding="async" fetchpriority="high">
+    <img class="hero-photo" src="./assets/visuals/kimberling-city-missouri-bridge-2024.jpg?v=3.0.1" alt="Highway 13 crossing Table Rock Lake on the Kimberling City Bridge in Kimberling City, Missouri" loading="eager" decoding="async" fetchpriority="high">
     <div class="wrap hero-grid">
       <div>
         <div class="eyebrow">Kimberling City • Table Rock Lake</div>
@@ -103,7 +103,7 @@ usort($kcmcAnnouncements, fn($a,$b)=>(int)($b['priority']??0)<=>(int)($a['priori
   <section class="section visual-story-section" aria-label="KCMC in the Ozarks">
     <div class="wrap visual-story">
       <figure class="mission-visual">
-        <img src="./assets/visuals/kimberling-city-missouri-bridge-2024.jpg?v=3.0.0" loading="eager" decoding="async" alt="Kimberling City Bridge carrying Highway 13 across Table Rock Lake, photographed in 2024">
+        <img src="./assets/visuals/kimberling-city-missouri-bridge-2024.jpg?v=3.0.1" loading="eager" decoding="async" alt="Kimberling City Bridge carrying Highway 13 across Table Rock Lake, photographed in 2024">
         <figcaption><span class="eyebrow">Mission statement</span><strong>Leading people to become deeply committed followers of Jesus Christ.</strong></figcaption>
       </figure>
       <figure class="ministry-visual">
@@ -271,6 +271,6 @@ usort($kcmcAnnouncements, fn($a,$b)=>(int)($b['priority']??0)<=>(int)($a['priori
     <p class="install-sheet-note">After it is saved, KCMC Connect opens from your screen like an app.</p>
   </div>
 </div>
-<script src="app.js?v=3.0.0" defer></script>
+<script src="app.js?v=3.0.1" defer></script>
 <a class="phase6-bulletin-fab" href="bulletin.php">Latest Bulletin</a>
 </body></html>
