@@ -17,7 +17,7 @@ Private experience:
 - Individual invited email/password accounts
 - Member prayer submission and pastor-approved members-only prayer wall
 - Confidential prayer-team inbox
-- Tony Blevins and Barry Smith intended as separate pastor-administrator accounts
+- Each Pastor administrator uses a separate invited account
 - Recovery administrator can maintain publishing and access but cannot access prayer content
 
 Security controls:
@@ -33,5 +33,5 @@ First run:
 1. Set server-only KCMC_SETUP_KEY.
 2. Create the recovery administrator at /admin/setup.php.
 3. Remove KCMC_SETUP_KEY.
-4. Invite Tony and Barry separately as Pastor administrator.
+4. Invite each Pastor administrator separately.
 5. Complete the privacy checks in DEPLOY.md before member rollout.
