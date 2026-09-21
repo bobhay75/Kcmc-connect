@@ -55,10 +55,12 @@ Before launch, verify all of the following:
 
 1. Confirm the homepage, current bulletin and all navigation views.
 2. Confirm worship times are 8:00 AM, 9:15 AM and 10:30 AM against the church's current public schedule.
-3. Confirm Chrome DevTools shows the `kcmc-connect-v3.0.1` service worker cache.
-4. Publish a harmless bulletin-note change and verify it survives another deployment.
-5. Confirm `config.php`, `data/private/` and `backups/` were not overwritten.
-6. Confirm `/admin/setup.php` redirects to sign-in after the first account exists.
-7. Confirm no file or URL under `assets/newsletter/` is present in the deployed app.
+3. Confirm office hours display Tuesday–Thursday, 9:00 AM–4:00 PM even though production `data/content.json` is preserved.
+
+4. Confirm Chrome DevTools shows the `kcmc-connect-v3.0.1` service worker cache.
+5. Publish a harmless bulletin-note change and verify it survives another deployment.
+6. Confirm `config.php`, `data/private/` and `backups/` were not overwritten.
+7. Confirm `/admin/setup.php` redirects to sign-in after the first account exists.
+8. Confirm no file or URL under `assets/newsletter/` is present in the deployed app.
 
 No shared administrator password or secret application backdoor is supported.
