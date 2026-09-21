@@ -18,6 +18,7 @@ on:
       - 'tests/invitation-delivery*'
       - 'tests/invitation-activation.php'
       - 'tests/role-boundaries.php'
+      - 'tests/publishing-calendar-contract.php'
       - '.github/workflows/invitation-delivery.yml'
   push:
     branches: [main]
@@ -37,6 +38,7 @@ on:
       - 'tests/invitation-delivery*'
       - 'tests/invitation-activation.php'
       - 'tests/role-boundaries.php'
+      - 'tests/publishing-calendar-contract.php'
       - '.github/workflows/invitation-delivery.yml'
   workflow_dispatch:
 
@@ -68,10 +70,12 @@ jobs:
           php -l KCMC-Connect-Phase6-Recreated/admin/index.php
           php -l tests/invitation-activation.php
           php -l tests/role-boundaries.php
+          php -l tests/publishing-calendar-contract.php
           node --check KCMC-Connect-Phase6-Recreated/admin/invitation-delivery.js
           php tests/invitation-delivery.php
           php tests/invitation-activation.php
           php tests/role-boundaries.php
+          php tests/publishing-calendar-contract.php
           node --test tests/invitation-delivery.cjs
           git diff --check
 
