@@ -61,9 +61,13 @@ ob_start();require KCMC_ROOT.'/admin/invitation-delivery.php';$html=ob_get_clean
 verify(!str_contains($html,'<img src=x') && str_contains($html,'&lt;img'),'all rendered invitation metadata is HTML escaped');
 $users=file_get_contents(KCMC_ROOT.'/admin/users.php');
 verify(strpos($users,"kcmc_require_role(['pastor_admin', 'recovery_admin'])") < strpos($users,"'/../lib/invitation-delivery.php'"),'authorization runs before delivery metadata read');
-verify(str_contains($users,"unset(\$_SESSION['invite_link'], \$_SESSION['invite_email'])"),'one-time flash link lifetime unchanged');
+verify(str_contains($users,"unset(\$_SESSION['invite_link'], \$_SESSION['invite_email'], \$_SESSION['invite_send_status'], \$_SESSION['invite_send_success'])"),'invitation and send-result flash data are one-request scoped');
+verify(str_contains($users,"name=\"send_email\" value=\"1\""),'app-sent invitation requires an explicit checkbox');
+verify(str_contains($users,"kcmc_send_invitation_email(\$sendDelivery)"),'explicit send path uses the server-side invitation mailer');
+verify(str_contains($users,"member.invitation_email_sent") && str_contains($users,"member.invitation_email_failed"),'server mail outcomes create audit events');
 $javascript=file_get_contents(KCMC_ROOT.'/admin/invitation-delivery.js');
 verify(!preg_match('/fetch\s*\(|XMLHttpRequest|sendBeacon|localStorage|sessionStorage|readText\s*\(|window\.open|location\./',$javascript),'delivery JS has no network, local token storage, clipboard reads or current-URL dependency');
-verify(hash('sha256',explode("\$inviteLink = (string)",$users,2)[0])==='67deb7899801739da0d89ac7d27465da9924113ebfbb668d67e845841375a383','original authorization and POST handlers are byte-identical');
-verify(hash('sha256',substr($users,strpos($users,'<div class="portal-grid">')))==='623dd55c59ba9fa345eceee9112449d2837d9d32de4cbf23969c0a77c479dbfc','invitation creation form, role controls and directory are byte-identical');
+verify(str_contains($users,"if ((string)(\$_POST['send_email'] ?? '') === '1')"),'server send occurs only after explicit form opt-in');
+verify(str_contains($users,"if (!\$mailReady)"),'unconfigured server mail fails closed to manual delivery');
+verify(str_contains($users,"if (\$sendDelivery === null)"),'recipient-bound delivery validation must pass before server send');
 echo "Invitation delivery PHP checks passed: $passed\n";
