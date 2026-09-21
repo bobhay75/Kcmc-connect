@@ -9,6 +9,8 @@ on:
       - 'KCMC-Connect-Phase6-Recreated/admin/invitation-delivery.css'
       - 'KCMC-Connect-Phase6-Recreated/lib/invitation-delivery.php'
       - 'KCMC-Connect-Phase6-Recreated/member/activate.php'
+      - 'KCMC-Connect-Phase6-Recreated/member/login.php'
+      - 'KCMC-Connect-Phase6-Recreated/member/first-login.php'
       - 'KCMC-Connect-Phase6-Recreated/lib/bootstrap.php'
       - 'KCMC-Connect-Phase6-Recreated/member/prayer-team.php'
       - 'KCMC-Connect-Phase6-Recreated/member/submit-prayer.php'
@@ -17,6 +19,7 @@ on:
       - 'KCMC-Connect-Phase6-Recreated/admin/index.php'
       - 'tests/invitation-delivery*'
       - 'tests/invitation-activation.php'
+      - 'tests/member-onboarding-contract.php'
       - 'tests/role-boundaries.php'
       - 'tests/publishing-calendar-contract.php'
       - '.github/workflows/invitation-delivery.yml'
@@ -29,6 +32,8 @@ on:
       - 'KCMC-Connect-Phase6-Recreated/admin/invitation-delivery.css'
       - 'KCMC-Connect-Phase6-Recreated/lib/invitation-delivery.php'
       - 'KCMC-Connect-Phase6-Recreated/member/activate.php'
+      - 'KCMC-Connect-Phase6-Recreated/member/login.php'
+      - 'KCMC-Connect-Phase6-Recreated/member/first-login.php'
       - 'KCMC-Connect-Phase6-Recreated/lib/bootstrap.php'
       - 'KCMC-Connect-Phase6-Recreated/member/prayer-team.php'
       - 'KCMC-Connect-Phase6-Recreated/member/submit-prayer.php'
@@ -37,6 +42,7 @@ on:
       - 'KCMC-Connect-Phase6-Recreated/admin/index.php'
       - 'tests/invitation-delivery*'
       - 'tests/invitation-activation.php'
+      - 'tests/member-onboarding-contract.php'
       - 'tests/role-boundaries.php'
       - 'tests/publishing-calendar-contract.php'
       - '.github/workflows/invitation-delivery.yml'
@@ -62,6 +68,8 @@ jobs:
           php -l KCMC-Connect-Phase6-Recreated/admin/invitation-delivery.php
           php -l KCMC-Connect-Phase6-Recreated/lib/invitation-delivery.php
           php -l KCMC-Connect-Phase6-Recreated/member/activate.php
+          php -l KCMC-Connect-Phase6-Recreated/member/login.php
+          php -l KCMC-Connect-Phase6-Recreated/member/first-login.php
           php -l KCMC-Connect-Phase6-Recreated/lib/bootstrap.php
           php -l KCMC-Connect-Phase6-Recreated/member/prayer-team.php
           php -l KCMC-Connect-Phase6-Recreated/member/submit-prayer.php
@@ -69,11 +77,13 @@ jobs:
           php -l KCMC-Connect-Phase6-Recreated/admin/prayers.php
           php -l KCMC-Connect-Phase6-Recreated/admin/index.php
           php -l tests/invitation-activation.php
+          php -l tests/member-onboarding-contract.php
           php -l tests/role-boundaries.php
           php -l tests/publishing-calendar-contract.php
           node --check KCMC-Connect-Phase6-Recreated/admin/invitation-delivery.js
           php tests/invitation-delivery.php
           php tests/invitation-activation.php
+          php tests/member-onboarding-contract.php
           php tests/role-boundaries.php
           php tests/publishing-calendar-contract.php
           node --test tests/invitation-delivery.cjs
