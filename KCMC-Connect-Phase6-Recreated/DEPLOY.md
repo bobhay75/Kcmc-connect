@@ -42,7 +42,7 @@ Before launch, verify all of the following:
 
 1. Confirm the homepage, current bulletin and all navigation views.
 2. Confirm worship times are 8:00 AM, 9:15 AM and 10:30 AM against the church's current public schedule.
-3. Confirm Chrome DevTools shows the `kcmc-connect-v3.0.0` service worker cache.
+3. Confirm Chrome DevTools shows the `kcmc-connect-v3.0.1` service worker cache.
 4. Publish a harmless bulletin-note change and verify it survives another deployment.
 5. Confirm `config.php`, `data/private/` and `backups/` were not overwritten.
 6. Confirm `/admin/setup.php` redirects to sign-in after the first account exists.
