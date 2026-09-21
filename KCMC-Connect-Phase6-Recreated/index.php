@@ -56,6 +56,7 @@ usort($kcmcAnnouncements, fn($a,$b)=>(int)($b['priority']??0)<=>(int)($a['priori
 <?php endif; ?>
 <a class="skip-link" href="#mainContent">Skip to content</a>
 <div class="offline-banner" id="offlineBanner" role="status">You’re offline. Saved KCMC Connect pages are still available.</div>
+<p class="sr-only" data-share-status role="status" aria-live="polite" aria-atomic="true"></p>
 <header class="topbar">
   <div class="wrap inner">
     <a class="brand" href="#home" data-route="home" aria-label="KCMC Connect home"><span class="mark">K</span><span><strong>KCMC CONNECT</strong><small>Kimberling City Methodist Church</small></span></a>
@@ -64,6 +65,7 @@ usort($kcmcAnnouncements, fn($a,$b)=>(int)($b['priority']??0)<=>(int)($a['priori
     </nav>
     <a class="topbar-account" href="<?=kcmc_h(kcmc_url($member ? 'member/' : 'member/login.php'))?>"><?=$member ? 'Member home' : 'Member sign in'?></a>
     <button class="install" type="button" data-install-app>Save app</button>
+    <button class="install" type="button" data-share-app aria-label="Share KCMC Connect">Share</button>
   </div>
 </header>
 
