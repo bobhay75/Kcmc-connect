@@ -59,6 +59,7 @@ if grep -Fq "date('Sunday, F j, Y'" "$app_dir/bulletin.php"; then
 fi
 grep -Fq 'document.body.dataset.officeEmail' "$app_dir/app.js" || fail "Public forms ignore the published church email"
 grep -Fq 'data-share-app' "$app_dir/index.php" || fail "KCMC Connect share control is missing"
+grep -Fq '.topbar [data-install-app].install{display:none}' "$app_dir/styles.css" || fail "Mobile header does not suppress redundant install action"
 grep -Fq "typeof navigator.share==='function'" "$app_dir/app.js" || fail "Native Web Share support is missing"
 grep -Fq 'navigator.clipboard?.writeText' "$app_dir/app.js" || fail "Share copy fallback is missing"
 grep -Fq "new URL('./',window.location.href).href" "$app_dir/app.js" || fail "Share target is not normalized to the KCMC app root"
