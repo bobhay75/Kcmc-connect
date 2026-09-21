@@ -52,7 +52,12 @@ function kcmc_h(string $value): string { return htmlspecialchars($value,ENT_QUOT
 define('KCMC_ROOT',__DIR__.'/../KCMC-Connect-Phase6-Recreated');
 $current=['id'=>'test_admin'];$delivery=$d;
 ob_start();require KCMC_ROOT.'/admin/invitation-delivery.php';$html=ob_get_clean();
-verify(str_contains($html,'Invitation ready — not emailed'),'no misleading sent confirmation');
+verify(str_contains($html,'Invitation ready — not emailed'),'unsent delivery card reports that nothing was emailed');
+$inviteSendSuccess=true;
+ob_start();require KCMC_ROOT.'/admin/invitation-delivery.php';$sentHtml=ob_get_clean();
+verify(str_contains($sentHtml,'Invitation email submitted') && str_contains($sentHtml,'does not prove inbox delivery'),'server-submitted card reports transport acceptance without claiming inbox delivery');
+verify(!str_contains($sentHtml,'Nothing has been emailed.'),'server-submitted card does not contradict successful mail handoff');
+unset($inviteSendSuccess);
 verify(str_contains($html,'type="button"') && !str_contains($html,'type="submit"') && !str_contains($html,'<form'),'delivery controls cannot submit invitation creation');
 verify(str_contains($html,'readonly') && str_contains($html,'<noscript>'),'manual-copy and no-JavaScript fallback available');
 verify(str_contains($html,'rel="noopener noreferrer"') && str_contains($html,'referrerpolicy="no-referrer"'),'external Gmail links have safe new-tab and referrer attributes');
