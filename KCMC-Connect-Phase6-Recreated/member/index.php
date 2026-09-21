@@ -32,7 +32,7 @@ $firstName = trim(explode(' ', (string)$user['display_name'])[0]);
         <input type="hidden" name="csrf" value="<?=kcmc_h(kcmc_csrf())?>">
         <label>Prayer or care request<textarea name="message" rows="7" minlength="10" maxlength="2000" required></textarea></label>
         <label>How should your name appear?<select name="name_display"><option value="anonymous">Anonymous</option><option value="first_name">Use my first name</option></select></label>
-        <label class="portal-check"><input type="checkbox" name="share_with_members" value="1"><span>After Tony or Barry approves it, share this request on the members-only prayer wall.</span></label>
+        <label class="portal-check"><input type="checkbox" name="share_with_members" value="1"><span>After a Pastor administrator approves it, share this request on the members-only prayer wall.</span></label>
         <button class="btn gold" type="submit">Send private request</button>
       </form>
     </section>
