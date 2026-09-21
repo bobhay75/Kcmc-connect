@@ -4,9 +4,10 @@ declare(strict_types=1);
 /**
  * Server-side invitation email transport.
  *
- * Sending is fail-closed: both KCMC_INVITATION_MAIL_ENABLED=1 and a valid
- * KCMC_INVITATION_FROM address are required. Tests inject a fake transport;
- * production falls back to PHP mail() only after explicit configuration.
+ * Sending is fail-closed. Environment variables take precedence; on shared
+ * cPanel hosting the preserved server-only config.php may provide the same
+ * settings. Tests inject a fake transport; production falls back to PHP
+ * mail() only after explicit configuration.
  */
 function kcmc_invitation_mail_settings(?array $override = null): array {
     if ($override !== null) {
@@ -14,9 +15,20 @@ function kcmc_invitation_mail_settings(?array $override = null): array {
         $from = strtolower(trim((string)($override['from'] ?? '')));
         $name = trim((string)($override['from_name'] ?? 'KCMC Connect'));
     } else {
-        $enabled = trim((string)(getenv('KCMC_INVITATION_MAIL_ENABLED') ?: '')) === '1';
-        $from = strtolower(trim((string)(getenv('KCMC_INVITATION_FROM') ?: '')));
-        $name = trim((string)(getenv('KCMC_INVITATION_FROM_NAME') ?: 'KCMC Connect'));
+        $cfg = function_exists('kcmc_config') ? kcmc_config() : [];
+        $envEnabled = getenv('KCMC_INVITATION_MAIL_ENABLED');
+        $envFrom = getenv('KCMC_INVITATION_FROM');
+        $envName = getenv('KCMC_INVITATION_FROM_NAME');
+
+        $enabled = $envEnabled !== false
+            ? trim((string)$envEnabled) === '1'
+            : !empty($cfg['invitation_mail_enabled']);
+        $from = strtolower(trim((string)(
+            $envFrom !== false ? $envFrom : ($cfg['invitation_from'] ?? '')
+        )));
+        $name = trim((string)(
+            $envName !== false ? $envName : ($cfg['invitation_from_name'] ?? 'KCMC Connect')
+        ));
     }
 
     $validFrom = $from !== '' && filter_var($from, FILTER_VALIDATE_EMAIL) &&
