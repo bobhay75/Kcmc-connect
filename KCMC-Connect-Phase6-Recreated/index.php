@@ -271,6 +271,6 @@ usort($kcmcAnnouncements, fn($a,$b)=>(int)($b['priority']??0)<=>(int)($a['priori
     <p class="install-sheet-note">After it is saved, KCMC Connect opens from your screen like an app.</p>
   </div>
 </div>
-<script src="app.js?v=3.0.1" defer></script>
+<script src="app.js?v=3.0.2" defer></script>
 <a class="phase6-bulletin-fab" href="bulletin.php">Latest Bulletin</a>
 </body></html>
