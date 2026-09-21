@@ -9,7 +9,7 @@ fail() {
   exit 1
 }
 
-grep -q "3.0.0" "$app_dir/VERSION" || fail "Version 3 marker is missing"
+grep -q "3.0.1" "$app_dir/VERSION" || fail "Version 3.0.1 marker is missing"
 grep -q "data/private/" "$repo_dir/.gitignore" || fail "Private data is not ignored by Git"
 grep -q "assets/newsletter/" "$repo_dir/.gitignore" || fail "Newsletter source pages are not blocked by Git"
 grep -q -- "--exclude='data/private/'" "$repo_dir/.cpanel.yml" || fail "Deployment does not preserve private data"
@@ -72,6 +72,8 @@ if grep -q "Version 3 content migration" "$app_dir/lib/bootstrap.php"; then
   fail "Public content reads can still trigger a release migration write"
 fi
 grep -q "ignoreSearch:true" "$app_dir/sw.js" || fail "Offline cache does not normalize versioned asset requests"
+grep -q "kcmc-connect-v3.0.1" "$app_dir/sw.js" || fail "Service worker cache was not bumped for 3.0.1"
+grep -q "app.js?v=3.0.1" "$app_dir/index.php" || fail "Homepage still references stale app.js version"
 grep -q "key.startsWith('kcmc-connect-')" "$app_dir/sw.js" || fail "Service worker cache cleanup is not isolated to KCMC Connect"
 node --check "$app_dir/app.js"
 node --check "$app_dir/sw.js"
