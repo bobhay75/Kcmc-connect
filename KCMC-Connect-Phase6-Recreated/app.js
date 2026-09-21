@@ -114,6 +114,35 @@
   window.matchMedia('(display-mode: standalone)').addEventListener?.('change',updateInstallUI);
   updateInstallUI();
 
+  // Share KCMC Connect through the device share sheet when available, with a safe copy fallback.
+  const shareButtons=[...document.querySelectorAll('[data-share-app]')];
+  const shareStatus=document.querySelector('[data-share-status]');
+  const setShareStatus=message=>{if(shareStatus)shareStatus.textContent=message;};
+  async function shareKcmc(){
+    const shareUrl=new URL('./',window.location.href).href;
+    const payload={title:'KCMC Connect',text:'Kimberling City Methodist Church — worship, events, care and connection.',url:shareUrl};
+    if(typeof navigator.share==='function'){
+      try{await navigator.share(payload);setShareStatus('KCMC Connect share sheet opened.');return;}
+      catch(error){if(error?.name==='AbortError'){setShareStatus('Share canceled.');return;}}
+    }
+    try{
+      if(navigator.clipboard?.writeText&&window.isSecureContext){
+        await navigator.clipboard.writeText(shareUrl);
+      }else{
+        const field=document.createElement('textarea');
+        field.value=shareUrl;field.setAttribute('readonly','');field.style.position='fixed';field.style.opacity='0';
+        document.body.appendChild(field);field.select();
+        const copied=document.execCommand('copy');
+        field.remove();
+        if(!copied)throw new Error('copy failed');
+      }
+      setShareStatus('KCMC Connect link copied.');
+    }catch(_){
+      setShareStatus('Could not open sharing. Copy the page address from your browser.');
+    }
+  }
+  shareButtons.forEach(button=>button.addEventListener('click',shareKcmc));
+
   function sendFormByEmail(form){const status=form.querySelector('.form-status');if(!form.checkValidity()){form.reportValidity();status.textContent='Please complete the required fields.';status.className='form-status error';return;}const data=new FormData(form),lines=[];for(const [key,value] of data.entries())if(String(value).trim())lines.push(`${key}: ${value}`);const subject=form.dataset.subject||'KCMC Connect Form';status.textContent='Opening your email app with this request ready to send…';status.className='form-status success';window.location.href=`mailto:${OFFICE_EMAIL}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(lines.join('\n'))}`;}
   document.querySelectorAll('[data-kcmc-form]').forEach(form=>form.addEventListener('submit',e=>{e.preventDefault();sendFormByEmail(form);}));
   const eventName=document.getElementById('eventName'),eventDisplay=document.getElementById('eventDisplay');document.querySelectorAll('.event-rsvp').forEach(btn=>btn.addEventListener('click',()=>{const card=btn.closest('.event-card'),name=card?.dataset.event||'';if(eventName)eventName.value=name;if(eventDisplay)eventDisplay.value=name;document.getElementById('eventForm')?.scrollIntoView({behavior:'smooth',block:'center'});}));
