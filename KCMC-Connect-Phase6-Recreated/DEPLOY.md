@@ -26,6 +26,19 @@ Newsletter page photographs are also prohibited. Deployment removes the retired 
 
 The recovery administrator can restore access and publish public content, but the application deliberately prevents that role from reading, submitting or moderating prayer requests.
 
+## Invitation email configuration
+
+Direct invitation email is **disabled by default**. Manual recipient-checked delivery remains available unless all of the following are configured on the server:
+
+1. Set `KCMC_INVITATION_MAIL_ENABLED=1`.
+2. Set `KCMC_INVITATION_FROM` to a valid sender address that this hosting account/domain is authorized to send as.
+3. Optionally set `KCMC_INVITATION_FROM_NAME` (default: `KCMC Connect`).
+4. Create a test invitation to an address you control and explicitly check **Email this invitation now**.
+5. Verify the app reports that the configured server mail transport accepted the message, then independently confirm inbox receipt. A successful PHP `mail()` handoff is not proof of final delivery.
+6. If delivery fails, leave direct sending disabled and use the existing manual/Gmail handoff until cPanel mail routing, SPF/DKIM and sender authorization are verified.
+
+Do not configure a From address that the server is not authorized to send as. Never put invitation tokens, SMTP credentials or mail secrets in Git.
+
 ## Prayer privacy checks
 
 Before launch, verify all of the following:
