@@ -21,11 +21,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         } else {
             $result = kcmc_event_rsvp_update_follow_up($id, $status);
             if (!empty($result['updated'])) {
-                kcmc_audit('event_rsvp.follow_up_changed', [
-                    'previous_status' => (string)$result['previous'],
-                    'status' => (string)$result['current'],
-                    'count' => 1,
-                ]);
+                kcmc_audit('event_rsvp.follow_up_changed', ['previous_status'=>(string)$result['previous'],'status'=>(string)$result['current'],'count'=>1]);
                 $success = 'RSVP updated to ' . kcmc_inbox_status_label((string)$result['current']) . '.';
             } elseif ((string)($result['current'] ?? '') === $status) {
                 $success = 'That RSVP is already marked ' . kcmc_inbox_status_label($status) . '.';
@@ -38,56 +34,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
 $allRows = kcmc_event_rsvp_recent(200);
 $eventCounts = [];
-foreach ($allRows as $row) {
-    $key = trim((string)($row['event'] ?? '')) . '|' . trim((string)($row['event_date'] ?? ''));
-    if ($key === '|') continue;
-    $eventCounts[$key] = ($eventCounts[$key] ?? 0) + 1;
-}
+foreach ($allRows as $row) { $key=trim((string)($row['event']??'')).'|'.trim((string)($row['event_date']??'')); if($key==='|')continue; $eventCounts[$key]=($eventCounts[$key]??0)+1; }
 $statusCounts = kcmc_inbox_status_counts($allRows);
 $filter = strtolower(trim((string)($_GET['status'] ?? 'all')));
 if ($filter !== 'all' && !in_array($filter, KCMC_INBOX_STATUSES, true)) $filter = 'all';
 $rows = $filter === 'all' ? $allRows : array_values(array_filter($allRows, static fn($row): bool => is_array($row) && kcmc_inbox_status($row['status'] ?? null) === $filter));
 $exportUrl = kcmc_url('admin/rsvps-export.php?status=' . rawurlencode($filter));
-?><!doctype html>
-<html lang="en">
-<head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
-<meta name="robots" content="noindex,nofollow">
-<title>Event RSVPs • KCMC Connect</title>
-<link rel="stylesheet" href="<?=kcmc_h(kcmc_url('styles.css'))?>">
-<style>
-body{background:#eef2f4;color:#17324c;color-scheme:light}.shell{width:min(1240px,calc(100% - 28px));margin:28px auto 80px}.card{background:#fff;border:1px solid #dce3e7;border-radius:18px;padding:22px;margin:18px 0}.summary{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:12px}.summary article{border:1px solid #dce3e7;border-radius:14px;padding:14px;background:#f8fafb}.summary strong{display:block;font-size:1.6rem}.table{overflow-x:auto}.row{display:grid;grid-template-columns:1.1fr .8fr 1fr 1.2fr 1.5fr .8fr 1.25fr;gap:12px;align-items:start;padding:12px 0;border-top:1px solid #edf0f2;min-width:1120px}.row.head{font-weight:800;border-top:0}.note{white-space:pre-wrap;overflow-wrap:anywhere}.muted{color:#607080}.nav,.filters{display:flex;gap:12px;flex-wrap:wrap;align-items:center}.filters a,.export-link{padding:8px 12px;border:1px solid #cbd5dc;border-radius:999px;text-decoration:none}.filters a[aria-current="page"]{background:#17324c;color:#fff;border-color:#17324c}.export-link{margin-left:auto;background:#fff;font-weight:700}.status-form{display:flex;gap:7px;align-items:center}.status-form select{max-width:115px;padding:7px}.status-form button{border:0;border-radius:999px;padding:8px 11px;background:#17324c;color:#fff;font-weight:700;cursor:pointer}.portal-alert{padding:12px 14px;border-radius:10px}.portal-alert.success{background:#e6f3e7;color:#215b2d}.portal-alert.error{background:#f8e6e6;color:#7f2424}.shell :is(a,button,input,select,textarea):focus-visible{outline:3px solid #174d75;outline-offset:3px}@media(max-width:760px){.shell{width:min(100% - 18px,1240px)}.export-link{margin-left:0}}
-</style>
-</head>
-<body>
-<main class="shell">
-<nav class="nav" aria-label="Administrator navigation"><a href="<?=kcmc_h(kcmc_url('admin/'))?>">← Publishing Desk</a><a href="<?=kcmc_h(kcmc_url('admin/connections.php'))?>">Connection inbox</a></nav>
-<p class="eyebrow">KCMC EVENTS</p>
-<h1>Event RSVPs</h1>
-<p class="muted">Newest 200 private event responses. Names, email addresses and notes are visible only to authorized administrators.</p>
-<?php if ($error): ?><p class="portal-alert error" role="alert"><?=kcmc_h($error)?></p><?php endif; ?>
-<?php if ($success): ?><p class="portal-alert success" role="status"><?=kcmc_h($success)?></p><?php endif; ?>
-<section class="summary" aria-label="RSVP totals"><article><strong><?=kcmc_h((string)$statusCounts['new'])?></strong><span>New</span></article><article><strong><?=kcmc_h((string)$statusCounts['contacted'])?></strong><span>Contacted</span></article><article><strong><?=kcmc_h((string)$statusCounts['closed'])?></strong><span>Closed</span></article>
-<?php foreach ($eventCounts as $key => $count): [$eventName, $eventDate] = array_pad(explode('|', $key, 2), 2, ''); ?><article><strong><?=kcmc_h((string)$count)?></strong><span><?=kcmc_h($eventName)?><?= $eventDate !== '' ? ' • ' . kcmc_h($eventDate) : '' ?></span></article><?php endforeach; ?>
-</section>
-<nav class="filters" aria-label="Follow-up status filters"><span class="muted">Show:</span><?php foreach (['all'=>'All','new'=>'New','contacted'=>'Contacted','closed'=>'Closed'] as $value=>$label): ?><a href="<?=kcmc_h(kcmc_url('admin/rsvps.php?status=' . rawurlencode($value)))?>" <?=$filter===$value?'aria-current="page"':''?>><?=kcmc_h($label)?></a><?php endforeach; ?><a class="export-link" href="<?=kcmc_h($exportUrl)?>">Download this view as CSV</a></nav>
-<section class="card">
-<?php if (!$rows): ?><p>No event RSVPs match this view.</p><?php else: ?>
-<div class="table"><div class="row head"><span>Event</span><span>Date</span><span>Name</span><span>Email</span><span>Note</span><span>Received</span><span>Follow-up</span></div>
-<?php foreach ($rows as $row): $rowStatus=kcmc_inbox_status($row['status']??null); ?>
-<div class="row">
-<span><strong><?=kcmc_h((string)($row['event'] ?? ''))?></strong></span>
-<span><?=kcmc_h((string)($row['event_date'] ?? ''))?></span>
-<span><?=kcmc_h((string)($row['name'] ?? ''))?></span>
-<span><a href="mailto:<?=kcmc_h((string)($row['email'] ?? ''))?>"><?=kcmc_h((string)($row['email'] ?? ''))?></a></span>
-<span class="note"><?=kcmc_h((string)($row['message'] ?? ''))?></span>
-<span><?=kcmc_h(kcmc_local_date_value((string)($row['submitted_at'] ?? ''), 'M j, Y g:i A'))?></span>
-<span><form class="status-form" method="post"><input type="hidden" name="csrf" value="<?=kcmc_h(kcmc_csrf())?>"><input type="hidden" name="id" value="<?=kcmc_h((string)($row['id']??''))?>"><select name="status" aria-label="Follow-up status for <?=kcmc_h((string)($row['name']??'RSVP'))?>"><?php foreach (KCMC_INBOX_STATUSES as $status): ?><option value="<?=kcmc_h($status)?>" <?=$rowStatus===$status?'selected':''?>><?=kcmc_h(kcmc_inbox_status_label($status))?></option><?php endforeach; ?></select><button type="submit">Save</button></form></span>
-</div>
-<?php endforeach; ?></div>
-<?php endif; ?>
-</section>
-</main>
-</body>
-</html>
+?><!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="robots" content="noindex,nofollow"><title>Event RSVPs • KCMC Connect</title><link rel="stylesheet" href="<?=kcmc_h(kcmc_url('styles.css'))?>"><style>
+body{background:#eef2f4;color:#17324c;color-scheme:light}.shell{width:min(1240px,calc(100% - 28px));margin:28px auto 80px}.card{background:#fff;border:1px solid #dce3e7;border-radius:18px;padding:22px;margin:18px 0}.summary{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:12px}.summary article{border:1px solid #dce3e7;border-radius:14px;padding:14px;background:#f8fafb}.summary strong{display:block;font-size:1.6rem}.table{overflow-x:auto}.row{display:grid;grid-template-columns:1.1fr .8fr 1fr 1.2fr 1.5fr .8fr 1.25fr;gap:12px;align-items:start;padding:12px 0;border-top:1px solid #edf0f2;min-width:1120px}.row.head{font-weight:800;border-top:0}.note{white-space:pre-wrap;overflow-wrap:anywhere}.muted{color:#607080}.nav,.filters{display:flex;gap:12px;flex-wrap:wrap;align-items:center}.filters a,.export-link{padding:8px 12px;border:1px solid #cbd5dc;border-radius:999px;text-decoration:none}.filters a[aria-current="page"]{background:#17324c;color:#fff;border-color:#17324c}.export-link{margin-left:auto;background:#fff;font-weight:700}.status-form{display:flex;gap:7px;align-items:center}.status-form select{max-width:115px;padding:7px}.status-form button{border:0;border-radius:999px;padding:8px 11px;background:#17324c;color:#fff;font-weight:700;cursor:pointer}.portal-alert{padding:12px 14px;border-radius:10px}.portal-alert.success{background:#e6f3e7;color:#215b2d}.portal-alert.error{background:#f8e6e6;color:#7f2424}.shell :is(a,button,input,select,textarea):focus-visible{outline:3px solid #174d75;outline-offset:3px}
+@media(max-width:760px){.shell{width:min(100% - 18px,1240px);margin-top:16px}.card{padding:12px;background:transparent;border:0}.summary{grid-template-columns:repeat(2,minmax(0,1fr))}.export-link{margin-left:0}.table{overflow:visible}.row.head{display:none}.row{display:block;min-width:0;background:#fff;border:1px solid #dce3e7;border-radius:14px;padding:10px 14px;margin:12px 0;box-shadow:0 2px 8px rgba(23,50,76,.05)}.row>span{display:grid;grid-template-columns:104px minmax(0,1fr);gap:10px;padding:8px 0;border-top:1px solid #edf0f2;overflow-wrap:anywhere}.row>span:first-child{border-top:0}.row>span::before{font-weight:800;color:#526575}.row>span:nth-child(1)::before{content:'Event'}.row>span:nth-child(2)::before{content:'Date'}.row>span:nth-child(3)::before{content:'Name'}.row>span:nth-child(4)::before{content:'Email'}.row>span:nth-child(5)::before{content:'Note'}.row>span:nth-child(6)::before{content:'Received'}.row>span:nth-child(7)::before{content:'Follow-up'}.status-form{flex-wrap:wrap}.status-form select{max-width:none;flex:1 1 120px}.status-form button{min-height:40px}.filters{align-items:stretch}.filters a{display:inline-flex;align-items:center;justify-content:center}.note{white-space:pre-wrap}}
+</style></head><body><main class="shell"><nav class="nav" aria-label="Administrator navigation"><a href="<?=kcmc_h(kcmc_url('admin/'))?>">← Publishing Desk</a><a href="<?=kcmc_h(kcmc_url('admin/connections.php'))?>">Connection inbox</a></nav><p class="eyebrow">KCMC EVENTS</p><h1>Event RSVPs</h1><p class="muted">Newest 200 private event responses. Names, email addresses and notes are visible only to authorized administrators.</p><?php if($error):?><p class="portal-alert error" role="alert"><?=kcmc_h($error)?></p><?php endif;?><?php if($success):?><p class="portal-alert success" role="status"><?=kcmc_h($success)?></p><?php endif;?>
+<section class="summary" aria-label="RSVP totals"><article><strong><?=kcmc_h((string)$statusCounts['new'])?></strong><span>New</span></article><article><strong><?=kcmc_h((string)$statusCounts['contacted'])?></strong><span>Contacted</span></article><article><strong><?=kcmc_h((string)$statusCounts['closed'])?></strong><span>Closed</span></article><?php foreach($eventCounts as $key=>$count):[$eventName,$eventDate]=array_pad(explode('|',$key,2),2,'');?><article><strong><?=kcmc_h((string)$count)?></strong><span><?=kcmc_h($eventName)?><?=$eventDate!==''?' • '.kcmc_h($eventDate):''?></span></article><?php endforeach;?></section>
+<nav class="filters" aria-label="Follow-up status filters"><span class="muted">Show:</span><?php foreach(['all'=>'All','new'=>'New','contacted'=>'Contacted','closed'=>'Closed'] as $value=>$label):?><a href="<?=kcmc_h(kcmc_url('admin/rsvps.php?status='.rawurlencode($value)))?>" <?=$filter===$value?'aria-current="page"':''?>><?=kcmc_h($label)?></a><?php endforeach;?><a class="export-link" href="<?=kcmc_h($exportUrl)?>">Download this view as CSV</a></nav>
+<section class="card"><?php if(!$rows):?><p>No event RSVPs match this view.</p><?php else:?><div class="table"><div class="row head"><span>Event</span><span>Date</span><span>Name</span><span>Email</span><span>Note</span><span>Received</span><span>Follow-up</span></div><?php foreach($rows as $row):$rowStatus=kcmc_inbox_status($row['status']??null);?><div class="row"><span><strong><?=kcmc_h((string)($row['event']??''))?></strong></span><span><?=kcmc_h((string)($row['event_date']??''))?></span><span><?=kcmc_h((string)($row['name']??''))?></span><span><a href="mailto:<?=kcmc_h((string)($row['email']??''))?>"><?=kcmc_h((string)($row['email']??''))?></a></span><span class="note"><?=kcmc_h((string)($row['message']??''))?></span><span><?=kcmc_h(kcmc_local_date_value((string)($row['submitted_at']??''),'M j, Y g:i A'))?></span><span><form class="status-form" method="post"><input type="hidden" name="csrf" value="<?=kcmc_h(kcmc_csrf())?>"><input type="hidden" name="id" value="<?=kcmc_h((string)($row['id']??''))?>"><select name="status" aria-label="Follow-up status for <?=kcmc_h((string)($row['name']??'RSVP'))?>"><?php foreach(KCMC_INBOX_STATUSES as $status):?><option value="<?=kcmc_h($status)?>" <?=$rowStatus===$status?'selected':''?>><?=kcmc_h(kcmc_inbox_status_label($status))?></option><?php endforeach;?></select><button type="submit">Save</button></form></span></div><?php endforeach;?></div><?php endif;?></section></main></body></html>
