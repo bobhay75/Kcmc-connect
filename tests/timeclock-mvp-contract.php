@@ -30,11 +30,11 @@ $operations = file_get_contents($root . '/KCMC-Connect-Phase6-Recreated/admin/op
 
 tc_check(str_contains($lib, "KCMC_PRIVATE_DATA . '/timeclock.json'"), 'time clock data lives in protected private storage');
 tc_check(str_contains($lib, "['submitted','approved']"), 'submitted and approved periods are locked server-side');
-tc_check(str_contains($lib, "kcmc_timeclock_now()"), 'punch mutations use server-generated timestamps');
+tc_check(str_contains($lib, 'kcmc_timeclock_now()'), 'punch mutations use server-generated timestamps');
 tc_check(str_contains($member, 'kcmc_require_login()'), 'employee time clock requires authentication');
-tc_check(str_contains($member, "kcmc_verify_csrf"), 'employee mutations require CSRF');
-tc_check(str_contains($member, "(string)$user['id']"), 'employee page scopes reads and writes to signed-in user');
-tc_check(str_contains($member, "name=\"certify\""), 'pay-period submission requires employee certification control');
+tc_check(str_contains($member, 'kcmc_verify_csrf'), 'employee mutations require CSRF');
+tc_check(str_contains($member, "(string)\$user['id']"), 'employee page scopes reads and writes to signed-in user');
+tc_check(str_contains($member, 'name="certify"'), 'pay-period submission requires employee certification control');
 tc_check(str_contains($admin, "kcmc_require_role(['pastor_admin', 'recovery_admin'])"), 'time-card review requires administrator role');
 tc_check(str_contains($admin, 'cannot approve or return their own time card'), 'reviewer self-approval is blocked');
 tc_check(str_contains($csv, "!== 'approved'"), 'CSV export is restricted to approved periods');
