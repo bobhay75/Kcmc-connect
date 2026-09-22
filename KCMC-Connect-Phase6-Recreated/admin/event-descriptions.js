@@ -11,6 +11,75 @@
   if (typeof module === 'object' && module.exports) module.exports = { canFill };
   if (typeof document === 'undefined') return;
 
+  function setupPublishingReviewGuard() {
+    const form = document.querySelector('form[action$="admin/save.php"]');
+    if (!form) return;
+    const submit = form.querySelector('button[type="submit"]');
+    if (!submit) return;
+
+    const tracked = [...form.querySelectorAll('input[name], textarea[name], select[name]')]
+      .filter(control => !['csrf', 'confirm_publish'].includes(control.name) && control.type !== 'hidden');
+    const valueOf = control => (control.type === 'checkbox' || control.type === 'radio')
+      ? (control.checked ? control.value : '')
+      : control.value;
+    const baseline = new Map(tracked.map((control, index) => [`${index}:${control.name}`, valueOf(control)]));
+
+    const guard = document.createElement('section');
+    guard.className = 'panel publishing-review-guard';
+    guard.setAttribute('aria-labelledby', 'publishing-review-title');
+    guard.innerHTML = '<h2 id="publishing-review-title">Review before publishing</h2>' +
+      '<p class="muted"><strong data-publish-change-count>0</strong> changed field(s) in this publishing form.</p>' +
+      '<label data-publish-confirm-label><input type="checkbox" name="confirm_publish" value="1" disabled> <span>I reviewed these changes and they are ready to publish.</span></label>' +
+      '<p class="muted" role="status" aria-live="polite" data-publish-review-status>No changes detected yet.</p>';
+    guard.style.marginBottom = '16px';
+    const confirm = guard.querySelector('input[name="confirm_publish"]');
+    const confirmLabel = guard.querySelector('[data-publish-confirm-label]');
+    const countNode = guard.querySelector('[data-publish-change-count]');
+    const reviewStatus = guard.querySelector('[data-publish-review-status]');
+    confirm.style.width = 'auto';
+    confirm.style.margin = '0';
+    confirmLabel.style.display = 'flex';
+    confirmLabel.style.alignItems = 'flex-start';
+    confirmLabel.style.gap = '10px';
+    confirmLabel.style.fontWeight = '700';
+    submit.parentNode.insertBefore(guard, submit);
+
+    function changedCount() {
+      return tracked.reduce((count, control, index) => {
+        const key = `${index}:${control.name}`;
+        return count + Number(valueOf(control) !== baseline.get(key));
+      }, 0);
+    }
+
+    function refresh() {
+      const count = changedCount();
+      countNode.textContent = String(count);
+      confirm.disabled = count === 0;
+      if (count === 0) confirm.checked = false;
+      submit.disabled = count === 0 || !confirm.checked;
+      if (count === 0) reviewStatus.textContent = 'No changes detected yet.';
+      else if (!confirm.checked) reviewStatus.textContent = `${count} changed field${count === 1 ? '' : 's'} detected. Review them, then confirm before publishing.`;
+      else reviewStatus.textContent = `${count} changed field${count === 1 ? '' : 's'} reviewed. Publishing is enabled.`;
+    }
+
+    form.addEventListener('input', refresh);
+    form.addEventListener('change', refresh);
+    form.addEventListener('click', () => setTimeout(refresh, 0));
+    confirm.addEventListener('change', refresh);
+    form.addEventListener('submit', event => {
+      refresh();
+      if (changedCount() < 1 || !confirm.checked) {
+        event.preventDefault();
+        reviewStatus.textContent = 'Review the changed fields and confirm that they are ready to publish.';
+        guard.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        confirm.focus();
+      }
+    });
+    refresh();
+  }
+
+  setupPublishingReviewGuard();
+
   const buttons = [...document.querySelectorAll('[data-use-event-description]')];
   const allButton = document.querySelector('[data-fill-event-descriptions]');
   const status = document.querySelector('[data-description-recovery-status]');
