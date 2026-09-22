@@ -165,7 +165,31 @@
     }catch(error){status.textContent=error?.message||'Your RSVP could not be saved. Please try again.';status.className='form-status error';}
     finally{if(submit)submit.disabled=false;}
   }
-  document.querySelectorAll('[data-kcmc-form]').forEach(form=>form.addEventListener('submit',e=>{e.preventDefault();if(form.dataset.kcmcForm==='event')sendEventRsvp(form);else sendFormByEmail(form);}));
+  async function sendConnectionRequest(form){
+    const status=form.querySelector('.form-status');
+    if(!form.checkValidity()){form.reportValidity();status.textContent='Please complete the required fields.';status.className='form-status error';return;}
+    const kind=form.dataset.kcmcForm||'';
+    const data=new FormData(form),payload={kind};
+    for(const [key,value] of data.entries())payload[key]=String(value);
+    const submit=form.querySelector('button[type="submit"]');
+    status.textContent='Sending your request…';status.className='form-status';if(submit)submit.disabled=true;
+    try{
+      const response=await fetch('./api/connection.php',{method:'POST',headers:{'Content-Type':'application/json','Accept':'application/json','X-KCMC-CONNECTION':'1'},credentials:'same-origin',cache:'no-store',body:JSON.stringify(payload)});
+      let result=null;try{result=await response.json();}catch(_){}
+      if(!response.ok||!result?.ok)throw new Error(result?.message||'Your request could not be saved.');
+      form.reset();
+      status.textContent=result.message||'Thank you. KCMC has received your request.';status.className='form-status success';
+    }catch(error){status.textContent=error?.message||'Your request could not be saved. Please try again.';status.className='form-status error';}
+    finally{if(submit)submit.disabled=false;}
+  }
+  const connectionKinds=new Set(['visit','serve','groups']);
+  document.querySelectorAll('[data-kcmc-form]').forEach(form=>form.addEventListener('submit',e=>{
+    e.preventDefault();
+    const kind=form.dataset.kcmcForm||'';
+    if(kind==='event') sendEventRsvp(form);
+    else if(connectionKinds.has(kind)) sendConnectionRequest(form);
+    else sendFormByEmail(form);
+  }));
   const eventForm=document.getElementById('eventForm'),eventName=document.getElementById('eventName'),eventDisplay=document.getElementById('eventDisplay');
   let eventDateField=eventForm?.querySelector('input[name="event_date"]')||null;
   if(eventForm&&!eventDateField){eventDateField=document.createElement('input');eventDateField.type='hidden';eventDateField.name='event_date';eventForm.appendChild(eventDateField);}
