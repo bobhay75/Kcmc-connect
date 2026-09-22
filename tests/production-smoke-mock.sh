@@ -54,7 +54,7 @@ case "$url" in
   */sw.js)
     response_body="const CACHE='kcmc-connect-v3.0.2-public-only';"
     ;;
-  */member/|*/admin/|*/admin/health.php|*/admin/restore.php|*/admin/audit.php)
+  */member/|*/admin/|*/admin/health.php|*/admin/restore.php|*/admin/audit.php|*/admin/operations.php|*/admin/push.php|*/admin/rsvps.php|*/admin/connections.php|*/admin/rsvps-export.php*|*/admin/connections-export.php*)
     status=302
     response_headers=$'HTTP/1.1 302 Found\r\nLocation: /kcmc-connect/member/login.php?next=test\r\nX-Content-Type-Options: nosniff\r\n'
     response_body='Redirecting'
@@ -84,9 +84,9 @@ healthy_output="$(PATH="$tmp/bin:$PATH" bash "$root/tools/production-smoke.sh" '
   printf '%s\n' "$healthy_output" >&2
   fail 'healthy mocked deployment should pass'
 }
-grep -Fq 'Result: 14 passed, 0 failed.' <<<"$healthy_output" || {
+grep -Fq 'Result: 20 passed, 0 failed.' <<<"$healthy_output" || {
   printf '%s\n' "$healthy_output" >&2
-  fail 'healthy mocked deployment should pass all 14 checks'
+  fail 'healthy mocked deployment should pass all 20 checks'
 }
 pass 'healthy mocked deployment passes all smoke checks'
 
