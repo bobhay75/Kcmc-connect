@@ -1,0 +1,31 @@
+name: KCMC push self-test
+
+on:
+  pull_request:
+    paths:
+      - 'KCMC-Connect-Phase6-Recreated/admin/push.php'
+      - 'tests/push-self-test-contract.php'
+      - '.github/workflows/push-self-test.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'KCMC-Connect-Phase6-Recreated/admin/push.php'
+      - 'tests/push-self-test-contract.php'
+      - '.github/workflows/push-self-test.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  contract:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Syntax checks
+        run: |
+          php -l KCMC-Connect-Phase6-Recreated/admin/push.php
+          php -l tests/push-self-test-contract.php
+      - name: Signed-in-device push contract
+        run: php tests/push-self-test-contract.php
+      - name: Existing push delivery contract
+        run: php tests/push-delivery-contract.php
