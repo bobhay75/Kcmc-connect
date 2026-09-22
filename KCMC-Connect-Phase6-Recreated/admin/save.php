@@ -1,5 +1,6 @@
 <?php
 require_once __DIR__ . '/../lib/bootstrap.php';
+require_once __DIR__ . '/../lib/backup-retention.php';
 $user = kcmc_require_role(['pastor_admin', 'recovery_admin']);
 kcmc_private_headers();
 if ($_SERVER['REQUEST_METHOD']!=='POST' || !kcmc_verify_csrf($_POST['csrf']??null)) { http_response_code(403); exit('Invalid request'); }
@@ -65,5 +66,7 @@ foreach($postedEvents as $i=>$p){
     $data['events'][$i]['expires_at']=kcmc_local_datetime_iso($ex,true);
 }
 kcmc_write_content($data,(string)$user['display_name']);
+$rotation=kcmc_prune_content_backups(KCMC_BACKUPS);
 kcmc_audit('content.published', ['content_version' => '3.0.0']);
+if(($rotation['removed']??0)>0||($rotation['failed']??0)>0)kcmc_audit('content.backups_rotated',['removed'=>(int)($rotation['removed']??0),'failed'=>(int)($rotation['failed']??0),'kept'=>(int)($rotation['kept']??0)]);
 header('Location: ' . kcmc_url('admin/?msg=' . rawurlencode('Published successfully. Backup created automatically.')));
