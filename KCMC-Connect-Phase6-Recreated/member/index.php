@@ -17,6 +17,7 @@ $firstName = trim(explode(' ', (string)$user['display_name'])[0]);
 <html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="robots" content="noindex,nofollow"><title>Member Prayer • KCMC Connect</title><link rel="stylesheet" href="<?=kcmc_h(kcmc_url('styles.css?v=3.0.0'))?>"></head>
 <body class="portal-body"><main class="portal-shell">
   <header class="portal-top"><div><a class="portal-back" href="<?=kcmc_h(kcmc_url())?>">← KCMC Connect</a><p class="eyebrow">VERIFIED MEMBER AREA</p><h1>Welcome, <?=kcmc_h($firstName)?>.</h1><p class="portal-lead">Prayer stays inside the KCMC family and under pastoral care.</p></div><nav class="portal-actions">
+    <a class="btn secondary" href="<?=kcmc_h(kcmc_url('member/timeclock.php'))?>">Time Clock</a>
     <?php if (kcmc_can_publish($user)): ?><a class="btn secondary" href="<?=kcmc_h(kcmc_url('admin/'))?>">Publishing</a><?php endif; ?>
     <?php if (kcmc_can_publish($user)): ?><a class="btn secondary" href="<?=kcmc_h(kcmc_url('admin/push.php'))?>">Push updates</a><?php endif; ?>
     <?php if (kcmc_can_manage_users($user)): ?><a class="btn secondary" href="<?=kcmc_h(kcmc_url('admin/users.php'))?>">Members</a><?php endif; ?>
