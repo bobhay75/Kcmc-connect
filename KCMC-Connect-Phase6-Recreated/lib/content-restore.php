@@ -1,5 +1,6 @@
 <?php
 declare(strict_types=1);
+require_once __DIR__ . '/backup-retention.php';
 
 const KCMC_RESTORE_MAX_BYTES = 2097152;
 
@@ -53,5 +54,6 @@ function kcmc_restore_public_content(string $raw, string $actor): array {
     $data = $validated['data'];
     kcmc_apply_required_public_content($data);
     kcmc_write_content($data, $actor);
-    return ['ok' => true, 'error' => '', 'data' => $data];
+    $rotation = kcmc_prune_content_backups(KCMC_BACKUPS);
+    return ['ok' => true, 'error' => '', 'data' => $data, 'backup_rotation' => $rotation];
 }
