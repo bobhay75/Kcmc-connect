@@ -34,6 +34,13 @@ try {
     verify_push(!kcmc_push_endpoint_allowed('https://example.com/push'), 'Arbitrary HTTPS endpoint must be rejected to prevent SSRF.');
     verify_push(!kcmc_push_endpoint_allowed('http://fcm.googleapis.com/fcm/send/example'), 'Non-HTTPS push endpoint must be rejected.');
 
+    verify_push(kcmc_push_valid_target('./'), 'App root notification target should be accepted.');
+    verify_push(kcmc_push_valid_target('./#events'), 'In-app fragment target should be accepted.');
+    verify_push(kcmc_push_valid_target('./bulletin.php'), 'In-app page target should be accepted.');
+    verify_push(!kcmc_push_valid_target('https://example.com/'), 'Absolute external notification target must be rejected.');
+    verify_push(!kcmc_push_valid_target('./../admin/'), 'Path traversal notification target must be rejected.');
+    verify_push(!kcmc_push_valid_target('./%2e%2e/admin/'), 'Encoded path traversal notification target must be rejected.');
+
     $subscription = [
         'endpoint' => 'https://fcm.googleapis.com/fcm/send/test-endpoint',
         'keys' => [
