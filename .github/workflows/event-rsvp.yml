@@ -1,0 +1,42 @@
+name: KCMC private event RSVP
+
+on:
+  pull_request:
+    paths:
+      - 'KCMC-Connect-Phase6-Recreated/app.js'
+      - 'KCMC-Connect-Phase6-Recreated/api/rsvp.php'
+      - 'KCMC-Connect-Phase6-Recreated/admin/rsvps.php'
+      - 'KCMC-Connect-Phase6-Recreated/admin/index.php'
+      - 'KCMC-Connect-Phase6-Recreated/lib/event-rsvp.php'
+      - 'KCMC-Connect-Phase6-Recreated/lib/audit-history.php'
+      - 'tests/event-rsvp-contract.php'
+      - '.github/workflows/event-rsvp.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'KCMC-Connect-Phase6-Recreated/app.js'
+      - 'KCMC-Connect-Phase6-Recreated/api/rsvp.php'
+      - 'KCMC-Connect-Phase6-Recreated/admin/rsvps.php'
+      - 'KCMC-Connect-Phase6-Recreated/admin/index.php'
+      - 'KCMC-Connect-Phase6-Recreated/lib/event-rsvp.php'
+      - 'KCMC-Connect-Phase6-Recreated/lib/audit-history.php'
+      - 'tests/event-rsvp-contract.php'
+      - '.github/workflows/event-rsvp.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  contract:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Syntax checks
+        run: |
+          php -l KCMC-Connect-Phase6-Recreated/lib/event-rsvp.php
+          php -l KCMC-Connect-Phase6-Recreated/api/rsvp.php
+          php -l KCMC-Connect-Phase6-Recreated/admin/rsvps.php
+          php -l tests/event-rsvp-contract.php
+          node --check KCMC-Connect-Phase6-Recreated/app.js
+      - name: Event RSVP contract
+        run: php tests/event-rsvp-contract.php
