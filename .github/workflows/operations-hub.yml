@@ -1,0 +1,32 @@
+name: KCMC administrator operations hub
+
+on:
+  pull_request:
+    paths:
+      - 'KCMC-Connect-Phase6-Recreated/admin/index.php'
+      - 'KCMC-Connect-Phase6-Recreated/admin/operations.php'
+      - 'tests/operations-hub-contract.php'
+      - '.github/workflows/operations-hub.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'KCMC-Connect-Phase6-Recreated/admin/index.php'
+      - 'KCMC-Connect-Phase6-Recreated/admin/operations.php'
+      - 'tests/operations-hub-contract.php'
+      - '.github/workflows/operations-hub.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  contract:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Syntax checks
+        run: |
+          php -l KCMC-Connect-Phase6-Recreated/admin/index.php
+          php -l KCMC-Connect-Phase6-Recreated/admin/operations.php
+          php -l tests/operations-hub-contract.php
+      - name: Operations hub contract
+        run: php tests/operations-hub-contract.php
