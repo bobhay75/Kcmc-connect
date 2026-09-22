@@ -144,8 +144,32 @@
   shareButtons.forEach(button=>button.addEventListener('click',shareKcmc));
 
   function sendFormByEmail(form){const status=form.querySelector('.form-status');if(!form.checkValidity()){form.reportValidity();status.textContent='Please complete the required fields.';status.className='form-status error';return;}const data=new FormData(form),lines=[];for(const [key,value] of data.entries())if(String(value).trim())lines.push(`${key}: ${value}`);const subject=form.dataset.subject||'KCMC Connect Form';status.textContent='Opening your email app with this request ready to send…';status.className='form-status success';window.location.href=`mailto:${OFFICE_EMAIL}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(lines.join('\n'))}`;}
-  document.querySelectorAll('[data-kcmc-form]').forEach(form=>form.addEventListener('submit',e=>{e.preventDefault();sendFormByEmail(form);}));
-  const eventName=document.getElementById('eventName'),eventDisplay=document.getElementById('eventDisplay');document.querySelectorAll('.event-rsvp').forEach(btn=>btn.addEventListener('click',()=>{const card=btn.closest('.event-card'),name=card?.dataset.event||'';if(eventName)eventName.value=name;if(eventDisplay)eventDisplay.value=name;document.getElementById('eventForm')?.scrollIntoView({behavior:'smooth',block:'center'});}));
+  async function sendEventRsvp(form){
+    const status=form.querySelector('.form-status');
+    if(!form.checkValidity()){form.reportValidity();status.textContent='Please complete the required fields.';status.className='form-status error';return;}
+    const eventField=form.querySelector('input[name="event"]');
+    const eventDateField=form.querySelector('input[name="event_date"]');
+    if(!eventField?.value||!eventDateField?.value){status.textContent='Choose an event above before sending your RSVP.';status.className='form-status error';return;}
+    const data=new FormData(form),payload={};
+    for(const [key,value] of data.entries())payload[key]=String(value);
+    const submit=form.querySelector('button[type="submit"]');
+    status.textContent='Sending your RSVP…';status.className='form-status';if(submit)submit.disabled=true;
+    try{
+      const response=await fetch('./api/rsvp.php',{method:'POST',headers:{'Content-Type':'application/json','Accept':'application/json','X-KCMC-RSVP':'1'},credentials:'same-origin',cache:'no-store',body:JSON.stringify(payload)});
+      let result=null;try{result=await response.json();}catch(_){}
+      if(!response.ok||!result?.ok)throw new Error(result?.message||'Your RSVP could not be saved.');
+      const selectedEvent=eventField.value,selectedDate=eventDateField.value;
+      form.reset();eventField.value=selectedEvent;eventDateField.value=selectedDate;
+      if(eventDisplay)eventDisplay.value=selectedEvent;
+      status.textContent=result.message||'Your RSVP has been received by KCMC.';status.className='form-status success';
+    }catch(error){status.textContent=error?.message||'Your RSVP could not be saved. Please try again.';status.className='form-status error';}
+    finally{if(submit)submit.disabled=false;}
+  }
+  document.querySelectorAll('[data-kcmc-form]').forEach(form=>form.addEventListener('submit',e=>{e.preventDefault();if(form.dataset.kcmcForm==='event')sendEventRsvp(form);else sendFormByEmail(form);}));
+  const eventForm=document.getElementById('eventForm'),eventName=document.getElementById('eventName'),eventDisplay=document.getElementById('eventDisplay');
+  let eventDateField=eventForm?.querySelector('input[name="event_date"]')||null;
+  if(eventForm&&!eventDateField){eventDateField=document.createElement('input');eventDateField.type='hidden';eventDateField.name='event_date';eventForm.appendChild(eventDateField);}
+  document.querySelectorAll('.event-rsvp').forEach(btn=>btn.addEventListener('click',()=>{const card=btn.closest('.event-card'),name=card?.dataset.event||'',date=card?.dataset.date||'';if(eventName)eventName.value=name;if(eventDateField)eventDateField.value=date;if(eventDisplay)eventDisplay.value=name;eventForm?.scrollIntoView({behavior:'smooth',block:'center'});}));
   function toICSDate(date,time){const [y,m,d]=date.split('-').map(Number);const match=time.match(/(\d+):(\d+)\s*(AM|PM)/i);if(!match)return`${y}${String(m).padStart(2,'0')}${String(d).padStart(2,'0')}`;let h=Number(match[1]);const min=Number(match[2]),ap=match[3].toUpperCase();if(ap==='PM'&&h!==12)h+=12;if(ap==='AM'&&h===12)h=0;return`${y}${String(m).padStart(2,'0')}${String(d).padStart(2,'0')}T${String(h).padStart(2,'0')}${String(min).padStart(2,'0')}00`;}
   function icsEscape(value){return String(value||'').replace(/\\/g,'\\\\').replace(/\r?\n/g,'\\n').replace(/([,;])/g,'\\$1');}
   document.querySelectorAll('.add-calendar').forEach(btn=>btn.addEventListener('click',()=>{const card=btn.closest('.event-card');if(!card)return;const start=toICSDate(card.dataset.date,card.dataset.time),end=card.dataset.endTime?toICSDate(card.dataset.date,card.dataset.endTime):'',stamp=new Date().toISOString().replace(/[-:]/g,'').replace(/\.\d{3}/,''),eventName=card.dataset.event||'KCMC event',location=card.dataset.location||'57 Kimberling City Center Lane, Kimberling City, MO 65686',description=card.dataset.description||'',uid=`${card.dataset.date}-${eventName.toLowerCase().replace(/[^a-z0-9]+/g,'-')}@kcmc-connect`,startLine=start.includes('T')?`DTSTART;TZID=America/Chicago:${start}`:`DTSTART;VALUE=DATE:${start}`;const lines=['BEGIN:VCALENDAR','VERSION:2.0','CALSCALE:GREGORIAN','PRODID:-//KCMC Connect//EN','X-WR-TIMEZONE:America/Chicago','BEGIN:VTIMEZONE','TZID:America/Chicago','X-LIC-LOCATION:America/Chicago','BEGIN:DAYLIGHT','TZOFFSETFROM:-0600','TZOFFSETTO:-0500','TZNAME:CDT','DTSTART:20070311T020000','RRULE:FREQ=YEARLY;BYMONTH=3;BYDAY=2SU','END:DAYLIGHT','BEGIN:STANDARD','TZOFFSETFROM:-0500','TZOFFSETTO:-0600','TZNAME:CST','DTSTART:20071104T020000','RRULE:FREQ=YEARLY;BYMONTH=11;BYDAY=1SU','END:STANDARD','END:VTIMEZONE','BEGIN:VEVENT',`UID:${icsEscape(uid)}`,`DTSTAMP:${stamp}`,startLine];if(end)lines.push(`DTEND;TZID=America/Chicago:${end}`);lines.push(`SUMMARY:${icsEscape(eventName)}`,`LOCATION:${icsEscape(location)}`);if(description)lines.push(`DESCRIPTION:${icsEscape(description)}`);lines.push('END:VEVENT','END:VCALENDAR');const ics=lines.join('\r\n');const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([ics],{type:'text/calendar'}));a.download=`kcmc-${card.dataset.date}-${eventName.toLowerCase().replace(/[^a-z0-9]+/g,'-')}.ics`;a.click();setTimeout(()=>URL.revokeObjectURL(a.href),1000);}));
