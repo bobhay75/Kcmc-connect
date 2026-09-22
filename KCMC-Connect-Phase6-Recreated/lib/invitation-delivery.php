@@ -52,3 +52,36 @@ function kcmc_invitation_delivery(array $store, string $link, string $email, str
         'subject' => $subject, 'message' => $message, 'gmail_url' => $gmail, 'email_url' => $mail,
         'expires_label' => gmdate('F j, Y, g:i A', $expiresAt) . ' UTC'];
 }
+
+/** Revoke every current, unexpired invitation for one normalized email without exposing token material.
+ * Recovery-administrator invitations may only be revoked by a recovery administrator.
+ */
+function kcmc_revoke_pending_invites(array &$store, string $email, bool $canRevokeRecovery, int $now): array {
+    $email = strtolower(trim($email));
+    if (!filter_var($email, FILTER_VALIDATE_EMAIL)) return ['revoked' => 0, 'forbidden' => false];
+    $records = $store['invites'] ?? null;
+    if (!is_array($records)) return ['revoked' => 0, 'forbidden' => false];
+
+    foreach ($records as $record) {
+        if (!is_array($record) || !empty($record['used_at'])) continue;
+        if (strtolower(trim((string)($record['email'] ?? ''))) !== $email) continue;
+        $expiresAt = strtotime((string)($record['expires_at'] ?? ''));
+        if ($expiresAt === false || $expiresAt <= $now) continue;
+        if (($record['role'] ?? '') === 'recovery_admin' && !$canRevokeRecovery) {
+            return ['revoked' => 0, 'forbidden' => true];
+        }
+    }
+
+    $revoked = 0;
+    foreach ($records as &$record) {
+        if (!is_array($record) || !empty($record['used_at'])) continue;
+        if (strtolower(trim((string)($record['email'] ?? ''))) !== $email) continue;
+        $expiresAt = strtotime((string)($record['expires_at'] ?? ''));
+        if ($expiresAt === false || $expiresAt <= $now) continue;
+        $record['used_at'] = 'revoked';
+        $revoked++;
+    }
+    unset($record);
+    $store['invites'] = $records;
+    return ['revoked' => $revoked, 'forbidden' => false];
+}

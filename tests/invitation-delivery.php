@@ -48,6 +48,23 @@ foreach (['missing','unknown'] as $role) {
 foreach ([[],['invites'=>null],['invites'=>['bad',null]],['invites'=>[['token_hash'=>[]]]]] as $s) verify(card($s)===null,'malformed store fails closed');
 $s=$store;$s['invites'][0]['display_name']="Dana\nBcc: attacker@example.invalid";verify(card($s)===null,'recipient control-character injection refused');
 $before=serialize($store);card($store);verify(serialize($store)===$before,'helper does not mutate invitation state');
+
+$revokeStore=$store;
+$revoke=kcmc_revoke_pending_invites($revokeStore,$email,false,$now);
+verify($revoke['revoked']===1 && $revoke['forbidden']===false,'current pending invitation can be revoked');
+verify(($revokeStore['invites'][0]['used_at']??null)==='revoked','revocation marks invitation unusable without deleting history');
+verify(card($revokeStore)===null,'revoked invitation can no longer produce a delivery card');
+$wrongStore=$store;$wrongBefore=serialize($wrongStore);$revoke=kcmc_revoke_pending_invites($wrongStore,'other@example.invalid',false,$now);
+verify($revoke['revoked']===0 && serialize($wrongStore)===$wrongBefore,'wrong email cannot revoke another invitation');
+$expiredStore=$store;$expiredStore['invites'][0]['expires_at']='2030-12-31T23:59:59Z';$revoke=kcmc_revoke_pending_invites($expiredStore,$email,false,$now);
+verify($revoke['revoked']===0 && empty($expiredStore['invites'][0]['used_at']),'expired invitation is not rewritten by revoke action');
+$recoveryStore=$store;$recoveryStore['invites'][0]['role']='recovery_admin';$recoveryBefore=serialize($recoveryStore);$revoke=kcmc_revoke_pending_invites($recoveryStore,$email,false,$now);
+verify($revoke['forbidden']===true && serialize($recoveryStore)===$recoveryBefore,'pastor administrator cannot revoke recovery-administrator invitation');
+$revoke=kcmc_revoke_pending_invites($recoveryStore,$email,true,$now);
+verify($revoke['revoked']===1 && ($recoveryStore['invites'][0]['used_at']??null)==='revoked','recovery administrator can revoke recovery-administrator invitation');
+$badStore=['invites'=>null];$revoke=kcmc_revoke_pending_invites($badStore,$email,true,$now);
+verify($revoke['revoked']===0 && $revoke['forbidden']===false,'malformed revoke store fails closed');
+
 function kcmc_h(string $value): string { return htmlspecialchars($value,ENT_QUOTES|ENT_SUBSTITUTE,'UTF-8'); }
 define('KCMC_ROOT',__DIR__.'/../KCMC-Connect-Phase6-Recreated');
 $current=['id'=>'test_admin'];$delivery=$d;
@@ -70,6 +87,9 @@ verify(str_contains($users,"unset(\$_SESSION['invite_link'], \$_SESSION['invite_
 verify(str_contains($users,"name=\"send_email\" value=\"1\""),'app-sent invitation requires an explicit checkbox');
 verify(str_contains($users,"kcmc_send_invitation_email(\$sendDelivery)"),'explicit send path uses the server-side invitation mailer');
 verify(str_contains($users,"member.invitation_email_sent") && str_contains($users,"member.invitation_email_failed"),'server mail outcomes create audit events');
+verify(str_contains($users,"name=\"action\" value=\"revoke_invite\"") && str_contains($users,"name=\"invite_email\""),'pending invitation rows expose a revoke action keyed only by visible email');
+verify(str_contains($users,"kcmc_revoke_pending_invites") && str_contains($users,"member.invitation_revoked"),'revoke action uses guarded helper and creates an audit event');
+verify(!str_contains($users,"name=\"invite_id\"") && !str_contains($users,"name=\"token_hash\""),'revoke form exposes neither invitation IDs nor token material');
 $javascript=file_get_contents(KCMC_ROOT.'/admin/invitation-delivery.js');
 verify(!preg_match('/fetch\s*\(|XMLHttpRequest|sendBeacon|localStorage|sessionStorage|readText\s*\(|window\.open|location\./',$javascript),'delivery JS has no network, local token storage, clipboard reads or current-URL dependency');
 verify(str_contains($users,"if ((string)(\$_POST['send_email'] ?? '') === '1')"),'server send occurs only after explicit form opt-in');
