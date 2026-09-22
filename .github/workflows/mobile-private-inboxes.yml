@@ -1,0 +1,32 @@
+name: KCMC mobile private inboxes
+
+on:
+  pull_request:
+    paths:
+      - 'KCMC-Connect-Phase6-Recreated/admin/connections.php'
+      - 'KCMC-Connect-Phase6-Recreated/admin/rsvps.php'
+      - 'tests/mobile-private-inboxes-contract.php'
+      - '.github/workflows/mobile-private-inboxes.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'KCMC-Connect-Phase6-Recreated/admin/connections.php'
+      - 'KCMC-Connect-Phase6-Recreated/admin/rsvps.php'
+      - 'tests/mobile-private-inboxes-contract.php'
+      - '.github/workflows/mobile-private-inboxes.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  contract:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Syntax checks
+        run: |
+          php -l KCMC-Connect-Phase6-Recreated/admin/connections.php
+          php -l KCMC-Connect-Phase6-Recreated/admin/rsvps.php
+          php -l tests/mobile-private-inboxes-contract.php
+      - name: Mobile inbox contract
+        run: php tests/mobile-private-inboxes-contract.php
