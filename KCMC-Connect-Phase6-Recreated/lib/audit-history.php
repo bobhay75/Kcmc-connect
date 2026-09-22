@@ -25,6 +25,7 @@ function kcmc_audit_event_label(string $action): string {
         'content.restored' => 'Public content restored',
         'content.backups_rotated' => 'Automatic backups rotated',
         'event.created' => 'Event created',
+        'event.rsvp_submitted' => 'Event RSVP received',
         'prayer.submitted' => 'Prayer request submitted',
         'prayer.moderated' => 'Prayer request moderated',
         'push.subscription_saved' => 'Push notifications enabled',
