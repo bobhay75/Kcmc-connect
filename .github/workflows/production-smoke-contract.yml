@@ -5,6 +5,7 @@ on:
     paths:
       - 'tools/production-smoke.sh'
       - 'tests/production-smoke-contract.sh'
+      - 'tests/production-smoke-mock.sh'
       - '.github/workflows/production-smoke-contract.yml'
       - 'KCMC-Connect-Phase6-Recreated/index.php'
       - 'KCMC-Connect-Phase6-Recreated/.htaccess'
@@ -13,6 +14,7 @@ on:
     paths:
       - 'tools/production-smoke.sh'
       - 'tests/production-smoke-contract.sh'
+      - 'tests/production-smoke-mock.sh'
       - '.github/workflows/production-smoke-contract.yml'
       - 'KCMC-Connect-Phase6-Recreated/index.php'
       - 'KCMC-Connect-Phase6-Recreated/.htaccess'
@@ -29,5 +31,8 @@ jobs:
         run: |
           bash -n tools/production-smoke.sh
           bash -n tests/production-smoke-contract.sh
+          bash -n tests/production-smoke-mock.sh
       - name: Smoke source contracts
         run: bash tests/production-smoke-contract.sh
+      - name: Mocked smoke execution
+        run: bash tests/production-smoke-mock.sh
