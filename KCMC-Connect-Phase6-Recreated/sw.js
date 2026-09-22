@@ -81,3 +81,57 @@ self.addEventListener('fetch',event=>{
       })
   );
 });
+
+self.addEventListener('push',event=>{
+  event.waitUntil((async()=>{
+    let notice={title:'KCMC Connect',body:'There is a new public update from KCMC.',target:'./',id:'fallback'};
+    try{
+      const response=await fetch(new URL('./api/push-latest.php',self.registration.scope),{cache:'no-store',credentials:'omit',redirect:'error'});
+      if(response.ok){
+        const candidate=await response.json();
+        if(candidate&&typeof candidate.title==='string'&&typeof candidate.body==='string')notice=candidate;
+      }
+    }catch(_){
+      // A push still produces a generic visible notification if the notice fetch is temporarily unavailable.
+    }
+    let target=new URL('./',self.registration.scope);
+    try{
+      const candidate=new URL(typeof notice.target==='string'?notice.target:'./',self.registration.scope);
+      if(candidate.origin===self.location.origin&&candidate.href.startsWith(self.registration.scope))target=candidate;
+    }catch(_){
+      // Keep the in-scope fallback target.
+    }
+    await self.registration.showNotification(String(notice.title||'KCMC Connect').slice(0,80),{
+      body:String(notice.body||'There is a new public update from KCMC.').slice(0,180),
+      icon:new URL('./assets/icons/icon-192.png',self.registration.scope).href,
+      badge:new URL('./assets/icons/icon-192.png',self.registration.scope).href,
+      tag:'kcmc-connect-public-update',
+      renotify:true,
+      data:{url:target.href,noticeId:String(notice.id||'')}
+    });
+  })());
+});
+
+self.addEventListener('notificationclick',event=>{
+  event.notification.close();
+  const fallback=new URL('./',self.registration.scope).href;
+  const requested=event.notification?.data?.url||fallback;
+  let target=fallback;
+  try{
+    const candidate=new URL(requested,self.registration.scope);
+    if(candidate.origin===self.location.origin&&candidate.href.startsWith(self.registration.scope))target=candidate.href;
+  }catch(_){
+    target=fallback;
+  }
+  event.waitUntil((async()=>{
+    const windows=await self.clients.matchAll({type:'window',includeUncontrolled:true});
+    for(const client of windows){
+      if(new URL(client.url).origin===self.location.origin){
+        await client.focus();
+        if('navigate'in client)await client.navigate(target);
+        return;
+      }
+    }
+    if(self.clients.openWindow)await self.clients.openWindow(target);
+  })());
+});

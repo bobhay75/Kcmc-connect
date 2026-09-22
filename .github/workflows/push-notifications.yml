@@ -1,0 +1,74 @@
+name: KCMC Web Push contract
+
+on:
+  pull_request:
+    paths:
+      - 'KCMC-Connect-Phase6-Recreated/lib/push.php'
+      - 'KCMC-Connect-Phase6-Recreated/member/push.php'
+      - 'KCMC-Connect-Phase6-Recreated/member/push.js'
+      - 'KCMC-Connect-Phase6-Recreated/member/notifications.php'
+      - 'KCMC-Connect-Phase6-Recreated/admin/push.php'
+      - 'KCMC-Connect-Phase6-Recreated/api/push-latest.php'
+      - 'KCMC-Connect-Phase6-Recreated/sw.js'
+      - 'KCMC-Connect-Phase6-Recreated/member/index.php'
+      - 'tests/push-notifications-contract.php'
+      - '.github/workflows/push-notifications.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'KCMC-Connect-Phase6-Recreated/lib/push.php'
+      - 'KCMC-Connect-Phase6-Recreated/member/push.php'
+      - 'KCMC-Connect-Phase6-Recreated/member/push.js'
+      - 'KCMC-Connect-Phase6-Recreated/member/notifications.php'
+      - 'KCMC-Connect-Phase6-Recreated/admin/push.php'
+      - 'KCMC-Connect-Phase6-Recreated/api/push-latest.php'
+      - 'KCMC-Connect-Phase6-Recreated/sw.js'
+      - 'KCMC-Connect-Phase6-Recreated/member/index.php'
+      - 'tests/push-notifications-contract.php'
+      - '.github/workflows/push-notifications.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  contract:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - name: Verify runtimes
+        run: |
+          php --version
+          node --version
+          php -m | grep -qi openssl
+      - name: Verify push PHP and JavaScript syntax
+        run: |
+          php -l KCMC-Connect-Phase6-Recreated/lib/push.php
+          php -l KCMC-Connect-Phase6-Recreated/member/push.php
+          php -l KCMC-Connect-Phase6-Recreated/member/notifications.php
+          php -l KCMC-Connect-Phase6-Recreated/admin/push.php
+          php -l KCMC-Connect-Phase6-Recreated/api/push-latest.php
+          node --check KCMC-Connect-Phase6-Recreated/member/push.js
+          node --check KCMC-Connect-Phase6-Recreated/sw.js
+      - name: Run isolated Web Push contract
+        run: php tests/push-notifications-contract.php
+      - name: Enforce privacy and opt-in boundaries
+        run: |
+          grep -Fq "'PushManager'in window" KCMC-Connect-Phase6-Recreated/member/push.js
+          grep -Fq "Notification.requestPermission()" KCMC-Connect-Phase6-Recreated/member/push.js
+          grep -Fq "userVisibleOnly:true" KCMC-Connect-Phase6-Recreated/member/push.js
+          grep -Fq "self.addEventListener('push'" KCMC-Connect-Phase6-Recreated/sw.js
+          grep -Fq "credentials:'omit'" KCMC-Connect-Phase6-Recreated/sw.js
+          if grep -Fq 'event.data' KCMC-Connect-Phase6-Recreated/sw.js; then
+            echo 'Push payload data must not carry KCMC notice content.' >&2
+            exit 1
+          fi
+          if grep -Eq 'KCMC_PRAYERS|prayers\.json|prayer text' KCMC-Connect-Phase6-Recreated/lib/push.php KCMC-Connect-Phase6-Recreated/admin/push.php KCMC-Connect-Phase6-Recreated/api/push-latest.php; then
+            echo 'Push transport must remain independent of private prayer storage.' >&2
+            exit 1
+          fi
+          grep -Fq "KCMC_PRIVATE_DATA . '/push-vapid.json'" KCMC-Connect-Phase6-Recreated/lib/push.php
+          grep -Fq "KCMC_PRIVATE_DATA . '/push-subscriptions.json'" KCMC-Connect-Phase6-Recreated/lib/push.php
+          grep -Fq "kcmc_require_login()" KCMC-Connect-Phase6-Recreated/member/push.php
+          grep -Fq "kcmc_require_role(['pastor_admin', 'recovery_admin'])" KCMC-Connect-Phase6-Recreated/admin/push.php
