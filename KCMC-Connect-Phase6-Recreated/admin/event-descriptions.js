@@ -8,7 +8,13 @@
       current !== null && typeof current === 'object' &&
       fields.every(key => typeof expected[key] === 'string' && expected[key] === current[key]);
   }
-  if (typeof module === 'object' && module.exports) module.exports = { canFill };
+
+  function countChangedValues(baseline, current) {
+    if (!Array.isArray(baseline) || !Array.isArray(current) || baseline.length !== current.length) return -1;
+    return current.reduce((count, value, index) => count + Number(value !== baseline[index]), 0);
+  }
+
+  if (typeof module === 'object' && module.exports) module.exports = { canFill, countChangedValues };
   if (typeof document === 'undefined') return;
 
   function setupPublishingReviewGuard() {
@@ -22,7 +28,7 @@
     const valueOf = control => (control.type === 'checkbox' || control.type === 'radio')
       ? (control.checked ? control.value : '')
       : control.value;
-    const baseline = new Map(tracked.map((control, index) => [`${index}:${control.name}`, valueOf(control)]));
+    const baseline = tracked.map(valueOf);
 
     const guard = document.createElement('section');
     guard.className = 'panel publishing-review-guard';
@@ -45,19 +51,16 @@
     submit.parentNode.insertBefore(guard, submit);
 
     function changedCount() {
-      return tracked.reduce((count, control, index) => {
-        const key = `${index}:${control.name}`;
-        return count + Number(valueOf(control) !== baseline.get(key));
-      }, 0);
+      return countChangedValues(baseline, tracked.map(valueOf));
     }
 
     function refresh() {
       const count = changedCount();
-      countNode.textContent = String(count);
-      confirm.disabled = count === 0;
-      if (count === 0) confirm.checked = false;
-      submit.disabled = count === 0 || !confirm.checked;
-      if (count === 0) reviewStatus.textContent = 'No changes detected yet.';
+      countNode.textContent = String(Math.max(0, count));
+      confirm.disabled = count <= 0;
+      if (count <= 0) confirm.checked = false;
+      submit.disabled = count <= 0 || !confirm.checked;
+      if (count <= 0) reviewStatus.textContent = 'No changes detected yet.';
       else if (!confirm.checked) reviewStatus.textContent = `${count} changed field${count === 1 ? '' : 's'} detected. Review them, then confirm before publishing.`;
       else reviewStatus.textContent = `${count} changed field${count === 1 ? '' : 's'} reviewed. Publishing is enabled.`;
     }
@@ -93,7 +96,6 @@
     let expected;
     try { expected = JSON.parse(button.dataset.descriptionReference); } catch (_) { return false; }
     const current = Object.fromEntries(fields.map(key => [key, row.querySelector(`[name$="[${key}]"]`)?.value]));
-    // Recheck the live form: the user may have edited text or the event since page load.
     if (!canFill(input.value, expected, current)) return false;
     const text = sourceText.textContent.trim();
     if (!text) return false;
