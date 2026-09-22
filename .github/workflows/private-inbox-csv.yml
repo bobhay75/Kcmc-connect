@@ -4,6 +4,8 @@ on:
   pull_request:
     paths:
       - 'KCMC-Connect-Phase6-Recreated/lib/private-csv.php'
+      - 'KCMC-Connect-Phase6-Recreated/admin/connections.php'
+      - 'KCMC-Connect-Phase6-Recreated/admin/rsvps.php'
       - 'KCMC-Connect-Phase6-Recreated/admin/connections-export.php'
       - 'KCMC-Connect-Phase6-Recreated/admin/rsvps-export.php'
       - 'tests/private-inbox-csv-contract.php'
@@ -12,6 +14,8 @@ on:
     branches: [main]
     paths:
       - 'KCMC-Connect-Phase6-Recreated/lib/private-csv.php'
+      - 'KCMC-Connect-Phase6-Recreated/admin/connections.php'
+      - 'KCMC-Connect-Phase6-Recreated/admin/rsvps.php'
       - 'KCMC-Connect-Phase6-Recreated/admin/connections-export.php'
       - 'KCMC-Connect-Phase6-Recreated/admin/rsvps-export.php'
       - 'tests/private-inbox-csv-contract.php'
@@ -28,6 +32,8 @@ jobs:
       - name: Syntax checks
         run: |
           php -l KCMC-Connect-Phase6-Recreated/lib/private-csv.php
+          php -l KCMC-Connect-Phase6-Recreated/admin/connections.php
+          php -l KCMC-Connect-Phase6-Recreated/admin/rsvps.php
           php -l KCMC-Connect-Phase6-Recreated/admin/connections-export.php
           php -l KCMC-Connect-Phase6-Recreated/admin/rsvps-export.php
           php -l tests/private-inbox-csv-contract.php
