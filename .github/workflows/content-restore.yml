@@ -1,0 +1,34 @@
+name: KCMC guarded content restore
+
+on:
+  pull_request:
+    paths:
+      - 'KCMC-Connect-Phase6-Recreated/admin/restore.php'
+      - 'KCMC-Connect-Phase6-Recreated/lib/content-restore.php'
+      - 'KCMC-Connect-Phase6-Recreated/member/index.php'
+      - 'tests/content-restore-contract.php'
+      - '.github/workflows/content-restore.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'KCMC-Connect-Phase6-Recreated/admin/restore.php'
+      - 'KCMC-Connect-Phase6-Recreated/lib/content-restore.php'
+      - 'KCMC-Connect-Phase6-Recreated/member/index.php'
+      - 'tests/content-restore-contract.php'
+      - '.github/workflows/content-restore.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+      - name: PHP syntax
+        run: |
+          php -l KCMC-Connect-Phase6-Recreated/lib/content-restore.php
+          php -l KCMC-Connect-Phase6-Recreated/admin/restore.php
+          php -l KCMC-Connect-Phase6-Recreated/member/index.php
+      - name: Restore contracts
+        run: php tests/content-restore-contract.php

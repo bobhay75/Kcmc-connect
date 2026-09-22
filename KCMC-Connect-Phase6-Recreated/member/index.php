@@ -19,6 +19,7 @@ $firstName = trim(explode(' ', (string)$user['display_name'])[0]);
   <header class="portal-top"><div><a class="portal-back" href="<?=kcmc_h(kcmc_url())?>">← KCMC Connect</a><p class="eyebrow">VERIFIED MEMBER AREA</p><h1>Welcome, <?=kcmc_h($firstName)?>.</h1><p class="portal-lead">Prayer stays inside the KCMC family and under pastoral care.</p></div><nav class="portal-actions">
     <?php if (kcmc_can_publish($user)): ?><a class="btn secondary" href="<?=kcmc_h(kcmc_url('admin/'))?>">Publishing</a><?php endif; ?>
     <?php if (kcmc_can_publish($user)): ?><a class="btn secondary" href="<?=kcmc_h(kcmc_url('admin/health.php'))?>">Release health</a><?php endif; ?>
+    <?php if (kcmc_can_publish($user)): ?><a class="btn secondary" href="<?=kcmc_h(kcmc_url('admin/restore.php'))?>">Content restore</a><?php endif; ?>
     <?php if (kcmc_can_publish($user)): ?><a class="btn secondary" href="<?=kcmc_h(kcmc_url('admin/push.php'))?>">Push updates</a><?php endif; ?>
     <?php if (kcmc_can_manage_users($user)): ?><a class="btn secondary" href="<?=kcmc_h(kcmc_url('admin/users.php'))?>">Members</a><?php endif; ?>
     <?php if (kcmc_can_view_private_prayers($user)): ?><a class="btn secondary" href="<?=kcmc_h(kcmc_url('member/prayer-team.php'))?>">Prayer team</a><?php endif; ?>
