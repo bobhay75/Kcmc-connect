@@ -64,6 +64,54 @@ Environment variables take precedence over `config.php` when present:
 
 Never put invitation tokens, SMTP credentials or mail secrets in Git.
 
+## Web Push configuration
+
+Web Push is **fail-closed**. The member Notifications page may exist before delivery is configured, but it will not request browser permission until a valid public VAPID key is present. The admin sender stays disabled until the public key, VAPID subject and matching server-only private key are all available.
+
+This first sender intentionally uses **payloadless Web Push**. The push service receives no prayer text, custom message body or other confidential KCMC content. The service worker displays a fixed generic KCMC update message and opens the public app.
+
+### Generate and store the VAPID key safely
+
+Generate a P-256 (`prime256v1`) keypair on the server or another trusted machine. Store the private PEM **outside** `/home/bobsome1/public_html/kcmc-connect/` and outside the Git repository. A suitable production path is similar to:
+
+`/home/bobsome1/private/kcmc-push-vapid-private.pem`
+
+The application rejects a private-key path inside the deployed KCMC application tree.
+
+Derive the uncompressed public point from that same key and encode the 65-byte `04 || X || Y` value as URL-safe base64 without `=` padding. That encoded value is the VAPID public key used by the browser subscription flow.
+
+### cPanel-friendly config.php path
+
+Add the following keys to the existing server-only `config.php` array. Preserve the invitation-mail settings already in that file.
+
+```php
+'push_vapid_public_key' => 'YOUR_URLSAFE_BASE64_PUBLIC_KEY',
+'push_vapid_subject' => 'mailto:secretary@umckc.org',
+'push_vapid_private_key_file' => '/home/bobsome1/private/kcmc-push-vapid-private.pem',
+```
+
+Environment variables may be used instead and take precedence:
+
+- `KCMC_PUSH_VAPID_PUBLIC_KEY`
+- `KCMC_PUSH_VAPID_SUBJECT`
+- `KCMC_PUSH_VAPID_PRIVATE_KEY_FILE`
+
+The VAPID subject must be either a valid `mailto:` address or an HTTPS URL. Never place the private PEM itself in `config.php`, Git, browser markup, JavaScript or the public web root.
+
+### Controlled Web Push verification
+
+1. Sign in to KCMC Connect on a test device and open **Notifications**.
+2. Press **Enable notifications**. Confirm the browser permission prompt appears only after that explicit click.
+3. Confirm the page reports an active subscription for that account.
+4. From a Pastor or Recovery administrator account, open **Push updates**.
+5. Confirm the page reports delivery ready and at least one active subscription.
+6. Check the confirmation box and send one generic update.
+7. Confirm the device receives the generic KCMC notification and tapping it opens the public KCMC app.
+8. Disable notifications on the device and confirm the stored subscription becomes inactive.
+9. Repeat one send only if needed to verify a stale endpoint returns 404/410 and is automatically deactivated.
+
+Do not claim production push support until this controlled real-device sequence succeeds.
+
 ## Prayer privacy checks
 
 Before launch, verify all of the following:
