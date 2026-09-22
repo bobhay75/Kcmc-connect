@@ -1,4 +1,5 @@
 const CACHE='kcmc-connect-v3.0.2-public-only';
+// RSVP client refresh: changing the worker reruns install and cache:'reload' overwrites the cached app.js response.
 const CORE=[
   './','./styles.css?v=3.0.1','./app.js?v=3.0.2','./manifest.webmanifest?v=3.0.1',
   './bulletin.php','./news.php','./events.php','./care.php','./connect.php',
