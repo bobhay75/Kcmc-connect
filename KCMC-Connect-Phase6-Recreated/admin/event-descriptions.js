@@ -8,8 +8,80 @@
       current !== null && typeof current === 'object' &&
       fields.every(key => typeof expected[key] === 'string' && expected[key] === current[key]);
   }
-  if (typeof module === 'object' && module.exports) module.exports = { canFill };
+
+  function countChangedValues(baseline, current) {
+    if (!Array.isArray(baseline) || !Array.isArray(current) || baseline.length !== current.length) return -1;
+    return current.reduce((count, value, index) => count + Number(value !== baseline[index]), 0);
+  }
+
+  if (typeof module === 'object' && module.exports) module.exports = { canFill, countChangedValues };
   if (typeof document === 'undefined') return;
+
+  function setupPublishingReviewGuard() {
+    const form = document.querySelector('form[action$="admin/save.php"]');
+    if (!form) return;
+    const submit = form.querySelector('button[type="submit"]');
+    if (!submit) return;
+
+    const tracked = [...form.querySelectorAll('input[name], textarea[name], select[name]')]
+      .filter(control => !['csrf', 'confirm_publish'].includes(control.name) && control.type !== 'hidden');
+    const valueOf = control => (control.type === 'checkbox' || control.type === 'radio')
+      ? (control.checked ? control.value : '')
+      : control.value;
+    const baseline = tracked.map(valueOf);
+
+    const guard = document.createElement('section');
+    guard.className = 'panel publishing-review-guard';
+    guard.setAttribute('aria-labelledby', 'publishing-review-title');
+    guard.innerHTML = '<h2 id="publishing-review-title">Review before publishing</h2>' +
+      '<p class="muted"><strong data-publish-change-count>0</strong> changed field(s) in this publishing form.</p>' +
+      '<label data-publish-confirm-label><input type="checkbox" name="confirm_publish" value="1" disabled> <span>I reviewed these changes and they are ready to publish.</span></label>' +
+      '<p class="muted" role="status" aria-live="polite" data-publish-review-status>No changes detected yet.</p>';
+    guard.style.marginBottom = '16px';
+    const confirm = guard.querySelector('input[name="confirm_publish"]');
+    const confirmLabel = guard.querySelector('[data-publish-confirm-label]');
+    const countNode = guard.querySelector('[data-publish-change-count]');
+    const reviewStatus = guard.querySelector('[data-publish-review-status]');
+    confirm.style.width = 'auto';
+    confirm.style.margin = '0';
+    confirmLabel.style.display = 'flex';
+    confirmLabel.style.alignItems = 'flex-start';
+    confirmLabel.style.gap = '10px';
+    confirmLabel.style.fontWeight = '700';
+    submit.parentNode.insertBefore(guard, submit);
+
+    function changedCount() {
+      return countChangedValues(baseline, tracked.map(valueOf));
+    }
+
+    function refresh() {
+      const count = changedCount();
+      countNode.textContent = String(Math.max(0, count));
+      confirm.disabled = count <= 0;
+      if (count <= 0) confirm.checked = false;
+      submit.disabled = count <= 0 || !confirm.checked;
+      if (count <= 0) reviewStatus.textContent = 'No changes detected yet.';
+      else if (!confirm.checked) reviewStatus.textContent = `${count} changed field${count === 1 ? '' : 's'} detected. Review them, then confirm before publishing.`;
+      else reviewStatus.textContent = `${count} changed field${count === 1 ? '' : 's'} reviewed. Publishing is enabled.`;
+    }
+
+    form.addEventListener('input', refresh);
+    form.addEventListener('change', refresh);
+    form.addEventListener('click', () => setTimeout(refresh, 0));
+    confirm.addEventListener('change', refresh);
+    form.addEventListener('submit', event => {
+      refresh();
+      if (changedCount() < 1 || !confirm.checked) {
+        event.preventDefault();
+        reviewStatus.textContent = 'Review the changed fields and confirm that they are ready to publish.';
+        guard.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        confirm.focus();
+      }
+    });
+    refresh();
+  }
+
+  setupPublishingReviewGuard();
 
   const buttons = [...document.querySelectorAll('[data-use-event-description]')];
   const allButton = document.querySelector('[data-fill-event-descriptions]');
@@ -24,7 +96,6 @@
     let expected;
     try { expected = JSON.parse(button.dataset.descriptionReference); } catch (_) { return false; }
     const current = Object.fromEntries(fields.map(key => [key, row.querySelector(`[name$="[${key}]"]`)?.value]));
-    // Recheck the live form: the user may have edited text or the event since page load.
     if (!canFill(input.value, expected, current)) return false;
     const text = sourceText.textContent.trim();
     if (!text) return false;

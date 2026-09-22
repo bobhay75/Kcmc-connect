@@ -1,0 +1,27 @@
+name: KCMC publishing review guard
+
+on:
+  pull_request:
+    paths:
+      - 'KCMC-Connect-Phase6-Recreated/admin/save.php'
+      - 'KCMC-Connect-Phase6-Recreated/admin/event-descriptions.js'
+      - 'tests/publishing-review-guard-contract.php'
+      - 'tests/publishing-review-guard-contract.cjs'
+      - '.github/workflows/publishing-review-guard.yml'
+  workflow_dispatch:
+
+jobs:
+  contract:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: PHP syntax
+        run: |
+          php -l KCMC-Connect-Phase6-Recreated/admin/save.php
+          php -l tests/publishing-review-guard-contract.php
+      - name: JavaScript syntax
+        run: node --check KCMC-Connect-Phase6-Recreated/admin/event-descriptions.js
+      - name: Server review contract
+        run: php tests/publishing-review-guard-contract.php
+      - name: Browser review contract
+        run: node tests/publishing-review-guard-contract.cjs
