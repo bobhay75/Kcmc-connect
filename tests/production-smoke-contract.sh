@@ -13,7 +13,7 @@ pass 'production smoke script parses'
 grep -Fq "BASE_URL=\"\${1:-https://bobsome1.com/kcmc-connect}\"" "$script" || fail 'default production URL is explicit'
 pass 'default production URL is explicit'
 
-grep -Fq "--proto '=https'" "$script" || fail 'smoke requests are restricted to HTTPS'
+grep -Fq -- "--proto '=https'" "$script" || fail 'smoke requests are restricted to HTTPS'
 grep -Fq -- '--connect-timeout 8' "$script" || fail 'smoke requests have connect timeout'
 grep -Fq -- '--max-time 20' "$script" || fail 'smoke requests have total timeout'
 pass 'network checks are HTTPS-only and bounded'
