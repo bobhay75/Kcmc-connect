@@ -113,6 +113,12 @@ assert_redirect_to_login admin '/admin/' 'signed-out administrator route redirec
 assert_redirect_to_login health '/admin/health.php' 'signed-out release-health route redirects to login'
 assert_redirect_to_login restore '/admin/restore.php' 'signed-out restore route redirects to login'
 assert_redirect_to_login audit '/admin/audit.php' 'signed-out audit-history route redirects to login'
+assert_redirect_to_login operations '/admin/operations.php' 'signed-out operations hub redirects to login'
+assert_redirect_to_login push '/admin/push.php' 'signed-out push controls redirect to login'
+assert_redirect_to_login rsvps '/admin/rsvps.php' 'signed-out RSVP inbox redirects to login'
+assert_redirect_to_login connections '/admin/connections.php' 'signed-out connection inbox redirects to login'
+assert_redirect_to_login rsvps_export '/admin/rsvps-export.php?status=all' 'signed-out RSVP CSV export redirects to login'
+assert_redirect_to_login connections_export '/admin/connections-export.php?status=all' 'signed-out connection CSV export redirects to login'
 
 assert_not_public config '/config.php' 'server configuration is not publicly readable'
 assert_not_public content '/data/content.json' 'public-content JSON file is blocked from direct access'
