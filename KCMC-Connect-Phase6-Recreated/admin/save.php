@@ -4,6 +4,7 @@ require_once __DIR__ . '/../lib/backup-retention.php';
 $user = kcmc_require_role(['pastor_admin', 'recovery_admin']);
 kcmc_private_headers();
 if ($_SERVER['REQUEST_METHOD']!=='POST' || !kcmc_verify_csrf($_POST['csrf']??null)) { http_response_code(403); exit('Invalid request'); }
+if ((string)($_POST['confirm_publish'] ?? '') !== '1') { http_response_code(422); exit('Review the changes and confirm that they are ready to publish.'); }
 $data=kcmc_content();
 $contactEmail=kcmc_normalize_email((string)($_POST['contact_email']??''));
 if(!kcmc_valid_email($contactEmail)){http_response_code(422);exit('Enter a valid church contact email.');}
