@@ -17,9 +17,9 @@ $activeCount = kcmc_push_active_for_user((string)($user['id'] ?? ''));
 <p>This page is ready for the final server-side delivery setup, but KCMC Connect does not claim push support until that path is configured and verified.</p>
 <?php else: ?>
 <p>Choose whether this browser may receive brief KCMC announcements. Permission is requested only after you press Enable.</p>
-<p class="portal-fine">Prayer text and other confidential content will never be placed in a push notification payload.</p>
+<p class="portal-fine">The first sender is intentionally generic: no prayer text, custom message content or member data is transmitted in the push request.</p>
 <p id="push-status" class="portal-alert" role="status">Checking this device…</p>
-<div class="portal-actions"><button class="btn gold" id="push-enable" type="button">Enable notifications</button><button class="btn secondary" id="push-disable" type="button">Disable on this device</button></div>
+<div class="portal-actions"><button class="btn gold" id="push-enable" type="button">Enable notifications</button><button class="btn secondary" id="push-disable" type="button">Disable on this device</button><?php if (kcmc_can_publish($user)): ?><a class="btn secondary" href="<?=kcmc_h(kcmc_url('admin/push.php'))?>">Send update</a><?php endif; ?></div>
 <p class="portal-fine">Stored active subscriptions for your account: <?=kcmc_h((string)$activeCount)?></p>
 <?php endif; ?>
 </section></main></body></html>
