@@ -1,0 +1,54 @@
+name: KCMC push subscription foundation
+
+on:
+  pull_request:
+    paths:
+      - 'KCMC-Connect-Phase6-Recreated/member/notifications.php'
+      - 'KCMC-Connect-Phase6-Recreated/member/push-settings.js'
+      - 'KCMC-Connect-Phase6-Recreated/member/index.php'
+      - 'KCMC-Connect-Phase6-Recreated/admin/push.php'
+      - 'KCMC-Connect-Phase6-Recreated/api/push-subscription.php'
+      - 'KCMC-Connect-Phase6-Recreated/lib/push-subscriptions.php'
+      - 'KCMC-Connect-Phase6-Recreated/sw.js'
+      - 'tests/push-subscription-contract.php'
+      - 'tests/push-subscription-contract.cjs'
+      - 'tests/push-delivery-contract.php'
+      - '.github/workflows/push-subscription-foundation.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'KCMC-Connect-Phase6-Recreated/member/notifications.php'
+      - 'KCMC-Connect-Phase6-Recreated/member/push-settings.js'
+      - 'KCMC-Connect-Phase6-Recreated/member/index.php'
+      - 'KCMC-Connect-Phase6-Recreated/admin/push.php'
+      - 'KCMC-Connect-Phase6-Recreated/api/push-subscription.php'
+      - 'KCMC-Connect-Phase6-Recreated/lib/push-subscriptions.php'
+      - 'KCMC-Connect-Phase6-Recreated/sw.js'
+      - 'tests/push-subscription-contract.php'
+      - 'tests/push-subscription-contract.cjs'
+      - 'tests/push-delivery-contract.php'
+      - '.github/workflows/push-subscription-foundation.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+      - name: PHP syntax
+        run: |
+          php -l KCMC-Connect-Phase6-Recreated/lib/push-subscriptions.php
+          php -l KCMC-Connect-Phase6-Recreated/api/push-subscription.php
+          php -l KCMC-Connect-Phase6-Recreated/member/notifications.php
+          php -l KCMC-Connect-Phase6-Recreated/admin/push.php
+      - name: JavaScript syntax
+        run: |
+          node --check KCMC-Connect-Phase6-Recreated/member/push-settings.js
+          node --check KCMC-Connect-Phase6-Recreated/sw.js
+      - name: Push subscription and delivery contracts
+        run: |
+          php tests/push-subscription-contract.php
+          php tests/push-delivery-contract.php
+          node tests/push-subscription-contract.cjs
