@@ -55,8 +55,9 @@ function kcmc_push_remove_subscription(string $userId, string $endpoint): bool {
     $endpoint = trim($endpoint);
     if ($userId === '' || $endpoint === '' || strlen($endpoint) > 2048) return false;
     return (bool)kcmc_update_json_store(KCMC_PUSH_SUBSCRIPTIONS, ['version' => 1, 'subscriptions' => []], function (array &$state) use ($userId, $endpoint): bool {
+        if (!isset($state['subscriptions']) || !is_array($state['subscriptions'])) return false;
         $changed = false;
-        foreach (($state['subscriptions'] ?? []) as &$stored) {
+        foreach ($state['subscriptions'] as &$stored) {
             if (!is_array($stored) || ($stored['user_id'] ?? '') !== $userId || ($stored['endpoint'] ?? '') !== $endpoint || empty($stored['active'])) continue;
             $stored['active'] = false;
             $stored['updated_at'] = gmdate('c');
