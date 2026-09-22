@@ -20,6 +20,7 @@ $firstName = trim(explode(' ', (string)$user['display_name'])[0]);
     <?php if (kcmc_can_publish($user)): ?><a class="btn secondary" href="<?=kcmc_h(kcmc_url('admin/'))?>">Publishing</a><?php endif; ?>
     <?php if (kcmc_can_publish($user)): ?><a class="btn secondary" href="<?=kcmc_h(kcmc_url('admin/health.php'))?>">Release health</a><?php endif; ?>
     <?php if (kcmc_can_publish($user)): ?><a class="btn secondary" href="<?=kcmc_h(kcmc_url('admin/restore.php'))?>">Content restore</a><?php endif; ?>
+    <?php if (kcmc_can_publish($user)): ?><a class="btn secondary" href="<?=kcmc_h(kcmc_url('admin/audit.php'))?>">Audit history</a><?php endif; ?>
     <?php if (kcmc_can_publish($user)): ?><a class="btn secondary" href="<?=kcmc_h(kcmc_url('admin/push.php'))?>">Push updates</a><?php endif; ?>
     <?php if (kcmc_can_manage_users($user)): ?><a class="btn secondary" href="<?=kcmc_h(kcmc_url('admin/users.php'))?>">Members</a><?php endif; ?>
     <?php if (kcmc_can_view_private_prayers($user)): ?><a class="btn secondary" href="<?=kcmc_h(kcmc_url('member/prayer-team.php'))?>">Prayer team</a><?php endif; ?>
