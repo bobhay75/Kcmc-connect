@@ -1,0 +1,36 @@
+name: KCMC event creation
+
+on:
+  pull_request:
+    paths:
+      - 'KCMC-Connect-Phase6-Recreated/admin/event-create.php'
+      - 'KCMC-Connect-Phase6-Recreated/admin/index.php'
+      - 'KCMC-Connect-Phase6-Recreated/lib/event-create.php'
+      - 'KCMC-Connect-Phase6-Recreated/lib/audit-history.php'
+      - 'tests/event-create-contract.php'
+      - '.github/workflows/event-create.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'KCMC-Connect-Phase6-Recreated/admin/event-create.php'
+      - 'KCMC-Connect-Phase6-Recreated/admin/index.php'
+      - 'KCMC-Connect-Phase6-Recreated/lib/event-create.php'
+      - 'KCMC-Connect-Phase6-Recreated/lib/audit-history.php'
+      - 'tests/event-create-contract.php'
+      - '.github/workflows/event-create.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  contract:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: PHP syntax
+        run: |
+          php -l KCMC-Connect-Phase6-Recreated/lib/event-create.php
+          php -l KCMC-Connect-Phase6-Recreated/admin/event-create.php
+          php -l tests/event-create-contract.php
+      - name: Event creation contract
+        run: php tests/event-create-contract.php
