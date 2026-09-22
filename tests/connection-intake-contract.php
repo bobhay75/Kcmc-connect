@@ -73,8 +73,9 @@ connection_check(str_contains((string)$api, 'HTTP_X_KCMC_CONNECTION'), 'connecti
 connection_check(str_contains((string)$api, 'HTTP_SEC_FETCH_SITE') && str_contains((string)$api, 'cross-site'), 'connection API rejects explicit cross-site browser submissions');
 connection_check(str_contains((string)$api, 'CONTENT_LENGTH') && str_contains((string)$api, '> 8192'), 'connection API bounds request body size');
 connection_check(str_contains((string)$api, 'kcmc_connection_consume_rate'), 'connection API applies abuse controls');
-connection_check(str_contains((string)$api, "kcmc_audit($auditAction, ['count' => 1])"), 'connection audit stores aggregate count only');
-connection_check(!str_contains("kcmc_audit($auditAction, ['count' => 1])", 'email'), 'connection audit call contains no visitor email');
+$aggregateAuditCall = "kcmc_audit(\$auditAction, ['count' => 1]);";
+connection_check(str_contains((string)$api, $aggregateAuditCall), 'connection audit stores aggregate count only');
+connection_check(!str_contains($aggregateAuditCall, 'email') && !str_contains($aggregateAuditCall, 'name') && !str_contains($aggregateAuditCall, 'message'), 'connection audit call contains no visitor PII or note text');
 
 $admin = file_get_contents(__DIR__ . '/../KCMC-Connect-Phase6-Recreated/admin/connections.php');
 connection_check(is_string($admin) && str_contains($admin, "kcmc_require_role(['pastor_admin', 'recovery_admin'])"), 'connection inbox requires administrator role');
