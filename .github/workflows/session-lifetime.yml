@@ -1,0 +1,40 @@
+name: KCMC authenticated session lifetime
+
+on:
+  pull_request:
+    paths:
+      - 'KCMC-Connect-Phase6-Recreated/lib/session-lifetime.php'
+      - 'KCMC-Connect-Phase6-Recreated/lib/bootstrap.php'
+      - 'KCMC-Connect-Phase6-Recreated/member/login.php'
+      - 'KCMC-Connect-Phase6-Recreated/member/password.php'
+      - 'KCMC-Connect-Phase6-Recreated/lib/audit-history.php'
+      - 'tests/session-lifetime-contract.php'
+      - '.github/workflows/session-lifetime.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'KCMC-Connect-Phase6-Recreated/lib/session-lifetime.php'
+      - 'KCMC-Connect-Phase6-Recreated/lib/bootstrap.php'
+      - 'KCMC-Connect-Phase6-Recreated/member/login.php'
+      - 'KCMC-Connect-Phase6-Recreated/member/password.php'
+      - 'KCMC-Connect-Phase6-Recreated/lib/audit-history.php'
+      - 'tests/session-lifetime-contract.php'
+      - '.github/workflows/session-lifetime.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+      - name: PHP syntax
+        run: |
+          php -l KCMC-Connect-Phase6-Recreated/lib/session-lifetime.php
+          php -l KCMC-Connect-Phase6-Recreated/lib/bootstrap.php
+          php -l KCMC-Connect-Phase6-Recreated/member/login.php
+          php -l KCMC-Connect-Phase6-Recreated/member/password.php
+          php -l KCMC-Connect-Phase6-Recreated/lib/audit-history.php
+      - name: Session lifetime contracts
+        run: php tests/session-lifetime-contract.php
