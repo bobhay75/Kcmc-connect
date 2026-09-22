@@ -37,6 +37,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             kcmc_revoke_password_resets_for_user($userId, 'password_changed');
             kcmc_clear_login_failures((string)($user['email_normalized'] ?? $user['email'] ?? ''));
             session_regenerate_id(true);
+            kcmc_session_mark_regenerated($_SESSION, time());
             $_SESSION['csrf'] = bin2hex(random_bytes(24));
             kcmc_audit('auth.password_changed', ['role' => kcmc_role($user)]);
             $success = 'Password changed successfully. Your current session remains signed in.';
