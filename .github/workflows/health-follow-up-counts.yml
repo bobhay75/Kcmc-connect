@@ -1,0 +1,29 @@
+name: KCMC Release Health follow-up counts
+
+on:
+  pull_request:
+    paths:
+      - 'KCMC-Connect-Phase6-Recreated/admin/health.php'
+      - 'tests/health-follow-up-counts-contract.php'
+      - '.github/workflows/health-follow-up-counts.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'KCMC-Connect-Phase6-Recreated/admin/health.php'
+      - 'tests/health-follow-up-counts-contract.php'
+      - '.github/workflows/health-follow-up-counts.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  contract:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Syntax checks
+        run: |
+          php -l KCMC-Connect-Phase6-Recreated/admin/health.php
+          php -l tests/health-follow-up-counts-contract.php
+      - name: Health follow-up contract
+        run: php tests/health-follow-up-counts-contract.php
