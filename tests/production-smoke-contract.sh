@@ -27,10 +27,20 @@ grep -Fq "A Pastor administrator approves anything shared with members." "$scrip
 grep -Fq "Tony or Barry" "$script" || fail 'stale named-person wording is explicitly rejected'
 pass 'public prayer wording regression is covered'
 
-grep -Fq "'/admin/health.php'" "$script" || fail 'release-health protection is checked'
-grep -Fq "'/admin/restore.php'" "$script" || fail 'restore protection is checked'
-grep -Fq "'/admin/audit.php'" "$script" || fail 'audit protection is checked'
-pass 'new administrator routes are checked while signed out'
+for path in \
+  "'/admin/health.php'" \
+  "'/admin/restore.php'" \
+  "'/admin/audit.php'" \
+  "'/admin/operations.php'" \
+  "'/admin/push.php'" \
+  "'/admin/rsvps.php'" \
+  "'/admin/connections.php'" \
+  "'/admin/rsvps-export.php?status=all'" \
+  "'/admin/connections-export.php?status=all'"
+do
+  grep -Fq "$path" "$script" || fail "private route protection is checked: $path"
+done
+pass 'administrator pages and private exports are checked while signed out'
 
 grep -Fq "'/config.php'" "$script" || fail 'config exposure is checked'
 grep -Fq "'/data/content.json'" "$script" || fail 'data exposure is checked'
