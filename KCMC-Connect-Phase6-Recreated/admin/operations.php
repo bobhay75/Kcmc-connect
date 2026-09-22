@@ -28,6 +28,13 @@ $tools = [
         'action' => 'Open push controls',
     ],
     [
+        'href' => 'admin/timecards.php',
+        'eyebrow' => 'EMPLOYEE TIME',
+        'title' => 'Time Cards',
+        'description' => 'Review submitted employee pay periods, approve or return them, and export approved time cards for accounting.',
+        'action' => 'Review time cards',
+    ],
+    [
         'href' => 'admin/backup.php',
         'eyebrow' => 'BACKUP',
         'title' => 'Download Public Content Backup',
@@ -55,7 +62,7 @@ body{background:#eef2f4;color:#17324c;color-scheme:light}.ops{width:min(1040px,c
 </style>
 </head>
 <body><main class="ops">
-<div class="ops-top"><div><a href="<?=kcmc_h(kcmc_url('admin/'))?>">← Publishing Desk</a><p class="eyebrow">KCMC OPERATIONS</p><h1>Release, recovery and system tools</h1><p class="muted">Administrative controls for verifying the app, reviewing activity, testing notifications, and recovering public content.</p></div><a href="<?=kcmc_h(kcmc_url())?>">View public site</a></div>
+<div class="ops-top"><div><a href="<?=kcmc_h(kcmc_url('admin/'))?>">← Publishing Desk</a><p class="eyebrow">KCMC OPERATIONS</p><h1>Release, recovery and system tools</h1><p class="muted">Administrative controls for verifying the app, reviewing activity, testing notifications, employee time, and recovering public content.</p></div><a href="<?=kcmc_h(kcmc_url())?>">View public site</a></div>
 <div class="ops-grid">
 <?php foreach ($tools as $tool): ?>
 <section class="ops-card <?=$tool['href']==='admin/restore.php'?'warning':''?>">

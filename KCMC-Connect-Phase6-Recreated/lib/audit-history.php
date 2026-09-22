@@ -36,6 +36,12 @@ function kcmc_audit_event_label(string $action): string {
         'push.subscription_saved' => 'Push notifications enabled',
         'push.subscription_removed' => 'Push notifications disabled',
         'push.broadcast_attempted' => 'Push broadcast attempted',
+        'timeclock.clock_in' => 'Employee clocked in',
+        'timeclock.break_start' => 'Employee break started',
+        'timeclock.break_end' => 'Employee break ended',
+        'timeclock.clock_out' => 'Employee clocked out',
+        'timeclock.period_submitted' => 'Time card submitted',
+        'timeclock.period_reviewed' => 'Time card reviewed',
     ];
     return $labels[$action] ?? ucwords(str_replace(['.', '_'], ' ', $action));
 }
@@ -77,7 +83,7 @@ function kcmc_audit_recent_rows(string $path, array $actorNames, int $limit = 50
     $start = max(0, $size - KCMC_AUDIT_VIEW_MAX_BYTES);
     if ($start > 0) {
         fseek($handle, $start);
-        fgets($handle); // discard a potentially partial first record
+        fgets($handle);
     }
 
     $rows = [];
