@@ -1,0 +1,25 @@
+name: KCMC audit CSV export
+
+on:
+  pull_request:
+    paths:
+      - 'KCMC-Connect-Phase6-Recreated/admin/audit.php'
+      - 'KCMC-Connect-Phase6-Recreated/admin/audit-export.php'
+      - 'KCMC-Connect-Phase6-Recreated/lib/audit-history.php'
+      - 'KCMC-Connect-Phase6-Recreated/lib/private-csv.php'
+      - 'tests/audit-csv-export-contract.php'
+      - '.github/workflows/audit-csv-export.yml'
+  workflow_dispatch:
+
+jobs:
+  contract:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: PHP syntax
+        run: |
+          php -l KCMC-Connect-Phase6-Recreated/admin/audit.php
+          php -l KCMC-Connect-Phase6-Recreated/admin/audit-export.php
+          php -l tests/audit-csv-export-contract.php
+      - name: Audit CSV export contract
+        run: php tests/audit-csv-export-contract.php
