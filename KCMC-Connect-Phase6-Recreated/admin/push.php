@@ -49,8 +49,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 }
                 $failed++;
             }
-            $auditAction = $scope === 'self' ? 'push.self_test_attempted' : 'push.broadcast_attempted';
-            kcmc_audit($auditAction, ['sent' => $sent, 'expired' => $expired, 'failed' => $failed]);
+            $auditCounts = ['sent' => $sent, 'expired' => $expired, 'failed' => $failed];
+            if ($scope === 'self') {
+                kcmc_audit('push.self_test_attempted', $auditCounts);
+            } else {
+                kcmc_audit('push.broadcast_attempted', $auditCounts);
+            }
             $label = $scope === 'self' ? 'Device test' : 'Broadcast';
             $success = "{$label} complete: {$sent} accepted, {$expired} expired subscriptions removed, {$failed} failed.";
         }
