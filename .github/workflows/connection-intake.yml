@@ -1,0 +1,45 @@
+name: KCMC private connection intake
+
+on:
+  pull_request:
+    paths:
+      - 'KCMC-Connect-Phase6-Recreated/app.js'
+      - 'KCMC-Connect-Phase6-Recreated/sw.js'
+      - 'KCMC-Connect-Phase6-Recreated/api/connection.php'
+      - 'KCMC-Connect-Phase6-Recreated/admin/connections.php'
+      - 'KCMC-Connect-Phase6-Recreated/admin/rsvps.php'
+      - 'KCMC-Connect-Phase6-Recreated/lib/connection-intake.php'
+      - 'KCMC-Connect-Phase6-Recreated/lib/audit-history.php'
+      - 'tests/connection-intake-contract.php'
+      - '.github/workflows/connection-intake.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'KCMC-Connect-Phase6-Recreated/app.js'
+      - 'KCMC-Connect-Phase6-Recreated/sw.js'
+      - 'KCMC-Connect-Phase6-Recreated/api/connection.php'
+      - 'KCMC-Connect-Phase6-Recreated/admin/connections.php'
+      - 'KCMC-Connect-Phase6-Recreated/admin/rsvps.php'
+      - 'KCMC-Connect-Phase6-Recreated/lib/connection-intake.php'
+      - 'KCMC-Connect-Phase6-Recreated/lib/audit-history.php'
+      - 'tests/connection-intake-contract.php'
+      - '.github/workflows/connection-intake.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  contract:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Syntax checks
+        run: |
+          php -l KCMC-Connect-Phase6-Recreated/lib/connection-intake.php
+          php -l KCMC-Connect-Phase6-Recreated/api/connection.php
+          php -l KCMC-Connect-Phase6-Recreated/admin/connections.php
+          php -l tests/connection-intake-contract.php
+          node --check KCMC-Connect-Phase6-Recreated/app.js
+          node --check KCMC-Connect-Phase6-Recreated/sw.js
+      - name: Connection intake contract
+        run: php tests/connection-intake-contract.php
