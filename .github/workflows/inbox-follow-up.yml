@@ -3,6 +3,7 @@ name: KCMC inbox follow-up status
 on:
   pull_request:
     paths:
+      - 'KCMC-Connect-Phase6-Recreated/admin/index.php'
       - 'KCMC-Connect-Phase6-Recreated/admin/connections.php'
       - 'KCMC-Connect-Phase6-Recreated/admin/rsvps.php'
       - 'KCMC-Connect-Phase6-Recreated/lib/inbox-follow-up.php'
@@ -12,6 +13,7 @@ on:
   push:
     branches: [main]
     paths:
+      - 'KCMC-Connect-Phase6-Recreated/admin/index.php'
       - 'KCMC-Connect-Phase6-Recreated/admin/connections.php'
       - 'KCMC-Connect-Phase6-Recreated/admin/rsvps.php'
       - 'KCMC-Connect-Phase6-Recreated/lib/inbox-follow-up.php'
@@ -31,6 +33,7 @@ jobs:
         run: |
           php -l KCMC-Connect-Phase6-Recreated/lib/inbox-follow-up.php
           php -l KCMC-Connect-Phase6-Recreated/lib/audit-history.php
+          php -l KCMC-Connect-Phase6-Recreated/admin/index.php
           php -l KCMC-Connect-Phase6-Recreated/admin/connections.php
           php -l KCMC-Connect-Phase6-Recreated/admin/rsvps.php
           php -l tests/inbox-follow-up-contract.php
