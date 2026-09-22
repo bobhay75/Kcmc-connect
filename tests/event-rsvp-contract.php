@@ -76,8 +76,9 @@ rsvp_check(str_contains((string)$api, "HTTP_SEC_FETCH_SITE") && str_contains((st
 rsvp_check(str_contains((string)$api, 'CONTENT_LENGTH') && str_contains((string)$api, '> 8192'), 'RSVP API bounds request body size');
 rsvp_check(str_contains((string)$api, 'kcmc_event_rsvp_consume_rate'), 'RSVP API applies bounded abuse control');
 rsvp_check(str_contains((string)$api, 'kcmc_event_rsvp_event_is_open'), 'RSVP API requires a live RSVP-enabled event');
-rsvp_check(str_contains((string)$api, "kcmc_audit('event.rsvp_submitted', ['count' => 1])"), 'RSVP audit records only an aggregate count');
-rsvp_check(!preg_match("/kcmc_audit\('event\.rsvp_submitted'.*(email|name|message)/s", (string)$api), 'RSVP audit does not include attendee PII or note text');
+$auditCall = "kcmc_audit('event.rsvp_submitted', ['count' => 1]);";
+rsvp_check(substr_count((string)$api, $auditCall) === 1, 'RSVP audit records exactly one aggregate-only submission event');
+rsvp_check(!str_contains($auditCall, 'email') && !str_contains($auditCall, 'name') && !str_contains($auditCall, 'message'), 'RSVP audit call contains no attendee PII or note text');
 
 $admin = file_get_contents(__DIR__ . '/../KCMC-Connect-Phase6-Recreated/admin/rsvps.php');
 rsvp_check(is_string($admin) && str_contains($admin, "kcmc_require_role(['pastor_admin', 'recovery_admin'])"), 'RSVP attendee view requires administrator role');
