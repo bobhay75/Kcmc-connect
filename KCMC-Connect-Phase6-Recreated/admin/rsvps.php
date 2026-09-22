@@ -21,12 +21,12 @@ foreach ($rows as $row) {
 <title>Event RSVPs • KCMC Connect</title>
 <link rel="stylesheet" href="<?=kcmc_h(kcmc_url('styles.css'))?>">
 <style>
-body{background:#eef2f4;color:#17324c;color-scheme:light}.shell{width:min(1180px,calc(100% - 28px));margin:28px auto 80px}.card{background:#fff;border:1px solid #dce3e7;border-radius:18px;padding:22px;margin:18px 0}.summary{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px}.summary article{border:1px solid #dce3e7;border-radius:14px;padding:14px;background:#f8fafb}.summary strong{display:block;font-size:1.6rem}.table{overflow-x:auto}.row{display:grid;grid-template-columns:1.2fr .9fr 1fr 1.25fr 1.8fr .9fr;gap:12px;align-items:start;padding:12px 0;border-top:1px solid #edf0f2;min-width:980px}.row.head{font-weight:800;border-top:0}.note{white-space:pre-wrap;overflow-wrap:anywhere}.muted{color:#607080}.shell :is(a,button,input,select,textarea):focus-visible{outline:3px solid #174d75;outline-offset:3px}@media(max-width:760px){.shell{width:min(100% - 18px,1180px)}}
+body{background:#eef2f4;color:#17324c;color-scheme:light}.shell{width:min(1180px,calc(100% - 28px));margin:28px auto 80px}.card{background:#fff;border:1px solid #dce3e7;border-radius:18px;padding:22px;margin:18px 0}.summary{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px}.summary article{border:1px solid #dce3e7;border-radius:14px;padding:14px;background:#f8fafb}.summary strong{display:block;font-size:1.6rem}.table{overflow-x:auto}.row{display:grid;grid-template-columns:1.2fr .9fr 1fr 1.25fr 1.8fr .9fr;gap:12px;align-items:start;padding:12px 0;border-top:1px solid #edf0f2;min-width:980px}.row.head{font-weight:800;border-top:0}.note{white-space:pre-wrap;overflow-wrap:anywhere}.muted{color:#607080}.nav{display:flex;gap:14px;flex-wrap:wrap}.shell :is(a,button,input,select,textarea):focus-visible{outline:3px solid #174d75;outline-offset:3px}@media(max-width:760px){.shell{width:min(100% - 18px,1180px)}}
 </style>
 </head>
 <body>
 <main class="shell">
-<a href="<?=kcmc_h(kcmc_url('admin/'))?>">← Publishing Desk</a>
+<nav class="nav" aria-label="Administrator navigation"><a href="<?=kcmc_h(kcmc_url('admin/'))?>">← Publishing Desk</a><a href="<?=kcmc_h(kcmc_url('admin/connections.php'))?>">Connection inbox</a></nav>
 <p class="eyebrow">KCMC EVENTS</p>
 <h1>Event RSVPs</h1>
 <p class="muted">Newest 200 private event responses. Names, email addresses and notes are visible only to authorized administrators.</p>
