@@ -21,14 +21,9 @@ foreach (['=SUM(A1:A2)', '+cmd', '-2+3', '@hyperlink'] as $dangerous) {
 }
 csv_check(kcmc_csv_safe_cell('Normal text') === 'Normal text', 'ordinary CSV cell remains unchanged');
 csv_check(kcmc_csv_safe_cell("Line 1\r\nLine 2") === "Line 1\nLine 2", 'CSV cell normalizes line endings');
-
 csv_check(kcmc_csv_status_filter('CONTACTED') === 'contacted', 'CSV status filter normalizes allowed status');
 csv_check(kcmc_csv_status_filter('anything') === 'all', 'unknown CSV status falls back to all');
-$sample = [
-    ['id'=>'a'],
-    ['id'=>'b','status'=>'contacted'],
-    ['id'=>'c','status'=>'closed'],
-];
+$sample = [['id'=>'a'],['id'=>'b','status'=>'contacted'],['id'=>'c','status'=>'closed']];
 csv_check(count(kcmc_csv_filter_rows($sample, 'all')) === 3, 'all-status CSV includes every bounded row');
 csv_check(count(kcmc_csv_filter_rows($sample, 'new')) === 1, 'legacy missing status exports as New');
 csv_check(count(kcmc_csv_filter_rows($sample, 'contacted')) === 1, 'Contacted filter selects only contacted rows');
@@ -47,11 +42,18 @@ csv_check(str_contains((string)$rsvpExport, 'kcmc_csv_status_filter'), 'RSVP CSV
 csv_check(!str_contains((string)$rsvpExport, "['id']") && !str_contains((string)$rsvpExport, 'status_updated_at'), 'RSVP CSV excludes private row IDs and internal status timestamps');
 
 $helper = file_get_contents(__DIR__ . '/../KCMC-Connect-Phase6-Recreated/lib/private-csv.php');
-csv_check(is_string($helper) && str_contains($helper, "kcmc_private_headers()"), 'CSV download applies private/no-store headers');
-csv_check(str_contains((string)$helper, "Content-Type: text/csv; charset=UTF-8"), 'CSV download sets explicit text/csv content type');
+csv_check(is_string($helper) && str_contains($helper, 'kcmc_private_headers()'), 'CSV download applies private/no-store headers');
+csv_check(str_contains((string)$helper, 'Content-Type: text/csv; charset=UTF-8'), 'CSV download sets explicit text/csv content type');
 csv_check(str_contains((string)$helper, 'Content-Disposition: attachment'), 'CSV download forces attachment disposition');
 csv_check(str_contains((string)$helper, "\\xEF\\xBB\\xBF"), 'CSV download writes UTF-8 BOM for spreadsheet compatibility');
 csv_check(str_contains((string)$helper, "['=', '+', '-', '@']"), 'CSV helper explicitly neutralizes formula-leading characters');
+
+$connectionsPage = file_get_contents(__DIR__ . '/../KCMC-Connect-Phase6-Recreated/admin/connections.php');
+csv_check(is_string($connectionsPage) && str_contains($connectionsPage, 'connections-export.php?status='), 'connection inbox links its current status view to CSV export');
+csv_check(str_contains((string)$connectionsPage, 'Download this view as CSV'), 'connection inbox exposes a clear CSV action');
+$rsvpPage = file_get_contents(__DIR__ . '/../KCMC-Connect-Phase6-Recreated/admin/rsvps.php');
+csv_check(is_string($rsvpPage) && str_contains($rsvpPage, 'rsvps-export.php?status='), 'RSVP inbox links its current status view to CSV export');
+csv_check(str_contains((string)$rsvpPage, 'Download this view as CSV'), 'RSVP inbox exposes a clear CSV action');
 
 foreach (glob($tmp . '/*') ?: [] as $path) @unlink($path);
 @rmdir($tmp);
