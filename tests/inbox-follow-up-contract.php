@@ -72,6 +72,10 @@ follow_check(str_contains((string)$rsvpPage, 'kcmc_verify_csrf'), 'RSVP follow-u
 follow_check(str_contains((string)$rsvpPage, "event_rsvp.follow_up_changed"), 'RSVP follow-up changes emit audit event');
 follow_check(str_contains((string)$rsvpPage, "?status="), 'RSVP inbox exposes status filters');
 
+$publishingDesk = file_get_contents(__DIR__ . '/../KCMC-Connect-Phase6-Recreated/admin/index.php');
+follow_check(is_string($publishingDesk) && str_contains($publishingDesk, "admin/connections.php"), 'Publishing Desk links directly to the connection inbox');
+follow_check(str_contains((string)$publishingDesk, "admin/rsvps.php"), 'Publishing Desk retains direct RSVP inbox navigation');
+
 follow_check(kcmc_audit_event_label('connection.follow_up_changed') === 'Connection follow-up changed', 'audit history labels connection follow-up changes');
 follow_check(kcmc_audit_event_label('event_rsvp.follow_up_changed') === 'Event RSVP follow-up changed', 'audit history labels RSVP follow-up changes');
 $visible = kcmc_audit_visible_context(['previous_status'=>'new','status'=>'contacted','count'=>1,'email'=>'private@example.com','message'=>'private note','id'=>'secret']);
