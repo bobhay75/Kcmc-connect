@@ -46,6 +46,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <p class="eyebrow">KCMC MEMBERS</p><h1>Welcome back.</h1>
     <p class="portal-lead">Prayer and member information stay behind verified sign-in.</p>
     <?php if ($error): ?><p class="portal-alert error" role="alert"><?=kcmc_h($error)?></p><?php endif; ?>
+    <?php if (isset($_GET['expired'])): ?><p class="portal-alert warning">Your secure KCMC session expired. Sign in again to continue.</p><?php endif; ?>
     <?php if (isset($_GET['activated'])): ?><p class="portal-alert success">Your password is ready. You can sign in now.</p><?php endif; ?>
     <?php if (isset($_GET['reset'])): ?><p class="portal-alert success">Your password was reset successfully. Sign in with the new password.</p><?php endif; ?>
     <form class="portal-form" method="post">

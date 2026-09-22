@@ -12,6 +12,7 @@ function kcmc_audit_event_label(string $action): string {
         'auth.recovery_admin_created' => 'Recovery administrator created',
         'auth.password_changed' => 'Password changed',
         'auth.password_reset_completed' => 'Password reset completed',
+        'auth.session_expired' => 'Secure session expired',
         'member.invited' => 'Member invitation created',
         'member.invitation_email_sent' => 'Invitation email accepted',
         'member.invitation_email_failed' => 'Invitation email failed',

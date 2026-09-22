@@ -97,8 +97,8 @@ function kcmc_local_date_value(string $value, string $format = 'Y-m-d'): string 
 function kcmc_local_datetime_iso(string $value, bool $endOfDay = false): string {
     $value = trim($value);
     if ($value === '') return '';
-    $format = $endOfDay ? '!Y-m-d' : '!Y-m-d\\TH:i';
-    $expected = $endOfDay ? 'Y-m-d' : 'Y-m-d\\TH:i';
+    $format = $endOfDay ? '!Y-m-d' : '!Y-m-d\TH:i';
+    $expected = $endOfDay ? 'Y-m-d' : 'Y-m-d\TH:i';
     $timezone = new DateTimeZone(KCMC_LOCAL_TIMEZONE);
     $date = DateTimeImmutable::createFromFormat($format, $value, $timezone);
     if ($date === false || $date->format($expected) !== $value) return '';
@@ -116,7 +116,7 @@ function kcmc_valid_event_date(string $value): bool {
 function kcmc_event_time_minutes(string $value): ?int {
     $value = trim($value);
     if ($value === '') return null;
-    if (!preg_match('/\\A(0?[1-9]|1[0-2]):([0-5][0-9])\\s*([AaPp][Mm])\\z/', $value, $m)) return null;
+    if (!preg_match('/\A(0?[1-9]|1[0-2]):([0-5][0-9])\s*([AaPp][Mm])\z/', $value, $m)) return null;
     $hour = (int)$m[1];
     $minute = (int)$m[2];
     if (strtolower($m[3]) === 'pm' && $hour !== 12) $hour += 12;
@@ -342,7 +342,7 @@ function kcmc_has_any_users(): bool {
     return count(kcmc_users()) > 0;
 }
 
-function kcmc_current_user(): ?array {
+function kcmc_current_user(bool $recordActivity = true): ?array {
     kcmc_session_start();
     $id = (string)($_SESSION['kcmc_user_id'] ?? '');
     if ($id === '') return null;
@@ -351,6 +351,23 @@ function kcmc_current_user(): ?array {
         unset($_SESSION['kcmc_user_id']);
         return null;
     }
+
+    require_once __DIR__ . '/session-lifetime.php';
+    $now = time();
+    $lifetime = kcmc_session_apply_lifetime($_SESSION, $now, $recordActivity);
+    if (($lifetime['status'] ?? '') !== 'active') {
+        $reason = (string)($lifetime['status'] ?? 'expired');
+        kcmc_session_audit_expiration($id, $reason, $now);
+        $_SESSION = [];
+        session_regenerate_id(true);
+        $_SESSION['csrf'] = bin2hex(random_bytes(24));
+        $_SESSION['kcmc_session_expired'] = $reason;
+        return null;
+    }
+    if (!empty($lifetime['regenerate'])) {
+        session_regenerate_id(true);
+        kcmc_session_mark_regenerated($_SESSION, $now);
+    }
     return $user;
 }
 
@@ -358,14 +375,16 @@ function kcmc_current_user_if_session(): ?array {
     if (!kcmc_session_cookie_present()) return null;
     header('Cache-Control: private, no-store, max-age=0');
     header('Vary: Cookie');
-    return kcmc_current_user();
+    return kcmc_current_user(false);
 }
 
 function kcmc_login_user(array $user): void {
     kcmc_session_start();
+    require_once __DIR__ . '/session-lifetime.php';
     session_regenerate_id(true);
     $_SESSION['kcmc_user_id'] = (string)$user['id'];
     $_SESSION['csrf'] = bin2hex(random_bytes(24));
+    kcmc_session_initialize_auth($_SESSION, time());
 }
 
 function kcmc_logout_user(): void {
@@ -426,7 +445,10 @@ function kcmc_require_login(string $next = ''): array {
     $user = kcmc_current_user();
     if ($user) return $user;
     $target = $next !== '' ? $next : (string)($_SERVER['REQUEST_URI'] ?? kcmc_url('member/'));
-    header('Location: ' . kcmc_url('member/login.php?next=' . rawurlencode($target)));
+    $expired = !empty($_SESSION['kcmc_session_expired']);
+    unset($_SESSION['kcmc_session_expired']);
+    $query = 'next=' . rawurlencode($target) . ($expired ? '&expired=1' : '');
+    header('Location: ' . kcmc_url('member/login.php?' . $query));
     exit;
 }
 
