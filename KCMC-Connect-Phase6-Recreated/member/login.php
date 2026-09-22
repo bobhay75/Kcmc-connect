@@ -47,13 +47,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <p class="portal-lead">Prayer and member information stay behind verified sign-in.</p>
     <?php if ($error): ?><p class="portal-alert error" role="alert"><?=kcmc_h($error)?></p><?php endif; ?>
     <?php if (isset($_GET['activated'])): ?><p class="portal-alert success">Your password is ready. You can sign in now.</p><?php endif; ?>
+    <?php if (isset($_GET['reset'])): ?><p class="portal-alert success">Your password was reset successfully. Sign in with the new password.</p><?php endif; ?>
     <form class="portal-form" method="post">
       <input type="hidden" name="csrf" value="<?=kcmc_h(kcmc_csrf())?>"><input type="hidden" name="next" value="<?=kcmc_h($next)?>">
       <label>Email address<input type="email" name="email" autocomplete="email" required autofocus></label>
       <label>Password<input type="password" name="password" autocomplete="current-password" required></label>
       <button class="btn gold" type="submit">Sign in securely</button>
     </form>
+    <p class="portal-fine"><strong>Forgot your password?</strong> Ask a KCMC Connect administrator for a recipient-bound, one-time password-reset link.</p>
     <p class="portal-fine"><strong>New pastor administrator or member?</strong> Use the recipient-bound, one-time invitation issued by a KCMC Connect administrator to create your password.</p>
-    <p class="portal-fine">If your invitation is missing or expired, ask a KCMC Connect administrator to create a replacement for your name and email address.</p>
   </section>
 </main></body></html>

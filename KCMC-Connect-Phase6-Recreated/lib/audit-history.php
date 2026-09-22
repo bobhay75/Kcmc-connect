@@ -10,13 +10,19 @@ function kcmc_audit_event_label(string $action): string {
         'auth.logout' => 'Signed out',
         'auth.invite_activated' => 'Invitation activated',
         'auth.recovery_admin_created' => 'Recovery administrator created',
+        'auth.password_changed' => 'Password changed',
+        'auth.password_reset_completed' => 'Password reset completed',
         'member.invited' => 'Member invitation created',
         'member.invitation_email_sent' => 'Invitation email accepted',
         'member.invitation_email_failed' => 'Invitation email failed',
         'member.invitation_revoked' => 'Pending invitation revoked',
         'member.status_changed' => 'Account status changed',
+        'member.password_reset_issued' => 'Password reset link issued',
+        'member.password_reset_email_sent' => 'Password reset email accepted',
+        'member.password_reset_email_failed' => 'Password reset email failed',
         'content.published' => 'Public content published',
         'content.restored' => 'Public content restored',
+        'content.backups_rotated' => 'Automatic backups rotated',
         'prayer.submitted' => 'Prayer request submitted',
         'prayer.moderated' => 'Prayer request moderated',
         'push.subscription_saved' => 'Push notifications enabled',
@@ -27,7 +33,7 @@ function kcmc_audit_event_label(string $action): string {
 }
 
 function kcmc_audit_visible_context(array $context): array {
-    $allowed = ['role', 'active', 'sent', 'expired', 'failed', 'count', 'content_version', 'audience', 'action', 'bytes', 'reason'];
+    $allowed = ['role', 'active', 'sent', 'expired', 'failed', 'count', 'content_version', 'audience', 'action', 'bytes', 'reason', 'removed', 'kept'];
     $visible = [];
     foreach ($allowed as $key) {
         if (!array_key_exists($key, $context)) continue;
