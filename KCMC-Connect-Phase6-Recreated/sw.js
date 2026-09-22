@@ -1,12 +1,11 @@
 const CACHE='kcmc-connect-v3.0.2-public-only';
-// RSVP client refresh: changing the worker reruns install and cache:'reload' overwrites the cached app.js response.
+// Connection-intake client refresh: worker install reruns cache:'reload' and overwrites cached app.js.
 const CORE=[
   './','./styles.css?v=3.0.1','./app.js?v=3.0.2','./manifest.webmanifest?v=3.0.1',
   './bulletin.php','./news.php','./events.php','./care.php','./connect.php',
   './assets/icons/icon-192.png','./assets/icons/icon-512.png',
   './assets/visuals/kimberling-city-missouri-bridge-2024.jpg',
-  './assets/visuals/kcmc-ministry-group.jpg',
-  './assets/visuals/trunk-or-treat-2026.webp'
+  './assets/visuals/kcmc-ministry-group.jpg','./assets/visuals/trunk-or-treat-2026.webp'
 ];
 const PUBLIC_PATHS=new Set(CORE.map(path=>new URL(path,self.location.href).pathname));
 PUBLIC_PATHS.add(new URL('./index.php',self.location.href).pathname);
