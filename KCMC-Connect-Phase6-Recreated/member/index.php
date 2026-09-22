@@ -20,6 +20,7 @@ $firstName = trim(explode(' ', (string)$user['display_name'])[0]);
     <?php if (kcmc_can_publish($user)): ?><a class="btn secondary" href="<?=kcmc_h(kcmc_url('admin/'))?>">Publishing</a><?php endif; ?>
     <?php if (kcmc_can_manage_users($user)): ?><a class="btn secondary" href="<?=kcmc_h(kcmc_url('admin/users.php'))?>">Members</a><?php endif; ?>
     <?php if (kcmc_can_view_private_prayers($user)): ?><a class="btn secondary" href="<?=kcmc_h(kcmc_url('member/prayer-team.php'))?>">Prayer team</a><?php endif; ?>
+    <a class="btn secondary" href="<?=kcmc_h(kcmc_url('member/notifications.php'))?>">Notifications</a>
     <form method="post" action="<?=kcmc_h(kcmc_url('member/logout.php'))?>"><input type="hidden" name="csrf" value="<?=kcmc_h(kcmc_csrf())?>"><button class="btn secondary" type="submit">Sign out</button></form>
   </nav></header>
   <?php if (!$prayerAccess): ?>
