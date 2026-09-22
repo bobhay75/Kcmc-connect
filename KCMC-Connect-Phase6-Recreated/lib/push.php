@@ -261,7 +261,10 @@ function kcmc_push_clean_text(string $value, int $max): string {
 }
 
 function kcmc_push_valid_target(string $target): bool {
-    return preg_match('#\A\./[A-Za-z0-9._~!$&\'()*+,;=:@%/?#-]*\z#', $target) === 1 && !str_contains($target, '\\') && !str_contains($target, '//');
+    if (preg_match('~\A\./[A-Za-z0-9._!$&\'()*+,;=:@%/?#\~-]*\z~', $target) !== 1) return false;
+    if (str_contains($target, '\\') || str_contains($target, '//')) return false;
+    $decoded = rawurldecode($target);
+    return preg_match('~(?:\A|/)\.\.(?:/|\z)~', $decoded) !== 1;
 }
 
 function kcmc_push_save_notice(string $title, string $body, string $target, string $actorId): array {
