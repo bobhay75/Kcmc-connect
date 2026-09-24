@@ -12,6 +12,7 @@ on:
       - 'KCMC-Connect-Phase6-Recreated/admin/operations.php'
       - 'tests/timeclock-mvp-contract.php'
       - 'tests/timeclock-adjustment-contract.php'
+      - 'tests/timeclock-correction-contract.php'
       - '.github/workflows/timeclock-mvp.yml'
   workflow_dispatch:
 
@@ -31,7 +32,10 @@ jobs:
           php -l KCMC-Connect-Phase6-Recreated/admin/operations.php
           php -l tests/timeclock-mvp-contract.php
           php -l tests/timeclock-adjustment-contract.php
+          php -l tests/timeclock-correction-contract.php
       - name: Time clock contract
         run: php tests/timeclock-mvp-contract.php
       - name: Time clock adjustment contract
         run: php tests/timeclock-adjustment-contract.php
+      - name: Time clock correction contract
+        run: php tests/timeclock-correction-contract.php
