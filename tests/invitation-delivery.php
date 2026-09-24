@@ -72,7 +72,9 @@ ob_start();require KCMC_ROOT.'/admin/invitation-delivery.php';$html=ob_get_clean
 verify(str_contains($html,'Invitation ready — not emailed'),'unsent delivery card reports that nothing was emailed');
 $inviteSendSuccess=true;
 ob_start();require KCMC_ROOT.'/admin/invitation-delivery.php';$sentHtml=ob_get_clean();
-verify(str_contains($sentHtml,'Invitation email submitted') && str_contains($sentHtml,'does not prove inbox delivery'),'server-submitted card reports transport acceptance without claiming inbox delivery');
+verify(str_contains($sentHtml,'Invitation sent') && str_contains($sentHtml,'The server accepted the message for delivery.'),'server-submitted card clearly confirms server handoff');
+verify(!str_contains($sentHtml,'Open Gmail') && !str_contains($sentHtml,'Copy invitation email'),'successful server send hides manual delivery actions');
+verify(str_contains($sentHtml,'Delivery problem? Show manual fallback'),'successful server send keeps manual delivery behind an explicit fallback');
 verify(!str_contains($sentHtml,'Nothing has been emailed.'),'server-submitted card does not contradict successful mail handoff');
 unset($inviteSendSuccess);
 verify(str_contains($html,'type="button"') && !str_contains($html,'type="submit"') && !str_contains($html,'<form'),'delivery controls cannot submit invitation creation');
