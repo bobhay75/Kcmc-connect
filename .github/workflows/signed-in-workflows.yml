@@ -1,0 +1,54 @@
+name: KCMC signed-in workflow acceptance
+
+on:
+  pull_request:
+    paths:
+      - 'KCMC-Connect-Phase6-Recreated/member/**'
+      - 'KCMC-Connect-Phase6-Recreated/admin/**'
+      - 'KCMC-Connect-Phase6-Recreated/lib/**'
+      - 'tests/signed-in-workflows-browser.py'
+      - '.github/workflows/signed-in-workflows.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'KCMC-Connect-Phase6-Recreated/member/**'
+      - 'KCMC-Connect-Phase6-Recreated/admin/**'
+      - 'KCMC-Connect-Phase6-Recreated/lib/**'
+      - 'tests/signed-in-workflows-browser.py'
+      - '.github/workflows/signed-in-workflows.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  browser:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          persist-credentials: false
+
+      - name: Verify acceptance harness syntax
+        run: |
+          python3 -m py_compile tests/signed-in-workflows-browser.py
+          php -l KCMC-Connect-Phase6-Recreated/member/login.php
+          php -l KCMC-Connect-Phase6-Recreated/member/index.php
+          php -l KCMC-Connect-Phase6-Recreated/member/timeclock.php
+          php -l KCMC-Connect-Phase6-Recreated/admin/index.php
+          php -l KCMC-Connect-Phase6-Recreated/admin/rsvps.php
+          php -l KCMC-Connect-Phase6-Recreated/admin/connections.php
+          php -l KCMC-Connect-Phase6-Recreated/admin/operations.php
+          php -l KCMC-Connect-Phase6-Recreated/admin/health.php
+          php -l KCMC-Connect-Phase6-Recreated/admin/push.php
+          git diff --check
+
+      - name: Install browser acceptance dependencies
+        run: |
+          python3 -m pip install --disable-pip-version-check --no-cache-dir playwright
+          python3 -m playwright install --with-deps chromium
+
+      - name: Run signed-in full-app acceptance
+        run: python3 tests/signed-in-workflows-browser.py
