@@ -1,0 +1,33 @@
+name: KCMC PWA manifest
+
+on:
+  pull_request:
+    paths:
+      - 'KCMC-Connect-Phase6-Recreated/manifest.webmanifest'
+      - 'KCMC-Connect-Phase6-Recreated/assets/icons/**'
+      - 'tests/pwa-manifest-contract.php'
+      - '.github/workflows/pwa-manifest.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'KCMC-Connect-Phase6-Recreated/manifest.webmanifest'
+      - 'KCMC-Connect-Phase6-Recreated/assets/icons/**'
+      - 'tests/pwa-manifest-contract.php'
+      - '.github/workflows/pwa-manifest.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          persist-credentials: false
+      - name: Verify PWA manifest and icons
+        run: |
+          php -l tests/pwa-manifest-contract.php
+          php tests/pwa-manifest-contract.php
+          git diff --check
