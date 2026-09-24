@@ -22,6 +22,9 @@ push_self_check(str_contains((string)$page, "kcmc_push_deactivate_endpoint((stri
 push_self_check(str_contains((string)$page, "push.self_test_attempted"), 'self-test emits a distinct audit event');
 push_self_check(str_contains((string)$page, "push.broadcast_attempted"), 'broadcast audit event remains intact');
 push_self_check(str_contains((string)$page, 'Test my subscribed device'), 'UI offers signed-in-device verification before broadcast');
+push_self_check(str_contains((string)$page, 'Final mobile acceptance'), 'UI gives the owner an explicit final mobile acceptance checklist');
+push_self_check(str_contains((string)$page, 'No broadcast is required for acceptance.'), 'release acceptance does not require a church-wide broadcast');
+push_self_check(str_contains((string)$page, 'background delivery or notification tap behavior'), 'UI states the real-device-only verification boundary');
 push_self_check(str_contains((string)$page, 'send_scope" value="self"'), 'self-test form posts the self scope explicitly');
 push_self_check(str_contains((string)$page, 'send_scope" value="broadcast"'), 'broadcast form posts the broadcast scope explicitly');
 push_self_check(str_contains((string)$page, 'Signed-in account subscriptions:'), 'UI reports only a count for signed-in-account subscriptions');
