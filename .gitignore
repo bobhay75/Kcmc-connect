@@ -3,3 +3,10 @@ KCMC-Connect-Phase6-Recreated/SETUP-CREDENTIALS.txt
 KCMC-Connect-Phase6-Recreated/backups/
 KCMC-Connect-Phase6-Recreated/data/private/
 KCMC-Connect-Phase6-Recreated/assets/newsletter/
+__pycache__/
+*.py[cod]
+.venv/
+contest-service-agent/build/
+contest-service-agent/demo-output/
+contest-service-agent/private-archive/
+contest-service-agent/data/private/
