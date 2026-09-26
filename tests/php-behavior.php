@@ -28,8 +28,18 @@ expect_same(3, kcmc_featured_announcement_index($announcements), 'The stable own
 
 $content = ['events' => [], 'contact' => ['office_hours' => 'Tue–Thu • 8:00 AM–4:00 PM']];
 expect_same(true, kcmc_apply_required_public_content($content), 'Required public content must be added once.');
-expect_same('Tue–Thu • 9:00 AM–4:00 PM', $content['contact']['office_hours'], 'Required public content overlays verified office hours on preserved production content.');
+expect_same('Tue–Thu • 8:00 AM–4:00 PM', $content['contact']['office_hours'], 'An editor-approved office-hours change must survive public-content reads.');
 expect_same(false, kcmc_apply_required_public_content($content), 'Required public content migration must be idempotent.');
+
+foreach ([[], ['office_hours' => ''], ['office_hours' => '   '], ['office_hours' => null], ['office_hours' => []]] as $contact) {
+    $missingHours = ['events' => $content['events'], 'contact' => $contact];
+    expect_same(true, kcmc_apply_required_public_content($missingHours), 'Missing or invalid hours must receive a default.');
+    expect_same('Tue–Thu • 9:00 AM–4:00 PM', $missingHours['contact']['office_hours'], 'Missing hours retain the current website default.');
+    expect_same(false, kcmc_apply_required_public_content($missingHours), 'Applying the fallback twice must be a no-op.');
+}
+$closedOffice = ['events' => $content['events'], 'contact' => ['office_hours' => 'Closed Tuesday; Wednesday–Thursday 10:00 AM–2:00 PM']];
+expect_same(false, kcmc_apply_required_public_content($closedOffice), 'An approved temporary closure must not be overwritten.');
+expect_same('Closed Tuesday; Wednesday–Thursday 10:00 AM–2:00 PM', $closedOffice['contact']['office_hours'], 'Preserve the complete approved hours text.');
 
 expect_same('/kcmc-connect/admin/', kcmc_safe_next('/kcmc-connect/admin/'), 'Local redirects must remain available.');
 expect_same('/kcmc-connect/member/', kcmc_safe_next('https://example.com/steal'), 'External redirects must be rejected.');
