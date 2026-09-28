@@ -203,16 +203,17 @@ function kcmc_apply_required_public_content(array &$data): bool {
 
     $changed = false;
 
-    // cPanel preserves production data/content.json across deployments. Layer
-    // verified must-have contact data here so current public facts reach the
-    // live app without overwriting other Publishing Desk content.
+    // cPanel preserves production data/content.json across deployments. Supply
+    // a default only when hours are missing: later Publishing Desk corrections
+    // and temporary closures must survive every public read and restore.
     if (!isset($data['contact']) || !is_array($data['contact'])) {
         $data['contact'] = [];
         $changed = true;
     }
-    $requiredOfficeHours = 'Tue–Thu • 9:00 AM–4:00 PM';
-    if (($data['contact']['office_hours'] ?? '') !== $requiredOfficeHours) {
-        $data['contact']['office_hours'] = $requiredOfficeHours;
+    $defaultOfficeHours = 'Tue–Thu • 9:00 AM–4:00 PM';
+    $savedOfficeHours = $data['contact']['office_hours'] ?? null;
+    if (!is_string($savedOfficeHours) || trim($savedOfficeHours) === '') {
+        $data['contact']['office_hours'] = $defaultOfficeHours;
         $changed = true;
     }
 
@@ -283,7 +284,8 @@ function kcmc_content(): array {
             foreach (['announcements', 'events', 'news'] as $section) {
                 if (isset($release[$section]) && is_array($release[$section])) $data[$section] = $release[$section];
             }
-            if (isset($release['contact']['office_hours'])) $data['contact']['office_hours'] = (string)$release['contact']['office_hours'];
+            // Contact hours belong to the Publishing Desk. The shared fallback
+            // below supplies missing hours without replacing approved changes.
             $data['meta']['content_release'] = '3.0.0';
         }
     }

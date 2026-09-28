@@ -26,11 +26,11 @@ status=$(fetch '' home)
 grep -Fq '8:00 • 9:15 • 10:30' "$tmp_dir/home.body" || fail 'Current worship times are missing'
 grep -Fq 'Trunk or Treat!' "$tmp_dir/home.body" || fail 'Trunk or Treat is missing from the homepage'
 grep -Fq 'data-share-app' "$tmp_dir/home.body" || fail 'Native Share control is missing from the homepage'
-grep -Fq 'Tue–Thu • 9:00 AM–4:00 PM' "$tmp_dir/home.body" || grep -Fq 'Tuesday–Thursday, 9:00 AM–4:00 PM' "$tmp_dir/home.body" || fail 'Current office hours are missing from the homepage'
 
 status=$(fetch 'api/content.php' api)
 [[ $status == 200 ]] || fail "Public content API returned HTTP $status"
 jq -e '.events | type == "array"' "$tmp_dir/api.body" >/dev/null || fail 'Public content API did not return event JSON'
+jq -e '.contact.office_hours | type == "string" and test("\\S")' "$tmp_dir/api.body" >/dev/null || fail 'Published office hours are missing from public content'
 if jq -e 'has("prayers") or has("users") or has("invites")' "$tmp_dir/api.body" >/dev/null; then
   fail 'Public content API exposed a private-data key'
 fi

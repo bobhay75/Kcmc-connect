@@ -128,7 +128,7 @@ Before launch, verify all of the following:
 
 1. Confirm the homepage, current bulletin and all navigation views.
 2. Confirm worship times are 8:00 AM, 9:15 AM and 10:30 AM against the church's current public schedule.
-3. Confirm office hours display Tuesday–Thursday, 9:00 AM–4:00 PM even though production `data/content.json` is preserved.
+3. Confirm office hours match the last approved Publishing Desk value. Missing hours fall back to Tuesday–Thursday, 9:00 AM–4:00 PM; later corrections or temporary closures must survive public reads and another deployment. Resolve conflicting source schedules before changing the saved value.
 4. Confirm Chrome DevTools shows the `kcmc-connect-v3.0.2-public-only` service worker cache.
 5. Publish a harmless bulletin-note change and verify it survives another deployment.
 6. Confirm `config.php`, `data/private/` and `backups/` were not overwritten.

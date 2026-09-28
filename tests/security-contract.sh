@@ -53,7 +53,7 @@ jq -e '[.events[] | select(.id == "trunk-or-treat-2026" and .date == "2026-10-31
 jq -e '[.events[] | select(.id == "trunk-or-treat-2026")] | length == 1' "$app_dir/data/releases/3.0.0.json" >/dev/null || fail "Trunk or Treat release seed is missing"
 test -s "$app_dir/assets/visuals/trunk-or-treat-2026.webp" || fail "Trunk or Treat flyer asset is missing"
 grep -q "kcmc_apply_required_public_content" "$app_dir/lib/bootstrap.php" || fail "Preserved production content migration is missing"
-grep -Fq "Tue–Thu • 9:00 AM–4:00 PM" "$app_dir/lib/bootstrap.php" || fail "Preserved production office-hours migration is missing"
+grep -Fq "Tue–Thu • 9:00 AM–4:00 PM" "$app_dir/lib/bootstrap.php" || fail "Missing-office-hours fallback is missing"
 grep -q "kcmc_featured_announcement_index" "$app_dir/admin/index.php" || fail "Publishing Desk does not select the current announcement"
 grep -q 'name="announcement_id"' "$app_dir/admin/index.php" || fail "Publishing Desk announcement identity is missing"
 grep -Fq "date('l, F j, Y'" "$app_dir/bulletin.php" || fail "Bulletin date format is invalid"
