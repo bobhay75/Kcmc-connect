@@ -20,7 +20,7 @@ $kcmcSchema = json_encode([
   'email' => $kcmcEmail,
 ], JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE | JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT) ?: '{}';
 $kcmcEvents = kcmc_active_items($kcmc['events'] ?? []);
-usort($kcmcEvents, fn($a,$b)=>strcmp((string)($a['date']??''),(string)($b['date']??'')));
+usort($kcmcEvents, 'kcmc_compare_event_start');
 $kcmcHasRsvpEvents = count(array_filter($kcmcEvents, fn($event)=>!array_key_exists('rsvp',$event)||$event['rsvp']!==false)) > 0;
 $kcmcAnnouncements = kcmc_active_items($kcmc['announcements'] ?? []);
 usort($kcmcAnnouncements, fn($a,$b)=>(int)($b['priority']??0)<=>(int)($a['priority']??0));

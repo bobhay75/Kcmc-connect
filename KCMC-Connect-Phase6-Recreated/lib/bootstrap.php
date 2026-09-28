@@ -124,6 +124,17 @@ function kcmc_event_time_minutes(string $value): ?int {
     return ($hour * 60) + $minute;
 }
 
+function kcmc_compare_event_start(array $a, array $b): int {
+    $dateOrder = strcmp((string)($a['date'] ?? ''), (string)($b['date'] ?? ''));
+    if ($dateOrder !== 0) return $dateOrder;
+
+    // Unknown times follow scheduled events on the same date. Equal start
+    // times retain their original order through PHP's stable sort.
+    $aMinutes = kcmc_event_time_minutes((string)($a['time'] ?? '')) ?? PHP_INT_MAX;
+    $bMinutes = kcmc_event_time_minutes((string)($b['time'] ?? '')) ?? PHP_INT_MAX;
+    return $aMinutes <=> $bMinutes;
+}
+
 function kcmc_text_length(string $value): int {
     return function_exists('mb_strlen') ? mb_strlen($value, 'UTF-8') : strlen($value);
 }
