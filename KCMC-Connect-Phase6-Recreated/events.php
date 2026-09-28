@@ -2,7 +2,7 @@
 require_once __DIR__ . '/lib/bootstrap.php';
 $d = kcmc_content();
 $events = kcmc_active_items($d['events'] ?? []);
-usort($events, fn($a, $b) => strcmp((string)($a['date'] ?? ''), (string)($b['date'] ?? '')));
+usort($events, 'kcmc_compare_event_start');
 ?>
 <!doctype html>
 <html lang="en">

@@ -36,6 +36,29 @@ foreach ([
     expect_same($expected, kcmc_event_time_minutes($time), "Event time parsing for {$time}.");
 }
 
+$eventsToSort = [
+    ['id' => 'choir', 'date' => '2026-09-29', 'time' => '5:15 PM'],
+    ['id' => 'unknown', 'date' => '2026-09-29', 'time' => 'TBA'],
+    ['id' => 'next-day', 'date' => '2026-09-30', 'time' => '12:00 AM'],
+    ['id' => 'noon', 'date' => '2026-09-29', 'time' => '12:00 PM'],
+    ['id' => 'potluck', 'date' => '2026-09-29', 'time' => '5:00 PM'],
+    ['id' => 'morning-first', 'date' => '2026-09-29', 'time' => '8:30 AM'],
+    ['id' => 'midnight', 'date' => '2026-09-29', 'time' => '12:00 AM'],
+    ['id' => 'missing-time', 'date' => '2026-09-29'],
+    ['id' => 'morning-second', 'date' => '2026-09-29', 'time' => '8:30 AM'],
+];
+usort($eventsToSort, 'kcmc_compare_event_start');
+expect_same(
+    ['midnight', 'morning-first', 'morning-second', 'noon', 'potluck', 'choir', 'unknown', 'missing-time', 'next-day'],
+    array_column($eventsToSort, 'id'),
+    'Events sort by date and local start time, preserve equal-time order, and put unknown times last within their date.'
+);
+
+foreach (['index.php', 'events.php'] as $publicPage) {
+    $publicSource = file_get_contents(__DIR__ . '/../KCMC-Connect-Phase6-Recreated/' . $publicPage);
+    expect_same(true, is_string($publicSource) && str_contains($publicSource, "'kcmc_compare_event_start'"), "{$publicPage} uses the shared chronological event sort.");
+}
+
 // Keep visibility fixtures relative to the runtime clock so this contract does
 // not start failing merely because the calendar date advanced.
 $now = time();
