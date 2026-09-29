@@ -1,0 +1,38 @@
+name: KCMC Tony launch cleanup
+
+on:
+  push:
+    branches: ['fix/tony-launch-cleanup-2026-09-29']
+  pull_request:
+    paths:
+      - 'KCMC-Connect-Phase6-Recreated/**'
+      - 'tests/tony-launch-cleanup*'
+      - '.github/workflows/tony-launch-cleanup.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  review:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          persist-credentials: false
+      - name: PHP and JavaScript syntax
+        run: |
+          find KCMC-Connect-Phase6-Recreated -name '*.php' -print0 | xargs -0 -n1 php -l
+          node --check KCMC-Connect-Phase6-Recreated/app.js
+          git diff --check
+      - name: Capture tracked source for isolated review (not a deployment)
+        run: |
+          mkdir -p review-artifacts
+          git rev-parse HEAD > review-artifacts/SOURCE-COMMIT.txt
+          git archive --format=tar HEAD > review-artifacts/kcmc-source.tar
+      - uses: actions/upload-artifact@v4
+        with:
+          name: kcmc-cleanup-review-source
+          path: review-artifacts/
+          retention-days: 2
