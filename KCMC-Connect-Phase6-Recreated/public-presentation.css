@@ -32,3 +32,11 @@
 /* Replace public artwork without changing shared private-page styling. */
 .contemporary-art{background-image:linear-gradient(180deg,rgba(7,18,28,.04),rgba(7,18,28,.18)),url("assets/visuals/kcmc-stage-2014.webp")}
 .watch-art{background-image:linear-gradient(180deg,rgba(7,18,28,.08),rgba(7,18,28,.26)),url("assets/visuals/kcmc-building-2024.webp")}
+
+/* Keep desktop navigation on one line; Share is also in the dropdown. */
+.topbar .inner{gap:10px}
+.topbar .brand{flex-shrink:0}
+.desktop-nav{flex-wrap:nowrap;gap:0}
+.desktop-nav a{padding:10px 8px;white-space:nowrap}
+.topbar>.inner>[data-share-app]{display:none}
+@media(max-width:600px){.topbar .inner{gap:7px}.topbar .brand{flex-shrink:1}}

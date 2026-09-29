@@ -34,11 +34,26 @@ with tempfile.TemporaryDirectory(prefix='kcmc-public-review-') as td:
     data['bulletin']['notes'] = [NOTES]
     data_file.write_text(json.dumps(data, ensure_ascii=False))
     before = hashlib.sha256(data_file.read_bytes()).hexdigest()
+    # Mirror a configured installation using a synthetic, inaccessible account.
+    # An empty account store routes to setup rather than normal member sign-in.
+    private = work / 'private'
+    private.mkdir(mode=0o750)
+    password_hash = subprocess.run(
+        ['php', '-r', 'echo password_hash($argv[1], PASSWORD_DEFAULT);',
+         'Synthetic-Public-Test-Password-2031!'],
+        check=True, capture_output=True, text=True,
+    ).stdout.strip()
+    (private / 'users.json').write_text(json.dumps({'version': 1, 'users': [{
+        'id': 'synthetic_admin', 'email': 'admin@example.invalid',
+        'email_normalized': 'admin@example.invalid', 'display_name': 'Synthetic Admin',
+        'role': 'pastor_admin', 'active': True, 'password_hash': password_hash,
+        'created_at': '2031-01-01T00:00:00Z',
+    }]}))
     with socket.socket() as sock:
         sock.bind(('127.0.0.1', 0))
         port = sock.getsockname()[1]
     base = f'http://127.0.0.1:{port}/app'
-    env = {**os.environ, 'KCMC_PRIVATE_DATA_DIR': str(work / 'private')}
+    env = {**os.environ, 'KCMC_PRIVATE_DATA_DIR': str(private), 'KCMC_SETUP_KEY': ''}
     with open(work / 'php.log', 'w+') as log:
         server = subprocess.Popen(['php', '-S', f'127.0.0.1:{port}', '-t', str(work)], stdout=log, stderr=log, env=env)
         try:
@@ -107,7 +122,7 @@ with tempfile.TemporaryDirectory(prefix='kcmc-public-review-') as td:
                 check('We’re here for you.' in page.locator('body').inner_text(), 'care page welcomes visitors without an account')
                 for path in ['member/', 'admin/health.php', 'admin/audit.php', 'admin/timecards.php', 'member/timeclock.php']:
                     page.goto(base + '/' + path)
-                    check('/member/login.php' in page.url, f'{path} still requires authentication')
+                    check('/member/login.php' in page.url, f'{path} redirects to sign-in (actual: {page.url})')
                 check(not errors, 'no browser JavaScript errors: ' + '; '.join(errors))
                 check(not failures, 'no failed local assets: ' + '; '.join(failures))
                 context.close()
