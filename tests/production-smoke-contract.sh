@@ -23,7 +23,7 @@ if grep -Eq -- '(^|[[:space:]])(-X|--request)[[:space:]]*(POST|PUT|PATCH|DELETE)
 fi
 pass 'smoke script contains GET-only checks'
 
-grep -Fq "A Pastor administrator approves anything shared with members." "$script" || fail 'role-based public prayer wording is asserted'
+grep -Fq "Member-shared requests also require pastoral approval." "$script" || fail 'role-based public prayer wording is asserted'
 grep -Fq "Tony or Barry" "$script" || fail 'stale named-person wording is explicitly rejected'
 pass 'public prayer wording regression is covered'
 
@@ -48,7 +48,7 @@ grep -Fq "'/data/private/users.json'" "$script" || fail 'private store exposure 
 grep -Fq "'/backups/'" "$script" || fail 'backup exposure is checked'
 pass 'protected storage paths are checked'
 
-grep -Fq 'kcmc-connect-v3.0.2-public-only' "$script" || fail 'service-worker release marker is checked'
+grep -Fq 'kcmc-connect-v3.0.3-public-only' "$script" || fail 'service-worker release marker is checked'
 grep -Fq 'x-content-type-options' "$script" || fail 'security response headers are checked'
 pass 'PWA marker and baseline security headers are checked'
 

@@ -2,11 +2,17 @@ name: KCMC Tony launch cleanup
 
 on:
   push:
-    branches: ['fix/tony-launch-cleanup-2026-09-29']
+    branches: ['fix/tony-launch-cleanup-2026-09-29', main]
+    paths:
+      - 'KCMC-Connect-Phase6-Recreated/**'
+      - 'tests/**'
+      - 'tools/production-smoke.sh'
+      - '.github/workflows/tony-launch-cleanup.yml'
   pull_request:
     paths:
       - 'KCMC-Connect-Phase6-Recreated/**'
-      - 'tests/tony-launch-cleanup*'
+      - 'tests/**'
+      - 'tools/production-smoke.sh'
       - '.github/workflows/tony-launch-cleanup.yml'
 
 permissions:
@@ -15,23 +21,44 @@ permissions:
 jobs:
   review:
     runs-on: ubuntu-latest
-    timeout-minutes: 10
+    timeout-minutes: 15
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
         with:
           ref: ${{ github.event.pull_request.head.sha || github.sha }}
           persist-credentials: false
-      - name: PHP and JavaScript syntax
+      - name: Check PHP prerequisites
+        run: php -r 'foreach (["curl", "openssl"] as $e) { if (!extension_loaded($e)) { fwrite(STDERR, "Missing PHP extension $e\n"); exit(1); } }'
+      - name: Security, syntax and PHP contracts
         run: |
-          find KCMC-Connect-Phase6-Recreated -name '*.php' -print0 | xargs -0 -n1 php -l
-          node --check KCMC-Connect-Phase6-Recreated/app.js
+          set -euo pipefail
+          mkdir -p review-artifacts
+          bash tests/security-contract.sh | tee review-artifacts/security.txt
+          bash tests/production-smoke-contract.sh | tee review-artifacts/production-contract.txt
+          node --check KCMC-Connect-Phase6-Recreated/public-presentation.js
+          python3 -m py_compile tests/tony-launch-cleanup-browser.py
+          for f in tests/*contract.php; do php "$f"; done | tee review-artifacts/php-contracts.txt
           git diff --check
-      - name: Capture tracked source for isolated review (not a deployment)
+      - name: Install browser acceptance dependencies
+        run: |
+          python3 -m pip install --disable-pip-version-check --no-cache-dir playwright
+          python3 -m playwright install --with-deps chromium
+      - name: Public and signed-in browser acceptance
+        env:
+          KCMC_REVIEW_OUTPUT: /tmp/kcmc-tony-review
+        run: |
+          set -euo pipefail
+          python3 tests/tony-launch-cleanup-browser.py | tee review-artifacts/public-browser.txt
+          python3 tests/signed-in-workflows-browser.py | tee review-artifacts/signed-in-browser.txt
+      - name: Capture source and review evidence (never a deployment)
+        if: always()
         run: |
           mkdir -p review-artifacts
           git rev-parse HEAD > review-artifacts/SOURCE-COMMIT.txt
           git archive --format=tar HEAD > review-artifacts/kcmc-source.tar
+          if [ -d /tmp/kcmc-tony-review ]; then cp -a /tmp/kcmc-tony-review review-artifacts/screenshots; fi
       - uses: actions/upload-artifact@v4
+        if: always()
         with:
           name: kcmc-cleanup-review-source
           path: review-artifacts/
