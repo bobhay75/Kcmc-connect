@@ -91,11 +91,12 @@ else
   fail "public homepage shell (HTTP $home_code)"
 fi
 
-if [[ "$home_code" == "200" ]] && grep -Fq 'A Pastor administrator approves anything shared with members.' "$workdir/home.body" && ! grep -Fq 'Tony or Barry' "$workdir/home.body"; then
-  pass 'public prayer approval wording is role-based'
+if [[ "$home_code" == "200" ]] && ! grep -Fq 'Verified members only' "$workdir/home.body" && ! grep -Fq 'Tony or Barry' "$workdir/home.body"; then
+  pass 'public welcome does not lead with restricted-member wording'
 else
-  fail 'public prayer approval wording is current and role-based'
+  fail 'public welcome still contains retired member-only wording'
 fi
+assert_200_contains care '/care.php' 'Member-shared requests also require pastoral approval.' 'prayer approval remains role-based on the care page'
 
 if grep -Eiq '^x-content-type-options:[[:space:]]*nosniff' "$workdir/home.headers" && \
    grep -Eiq '^x-frame-options:[[:space:]]*SAMEORIGIN' "$workdir/home.headers" && \
@@ -106,7 +107,7 @@ else
 fi
 
 assert_200_contains manifest '/manifest.webmanifest?v=3.0.1' 'KCMC Connect' 'web-app manifest is live'
-assert_200_contains worker '/sw.js' 'kcmc-connect-v3.0.2-public-only' 'service worker release marker is live'
+assert_200_contains worker '/sw.js' 'kcmc-connect-v3.0.3-public-only' 'service worker release marker is live'
 
 assert_redirect_to_login member '/member/' 'signed-out member route redirects to login'
 assert_redirect_to_login timeclock '/member/timeclock.php' 'signed-out employee time clock redirects to login'

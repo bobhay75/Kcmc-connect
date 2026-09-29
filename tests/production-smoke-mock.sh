@@ -45,14 +45,17 @@ case "$url" in
     if [[ "${MOCK_STALE_WORDING:-0}" == '1' ]]; then
       response_body='KCMC CONNECT Prayer names stay private. Tony or Barry approves anything shared with members.'
     else
-      response_body='KCMC CONNECT Prayer names stay private. A Pastor administrator approves anything shared with members.'
+      response_body='KCMC CONNECT Come as you are. Find your people.'
     fi
+    ;;
+  */care.php)
+    response_body='Member-shared requests also require pastoral approval.'
     ;;
   */manifest.webmanifest*)
     response_body='{"name":"KCMC Connect"}'
     ;;
   */sw.js)
-    response_body="const CACHE='kcmc-connect-v3.0.2-public-only';"
+    response_body="const CACHE='kcmc-connect-v3.0.3-public-only';"
     ;;
   */member/|*/member/timeclock.php*|*/admin/|*/admin/health.php|*/admin/restore.php|*/admin/audit.php|*/admin/operations.php|*/admin/push.php|*/admin/timecards.php*|*/admin/timecards-export.php*|*/admin/timecards-print.php*|*/admin/rsvps.php|*/admin/connections.php|*/admin/rsvps-export.php*|*/admin/connections-export.php*)
     status=302
@@ -84,9 +87,9 @@ healthy_output="$(PATH="$tmp/bin:$PATH" bash "$root/tools/production-smoke.sh" '
   printf '%s\n' "$healthy_output" >&2
   fail 'healthy mocked deployment should pass'
 }
-grep -Fq 'Result: 24 passed, 0 failed.' <<<"$healthy_output" || {
+grep -Fq 'Result: 25 passed, 0 failed.' <<<"$healthy_output" || {
   printf '%s\n' "$healthy_output" >&2
-  fail 'healthy mocked deployment should pass all 24 checks'
+  fail 'healthy mocked deployment should pass all 25 checks'
 }
 pass 'healthy mocked deployment passes all smoke checks'
 
@@ -98,7 +101,7 @@ set -e
   printf '%s\n' "$stale_output" >&2
   fail 'stale public wording should fail smoke check'
 }
-grep -Fq 'FAIL: public prayer approval wording is current and role-based' <<<"$stale_output" || fail 'stale wording failure is reported clearly'
+grep -Fq 'FAIL: public welcome still contains retired member-only wording' <<<"$stale_output" || fail 'stale wording failure is reported clearly'
 pass 'stale named-person wording is detected'
 
 set +e

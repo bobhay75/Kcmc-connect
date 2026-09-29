@@ -1,9 +1,9 @@
 <?php
 require_once __DIR__ . '/lib/bootstrap.php';
-$kcmc = kcmc_content();
+require_once __DIR__ . '/lib/public-presentation.php';
+$kcmc = kcmc_public_content();
 $member = kcmc_current_user_if_session();
 $memberCanPray = $member !== null && kcmc_has_role(['member', 'prayer_team', 'pastor_admin'], $member);
-$kcmcNews = is_array($kcmc['news'] ?? null) ? $kcmc['news'] : [];
 $kcmcContact = is_array($kcmc['contact'] ?? null) ? $kcmc['contact'] : [];
 $kcmcPhone = (string)($kcmc['contact']['phone'] ?? '417-739-4395');
 $kcmcPhoneHref = 'tel:' . preg_replace('/[^0-9+]/', '', $kcmcPhone);
@@ -40,13 +40,14 @@ usort($kcmcAnnouncements, fn($a,$b)=>(int)($b['priority']??0)<=>(int)($a['priori
 <meta property="og:title" content="KCMC Connect | Kimberling City Methodist Church">
 <meta property="og:description" content="Plan a visit, watch worship, find events, request prayer and connect with KCMC.">
 <meta property="og:type" content="website">
-<meta property="og:image" content="assets/visuals/kimberling-city-missouri-bridge-2024.jpg?v=3.0.1">
+<meta property="og:image" content="assets/visuals/kcmc-building-2024.webp">
 <meta name="twitter:card" content="summary_large_image">
 <script type="application/ld+json"><?=$kcmcSchema?></script>
 <title>KCMC Connect</title>
 <link rel="manifest" href="manifest.webmanifest?v=3.0.1">
-<link rel="preload" as="image" href="assets/visuals/kimberling-city-missouri-bridge-2024.jpg?v=3.0.1" type="image/jpeg" fetchpriority="high">
-<link rel="stylesheet" href="styles.css?v=3.0.1">
+<link rel="preload" as="image" href="assets/visuals/kcmc-building-2024.webp" type="image/webp" fetchpriority="high">
+<link rel="stylesheet" href="styles.css?v=3.0.3">
+<link rel="stylesheet" href="public-presentation.css?v=1.0.0">
 <link rel="icon" href="assets/icons/icon-192.png?v=3.0.1">
 <link rel="apple-touch-icon" href="assets/icons/icon-192.png?v=3.0.1">
 </head>
@@ -61,9 +62,25 @@ usort($kcmcAnnouncements, fn($a,$b)=>(int)($b['priority']??0)<=>(int)($a['priori
   <div class="wrap inner">
     <a class="brand" href="#home" data-route="home" aria-label="KCMC Connect home"><span class="mark">K</span><span><strong>KCMC CONNECT</strong><small>Kimberling City Methodist Church</small></span></a>
     <nav class="desktop-nav" aria-label="Primary">
-      <a href="#visit" data-route="visit">I’m New</a><a href="#watch" data-route="watch">Watch</a><a href="#news" data-route="news">News</a><a href="#events" data-route="events">Events</a><a href="#serve" data-route="serve">Serve</a><a href="#partner" data-route="partner">Connect</a>
+      <a href="#visit" data-route="visit">I’m New</a><a href="#watch" data-route="watch">Watch</a><a href="#news" data-route="news">Updates</a><a href="#events" data-route="events">Events</a><a href="#serve" data-route="serve">Serve</a><a href="#partner" data-route="partner">Connect</a>
     </nav>
-    <a class="topbar-account" href="<?=kcmc_h(kcmc_url($member ? 'member/' : 'member/login.php'))?>"><?=$member ? 'Member home' : 'Member sign in'?></a>
+    <a class="header-give" href="https://www.simplechurchgiving.net/app/giving/umckc" target="_blank" rel="noopener">Give</a>
+    <details class="site-menu" id="siteMenu">
+      <summary aria-controls="siteMenuLinks">Menu</summary>
+      <nav id="siteMenuLinks" aria-label="More navigation">
+        <a href="#visit" data-route="visit">Plan a visit</a>
+        <a href="#watch" data-route="watch">Watch messages</a>
+        <a href="#news" data-route="news">Church updates</a>
+        <a href="#events" data-route="events">Events</a>
+        <a href="bulletin.php">Latest bulletin</a>
+        <a href="care.php">Prayer &amp; care</a>
+        <a href="#serve" data-route="serve">Serving</a>
+        <a href="https://www.simplechurchgiving.net/app/giving/umckc" target="_blank" rel="noopener">Give online</a>
+        <button type="button" data-share-app>Share KCMC Connect</button>
+        <a class="menu-account" href="<?=kcmc_h(kcmc_url($member ? 'member/' : 'member/login.php'))?>"><?=$member ? 'My account' : 'Sign in'?></a>
+        <?php if($member && kcmc_has_role(['pastor_admin', 'recovery_admin'], $member)): ?><a href="<?=kcmc_h(kcmc_url('admin/'))?>">Administration</a><?php endif; ?>
+      </nav>
+    </details>
     <button class="install" type="button" data-install-app>Save app</button>
     <button class="install" type="button" data-share-app aria-label="Share KCMC Connect">Share</button>
   </div>
@@ -71,13 +88,15 @@ usort($kcmcAnnouncements, fn($a,$b)=>(int)($b['priority']??0)<=>(int)($a['priori
 
 <main id="mainContent">
 <section class="view active" data-view="home">
-  <section class="hero hero-imagery">
-    <img class="hero-photo" src="./assets/visuals/kimberling-city-missouri-bridge-2024.jpg?v=3.0.1" alt="Highway 13 crossing Table Rock Lake on the Kimberling City Bridge in Kimberling City, Missouri" loading="eager" decoding="async" fetchpriority="high">
+  <section class="hero hero-imagery" data-hero-gallery aria-label="Welcome to KCMC">
+    <img class="hero-photo is-current" data-hero-photo data-caption="Church exterior • photo archive, May 2024" src="./assets/visuals/kcmc-building-2024.webp" alt="Kimberling City Methodist Church exterior, photographed in 2024" loading="eager" decoding="async" fetchpriority="high" width="640" height="513">
+    <img class="hero-photo" data-hero-photo data-caption="Worship gathering • photo archive, June 2017" src="./assets/visuals/kcmc-worship-2017.webp" alt="People gathered for worship at KCMC, photographed in 2017" loading="lazy" decoding="async" width="640" height="344" hidden>
+    <img class="hero-photo" data-hero-photo data-caption="Worship space • photo archive, October 2014" src="./assets/visuals/kcmc-stage-2014.webp" alt="KCMC worship stage, photographed in 2014" loading="lazy" decoding="async" width="640" height="480" hidden>
     <div class="wrap hero-grid">
       <div>
-        <div class="eyebrow">Kimberling City • Table Rock Lake</div>
-        <h1>One church.<br>Connected all week.</h1>
-        <p class="lead">Worship, church news, events, care, serving and giving—all in one simple place.</p>
+        <div class="eyebrow">Welcome to Kimberling City Methodist Church</div>
+        <h1>Come as you are.<br>Find your people.</h1>
+        <p class="lead">Join us for worship, get to know our church, and find your next step. There’s a place for you at KCMC.</p>
         <div class="install-callout" data-install-callout>
           <span class="install-callout-icon" aria-hidden="true">↓</span>
           <span class="install-callout-copy"><strong>Keep KCMC one touch away</strong><span data-install-message>Save KCMC Connect to this device for quick access.</span></span>
@@ -86,9 +105,16 @@ usort($kcmcAnnouncements, fn($a,$b)=>(int)($b['priority']??0)<=>(int)($a['priori
         <div class="actions">
           <a class="action" href="#watch" data-route="watch"><b>Watch</b><span>Live & recent worship</span></a>
           <a class="action" href="https://www.simplechurchgiving.net/app/giving/umckc" target="_blank" rel="noopener"><b>Give</b><span>Secure online giving</span></a>
-          <a class="action" href="care.php"><b>Prayer</b><span>Verified members only</span></a>
+          <a class="action" href="care.php"><b>Care</b><span>Talk with our church team</span></a>
           <a class="action" href="#visit" data-route="visit"><b>Visit</b><span>Plan your first Sunday</span></a>
         </div>
+        <div class="hero-photo-controls" data-hero-controls hidden>
+          <button type="button" data-hero-previous aria-label="Previous church photo">←</button>
+          <button type="button" data-hero-toggle>Pause photos</button>
+          <button type="button" data-hero-next aria-label="Next church photo">→</button>
+        </div>
+        <p class="hero-photo-caption" data-hero-caption>Church exterior • photo archive, May 2024</p>
+        <p class="sr-only" data-hero-status role="status" aria-live="polite"></p>
       </div>
       <aside class="hero-card" aria-label="Next worship services">
         <span class="pill">Sunday worship</span>
@@ -100,26 +126,14 @@ usort($kcmcAnnouncements, fn($a,$b)=>(int)($b['priority']??0)<=>(int)($a['priori
     </div>
   </section>
 
-  <section class="section visual-story-section" aria-label="KCMC in the Ozarks">
-    <div class="wrap visual-story">
-      <figure class="mission-visual">
-        <img src="./assets/visuals/kimberling-city-missouri-bridge-2024.jpg?v=3.0.1" loading="eager" decoding="async" alt="Kimberling City Bridge carrying Highway 13 across Table Rock Lake, photographed in 2024">
-        <figcaption><span class="eyebrow">Mission statement</span><strong>Leading people to become deeply committed followers of Jesus Christ.</strong></figcaption>
-      </figure>
-      <figure class="ministry-visual">
-        <img src="./assets/visuals/kcmc-ministry-group.jpg" loading="eager" decoding="async" alt="Children and leaders taking part in KCMC ministry">
-        <figcaption><span class="eyebrow">KCMC ministry</span><strong>Faith lived together.</strong><span>Children, families and volunteers growing together through worship and service.</span></figcaption>
-      </figure>
-    </div>
-  </section>
-
-  <section class="section current-update" aria-label="Current KCMC ministry highlights">
+  <section class="section welcome-next">
     <div class="wrap">
-      <div class="section-head"><div><div class="eyebrow"><?=kcmc_h((string)($kcmcNews['month']??'Church News'))?> • Issue #<?=kcmc_h((string)($kcmcNews['issue']??''))?></div><h2>New beginnings at KCMC.</h2></div><p>Stories, ministry updates, fall events and ways to connect at KCMC.</p></div>
-      <div class="stat-grid">
-        <?php foreach(array_slice($kcmcNews['highlights']??[],0,4) as $highlight): ?><article class="stat-card"><strong><?=kcmc_h((string)($highlight['stat']??''))?></strong><span><?=kcmc_h((string)($highlight['label']??''))?></span></article><?php endforeach; ?>
+      <div class="section-head"><div><div class="eyebrow">Life together</div><h2>Your next step starts here.</h2></div><p>Leading people to become deeply committed followers of Jesus Christ.</p></div>
+      <div class="grid3">
+        <article class="card"><h3>New to KCMC?</h3><p>Find service times, directions and a friendly way to introduce yourself.</p><div class="btns"><a class="btn" href="#visit" data-route="visit">Plan your visit</a></div></article>
+        <article class="card"><h3>This week</h3><p>Find the church bulletin and the gatherings published by our team.</p><div class="btns"><a class="btn" href="bulletin.php">Read the bulletin</a><a class="btn secondary" href="#events" data-route="events">See events</a></div></article>
+        <article class="card"><h3>Get connected</h3><p>Ask about groups, serving, or finding your place in church life.</p><div class="btns"><a class="btn" href="#partner" data-route="partner">Get connected</a></div></article>
       </div>
-      <div class="btns"><a class="btn gold" href="#news" data-route="news">Read September news</a><a class="btn secondary" href="#events" data-route="events">See current events</a></div>
     </div>
   </section>
 
@@ -136,8 +150,8 @@ usort($kcmcAnnouncements, fn($a,$b)=>(int)($b['priority']??0)<=>(int)($a['priori
 
   <section class="section">
     <div class="wrap video-card">
-      <div class="video-art contemporary-art"><div><span class="pill">Featured this week</span><br><br><b>Contemporary<br>Worship</b></div></div>
-      <div class="video-copy"><div class="eyebrow">Last week at KCMC</div><h2 style="font-family:Georgia,serif;font-size:3rem;font-weight:400;margin:.15em 0">Catch up before Sunday.</h2><p class="muted">Watch last week’s contemporary service on Facebook, then jump into the live room for the next broadcast.</p><div class="btns"><a class="btn gold" href="https://www.facebook.com/share/v/14s1bqo8acA/" target="_blank" rel="noopener">Watch featured video</a><a class="btn secondary" href="https://www.facebook.com/KimberlingCityMethodistChurch/live_videos" target="_blank" rel="noopener">All live videos</a></div></div>
+      <div class="video-art contemporary-art"><div><span class="pill">Worship online</span><br><br><b>Contemporary<br>Worship</b></div></div>
+      <div class="video-copy"><div class="eyebrow">Messages &amp; worship</div><h2 style="font-family:Georgia,serif;font-size:3rem;font-weight:400;margin:.15em 0">Worship wherever you are.</h2><p class="muted">Find KCMC messages and worship on the church’s official Facebook page. Facebook may ask you to sign in.</p><div class="btns"><a class="btn gold" href="https://www.facebook.com/KimberlingCityMethodistChurch/live_videos" target="_blank" rel="noopener">Watch messages</a><a class="btn secondary" href="https://www.facebook.com/KimberlingCityMethodistChurch/live_videos" target="_blank" rel="noopener">All live videos</a></div></div>
     </div>
   </section>
 
@@ -176,25 +190,19 @@ usort($kcmcAnnouncements, fn($a,$b)=>(int)($b['priority']??0)<=>(int)($a['priori
 
 <section class="view" data-view="watch">
   <div class="wrap partner-hero"><div class="eyebrow">Watch</div><h1 style="font-family:Georgia,serif;font-size:clamp(3rem,7vw,5rem);font-weight:400;margin:.1em 0">Worship wherever you are.</h1><p class="lead muted">Use the official Facebook live room for current broadcasts and recent services.</p></div>
-  <section class="section"><div class="wrap video-card"><div class="video-art watch-art"><div><span class="pill">Official livestream</span><br><br><b>Sunday<br>Online</b></div></div><div class="video-copy"><h2 class="section-title">Live when KCMC is live.</h2><p class="muted">When the church is not broadcasting, the same destination provides recent live videos and replays.</p><div class="btns"><a class="btn gold" href="https://www.facebook.com/KimberlingCityMethodistChurch/live_videos" target="_blank" rel="noopener">Open live room</a><a class="btn secondary" href="https://www.facebook.com/share/v/14s1bqo8acA/" target="_blank" rel="noopener">Featured contemporary service</a></div></div></div></section>
-  <section class="section alt"><div class="wrap"><div class="section-head"><div><div class="eyebrow">Sermon library</div><h2>Watch. Reflect. Share.</h2></div><p>Find current messages and worship services from KCMC.</p></div><div class="library-toolbar"><label class="search-field"><span class="sr-only">Search sermons</span><input id="sermonSearch" type="search" placeholder="Search sermons, series or speaker"></label><select id="sermonFilter" aria-label="Filter sermons"><option value="all">All services</option><option value="contemporary">Contemporary</option></select></div><div class="sermon-grid" id="sermonGrid"><article class="sermon-card" data-search="contemporary worship featured service" data-type="contemporary"><div class="sermon-thumb contemporary-art"></div><div><span class="pill">Contemporary</span><h3>Featured contemporary service</h3><p class="muted">Watch the current featured service, then browse the official live-video archive for additional messages.</p><div class="btns"><a class="btn" href="https://www.facebook.com/share/v/14s1bqo8acA/" target="_blank" rel="noopener">Watch service</a></div></div></article></div></div></section>
+  <section class="section"><div class="wrap video-card"><div class="video-art watch-art"><div><span class="pill">Official livestream</span><br><br><b>Sunday<br>Online</b></div></div><div class="video-copy"><h2 class="section-title">Live when KCMC is live.</h2><p class="muted">When the church is not broadcasting, the same destination provides recent live videos and replays.</p><div class="btns"><a class="btn gold" href="https://www.facebook.com/KimberlingCityMethodistChurch/live_videos" target="_blank" rel="noopener">Open live room</a><a class="btn secondary" href="https://www.facebook.com/KimberlingCityMethodistChurch/live_videos" target="_blank" rel="noopener">KCMC messages and worship</a></div></div></div></section>
+  <section class="section alt"><div class="wrap"><div class="section-head"><div><div class="eyebrow">Message library</div><h2>Watch. Reflect. Share.</h2></div><p>Find current messages and worship services from KCMC.</p></div><div class="library-toolbar"><label class="search-field"><span class="sr-only">Search messages</span><input id="sermonSearch" type="search" placeholder="Search messages, series or speaker"></label><select id="sermonFilter" aria-label="Filter messages"><option value="all">All services</option><option value="contemporary">Contemporary</option></select></div><div class="sermon-grid" id="sermonGrid"><article class="sermon-card" data-search="kcmc messages worship contemporary service" data-type="contemporary"><div class="sermon-thumb contemporary-art"></div><div><span class="pill">Contemporary</span><h3>KCMC messages and worship</h3><p class="muted">Browse messages and worship in the official KCMC video archive. Facebook may require sign-in.</p><div class="btns"><a class="btn" href="https://www.facebook.com/KimberlingCityMethodistChurch/live_videos" target="_blank" rel="noopener">Watch service</a></div></div></article></div></div></section>
 </section>
 
 <section class="view" data-view="news">
-  <div class="wrap partner-hero"><div class="eyebrow">Church News • <?=kcmc_h((string)($kcmcNews['month']??''))?> • Issue #<?=kcmc_h((string)($kcmcNews['issue']??''))?></div><h1 style="font-family:Georgia,serif;font-size:clamp(3rem,7vw,5rem);font-weight:400;margin:.1em 0"><?=kcmc_h((string)($kcmcNews['title']??'The Bridge to Salvation'))?></h1><p class="lead muted">News, ministry updates and opportunities to connect at KCMC.</p></div>
-  <section class="section">
-    <div class="wrap stat-grid news-stats" aria-label="September KCMC highlights"><?php foreach(array_slice($kcmcNews['highlights']??[],0,4) as $highlight): ?><article class="stat-card"><strong><?=kcmc_h((string)($highlight['stat']??''))?></strong><span><?=kcmc_h((string)($highlight['label']??''))?></span></article><?php endforeach; ?></div>
-    <div class="wrap news-layout">
-      <?php $reflection=is_array($kcmcNews['reflection']??null)?$kcmcNews['reflection']:[]; ?><article class="news-feature"><div class="eyebrow">Pastoral reflection</div><h3><?=kcmc_h((string)($reflection['title']??'New Beginnings'))?></h3><p><?=kcmc_h((string)($reflection['body']??''))?></p><p><b>Scripture:</b> <?=kcmc_h((string)($reflection['scripture']??''))?>.</p></article>
-      <div class="news-list">
-        <?php foreach($kcmcNews['sections']??[] as $section): ?><article class="news-item"><span class="pill"><?=kcmc_h((string)($section['label']??'Church News'))?></span><h3><?=kcmc_h((string)($section['title']??''))?></h3><p><?=kcmc_h((string)($section['body']??''))?></p></article><?php endforeach; ?>
-      </div>
+  <div class="wrap partner-hero"><div class="eyebrow">Church updates</div><h1 class="display-title">Stay connected this week.</h1><p class="lead muted">The latest bulletin, published announcements and upcoming gatherings.</p></div>
+  <section class="section"><div class="wrap">
+    <div class="btns"><a class="btn gold" href="bulletin.php">Latest bulletin</a><a class="btn secondary" href="#events" data-route="events">Upcoming events</a><a class="btn secondary" href="https://www.facebook.com/KimberlingCityMethodistChurch" target="_blank" rel="noopener">KCMC on Facebook</a></div>
+    <div class="announcement-stack">
+    <?php foreach($kcmcAnnouncements as $item): ?><article class="announcement"><h2><?=kcmc_h((string)($item['title']??''))?></h2><p><?=kcmc_h((string)($item['body']??''))?></p></article><?php endforeach; ?>
+    <?php if(!$kcmcAnnouncements): ?><p class="muted">Check the bulletin and events for the latest published information.</p><?php endif; ?>
     </div>
-    <div class="wrap newsletter-text-grid">
-      <article class="news-item"><span class="pill important">Groups</span><h3>Find your weekly rhythm</h3><ul><?php foreach($kcmcNews['groups']??[] as $item): ?><li><?=kcmc_h((string)$item)?></li><?php endforeach; ?></ul></article>
-      <article class="news-item"><span class="pill important">Ways to help</span><h3>Practical ministry this month</h3><ul><?php foreach($kcmcNews['outreach']??[] as $item): ?><li><?=kcmc_h((string)$item)?></li><?php endforeach; ?></ul></article>
-    </div>
-  </section>
+  </div></section>
 </section>
 <section class="view" data-view="events">
   <div class="wrap partner-hero"><div class="eyebrow">Events</div><h1 class="display-title">What’s next at KCMC.</h1><p class="lead muted">Upcoming gatherings, studies and community events, with one-tap calendar saves and easy ways to connect.</p></div>
@@ -234,25 +242,21 @@ usort($kcmcAnnouncements, fn($a,$b)=>(int)($b['priority']??0)<=>(int)($a['priori
 </section>
 
 <section class="view" data-view="serve">
-  <div class="wrap partner-hero"><div class="eyebrow">Serve</div><h1 style="font-family:Georgia,serif;font-size:clamp(3rem,7vw,5rem);font-weight:400;margin:.1em 0">Turn everyday things into ministry.</h1><p class="lead muted">Practical ways to serve our congregation and community this September.</p></div>
+  <div class="wrap partner-hero"><div class="eyebrow">Serve</div><h1 style="font-family:Georgia,serif;font-size:clamp(3rem,7vw,5rem);font-weight:400;margin:.1em 0">Turn everyday things into ministry.</h1><p class="lead muted">Share your interests with our church team and ask about current opportunities to serve.</p></div>
   <section class="section"><div class="wrap serve-grid">
-    <article class="serve-card"><span class="pill important">WEB Kids</span><h3>Pack weekend food bags</h3><p>Volunteers meet Thursdays at 9:00 AM at Reeds Spring Primary to pack 100 bags for K–4 students.</p></article>
-    <article class="serve-card"><span class="pill">WEB Kids</span><h3>Best Choice barcodes</h3><p>Save Best Choice barcodes from boxes and cans; proceeds support the WEB Kids program.</p></article>
-    <article class="serve-card"><span class="pill">Methodist Women</span><h3>Harter House receipts</h3><p>Save full receipts from the Kimberling City Harter House for mission work.</p></article>
-    <article class="serve-card"><span class="pill">Ronald McDonald House</span><h3>Aluminum pull tabs</h3><p>Save aluminum pull tabs from soda cans for Ronald McDonald House support.</p></article>
-    <article class="serve-card"><span class="pill">Music</span><h3>Join choir or handbells</h3><p>Bring your voice or learn to ring handbells as KCMC prepares music that leads the church in worship.</p></article>
-    <article class="serve-card"><span class="pill">Church life</span><h3>Find your place</h3><p>Call the church office to ask about current volunteer openings across KCMC ministries.</p></article>
+    <article class="serve-card"><span class="pill">Start here</span><h3>Find a place to serve</h3><p>Tell the team about your interests and availability using the form below. The church can help you find an active opportunity.</p></article>
+    <article class="serve-card"><span class="pill">Talk with us</span><h3>Have a question?</h3><p>Call the church office to ask what is needed now before making plans.</p><div class="btns"><a class="btn" href="<?=kcmc_h($kcmcPhoneHref)?>">Call the church</a></div></article>
   </div><div class="wrap form-wrap"><form class="form-card compact" data-kcmc-form="serve" data-subject="I Want to Serve at KCMC" novalidate><div class="eyebrow">Volunteer</div><h2>Find a place to serve.</h2><div class="field-row"><label>Name<input name="name" autocomplete="name" required></label><label>Email<input type="email" name="email" autocomplete="email" required></label></div><label>I’m interested in<select name="interest"><option>Not sure — help me find a fit</option><option>Kids / Youth</option><option>Worship / Music</option><option>Hospitality / Welcome</option><option>Care / Prayer</option><option>Community Outreach</option><option>Facilities / Practical Help</option></select></label><label>Tell us a little about your availability or interests<textarea name="message" rows="4"></textarea></label><button class="btn gold" type="submit">Send my interest</button><p class="form-status" role="status" aria-live="polite"></p></form></div></section>
 </section>
 
 <section class="view" data-view="partner">
-  <div class="wrap partner-hero"><div class="eyebrow">Partner Hub</div><h1 style="font-family:Georgia,serif;font-size:clamp(3rem,7vw,5rem);font-weight:400;margin:.1em 0">Your church week, in one place.</h1><p class="lead muted">Announcements, serving, prayer, giving and the latest Church News.</p></div>
+  <div class="wrap partner-hero"><div class="eyebrow">Partner Hub</div><h1 style="font-family:Georgia,serif;font-size:clamp(3rem,7vw,5rem);font-weight:400;margin:.1em 0">Your church week, in one place.</h1><p class="lead muted">Find your next step, ask for support, and get connected with our church team.</p></div>
   <section class="section"><div class="wrap announcement-stack">
-    <article class="announcement"><span class="pill important">September News</span><h3>New beginnings • outreach • fall connection</h3><p>Issue #16 brings ministry updates, September events, Bible studies, music and practical ways to serve.</p><div class="btns"><a class="btn" href="#news" data-route="news">Read current news</a></div></article>
+
     <article class="announcement"><span class="pill">This week</span><h3>Use the app for worship, care and current links</h3><p>The official livestream, online giving, visit planning, office contact and current service information are all one tap away.</p></article>
     <article class="announcement"><span class="pill">Find Your People</span><h3>Groups and connection</h3><p>Looking for a small group, care connection, Bible study or ministry community? Send an interest note below and the church can help connect you.</p></article>
   </div><div class="wrap connection-grid form-wrap">
-    <article class="form-card"><div class="eyebrow">Prayer & care</div><h2>A trusted room for prayer.</h2><div class="privacy-lock"><span class="privacy-lock-icon" aria-hidden="true">🔒</span><div><h3>Members only</h3><p>Prayer names, medical details and request content stay behind verified sign-in. A Pastor administrator approves anything shared with members.</p></div></div><div class="btns"><?php if($memberCanPray): ?><a class="btn gold" href="<?=kcmc_h(kcmc_url('member/'))?>">Open member prayer</a><?php elseif($member): ?><a class="btn gold" href="<?=kcmc_h(kcmc_url('member/'))?>">Open secure account</a><?php else: ?><a class="btn gold" href="<?=kcmc_h(kcmc_url('member/login.php'))?>">Member sign in</a><?php endif; ?><a class="btn secondary" href="care.php">Prayer privacy</a></div></article>
+    <article class="form-card"><div class="eyebrow">Prayer &amp; care</div><h2>You don’t have to do life alone.</h2><p class="muted">Reach out to the church office for prayer or support. Personal prayer details are not displayed on the public app.</p><div class="btns"><a class="btn gold" href="<?=kcmc_h($kcmcPhoneHref)?>">Call the church</a><a class="btn secondary" href="care.php">Prayer &amp; care</a></div></article>
     <form class="form-card" data-kcmc-form="groups" data-subject="KCMC Connection / Group Interest" novalidate><div class="eyebrow">Find Your People</div><h2>Help me get connected.</h2><label>Name<input name="name" autocomplete="name" required></label><label>Email<input type="email" name="email" autocomplete="email" required></label><label>I’m looking for<select name="interest"><option>Small group / Bible study</option><option>Kids / family connection</option><option>Youth</option><option>Care / support</option><option>Men’s ministry</option><option>Women’s ministry</option><option>I’m new and not sure yet</option></select></label><label>Anything else?<textarea name="message" rows="4"></textarea></label><button class="btn gold" type="submit">Help me connect</button><p class="form-status" role="status" aria-live="polite"></p></form>
   </div><div class="wrap preferences"><div><div class="eyebrow">This device</div><h2>Remember my preferred service</h2><p class="muted">Optional preference is stored only on this device.</p></div><label>Preferred Sunday service<select id="preferredService"><option value="">No preference</option><option>8:00 AM — Front Porch Gospel</option><option>9:15 AM — Traditional Worship</option><option>10:30 AM — Contemporary Worship</option></select></label></div></section>
 </section>
@@ -272,5 +276,6 @@ usort($kcmcAnnouncements, fn($a,$b)=>(int)($b['priority']??0)<=>(int)($a['priori
   </div>
 </div>
 <script src="app.js?v=3.0.2" defer></script>
+<script src="public-presentation.js?v=1.0.0" defer></script>
 <a class="phase6-bulletin-fab" href="bulletin.php">Latest Bulletin</a>
 </body></html>
