@@ -1,0 +1,28 @@
+name: KCMC service agent
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+          cache-dependency-path: contest-service-agent/requirements-test.txt
+      - name: Install test dependency
+        run: python -m pip install -r contest-service-agent/requirements-test.txt
+      - name: Compile service-agent modules
+        run: python -m compileall -q contest-service-agent/app contest-service-agent/tests
+      - name: Run service-agent tests
+        run: python -m unittest discover -s contest-service-agent/tests -v
