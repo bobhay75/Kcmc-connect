@@ -84,7 +84,8 @@
   const home = document.querySelector('[data-view="home"]');
   if (!home || home.querySelector('[data-family-welcome]')) return;
   const churchPhoto = 'https://static.wixstatic.com/media/15d3f9_9c56441e59bd4f2a9763d79278fc1da4~mv2.jpg';
-  const kidsPhoto = 'https://static.wixstatic.com/media/15d3f9_c62929ab03a84ac19805d8d57512700c~mv2.jpg';
+  // Use the church site's optimized display image, not the 9.7 MB camera original.
+  const kidsPhoto = 'https://static.wixstatic.com/media/15d3f9_c62929ab03a84ac19805d8d57512700c~mv2.jpg/v1/fill/w_980%2Ch_735%2Cal_c%2Cq_85%2Cusm_0.66_1.00_0.01%2Cenc_auto/Sunday%20Worship.jpg';
   const youthPage = 'https://www.kimberlingcitymethodist.com/youth';
   const visitPage = 'https://www.kimberlingcitymethodist.com/visit';
   const make = (tag, className, text) => {
@@ -114,8 +115,8 @@
     probe.addEventListener('load', () => {
       if (!probe.naturalWidth) return;
       firstPhoto.src = churchPhoto;
-      firstPhoto.width = 1066;
-      firstPhoto.height = 532;
+      firstPhoto.width = probe.naturalWidth;
+      firstPhoto.height = probe.naturalHeight;
       firstPhoto.alt = 'Front of Kimberling City Methodist Church, from the church website';
       firstPhoto.dataset.caption = 'Church exterior • from KCMC’s published Visit page';
       const caption = hero.querySelector('[data-hero-caption]');
@@ -126,8 +127,9 @@
       const image = make('img', 'hero-church-photo');
       image.src = churchPhoto;
       image.alt = firstPhoto.alt;
-      image.width = 1066;
-      image.height = 532;
+      image.width = probe.naturalWidth;
+      image.height = probe.naturalHeight;
+      image.style.aspectRatio = `${probe.naturalWidth}/${probe.naturalHeight}`;
       image.decoding = 'async';
       image.referrerPolicy = 'no-referrer';
       image.addEventListener('error', () => figure.remove(), {once: true});
@@ -147,8 +149,8 @@
   const figure = make('figure', 'family-photo-frame');
   const image = make('img', 'family-photo');
   image.alt = 'Children and adults in a group photograph published on KCMC’s youth ministry page';
-  image.width = 2048;
-  image.height = 1535;
+  image.width = 980;
+  image.height = 735;
   image.loading = 'lazy';
   image.decoding = 'async';
   image.referrerPolicy = 'no-referrer';
