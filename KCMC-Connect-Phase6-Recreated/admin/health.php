@@ -19,6 +19,20 @@ $statusLabels = ['pass' => 'Ready', 'warn' => 'Review', 'fail' => 'Action needed
 ?><!doctype html>
 <html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="robots" content="noindex,nofollow"><title>Release Health • KCMC Connect</title><link rel="stylesheet" href="<?=kcmc_h(kcmc_url('styles.css?v=3.0.0'))?>"><style>
 .health-shell{width:min(1100px,calc(100% - 28px));margin:24px auto 80px}.health-top{display:flex;justify-content:space-between;align-items:flex-start;gap:18px;flex-wrap:wrap}.health-summary{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin:20px 0}.health-stat,.health-check{background:#fff;color:#17324c;border:1px solid #dce3e7;border-radius:16px;padding:18px}.health-stat strong{display:block;font-size:1.8rem}.health-stat a{font-weight:800}.health-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}.health-check{display:grid;grid-template-columns:auto 1fr;gap:12px;align-items:start}.health-dot{width:13px;height:13px;border-radius:50%;margin-top:7px;background:#607080}.health-check.pass .health-dot{background:#2b7a46}.health-check.warn .health-dot{background:#a06b12}.health-check.fail .health-dot{background:#a33434}.health-check h2{font-size:1rem;margin:0 0 4px}.health-check p{margin:0;color:#536273}.health-pill{display:inline-block;border-radius:999px;padding:6px 10px;font-weight:800;font-size:.85rem}.health-pill.pass{background:#e6f3e7;color:#215b2d}.health-pill.warn{background:#fff3d6;color:#77510c}.health-pill.fail{background:#fbe4e4;color:#7d2525}.health-meta{color:#607080;font-size:.9rem}.health-actions{display:flex;gap:10px;flex-wrap:wrap}.health-actions a{text-decoration:none}@media(max-width:760px){.health-summary,.health-grid{grid-template-columns:1fr 1fr}}@media(max-width:520px){.health-summary,.health-grid{grid-template-columns:1fr}}
+/* Private-page contrast v2: local to this page; no shared theme or auth changes. */
+body.portal-body{--ink:#17324c;--muted:#536273;--line:#607080;background:#eef2f4;color:#17324c;color-scheme:light}
+.portal-body :is(.portal-card,.health-stat,.health-check,.audit-row,.audit-empty,.tc-card){background:#fff;color:#17324c}
+.portal-body .eyebrow{color:#745221}
+.portal-body :is(.portal-lead,.portal-fine,.portal-empty,.tc-note,.health-meta,.audit-time){color:#536273}
+.portal-body .portal-back{color:#174d75}
+.portal-body .btn.secondary{background:#fff;color:#17324c;border-color:#607080}
+.portal-body :is(input:not([type=hidden]),select,textarea){background:#fff;color:#17324c;border:1px solid #607080;color-scheme:light}
+.portal-body input::placeholder,.portal-body textarea::placeholder{color:#536273;opacity:1}
+.portal-body .portal-alert.error{background:#fbe4e4;color:#7d2525;border-color:#a33434}
+.portal-body .portal-alert.success{background:#e6f3e7;color:#215b2d;border-color:#2b7a46}
+.portal-body .portal-alert.warning{background:#fff3d6;color:#77510c;border-color:#a06b12}
+.portal-body :is(a,button,input,select,textarea,summary):focus-visible{outline:3px solid #174d75;outline-offset:3px}
+.portal-body :is(.health-shell,.audit-shell,.tc-admin,.tc-shell){overflow-wrap:anywhere}
 </style></head><body class="portal-body"><main class="health-shell">
 <div class="health-top"><div><a class="portal-back" href="<?=kcmc_h(kcmc_url('admin/operations.php'))?>">← Operations</a><p class="eyebrow">RELEASE HEALTH</p><h1>KCMC production readiness</h1><p class="portal-lead">A read-only operational check of the deployed app. No passwords, tokens, invitation links, prayer content or private-key material are displayed here.</p></div><div><span class="health-pill <?=kcmc_h($overall)?>"><?=kcmc_h($statusLabels[$overall] ?? 'Action needed')?></span></div></div>
 <div class="health-summary">

@@ -56,6 +56,20 @@ function tc_hours(int $minutes): string { return number_format($minutes / 60, 2)
 ?><!doctype html>
 <html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="robots" content="noindex,nofollow"><title>Time Clock • KCMC Connect</title><link rel="stylesheet" href="<?=kcmc_h(kcmc_url('styles.css?v=3.0.0'))?>"><style>
 .tc-shell{width:min(920px,calc(100% - 28px));margin:24px auto 80px}.tc-card{background:#fff;color:#17324c;border:1px solid #dce3e7;border-radius:18px;padding:20px;margin:16px 0}.tc-actions{display:flex;gap:10px;flex-wrap:wrap}.tc-actions form{margin:0}.tc-table{display:grid;gap:10px}.tc-row{display:grid;grid-template-columns:1fr 1fr .7fr 1.2fr;gap:10px;padding:12px;border:1px solid #e2e8ec;border-radius:12px}.tc-row small{display:block;color:#607080}.tc-form label{display:block;font-weight:700}.tc-form textarea,.tc-form select{width:100%;box-sizing:border-box;padding:10px;margin:6px 0 14px;font:inherit}.tc-form textarea{min-height:95px}.tc-total{font-size:1.5rem;font-weight:900}.tc-note{color:#607080}.tc-adjusted{display:inline-block;margin-top:4px;border-radius:999px;padding:3px 7px;background:#fff3d6;color:#77510c;font-size:.8rem;font-weight:800}.tc-correction{grid-column:1/-1;border-top:1px solid #e2e8ec;padding-top:10px}.tc-correction summary{cursor:pointer;font-weight:800}.tc-correction textarea{width:100%;box-sizing:border-box;min-height:75px;padding:10px;margin:8px 0;font:inherit}.tc-request-list{display:grid;gap:10px}.tc-request{border:1px solid #e2e8ec;border-radius:12px;padding:12px}.tc-request p{margin:.35rem 0}.tc-request-head{display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap}.tc-shell :is(a,button,select,textarea,input,summary):focus-visible{outline:3px solid #174d75;outline-offset:3px}@media(max-width:700px){.tc-row{grid-template-columns:1fr}.tc-actions{display:grid}.tc-actions form,.tc-actions button{width:100%}.tc-correction{grid-column:1}}
+/* Private-page contrast v2: local to this page; no shared theme or auth changes. */
+body.portal-body{--ink:#17324c;--muted:#536273;--line:#607080;background:#eef2f4;color:#17324c;color-scheme:light}
+.portal-body :is(.portal-card,.health-stat,.health-check,.audit-row,.audit-empty,.tc-card){background:#fff;color:#17324c}
+.portal-body .eyebrow{color:#745221}
+.portal-body :is(.portal-lead,.portal-fine,.portal-empty,.tc-note,.health-meta,.audit-time){color:#536273}
+.portal-body .portal-back{color:#174d75}
+.portal-body .btn.secondary{background:#fff;color:#17324c;border-color:#607080}
+.portal-body :is(input:not([type=hidden]),select,textarea){background:#fff;color:#17324c;border:1px solid #607080;color-scheme:light}
+.portal-body input::placeholder,.portal-body textarea::placeholder{color:#536273;opacity:1}
+.portal-body .portal-alert.error{background:#fbe4e4;color:#7d2525;border-color:#a33434}
+.portal-body .portal-alert.success{background:#e6f3e7;color:#215b2d;border-color:#2b7a46}
+.portal-body .portal-alert.warning{background:#fff3d6;color:#77510c;border-color:#a06b12}
+.portal-body :is(a,button,input,select,textarea,summary):focus-visible{outline:3px solid #174d75;outline-offset:3px}
+.portal-body :is(.health-shell,.audit-shell,.tc-admin,.tc-shell){overflow-wrap:anywhere}
 </style></head><body class="portal-body"><main class="tc-shell">
 <a class="portal-back" href="<?=kcmc_h(kcmc_url('member/'))?>">← Member home</a><p class="eyebrow">EMPLOYEE TIME</p><h1>Time Clock</h1><p class="portal-lead">Pay period <?=kcmc_h($periodStart)?> through <?=kcmc_h($periodEnd)?>. Punch times are recorded by the KCMC server.</p>
 <?php if ($error): ?><p class="portal-alert error" role="alert"><?=kcmc_h($error)?></p><?php endif; ?>
