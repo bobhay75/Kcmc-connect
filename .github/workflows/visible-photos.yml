@@ -1,0 +1,47 @@
+name: KCMC visible photo refresh
+on:
+  pull_request:
+    paths:
+      - 'KCMC-Connect-Phase6-Recreated/public-presentation.*'
+      - 'KCMC-Connect-Phase6-Recreated/sw.js'
+      - 'tests/visible-photos-review.py'
+      - '.github/workflows/visible-photos.yml'
+permissions:
+  contents: read
+jobs:
+  visible-review:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+          persist-credentials: false
+      - name: Syntax and source contracts
+        run: |
+          set -euo pipefail
+          node --check KCMC-Connect-Phase6-Recreated/public-presentation.js
+          node --check KCMC-Connect-Phase6-Recreated/sw.js
+          php tests/tony-launch-cleanup-contract.php
+          python3 -m py_compile tests/visible-photos-review.py
+          git diff --check
+      - name: Install isolated browser dependencies
+        run: |
+          python3 -m pip install --disable-pip-version-check playwright pillow
+          python3 -m playwright install --with-deps chromium
+      - name: Verify public images, fallbacks and mobile layouts
+        run: |
+          set -euo pipefail
+          mkdir -p photo-review-artifacts
+          python3 tests/visible-photos-review.py | tee photo-review-artifacts/acceptance.txt
+      - name: Record source revision
+        if: always()
+        run: |
+          mkdir -p photo-review-artifacts
+          git rev-parse HEAD > photo-review-artifacts/SOURCE-COMMIT.txt
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: kcmc-visible-photo-review
+          path: photo-review-artifacts/
+          retention-days: 7
