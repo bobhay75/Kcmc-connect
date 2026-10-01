@@ -1,0 +1,67 @@
+name: KCMC scoped Tony delivery
+on:
+  push:
+    branches: ['fix/tony-delivery-2026-10-01']
+  pull_request:
+    paths:
+      - 'tools/tony_delivery.py'
+      - '.github/workflows/tony-delivery.yml'
+permissions:
+  contents: read
+jobs:
+  exact-source:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          fetch-depth: 0
+          persist-credentials: false
+      - name: Apply pinned delivery to disposable runner only
+        env:
+          KCMC_DELIVERY_TEST: '1'
+        run: |
+          set -euo pipefail
+          mkdir -p review-artifacts
+          python3 -m py_compile tools/tony_delivery.py
+          python3 tools/tony_delivery.py --fixture-root "$PWD/KCMC-Connect-Phase6-Recreated" --repo "$PWD" | tee review-artifacts/delivery.txt
+          python3 tools/tony_delivery.py --fixture-root "$PWD/KCMC-Connect-Phase6-Recreated" --repo "$PWD" | tee review-artifacts/idempotence.txt
+          grep -F 'Already installed' review-artifacts/idempotence.txt || grep -F 'Planned files: none' review-artifacts/idempotence.txt
+          git diff --check
+          git diff --stat > review-artifacts/generated-runtime-diff.txt
+      - name: Existing security and PHP contracts on generated runtime
+        run: |
+          set -euo pipefail
+          bash tests/security-contract.sh | tee review-artifacts/security.txt
+          bash tests/production-smoke-contract.sh | tee review-artifacts/production-contract.txt
+          node --check KCMC-Connect-Phase6-Recreated/public-presentation.js
+          node --check KCMC-Connect-Phase6-Recreated/sw.js
+          for f in tests/*contract.php; do php "$f"; done | tee review-artifacts/php-contracts.txt
+      - name: Install browser dependencies
+        run: |
+          python3 -m pip install --disable-pip-version-check --no-cache-dir playwright
+          python3 -m playwright install --with-deps chromium
+      - name: Public and signed-in acceptance on generated runtime
+        env:
+          KCMC_REVIEW_OUTPUT: /tmp/kcmc-tony-delivery-review
+        run: |
+          set -euo pipefail
+          python3 tests/tony-launch-cleanup-browser.py | tee review-artifacts/public-browser.txt
+          python3 tests/signed-in-workflows-browser.py | tee review-artifacts/signed-in-browser.txt
+      - name: Retain generated runtime and exact source provenance
+        if: always()
+        run: |
+          mkdir -p review-artifacts/runtime/member
+          git rev-parse HEAD > review-artifacts/SOURCE-COMMIT.txt
+          cp tools/tony_delivery.py review-artifacts/
+          for f in public-presentation.js public-presentation.css sw.js index.php care.php; do cp "KCMC-Connect-Phase6-Recreated/$f" review-artifacts/runtime/; done
+          cp KCMC-Connect-Phase6-Recreated/member/login.php review-artifacts/runtime/member/
+          if [ -d /tmp/kcmc-tony-delivery-review ]; then cp -a /tmp/kcmc-tony-delivery-review review-artifacts/screenshots; fi
+          find review-artifacts/runtime -type f -exec sha256sum {} \; > review-artifacts/RUNTIME-SHA256.txt
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: kcmc-tony-scoped-delivery
+          path: review-artifacts/
+          retention-days: 3
