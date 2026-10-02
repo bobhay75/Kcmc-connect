@@ -90,4 +90,45 @@ class Tests(unittest.TestCase):
  def test_feature_html_has_no_scripts_or_caption(self):
   self.assertNotIn('<script',m.NEW_SECTION);self.assertNotIn('figcaption',m.NEW_SECTION)
   self.assertNotIn('photo-source',m.NEW_SECTION);self.assertIn('2017',m.NEW_SECTION)
+ def legacy_state(self):
+  desired=m.transform(self.original)
+  out={n:v.decode() for n,v in desired.items()}
+  out['public-presentation.css']=out['public-presentation.css'].replace(m.FEATURE_CSS,m.LEGACY_FEATURE_CSS,1)
+  for n in ['index.php','sw.js']:
+   out[n]=out[n].replace(m.VERSION,m.LEGACY_VERSION)
+  return {n:v.encode() for n,v in out.items()}
+ def test_dark_installed_upgrade(self):
+  legacy=self.legacy_state()
+  for n,v in legacy.items():(self.app/n).write_bytes(v)
+  photo=(self.app/'assets/visuals/kcmc-worship-2017.webp').read_bytes()
+  self.apply()
+  css=(self.app/'public-presentation.css').read_text()
+  self.assertIn(m.FEATURE_CSS,css);self.assertNotIn(m.LEGACY_FEATURE_CSS,css)
+  self.assertEqual((self.app/'index.php').read_bytes(),legacy['index.php'].replace(m.LEGACY_VERSION.encode(),m.VERSION.encode()))
+  self.assertEqual((self.app/'assets/visuals/kcmc-worship-2017.webp').read_bytes(),photo)
+ def test_dark_upgrade_rollback(self):
+  legacy=self.legacy_state()
+  for n,v in legacy.items():(self.app/n).write_bytes(v)
+  backup=self.apply();self.assertEqual(m.rollback(self.app,backup),3)
+  self.assertEqual(legacy,{n:(self.app/n).read_bytes() for n in m.FILES})
+ def test_dark_upgrade_check_only(self):
+  legacy=self.legacy_state()
+  for n,v in legacy.items():(self.app/n).write_bytes(v)
+  m.apply(self.app,self.backups,True)
+  self.assertEqual(legacy,{n:(self.app/n).read_bytes() for n in m.FILES})
+ def test_modified_dark_css_refused(self):
+  legacy=self.legacy_state()
+  for n,v in legacy.items():(self.app/n).write_bytes(v)
+  p=self.app/'public-presentation.css';p.write_text(p.read_text().replace('background:#102d40','background:#334455',1))
+  with self.assertRaises(m.Stop):self.apply()
+ def test_modified_bright_css_refused(self):
+  self.apply();p=self.app/'public-presentation.css';p.write_text(p.read_text().replace('brightness(1.16)','brightness(1.3)'))
+  with self.assertRaises(m.Stop):self.apply()
+ def test_light_styling_scoped_and_image_unchanged(self):
+  self.assertIn('.cw-section{',m.FEATURE_CSS)
+  self.assertIn('background:#f7f1e7',m.FEATURE_CSS)
+  self.assertIn('brightness(1.16) contrast(.88)',m.FEATURE_CSS)
+  self.assertNotIn('.hero-photo',m.FEATURE_CSS)
+  self.assertNotIn('.portal-',m.FEATURE_CSS)
+  self.assertIn('object-fit:contain',m.FEATURE_CSS)
 if __name__=='__main__':unittest.main(verbosity=2)
