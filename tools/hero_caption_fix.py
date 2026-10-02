@@ -61,8 +61,10 @@ def transform(original):
         raise Stop('Unexpected gallery implementation.')
     text['public-presentation.js'] = one(js, OLD_TIMER, NEW_TIMER, 'hero timer')
     css = text['public-presentation.css']
-    if '.hero-photo' not in css or '.photo-source' not in css:
-        raise Stop('Photo update is missing; no files changed.')
+    # .photo-source belongs to an optional family-photo layout, not the carousel.
+    # The existing gallery and timer are validated above; do not require that layout.
+    if '.hero-photo' not in css:
+        raise Stop('Unexpected public gallery stylesheet; no files changed.')
     if MARKER in css:
         if css.count(MARKER) != 2 or CSS not in css:
             raise Stop('Partial caption patch detected.')
