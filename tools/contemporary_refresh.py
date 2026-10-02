@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""KCMC Contemporary Worship refresh; Python 3.6+, no external dependencies.
+"""KCMC bright Contemporary Worship refresh; Python 3.6+, no external dependencies.
 Run on cPanel: python3 contemporary_refresh.py [--check | --rollback BACKUP]
 Only public HTML/CSS/carousel interval/cache versions are changed.
 Use the supplied local church photograph, retain alt text, hide photo labels,
@@ -21,7 +21,8 @@ import sys
 import tempfile
 
 FILES = ('public-presentation.js', 'public-presentation.css', 'index.php', 'sw.js')
-VERSION = 'contemporary-20261002'
+VERSION = 'contemporary-bright-20261002'
+LEGACY_VERSION = 'contemporary-20261002'
 PRIOR_VERSION = 'hero-captions-20261002'
 CACHE = 'kcmc-connect-v3.0.3-public-only-' + VERSION
 MARKER = 'KCMC_PHOTO_CAPTIONS_HIDDEN_20261002'
@@ -37,7 +38,8 @@ NEW_TIMER = 'timer = setTimeout(() => { show(current + 1, false); schedule(); },
 FEATURE_MARKER = "KCMC_CONTEMPORARY_FEATURE_20261002"
 OLD_SECTION = '  <section class="section">\n    <div class="wrap video-card">\n      <div class="video-art contemporary-art"><div><span class="pill">Worship online</span><br><br><b>Contemporary<br>Worship</b></div></div>\n      <div class="video-copy"><div class="eyebrow">Messages &amp; worship</div><h2 style="font-family:Georgia,serif;font-size:3rem;font-weight:400;margin:.15em 0">Worship wherever you are.</h2><p class="muted">Find KCMC messages and worship on the church’s official Facebook page. Facebook may ask you to sign in.</p><div class="btns"><a class="btn gold" href="https://www.facebook.com/KimberlingCityMethodistChurch/live_videos" target="_blank" rel="noopener">Watch messages</a><a class="btn secondary" href="https://www.facebook.com/KimberlingCityMethodistChurch/live_videos" target="_blank" rel="noopener">All live videos</a></div></div>\n    </div>\n  </section>'
 NEW_SECTION = '  <!-- KCMC_CONTEMPORARY_FEATURE_20261002 BEGIN -->\n  <section class="section cw-section" data-contemporary-feature aria-labelledby="cw-title">\n    <div class="wrap">\n      <div class="cw-feature">\n        <div class="cw-copy">\n          <p class="cw-kicker">Sunday mornings <span>10:30 AM</span></p>\n          <h2 id="cw-title">Contemporary<br><span>Worship.</span></h2>\n          <p class="cw-intro">Come as you are. Find your place.</p>\n          <p class="cw-description">A relaxed, coffee-shop setting with fellowship, refreshments, and an uplifting message from the Bible.</p>\n          <p class="cw-family">Bringing the family? Launch Kids meets during the 10:30 service.</p>\n          <div class="cw-actions">\n            <a class="cw-button cw-primary" href="#visit" data-route="visit">Plan your Sunday <span aria-hidden="true">&#8594;</span></a>\n            <a class="cw-button cw-secondary" href="https://www.facebook.com/KimberlingCityMethodistChurch/live_videos" target="_blank" rel="noopener noreferrer">Watch messages</a>\n          </div>\n          <p class="cw-online-note">Messages and worship are on our official Facebook page. Facebook may ask you to sign in.</p>\n        </div>\n        <div class="cw-media">\n          <img src="assets/visuals/kcmc-worship-2017.webp" alt="People gathered around tables for worship at KCMC, photographed in 2017" width="640" height="344" loading="lazy" decoding="async">\n        </div>\n      </div>\n    </div>\n  </section>\n  <!-- KCMC_CONTEMPORARY_FEATURE_20261002 END -->'
-FEATURE_CSS = '\n/* KCMC_CONTEMPORARY_FEATURE_20261002 BEGIN */\n/* This section does not style the welcome carousel, private pages or photo captions. */\n.cw-section{padding:54px 0 64px}\n.cw-feature{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.12fr);background:#102d40;border:1px solid #3e5869;border-radius:28px;overflow:hidden;box-shadow:0 20px 52px rgba(0,0,0,.2)}\n.cw-copy{padding:clamp(24px,3.4vw,42px);min-width:0;display:flex;flex-direction:column;justify-content:center}\n.cw-kicker{display:flex;align-items:center;gap:10px;flex-wrap:wrap;font-size:.75rem;font-weight:800;line-height:1.5;text-transform:uppercase;letter-spacing:.14em;margin:0 0 20px;color:#ead2a4}\n.cw-kicker span{display:inline-block;border:1px solid #8f7955;border-radius:99px;padding:5px 11px;letter-spacing:.04em;color:#ffedc9}\n.cw-copy h2{font-family:Inter,ui-sans-serif,system-ui,sans-serif;font-size:clamp(2.2rem,4.2vw,3.65rem);font-weight:800;line-height:1.06;letter-spacing:-.045em;margin:0 0 22px;color:#fff;overflow-wrap:normal}\n.cw-copy h2 span{color:#f3cf90}\n.cw-intro{font-size:clamp(1.08rem,1.8vw,1.25rem);font-weight:650;color:#fff;line-height:1.5;margin:0 0 12px}\n.cw-description{font-size:1rem;line-height:1.75;color:#d8e4eb;margin:0 0 15px}\n.cw-family{font-size:.94rem;line-height:1.65;color:#d8e4eb;margin:0 0 8px;padding-left:14px;border-left:2px solid #d7b16b}\n.cw-actions{display:flex;flex-wrap:wrap;gap:10px;margin:20px 0 14px}\n.cw-button{display:inline-flex;align-items:center;justify-content:center;gap:14px;min-height:48px;padding:12px 18px;border:1px solid #8ba3b2;border-radius:12px;text-decoration:none;font:inherit;font-size:.94rem;font-weight:800;line-height:1.35;text-align:center;white-space:normal}\n.cw-primary{background:#f3cf90;color:#12293b;border-color:#f3cf90}\n.cw-secondary{background:#102d40;color:#fff}\n.cw-button:hover{filter:brightness(1.08)}\n.cw-button:focus-visible{outline:3px solid #fff;outline-offset:4px}\n.cw-online-note{font-size:.78rem;line-height:1.6;color:#beced8;margin:0;max-width:40em}\n.cw-media{background:#162d35;min-width:0;position:relative;overflow:hidden}\n.cw-media img{display:block;width:100%;height:100%;object-fit:cover;object-position:52% center;min-height:390px}\n@media(max-width:850px){.cw-feature{grid-template-columns:1fr}.cw-media{grid-row:1}.cw-media img{height:auto;min-height:0;aspect-ratio:640/344;object-fit:contain}.cw-copy{padding:30px}.cw-copy h2{font-size:clamp(2.35rem,7.2vw,3.5rem)}.cw-kicker{margin-bottom:18px}}\n@media(max-width:420px){.cw-section{padding:32px 0 42px}.cw-feature{border-radius:20px}.cw-copy{padding:23px}.cw-copy h2{font-size:clamp(1.85rem,8vw,2.7rem)}.cw-actions{display:grid;grid-template-columns:1fr}.cw-kicker{font-size:.68rem;gap:8px}.cw-intro{font-size:1.08rem}}\n@media(prefers-reduced-motion:reduce){.cw-feature *{transition:none!important;animation:none!important}}\n/* KCMC_CONTEMPORARY_FEATURE_20261002 END */\n'
+LEGACY_FEATURE_CSS = '\n/* KCMC_CONTEMPORARY_FEATURE_20261002 BEGIN */\n/* This section does not style the welcome carousel, private pages or photo captions. */\n.cw-section{padding:54px 0 64px}\n.cw-feature{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.12fr);background:#102d40;border:1px solid #3e5869;border-radius:28px;overflow:hidden;box-shadow:0 20px 52px rgba(0,0,0,.2)}\n.cw-copy{padding:clamp(24px,3.4vw,42px);min-width:0;display:flex;flex-direction:column;justify-content:center}\n.cw-kicker{display:flex;align-items:center;gap:10px;flex-wrap:wrap;font-size:.75rem;font-weight:800;line-height:1.5;text-transform:uppercase;letter-spacing:.14em;margin:0 0 20px;color:#ead2a4}\n.cw-kicker span{display:inline-block;border:1px solid #8f7955;border-radius:99px;padding:5px 11px;letter-spacing:.04em;color:#ffedc9}\n.cw-copy h2{font-family:Inter,ui-sans-serif,system-ui,sans-serif;font-size:clamp(2.2rem,4.2vw,3.65rem);font-weight:800;line-height:1.06;letter-spacing:-.045em;margin:0 0 22px;color:#fff;overflow-wrap:normal}\n.cw-copy h2 span{color:#f3cf90}\n.cw-intro{font-size:clamp(1.08rem,1.8vw,1.25rem);font-weight:650;color:#fff;line-height:1.5;margin:0 0 12px}\n.cw-description{font-size:1rem;line-height:1.75;color:#d8e4eb;margin:0 0 15px}\n.cw-family{font-size:.94rem;line-height:1.65;color:#d8e4eb;margin:0 0 8px;padding-left:14px;border-left:2px solid #d7b16b}\n.cw-actions{display:flex;flex-wrap:wrap;gap:10px;margin:20px 0 14px}\n.cw-button{display:inline-flex;align-items:center;justify-content:center;gap:14px;min-height:48px;padding:12px 18px;border:1px solid #8ba3b2;border-radius:12px;text-decoration:none;font:inherit;font-size:.94rem;font-weight:800;line-height:1.35;text-align:center;white-space:normal}\n.cw-primary{background:#f3cf90;color:#12293b;border-color:#f3cf90}\n.cw-secondary{background:#102d40;color:#fff}\n.cw-button:hover{filter:brightness(1.08)}\n.cw-button:focus-visible{outline:3px solid #fff;outline-offset:4px}\n.cw-online-note{font-size:.78rem;line-height:1.6;color:#beced8;margin:0;max-width:40em}\n.cw-media{background:#162d35;min-width:0;position:relative;overflow:hidden}\n.cw-media img{display:block;width:100%;height:100%;object-fit:cover;object-position:52% center;min-height:390px}\n@media(max-width:850px){.cw-feature{grid-template-columns:1fr}.cw-media{grid-row:1}.cw-media img{height:auto;min-height:0;aspect-ratio:640/344;object-fit:contain}.cw-copy{padding:30px}.cw-copy h2{font-size:clamp(2.35rem,7.2vw,3.5rem)}.cw-kicker{margin-bottom:18px}}\n@media(max-width:420px){.cw-section{padding:32px 0 42px}.cw-feature{border-radius:20px}.cw-copy{padding:23px}.cw-copy h2{font-size:clamp(1.85rem,8vw,2.7rem)}.cw-actions{display:grid;grid-template-columns:1fr}.cw-kicker{font-size:.68rem;gap:8px}.cw-intro{font-size:1.08rem}}\n@media(prefers-reduced-motion:reduce){.cw-feature *{transition:none!important;animation:none!important}}\n/* KCMC_CONTEMPORARY_FEATURE_20261002 END */\n'
+FEATURE_CSS = '\n/* KCMC_CONTEMPORARY_FEATURE_20261002 BEGIN */\n/* Warm, light public feature. Original photograph, private pages and welcome hero stay separate. */\n.cw-section{padding:54px 0 64px;background:#f7f1e7;color:#243d50;color-scheme:light;border-top:1px solid #e5d8c3;border-bottom:1px solid #e5d8c3}\n.cw-feature{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.12fr);background:#fffdf9;border:1px solid #daccb4;border-radius:28px;overflow:hidden;box-shadow:0 16px 42px rgba(102,77,36,.10)}\n.cw-copy{padding:clamp(24px,3.4vw,42px);min-width:0;display:flex;flex-direction:column;justify-content:center}\n.cw-kicker{display:flex;align-items:center;gap:10px;flex-wrap:wrap;font-size:.75rem;font-weight:800;line-height:1.5;text-transform:uppercase;letter-spacing:.14em;margin:0 0 20px;color:#77521c}\n.cw-kicker span{display:inline-block;background:#f7ead0;border:1px solid #ab864d;border-radius:99px;padding:5px 11px;letter-spacing:.04em;color:#604315}\n.cw-copy h2{font-family:Inter,ui-sans-serif,system-ui,sans-serif;font-size:clamp(2.2rem,4.2vw,3.65rem);font-weight:800;line-height:1.06;letter-spacing:-.045em;margin:0 0 22px;color:#243d50;overflow-wrap:normal}\n.cw-copy h2 span{color:#925919}\n.cw-intro{font-size:clamp(1.08rem,1.8vw,1.25rem);font-weight:650;color:#243d50;line-height:1.5;margin:0 0 12px}\n.cw-description{font-size:1rem;line-height:1.75;color:#425767;margin:0 0 15px}\n.cw-family{font-size:.94rem;line-height:1.65;color:#425767;margin:0 0 8px;padding-left:14px;border-left:2px solid #ae7a30}\n.cw-actions{display:flex;flex-wrap:wrap;gap:10px;margin:20px 0 14px}\n.cw-button{display:inline-flex;align-items:center;justify-content:center;gap:14px;min-height:48px;padding:12px 18px;border:1px solid #526d7f;border-radius:12px;text-decoration:none;font:inherit;font-size:.94rem;font-weight:800;line-height:1.35;text-align:center;white-space:normal}\n.cw-primary{background:#edc77f;color:#1d3547;border-color:#ae7a30}\n.cw-secondary{background:#fffdf9;color:#243d50}\n.cw-button:hover{background:#f8e3bc;color:#243d50;filter:none}\n.cw-button:focus-visible{outline:3px solid #205b79;outline-offset:4px}\n.cw-online-note{font-size:.78rem;line-height:1.6;color:#536574;margin:0;max-width:40em}\n.cw-media{background:#fffdf9;min-width:0;position:relative;overflow:hidden;display:flex;align-items:center;padding:26px 26px 26px 0}\n.cw-media::before,.cw-media::after{content:none}\n.cw-media img{display:block;width:100%;height:auto;min-height:0;object-fit:contain;object-position:center;border-radius:18px;filter:brightness(1.16) contrast(.88) saturate(1.04)}\n@media(max-width:850px){.cw-feature{grid-template-columns:1fr}.cw-media{grid-row:1;padding:20px 20px 0}.cw-media img{height:auto;min-height:0;aspect-ratio:640/344;object-fit:contain;border-radius:14px}.cw-copy{padding:30px}.cw-copy h2{font-size:clamp(2.35rem,7.2vw,3.5rem)}.cw-kicker{margin-bottom:18px}}\n@media(max-width:420px){.cw-section{padding:32px 0 42px}.cw-feature{border-radius:20px}.cw-media{padding:14px 14px 0}.cw-copy{padding:23px}.cw-copy h2{font-size:clamp(1.85rem,8vw,2.7rem)}.cw-actions{display:grid;grid-template-columns:1fr}.cw-kicker{font-size:.68rem;gap:8px}.cw-intro{font-size:1.08rem}}\n@media(prefers-reduced-motion:reduce){.cw-feature *{transition:none!important;animation:none!important}}\n/* KCMC_CONTEMPORARY_FEATURE_20261002 END */\n'
 
 class Stop(RuntimeError):
     pass
@@ -58,7 +60,7 @@ def versions(text, label):
     for asset in ('public-presentation.js', 'public-presentation.css'):
         pattern = re.escape(asset) + r'\?v=([A-Za-z0-9._-]+)'
         matches = list(re.finditer(pattern, text))
-        if len(matches) != 1 or matches[0].group(1) not in ('1.0.0', 'tony-staff-20261001', PRIOR_VERSION, VERSION):
+        if len(matches) != 1 or matches[0].group(1) not in ('1.0.0', 'tony-staff-20261001', PRIOR_VERSION, LEGACY_VERSION, VERSION):
             raise Stop('Unexpected ' + label + ' asset version: ' + asset)
         text = re.sub(pattern, asset + '?v=' + VERSION, text)
     return text
@@ -90,7 +92,13 @@ def transform(original):
     text['index.php'] = versions(index, 'homepage')
     css = text['public-presentation.css']
     if FEATURE_MARKER in css:
-        if css.count(FEATURE_MARKER) != 2 or FEATURE_CSS not in css:
+        if css.count(FEATURE_MARKER) != 2:
+            raise Stop('Edited or partial Contemporary stylesheet; preserved.')
+        if FEATURE_CSS in css:
+            pass
+        elif LEGACY_FEATURE_CSS in css:
+            text['public-presentation.css'] = css.replace(LEGACY_FEATURE_CSS, FEATURE_CSS, 1)
+        else:
             raise Stop('Edited or partial Contemporary stylesheet; preserved.')
     else:
         text['public-presentation.css'] = css + FEATURE_CSS
@@ -99,7 +107,8 @@ def transform(original):
     allowed = ('kcmc-connect-v3.0.3-public-only',
                'kcmc-connect-v3.0.3-public-only-photos-20261001',
                'kcmc-connect-v3.0.3-public-only-tony-staff-20261001',
-               'kcmc-connect-v3.0.3-public-only-' + PRIOR_VERSION, CACHE)
+               'kcmc-connect-v3.0.3-public-only-' + PRIOR_VERSION,
+               'kcmc-connect-v3.0.3-public-only-' + LEGACY_VERSION, CACHE)
     if not match or match.group(1) not in allowed:
         raise Stop('Unknown service-worker release; no files changed.')
     sw = sw[:match.start(1)] + CACHE + sw[match.end(1):]
@@ -160,7 +169,7 @@ def apply(app, backups, check=False):
     desired = transform(original)
     changed = {name: desired[name] for name in FILES if desired[name] != original[name]}
     if not changed:
-        print('ALREADY INSTALLED: Contemporary Worship refresh; seven-minute welcome rotation.')
+        print('ALREADY INSTALLED: bright Contemporary Worship panel; seven-minute welcome rotation.')
         return None
     backup = Path(tempfile.mkdtemp(prefix='contemporary-', dir=str(backups)))
     if backup.stat().st_dev != app.stat().st_dev:
@@ -201,8 +210,8 @@ def apply(app, backups, check=False):
             stage(temp, original[name], row['mode'], row['gid'])
             os.replace(str(temp), str(app / name))
         raise
-    print('SUCCESS: Contemporary Worship section refreshed; welcome rotation is 7 minutes.')
-    print('Uses your local worship photo. Photo labels hidden; accounts and private data not edited.')
+    print('SUCCESS: Contemporary Worship is brighter and warmer; welcome rotation is 7 minutes.')
+    print('Uses your unchanged local worship photo with a brighter display. Photo labels hidden; private data not edited.')
     print('Changed only: ' + ', '.join(changed))
     print('Private backup: ' + str(backup))
     print('Rollback: ' + shlex.quote(sys.executable) + ' ' + shlex.quote(str(Path(__file__).absolute())) + ' --rollback ' + shlex.quote(str(backup)))
