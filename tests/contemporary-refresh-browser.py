@@ -43,6 +43,12 @@ with tempfile.TemporaryDirectory() as d:
     check(page.locator('[data-hero-toggle]').inner_text()=='Play photos',f'reduced-motion pauses welcome hero at {w}px')
     check(page.locator('.cw-primary').bounding_box()['height']>=44,f'CTA tap size at {w}px')
     check(page.locator('.cw-copy').evaluate('(e)=>e.scrollWidth<=e.clientWidth'),f'contemporary text fits panel at {w}px')
+    check(hero.evaluate('(e)=>getComputedStyle(e).backgroundColor')=='rgb(247, 241, 231)',f'warm cream surrounding section at {w}px')
+    check(page.locator('.cw-feature').evaluate('(e)=>getComputedStyle(e).backgroundColor')=='rgb(255, 253, 249)',f'light text panel at {w}px')
+    check(page.locator('.cw-media img').evaluate('(e)=>getComputedStyle(e).filter')=='brightness(1.16) contrast(0.88) saturate(1.04)',f'photo display brightens shadows at {w}px')
+    check(page.locator('.cw-media img').evaluate('(e)=>getComputedStyle(e).objectFit')=='contain',f'full photograph remains visible at {w}px')
+    check(page.locator('.cw-media').evaluate('(e)=>getComputedStyle(e,"::after").content')=='none',f'no dark photo overlay at {w}px')
+
     hero.screenshot(path=str(OUT/f'contemporary-{w}.png'))
     page.locator('.cw-primary').click();page.wait_for_function("document.querySelector('[data-view=visit]').classList.contains('active')")
     check(page.locator('[data-view="visit"]').is_visible(),f'Plan your Sunday opens visitor form at {w}px')
