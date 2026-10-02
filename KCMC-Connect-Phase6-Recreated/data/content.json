@@ -2,12 +2,12 @@
   "meta": {
     "version": "3.0.0",
     "content_release": "3.0.0",
-    "updated_at": "2026-09-20T09:18:00-05:00",
-    "updated_by": "KCMC Connect"
+    "updated_at": "2026-10-02T15:12:00-05:00",
+    "updated_by": "Front Pew News — October 2, 2026"
   },
   "contact": {
     "phone": "417-739-4395",
-    "email": "secretary@umckc.org",
+    "email": "marylou@umckc.org",
     "address": "57 Kimberling City Center Lane, Kimberling City, MO 65686",
     "office_hours": "Tue–Thu • 9:00 AM–4:00 PM",
     "website": "https://www.kimberlingcitymethodist.com/"
@@ -24,94 +24,726 @@
       "link": "backpack-blessing.php"
     },
     {
-      "id": "sep-news-16",
-      "title": "September Church News • Issue #16",
-      "body": "New beginnings, September events, Bible studies, music, outreach and practical ways to serve.",
-      "priority": 100,
+      "id": "front-porch-awards-20261002",
+      "title": "Celebrating Our Front Porch Musicians",
+      "body": "Congratulations to Greg Moody, Melody Hart Massengale and the All Star Band, and Dillon Massengale on honors recognized in the Branson music community.",
+      "priority": 160,
       "status": "published",
-      "starts_at": "2026-09-01T00:00:00-05:00",
-      "expires_at": "2026-10-01T00:00:00-05:00",
-      "link": "#news"
+      "starts_at": "2026-10-02T00:00:00-05:00",
+      "expires_at": "2026-10-12T00:00:00-05:00",
+      "link": "#events"
+    },
+    {
+      "id": "communion-sunday-20261004",
+      "title": "Communion Sunday • October 4",
+      "body": "Come worship with us as we gather around the Lord’s Table. Services are at 8:00 AM, 9:15 AM and 10:30 AM. All are welcome.",
+      "priority": 180,
+      "status": "published",
+      "starts_at": "2026-10-02T00:00:00-05:00",
+      "expires_at": "2026-10-05T00:00:00-05:00",
+      "link": "#events"
+    },
+    {
+      "id": "pll-baby-bottles-202610",
+      "title": "Baby Bottle Fundraiser for Pregnancy Life Line",
+      "body": "Pick up a baby bottle and fill it with change or a check to support Pregnancy Life Line/Southern Missouri. Please return bottles by the last Sunday in October.",
+      "priority": 90,
+      "status": "published",
+      "starts_at": "2026-10-02T00:00:00-05:00",
+      "expires_at": "2026-10-26T00:00:00-05:00",
+      "link": "#events"
     }
   ],
   "bulletin": {
     "title": "Sunday at KCMC",
-    "date": "2026-09-27",
-    "welcome": "Come as you are. Grow in faith. Serve the Ozarks.",
+    "date": "2026-10-04",
+    "welcome": "Communion Sunday — come worship with us as we gather around the Lord’s Table. All are welcome.",
     "services": [
-      {"time":"8:00 AM","name":"Front Porch Gospel","detail":"Old-time country and bluegrass gospel with an uplifting biblical message."},
-      {"time":"9:15 AM","name":"Traditional Worship","detail":"Beloved hymns, choir, piano and organ in a traditional sanctuary setting."},
-      {"time":"10:30 AM","name":"Contemporary Worship","detail":"Relaxed café setting, modern worship and Launch Kids children’s church."}
+      {
+        "time": "8:00 AM",
+        "name": "Front Porch Gospel",
+        "detail": "Old-time country and bluegrass gospel with an uplifting biblical message."
+      },
+      {
+        "time": "9:15 AM",
+        "name": "Traditional Worship",
+        "detail": "Beloved hymns, choir, piano and organ in a traditional sanctuary setting."
+      },
+      {
+        "time": "10:30 AM",
+        "name": "Contemporary Worship",
+        "detail": "Relaxed café setting, modern worship and Launch Kids children’s church."
+      }
     ],
     "notes": [
+      "Communion Sunday is October 4.",
       "Three Sunday worship opportunities are available at 8:00, 9:15 and 10:30.",
-      "Prayer requests are protected inside verified member access.",
-      "Current events appear after KCMC leadership publishes them."
+      "Faith & Friends Adult Bible Study meets at 10:15 AM.",
+      "LaunchKids Children’s Church meets at 10:30 AM.",
+      "Prayer requests remain protected and are not published in the public events feed."
     ]
   },
   "events": [
-    {"id":"front-porch-gospel-20260920","title":"Front Porch Gospel","date":"2026-09-20","time":"8:00 AM","location":"KCMC","description":"Sunday worship service from the weekly church calendar.","status":"published","expires_at":"2026-09-21T00:00:00-05:00"},
-    {"id":"traditional-worship-20260920","title":"Traditional Worship","date":"2026-09-20","time":"9:15 AM","location":"KCMC","description":"Sunday worship service from the weekly church calendar.","status":"published","expires_at":"2026-09-21T00:00:00-05:00"},
-    {"id":"contemporary-worship-20260920","title":"Contemporary Worship","date":"2026-09-20","time":"10:30 AM","location":"KCMC","description":"Sunday worship service from the weekly church calendar.","status":"published","expires_at":"2026-09-21T00:00:00-05:00"},
-    {"id":"launchkids-20260920","title":"LaunchKids Children’s Church","date":"2026-09-20","time":"10:30 AM","location":"KCMC","description":"Children’s church during the 10:30 AM Sunday worship time.","status":"published","expires_at":"2026-09-21T00:00:00-05:00"},
-    {"id":"quest-preschool-20260922","title":"Quest Preschool","date":"2026-09-22","time":"8:30 AM","location":"KCMC","description":"Quest Preschool from the weekly church calendar.","status":"published","expires_at":"2026-09-23T00:00:00-05:00"},
-    {"id":"staff-meeting-20260922","title":"Staff Meeting","date":"2026-09-22","time":"9:00 AM","location":"KCMC","description":"Church staff meeting from the weekly church calendar.","status":"published","expires_at":"2026-09-23T00:00:00-05:00"},
-    {"id":"bell-choir-rehearsal-20260922","title":"Bell Choir Rehearsal","date":"2026-09-22","time":"5:15 PM","location":"KCMC","description":"Bell Choir rehearsal from the weekly church calendar.","status":"published","expires_at":"2026-09-23T00:00:00-05:00"},
-    {"id":"quest-preschool-20260923","title":"Quest Preschool","date":"2026-09-23","time":"8:30 AM","location":"KCMC","description":"Quest Preschool from the weekly church calendar.","status":"published","expires_at":"2026-09-24T00:00:00-05:00"},
-    {"id":"griefshare-20260923","title":"GriefShare","date":"2026-09-23","time":"9:30 AM","location":"KCMC","description":"GriefShare from the weekly church calendar.","status":"published","expires_at":"2026-09-24T00:00:00-05:00"},
-    {"id":"salt-light-bible-study-20260923","title":"Salt & Light Adult Bible Study","date":"2026-09-23","time":"5:17 PM","location":"KCMC","description":"Adult Bible study from the weekly church calendar.","status":"published","expires_at":"2026-09-24T00:00:00-05:00"},
-    {"id":"launchpad-kids-20260923","title":"LaunchPad Kids","date":"2026-09-23","time":"5:17 PM","location":"KCMC","description":"LaunchPad Kids from the weekly church calendar.","status":"published","expires_at":"2026-09-24T00:00:00-05:00"},
-    {"id":"rooted-youth-20260923","title":"Rooted Youth","date":"2026-09-23","time":"5:17 PM","location":"KCMC","description":"Rooted Youth from the weekly church calendar.","status":"published","expires_at":"2026-09-24T00:00:00-05:00"},
-    {"id":"quest-preschool-20260924","title":"Quest Preschool","date":"2026-09-24","time":"8:30 AM","location":"KCMC","description":"Quest Preschool from the weekly church calendar.","status":"published","expires_at":"2026-09-25T00:00:00-05:00"},
-    {"id":"coffee-bible-study-20260924","title":"Coffee & Bible Study","date":"2026-09-24","time":"8:30 AM","location":"KCMC","description":"Coffee & Bible Study from the weekly church calendar.","status":"published","expires_at":"2026-09-25T00:00:00-05:00"},
-    {"id":"beginners-line-dancing-20260924","title":"Beginners Line Dancing","date":"2026-09-24","time":"5:45 PM","location":"KCMC","description":"Beginners Line Dancing from the weekly church calendar.","status":"published","expires_at":"2026-09-25T00:00:00-05:00"},
-    {"id":"intermediate-line-dancing-20260924","title":"Intermediate Line Dancing","date":"2026-09-24","time":"6:30 PM","location":"KCMC","description":"Intermediate Line Dancing from the weekly church calendar.","status":"published","expires_at":"2026-09-25T00:00:00-05:00"},
-    {"id":"friday-night-freedom-20260925","title":"Friday Night Freedom Worship Service","date":"2026-09-25","time":"6:00 PM","location":"KCMC","description":"Friday Night Freedom Worship Service from the weekly church calendar.","status":"published","expires_at":"2026-09-26T00:00:00-05:00"},
-    {"id":"griefshare-0902","title":"GriefShare begins","date":"2026-09-02","time":"9:30 AM","location":"KCMC","status":"published","expires_at":"2026-09-03T00:00:00-05:00"},
-    {"id":"mens-breakfast-0905","title":"Men’s Ministry Breakfast","date":"2026-09-05","time":"8:30 AM","location":"KCMC Fellowship Hall","status":"published","expires_at":"2026-09-06T00:00:00-05:00"},
-    {"id":"adult-bible-study-0913","title":"Adult Bible Study with Linda Rann","date":"2026-09-13","time":"10:15 AM","location":"KCMC","status":"published","expires_at":"2026-09-14T00:00:00-05:00"},
-    {"id":"ladies-fellowship-0917","title":"KCMC Ladies Fellowship","date":"2026-09-17","time":"12:30 PM","location":"KCMC Fellowship Hall","status":"published","expires_at":"2026-09-18T00:00:00-05:00"},
-    {"id":"front-porch-gospel-20260927","title":"Front Porch Gospel","date":"2026-09-27","time":"8:00 AM","location":"KCMC","status":"published","expires_at":"2026-09-28T00:00:00-05:00"},
-    {"id":"traditional-worship-20260927","title":"Traditional Worship","date":"2026-09-27","time":"9:15 AM","location":"KCMC","status":"published","expires_at":"2026-09-28T00:00:00-05:00"},
-    {"id":"faith-friends-20260927","title":"Faith & Friends Adult Bible Study Class","date":"2026-09-27","time":"10:15 AM","location":"KCMC","status":"published","expires_at":"2026-09-28T00:00:00-05:00"},
-    {"id":"contemporary-worship-20260927","title":"Contemporary Worship","date":"2026-09-27","time":"10:30 AM","location":"KCMC","status":"published","expires_at":"2026-09-28T00:00:00-05:00"},
-    {"id":"launchkids-20260927","title":"LaunchKids Children's Church","date":"2026-09-27","time":"10:30 AM","location":"KCMC","status":"published","expires_at":"2026-09-28T00:00:00-05:00"},
-    {"id":"quest-preschool-20260929","title":"Quest Preschool","date":"2026-09-29","time":"8:30 AM","location":"KCMC","status":"published","expires_at":"2026-09-30T00:00:00-05:00"},
-    {"id":"staff-meeting-20260929","title":"Staff Meeting","date":"2026-09-29","time":"9:00 AM","location":"KCMC","status":"published","expires_at":"2026-09-30T00:00:00-05:00"},
-    {"id":"bell-choir-rehearsal-20260929","title":"Bell Choir Rehearsal","date":"2026-09-29","time":"5:15 PM","location":"KCMC","status":"published","expires_at":"2026-09-30T00:00:00-05:00"},
-    {"id":"quest-preschool-20260930","title":"Quest Preschool","date":"2026-09-30","time":"8:30 AM","location":"KCMC","status":"published","expires_at":"2026-10-01T00:00:00-05:00"},
-    {"id":"griefshare-20260930","title":"GriefShare","date":"2026-09-30","time":"9:30 AM","location":"KCMC","status":"published","expires_at":"2026-10-01T00:00:00-05:00"},
-    {"id":"salt-light-bible-study-20260930","title":"Salt & Light Adult Bible Study","date":"2026-09-30","time":"5:17 PM","location":"KCMC","status":"published","expires_at":"2026-10-01T00:00:00-05:00"},
-    {"id":"launchpad-kids-20260930","title":"LaunchPad Kids","date":"2026-09-30","time":"5:17 PM","location":"KCMC","status":"published","expires_at":"2026-10-01T00:00:00-05:00"},
-    {"id":"rooted-youth-20260930","title":"Rooted Youth","date":"2026-09-30","time":"5:17 PM","location":"KCMC","status":"published","expires_at":"2026-10-01T00:00:00-05:00"},
-    {"id":"chancel-choir-20260930","title":"Chancel Choir","date":"2026-09-30","time":"7:00 PM","location":"KCMC","status":"published","expires_at":"2026-10-01T00:00:00-05:00"},
-    {"id":"quest-preschool-20261001","title":"Quest Preschool","date":"2026-10-01","time":"8:30 AM","location":"KCMC","status":"published","expires_at":"2026-10-02T00:00:00-05:00"},
-    {"id":"coffee-bible-study-20261001","title":"Coffee & Bible Study","date":"2026-10-01","time":"8:30 AM","location":"KCMC","status":"published","expires_at":"2026-10-02T00:00:00-05:00"},
-    {"id":"gathering-place-20261001","title":"The Gathering Place","date":"2026-10-01","time":"10:00 AM","location":"KCMC","status":"published","expires_at":"2026-10-02T00:00:00-05:00"},
-    {"id":"methodist-women-20261001","title":"Methodist Women","date":"2026-10-01","time":"1:00 PM","location":"KCMC","status":"published","expires_at":"2026-10-02T00:00:00-05:00"},
-    {"id":"beginners-line-dancing-20261001","title":"Beginners Line Dancing","date":"2026-10-01","time":"5:45 PM","location":"KCMC","status":"published","expires_at":"2026-10-02T00:00:00-05:00"},
-    {"id":"intermediate-line-dancing-20261001","title":"Intermediate Line Dancing","date":"2026-10-01","time":"6:30 PM","location":"KCMC","status":"published","expires_at":"2026-10-02T00:00:00-05:00"},
-    {"id":"friday-night-freedom-20261002","title":"Friday Night Freedom Worship Service","date":"2026-10-02","time":"6:00 PM","location":"KCMC","status":"published","expires_at":"2026-10-03T00:00:00-05:00"},
-    {"id":"jaffe-potluck-0929","title":"Potluck and Michael Jaffe presentation","date":"2026-09-29","time":"5:00 PM","location":"KCMC","status":"published","expires_at":"2026-09-30T00:00:00-05:00"},
-    {"id":"meet-the-author-jaffee-20260929","title":"Meet the Author — Dr. Michael Jaffee","date":"2026-09-29","time":"6:00 PM","location":"KCMC","description":"Dr. Michael Jaffee presents Faith, A Story of One Life Transformation. A potluck meal begins at 5:00 PM; please sign up in the lobby so the church knows you are coming.","status":"published","expires_at":"2026-09-30T00:00:00-05:00"},
-    {"id":"methodist-mens-breakfast-20261003","title":"Methodist Men's Breakfast","date":"2026-10-03","time":"8:30 AM","location":"KCMC","description":"Breakfast and fellowship. All men are welcome.","status":"published","expires_at":"2026-10-04T00:00:00-05:00"},
-    {"id":"hope-keepers-20261013","title":"Hope Keepers — First Gathering","date":"2026-10-13","time":"1:00 PM","location":"KCMC Fellowship Hall","description":"A welcoming community for widows to share friendship, encouragement and hope. Contact the church office for more information.","status":"published","expires_at":"2026-10-14T00:00:00-05:00"},
+    {
+      "id": "front-porch-gospel-20260920",
+      "title": "Front Porch Gospel",
+      "date": "2026-09-20",
+      "time": "8:00 AM",
+      "location": "KCMC",
+      "description": "Sunday worship service from the weekly church calendar.",
+      "status": "published",
+      "expires_at": "2026-09-21T00:00:00-05:00"
+    },
+    {
+      "id": "traditional-worship-20260920",
+      "title": "Traditional Worship",
+      "date": "2026-09-20",
+      "time": "9:15 AM",
+      "location": "KCMC",
+      "description": "Sunday worship service from the weekly church calendar.",
+      "status": "published",
+      "expires_at": "2026-09-21T00:00:00-05:00"
+    },
+    {
+      "id": "contemporary-worship-20260920",
+      "title": "Contemporary Worship",
+      "date": "2026-09-20",
+      "time": "10:30 AM",
+      "location": "KCMC",
+      "description": "Sunday worship service from the weekly church calendar.",
+      "status": "published",
+      "expires_at": "2026-09-21T00:00:00-05:00"
+    },
+    {
+      "id": "launchkids-20260920",
+      "title": "LaunchKids Children’s Church",
+      "date": "2026-09-20",
+      "time": "10:30 AM",
+      "location": "KCMC",
+      "description": "Children’s church during the 10:30 AM Sunday worship time.",
+      "status": "published",
+      "expires_at": "2026-09-21T00:00:00-05:00"
+    },
+    {
+      "id": "quest-preschool-20260922",
+      "title": "Quest Preschool",
+      "date": "2026-09-22",
+      "time": "8:30 AM",
+      "location": "KCMC",
+      "description": "Quest Preschool from the weekly church calendar.",
+      "status": "published",
+      "expires_at": "2026-09-23T00:00:00-05:00"
+    },
+    {
+      "id": "staff-meeting-20260922",
+      "title": "Staff Meeting",
+      "date": "2026-09-22",
+      "time": "9:00 AM",
+      "location": "KCMC",
+      "description": "Church staff meeting from the weekly church calendar.",
+      "status": "published",
+      "expires_at": "2026-09-23T00:00:00-05:00"
+    },
+    {
+      "id": "bell-choir-rehearsal-20260922",
+      "title": "Bell Choir Rehearsal",
+      "date": "2026-09-22",
+      "time": "5:15 PM",
+      "location": "KCMC",
+      "description": "Bell Choir rehearsal from the weekly church calendar.",
+      "status": "published",
+      "expires_at": "2026-09-23T00:00:00-05:00"
+    },
+    {
+      "id": "quest-preschool-20260923",
+      "title": "Quest Preschool",
+      "date": "2026-09-23",
+      "time": "8:30 AM",
+      "location": "KCMC",
+      "description": "Quest Preschool from the weekly church calendar.",
+      "status": "published",
+      "expires_at": "2026-09-24T00:00:00-05:00"
+    },
+    {
+      "id": "griefshare-20260923",
+      "title": "GriefShare",
+      "date": "2026-09-23",
+      "time": "9:30 AM",
+      "location": "KCMC",
+      "description": "GriefShare from the weekly church calendar.",
+      "status": "published",
+      "expires_at": "2026-09-24T00:00:00-05:00"
+    },
+    {
+      "id": "salt-light-bible-study-20260923",
+      "title": "Salt & Light Adult Bible Study",
+      "date": "2026-09-23",
+      "time": "5:17 PM",
+      "location": "KCMC",
+      "description": "Adult Bible study from the weekly church calendar.",
+      "status": "published",
+      "expires_at": "2026-09-24T00:00:00-05:00"
+    },
+    {
+      "id": "launchpad-kids-20260923",
+      "title": "LaunchPad Kids",
+      "date": "2026-09-23",
+      "time": "5:17 PM",
+      "location": "KCMC",
+      "description": "LaunchPad Kids from the weekly church calendar.",
+      "status": "published",
+      "expires_at": "2026-09-24T00:00:00-05:00"
+    },
+    {
+      "id": "rooted-youth-20260923",
+      "title": "Rooted Youth",
+      "date": "2026-09-23",
+      "time": "5:17 PM",
+      "location": "KCMC",
+      "description": "Rooted Youth from the weekly church calendar.",
+      "status": "published",
+      "expires_at": "2026-09-24T00:00:00-05:00"
+    },
+    {
+      "id": "quest-preschool-20260924",
+      "title": "Quest Preschool",
+      "date": "2026-09-24",
+      "time": "8:30 AM",
+      "location": "KCMC",
+      "description": "Quest Preschool from the weekly church calendar.",
+      "status": "published",
+      "expires_at": "2026-09-25T00:00:00-05:00"
+    },
+    {
+      "id": "coffee-bible-study-20260924",
+      "title": "Coffee & Bible Study",
+      "date": "2026-09-24",
+      "time": "8:30 AM",
+      "location": "KCMC",
+      "description": "Coffee & Bible Study from the weekly church calendar.",
+      "status": "published",
+      "expires_at": "2026-09-25T00:00:00-05:00"
+    },
+    {
+      "id": "beginners-line-dancing-20260924",
+      "title": "Beginners Line Dancing",
+      "date": "2026-09-24",
+      "time": "5:45 PM",
+      "location": "KCMC",
+      "description": "Beginners Line Dancing from the weekly church calendar.",
+      "status": "published",
+      "expires_at": "2026-09-25T00:00:00-05:00"
+    },
+    {
+      "id": "intermediate-line-dancing-20260924",
+      "title": "Intermediate Line Dancing",
+      "date": "2026-09-24",
+      "time": "6:30 PM",
+      "location": "KCMC",
+      "description": "Intermediate Line Dancing from the weekly church calendar.",
+      "status": "published",
+      "expires_at": "2026-09-25T00:00:00-05:00"
+    },
+    {
+      "id": "friday-night-freedom-20260925",
+      "title": "Friday Night Freedom Worship Service",
+      "date": "2026-09-25",
+      "time": "6:00 PM",
+      "location": "KCMC",
+      "description": "Friday Night Freedom Worship Service from the weekly church calendar.",
+      "status": "published",
+      "expires_at": "2026-09-26T00:00:00-05:00"
+    },
+    {
+      "id": "griefshare-0902",
+      "title": "GriefShare begins",
+      "date": "2026-09-02",
+      "time": "9:30 AM",
+      "location": "KCMC",
+      "status": "published",
+      "expires_at": "2026-09-03T00:00:00-05:00"
+    },
+    {
+      "id": "mens-breakfast-0905",
+      "title": "Men’s Ministry Breakfast",
+      "date": "2026-09-05",
+      "time": "8:30 AM",
+      "location": "KCMC Fellowship Hall",
+      "status": "published",
+      "expires_at": "2026-09-06T00:00:00-05:00"
+    },
+    {
+      "id": "adult-bible-study-0913",
+      "title": "Adult Bible Study with Linda Rann",
+      "date": "2026-09-13",
+      "time": "10:15 AM",
+      "location": "KCMC",
+      "status": "published",
+      "expires_at": "2026-09-14T00:00:00-05:00"
+    },
+    {
+      "id": "ladies-fellowship-0917",
+      "title": "KCMC Ladies Fellowship",
+      "date": "2026-09-17",
+      "time": "12:30 PM",
+      "location": "KCMC Fellowship Hall",
+      "status": "published",
+      "expires_at": "2026-09-18T00:00:00-05:00"
+    },
+    {
+      "id": "front-porch-gospel-20260927",
+      "title": "Front Porch Gospel",
+      "date": "2026-09-27",
+      "time": "8:00 AM",
+      "location": "KCMC",
+      "status": "published",
+      "expires_at": "2026-09-28T00:00:00-05:00"
+    },
+    {
+      "id": "traditional-worship-20260927",
+      "title": "Traditional Worship",
+      "date": "2026-09-27",
+      "time": "9:15 AM",
+      "location": "KCMC",
+      "status": "published",
+      "expires_at": "2026-09-28T00:00:00-05:00"
+    },
+    {
+      "id": "faith-friends-20260927",
+      "title": "Faith & Friends Adult Bible Study Class",
+      "date": "2026-09-27",
+      "time": "10:15 AM",
+      "location": "KCMC",
+      "status": "published",
+      "expires_at": "2026-09-28T00:00:00-05:00"
+    },
+    {
+      "id": "contemporary-worship-20260927",
+      "title": "Contemporary Worship",
+      "date": "2026-09-27",
+      "time": "10:30 AM",
+      "location": "KCMC",
+      "status": "published",
+      "expires_at": "2026-09-28T00:00:00-05:00"
+    },
+    {
+      "id": "launchkids-20260927",
+      "title": "LaunchKids Children's Church",
+      "date": "2026-09-27",
+      "time": "10:30 AM",
+      "location": "KCMC",
+      "status": "published",
+      "expires_at": "2026-09-28T00:00:00-05:00"
+    },
+    {
+      "id": "quest-preschool-20260929",
+      "title": "Quest Preschool",
+      "date": "2026-09-29",
+      "time": "8:30 AM",
+      "location": "KCMC",
+      "status": "published",
+      "expires_at": "2026-09-30T00:00:00-05:00"
+    },
+    {
+      "id": "staff-meeting-20260929",
+      "title": "Staff Meeting",
+      "date": "2026-09-29",
+      "time": "9:00 AM",
+      "location": "KCMC",
+      "status": "published",
+      "expires_at": "2026-09-30T00:00:00-05:00"
+    },
+    {
+      "id": "bell-choir-rehearsal-20260929",
+      "title": "Bell Choir Rehearsal",
+      "date": "2026-09-29",
+      "time": "5:15 PM",
+      "location": "KCMC",
+      "status": "published",
+      "expires_at": "2026-09-30T00:00:00-05:00"
+    },
+    {
+      "id": "quest-preschool-20260930",
+      "title": "Quest Preschool",
+      "date": "2026-09-30",
+      "time": "8:30 AM",
+      "location": "KCMC",
+      "status": "published",
+      "expires_at": "2026-10-01T00:00:00-05:00"
+    },
+    {
+      "id": "griefshare-20260930",
+      "title": "GriefShare",
+      "date": "2026-09-30",
+      "time": "9:30 AM",
+      "location": "KCMC",
+      "status": "published",
+      "expires_at": "2026-10-01T00:00:00-05:00"
+    },
+    {
+      "id": "salt-light-bible-study-20260930",
+      "title": "Salt & Light Adult Bible Study",
+      "date": "2026-09-30",
+      "time": "5:17 PM",
+      "location": "KCMC",
+      "status": "published",
+      "expires_at": "2026-10-01T00:00:00-05:00"
+    },
+    {
+      "id": "launchpad-kids-20260930",
+      "title": "LaunchPad Kids",
+      "date": "2026-09-30",
+      "time": "5:17 PM",
+      "location": "KCMC",
+      "status": "published",
+      "expires_at": "2026-10-01T00:00:00-05:00"
+    },
+    {
+      "id": "rooted-youth-20260930",
+      "title": "Rooted Youth",
+      "date": "2026-09-30",
+      "time": "5:17 PM",
+      "location": "KCMC",
+      "status": "published",
+      "expires_at": "2026-10-01T00:00:00-05:00"
+    },
+    {
+      "id": "chancel-choir-20260930",
+      "title": "Chancel Choir",
+      "date": "2026-09-30",
+      "time": "7:00 PM",
+      "location": "KCMC",
+      "status": "published",
+      "expires_at": "2026-10-01T00:00:00-05:00"
+    },
+    {
+      "id": "quest-preschool-20261001",
+      "title": "Quest Preschool",
+      "date": "2026-10-01",
+      "time": "8:30 AM",
+      "location": "KCMC",
+      "status": "published",
+      "expires_at": "2026-10-02T00:00:00-05:00"
+    },
+    {
+      "id": "coffee-bible-study-20261001",
+      "title": "Coffee & Bible Study",
+      "date": "2026-10-01",
+      "time": "8:30 AM",
+      "location": "KCMC",
+      "status": "published",
+      "expires_at": "2026-10-02T00:00:00-05:00"
+    },
+    {
+      "id": "gathering-place-20261001",
+      "title": "The Gathering Place",
+      "date": "2026-10-01",
+      "time": "10:00 AM",
+      "location": "KCMC",
+      "status": "published",
+      "expires_at": "2026-10-02T00:00:00-05:00"
+    },
+    {
+      "id": "methodist-women-20261001",
+      "title": "Methodist Women",
+      "date": "2026-10-01",
+      "time": "1:00 PM",
+      "location": "KCMC",
+      "status": "published",
+      "expires_at": "2026-10-02T00:00:00-05:00"
+    },
+    {
+      "id": "beginners-line-dancing-20261001",
+      "title": "Beginners Line Dancing",
+      "date": "2026-10-01",
+      "time": "5:45 PM",
+      "location": "KCMC",
+      "status": "published",
+      "expires_at": "2026-10-02T00:00:00-05:00"
+    },
+    {
+      "id": "intermediate-line-dancing-20261001",
+      "title": "Intermediate Line Dancing",
+      "date": "2026-10-01",
+      "time": "6:30 PM",
+      "location": "KCMC",
+      "status": "published",
+      "expires_at": "2026-10-02T00:00:00-05:00"
+    },
+    {
+      "id": "friday-night-freedom-20261002",
+      "title": "Friday Night Freedom Worship Service",
+      "date": "2026-10-02",
+      "time": "6:00 PM",
+      "location": "KCMC",
+      "status": "published",
+      "expires_at": "2026-10-03T00:00:00-05:00"
+    },
+    {
+      "id": "jaffe-potluck-0929",
+      "title": "Potluck and Michael Jaffe presentation",
+      "date": "2026-09-29",
+      "time": "5:00 PM",
+      "location": "KCMC",
+      "status": "published",
+      "expires_at": "2026-09-30T00:00:00-05:00"
+    },
+    {
+      "id": "meet-the-author-jaffee-20260929",
+      "title": "Meet the Author — Dr. Michael Jaffee",
+      "date": "2026-09-29",
+      "time": "6:00 PM",
+      "location": "KCMC",
+      "description": "Dr. Michael Jaffee presents Faith, A Story of One Life Transformation. A potluck meal begins at 5:00 PM; please sign up in the lobby so the church knows you are coming.",
+      "status": "published",
+      "expires_at": "2026-09-30T00:00:00-05:00"
+    },
+    {
+      "id": "methodist-mens-breakfast-20261003",
+      "title": "Methodist Men's Breakfast",
+      "date": "2026-10-03",
+      "time": "8:30 AM",
+      "location": "KCMC",
+      "description": "Breakfast and fellowship featuring the Kimberling City Chief of Police as guest speaker.",
+      "status": "published",
+      "expires_at": "2026-10-03T23:59:59-05:00"
+    },
+    {
+      "id": "front-porch-gospel-20261004",
+      "title": "Front Porch Gospel",
+      "date": "2026-10-04",
+      "time": "8:00 AM",
+      "location": "KCMC",
+      "description": "Communion Sunday worship.",
+      "status": "published",
+      "expires_at": "2026-10-04T23:59:59-05:00"
+    },
+    {
+      "id": "traditional-worship-20261004",
+      "title": "Traditional Worship",
+      "date": "2026-10-04",
+      "time": "9:15 AM",
+      "location": "KCMC",
+      "description": "Communion Sunday worship.",
+      "status": "published",
+      "expires_at": "2026-10-04T23:59:59-05:00"
+    },
+    {
+      "id": "faith-friends-20261004",
+      "title": "Faith & Friends Adult Bible Study Class",
+      "date": "2026-10-04",
+      "time": "10:15 AM",
+      "location": "KCMC",
+      "description": "Adult Bible study class.",
+      "status": "published",
+      "expires_at": "2026-10-04T23:59:59-05:00"
+    },
+    {
+      "id": "contemporary-worship-20261004",
+      "title": "Contemporary Worship",
+      "date": "2026-10-04",
+      "time": "10:30 AM",
+      "location": "KCMC",
+      "description": "Communion Sunday worship.",
+      "status": "published",
+      "expires_at": "2026-10-04T23:59:59-05:00"
+    },
+    {
+      "id": "launchkids-20261004",
+      "title": "LaunchKids Children’s Church",
+      "date": "2026-10-04",
+      "time": "10:30 AM",
+      "location": "KCMC",
+      "description": "Children’s church during the 10:30 AM worship time.",
+      "status": "published",
+      "expires_at": "2026-10-04T23:59:59-05:00"
+    },
+    {
+      "id": "page-turners-20261005",
+      "title": "Page Turners",
+      "date": "2026-10-05",
+      "time": "11:30 AM",
+      "location": "Ma’s Diner",
+      "description": "Book fellowship gathering.",
+      "status": "published",
+      "expires_at": "2026-10-05T23:59:59-05:00"
+    },
+    {
+      "id": "staff-meeting-20261006",
+      "title": "Staff Meeting",
+      "date": "2026-10-06",
+      "time": "9:00 AM",
+      "location": "KCMC",
+      "description": "Church staff meeting.",
+      "status": "published",
+      "expires_at": "2026-10-06T23:59:59-05:00"
+    },
+    {
+      "id": "methodist-women-team-20261006",
+      "title": "Methodist Women Team Meeting",
+      "date": "2026-10-06",
+      "time": "10:00 AM",
+      "location": "KCMC",
+      "description": "Methodist Women team meeting.",
+      "status": "published",
+      "expires_at": "2026-10-06T23:59:59-05:00"
+    },
+    {
+      "id": "jyc-after-school-20261006",
+      "title": "JYC After School",
+      "date": "2026-10-06",
+      "time": "3:00 PM",
+      "location": "KCMC",
+      "description": "After-school gathering.",
+      "status": "published",
+      "expires_at": "2026-10-06T23:59:59-05:00"
+    },
+    {
+      "id": "bell-choir-rehearsal-20261006",
+      "title": "Bell Choir Rehearsal",
+      "date": "2026-10-06",
+      "time": "5:15 PM",
+      "location": "KCMC",
+      "description": "Bell Choir rehearsal.",
+      "status": "published",
+      "expires_at": "2026-10-06T23:59:59-05:00"
+    },
+    {
+      "id": "griefshare-20261007",
+      "title": "GriefShare",
+      "date": "2026-10-07",
+      "time": "9:30 AM",
+      "location": "KCMC",
+      "description": "GriefShare gathering.",
+      "status": "published",
+      "expires_at": "2026-10-07T23:59:59-05:00"
+    },
+    {
+      "id": "salt-light-20261007",
+      "title": "Salt & Light Adult Bible Study",
+      "date": "2026-10-07",
+      "time": "5:17 PM",
+      "location": "KCMC",
+      "description": "Adult Bible study.",
+      "status": "published",
+      "expires_at": "2026-10-07T23:59:59-05:00"
+    },
+    {
+      "id": "launchpad-kids-20261007",
+      "title": "LaunchPad Kids",
+      "date": "2026-10-07",
+      "time": "5:17 PM",
+      "location": "KCMC",
+      "description": "Children’s ministry gathering.",
+      "status": "published",
+      "expires_at": "2026-10-07T23:59:59-05:00"
+    },
+    {
+      "id": "rooted-youth-20261007",
+      "title": "Rooted Youth",
+      "date": "2026-10-07",
+      "time": "5:17 PM",
+      "location": "KCMC",
+      "description": "Youth ministry gathering.",
+      "status": "published",
+      "expires_at": "2026-10-07T23:59:59-05:00"
+    },
+    {
+      "id": "chancel-choir-20261007",
+      "title": "Chancel Choir Rehearsal",
+      "date": "2026-10-07",
+      "time": "7:00 PM",
+      "location": "KCMC",
+      "description": "Chancel Choir rehearsal.",
+      "status": "published",
+      "expires_at": "2026-10-07T23:59:59-05:00"
+    },
+    {
+      "id": "bible-study-coffee-20261008",
+      "title": "Bible Study & Coffee",
+      "date": "2026-10-08",
+      "time": "8:30 AM",
+      "location": "KCMC",
+      "description": "Bible study and fellowship.",
+      "status": "published",
+      "expires_at": "2026-10-08T23:59:59-05:00"
+    },
+    {
+      "id": "line-dancing-beginners-20261008",
+      "title": "Line Dancing — Beginners",
+      "date": "2026-10-08",
+      "time": "5:45 PM",
+      "location": "KCMC",
+      "description": "Beginner line dancing.",
+      "status": "published",
+      "expires_at": "2026-10-08T23:59:59-05:00"
+    },
+    {
+      "id": "line-dancing-intermediate-20261008",
+      "title": "Line Dancing — Intermediate",
+      "date": "2026-10-08",
+      "time": "6:30 PM",
+      "location": "KCMC",
+      "description": "Intermediate line dancing.",
+      "status": "published",
+      "expires_at": "2026-10-08T23:59:59-05:00"
+    },
+    {
+      "id": "friday-night-freedom-20261009",
+      "title": "Friday Night Freedom Worship Service",
+      "date": "2026-10-09",
+      "time": "6:00 PM",
+      "location": "KCMC",
+      "description": "Friday evening worship service.",
+      "status": "published",
+      "expires_at": "2026-10-09T23:59:59-05:00"
+    },
+    {
+      "id": "pastor-appreciation-20261011",
+      "title": "Pastor Appreciation Sunday",
+      "date": "2026-10-11",
+      "time": "Sunday",
+      "location": "KCMC",
+      "description": "Join us as we express gratitude to our pastors for their faithful leadership, encouragement and care.",
+      "status": "published",
+      "expires_at": "2026-10-11T23:59:59-05:00"
+    },
+    {
+      "id": "memory-game-day-20261012",
+      "title": "Memory Game Day with Sherri DeBoom",
+      "date": "2026-10-12",
+      "time": "1:00 PM",
+      "location": "KCMC Fellowship Hall",
+      "description": "An afternoon of memory-building games, laughter and fellowship. Everyone is welcome.",
+      "status": "published",
+      "expires_at": "2026-10-12T23:59:59-05:00"
+    },
+    {
+      "id": "hope-keepers-20261013",
+      "title": "Hope Keepers — First Gathering",
+      "date": "2026-10-13",
+      "time": "1:00 PM",
+      "location": "KCMC Fellowship Hall",
+      "description": "A welcoming community for widows to discover friendship, encouragement and hope.",
+      "status": "published",
+      "expires_at": "2026-10-13T23:59:59-05:00"
+    },
     {
       "id": "trunk-or-treat-2026",
       "title": "Trunk or Treat!",
       "date": "2026-10-31",
       "time": "4:30 PM",
-      "end_time": "6:30 PM",
       "location": "KCMC parking lot",
+      "description": "A safe, fun family event for the community. Candy donations and decorated trunk participants are needed.",
+      "status": "published",
+      "expires_at": "2026-10-31T23:59:59-05:00",
+      "end_time": "6:30 PM",
       "address": "57 Kimberling City Center Lane, Kimberling City, MO 65686",
       "label": "Free community event",
-      "description": "Free candy, hot dogs, chips and drinks, plus music and family fun. All are welcome.",
       "image": "assets/visuals/trunk-or-treat-2026.webp",
       "image_alt": "Autumn Trunk or Treat graphic with friendly ghosts, pumpkins and an open car trunk filled with candy beside a lake.",
       "rsvp": false,
-      "priority": 100,
-      "status": "published",
-      "expires_at": "2026-10-31T23:59:59-05:00"
+      "priority": 100
     }
   ],
   "news": {
@@ -124,18 +756,58 @@
       "scripture": "Lamentations 3:22–23"
     },
     "highlights": [
-      {"stat":"241","label":"August average attendance","detail":"The September newsletter’s combined weekly attendance report."},
-      {"stat":"600","label":"Children and families served","detail":"Nearly 600 people received support through the back-to-school fair."},
-      {"stat":"4,064","label":"Pairs of socks donated","detail":"Church generosity gave each child a choice of four pairs."},
-      {"stat":"100","label":"Weekend food bags","detail":"WEB Kids volunteers pack bags each week for Reeds Spring Primary students."}
+      {
+        "stat": "241",
+        "label": "August average attendance",
+        "detail": "The September newsletter’s combined weekly attendance report."
+      },
+      {
+        "stat": "600",
+        "label": "Children and families served",
+        "detail": "Nearly 600 people received support through the back-to-school fair."
+      },
+      {
+        "stat": "4,064",
+        "label": "Pairs of socks donated",
+        "detail": "Church generosity gave each child a choice of four pairs."
+      },
+      {
+        "stat": "100",
+        "label": "Weekend food bags",
+        "detail": "WEB Kids volunteers pack bags each week for Reeds Spring Primary students."
+      }
     ],
     "sections": [
-      {"label":"Giving","title":"Finance and giving update","body":"July giving followed the usual summer dip. General Fund giving totaled about $37,000, and reserve funds helped bridge the month’s shortfall so KCMC ministries could continue."},
-      {"label":"Outreach","title":"Thank you for sharing God’s love","body":"Donations and volunteers helped serve nearly 600 children and families at the back-to-school fair. More than 4,000 pairs of socks were available, giving children choices and practical support for the school year."},
-      {"label":"Serve","title":"WEB Kids volunteers needed","body":"Volunteers meet Thursdays at 9:00 AM at Reeds Spring Primary to pack 100 weekend food bags for K–4 students. Sign up at the volunteer table in the foyer."},
-      {"label":"Learning","title":"Request a Bible study","body":"KCMC is planning fall studies and welcomes ideas for topics and resources. Contact the church office to suggest a study."},
-      {"label":"Music","title":"A place for your voice and both hands","body":"Chancel Choir and Bell Choir welcome new participants. No prior handbell experience is required; the team will teach you."},
-      {"label":"Church story","title":"Stained glass: the Apostle Philip","body":"The fourth window on the right recalls Philip, the Cross and the feeding of the 5,000 through the image of two loaves of bread."}
+      {
+        "label": "Giving",
+        "title": "Finance and giving update",
+        "body": "July giving followed the usual summer dip. General Fund giving totaled about $37,000, and reserve funds helped bridge the month’s shortfall so KCMC ministries could continue."
+      },
+      {
+        "label": "Outreach",
+        "title": "Thank you for sharing God’s love",
+        "body": "Donations and volunteers helped serve nearly 600 children and families at the back-to-school fair. More than 4,000 pairs of socks were available, giving children choices and practical support for the school year."
+      },
+      {
+        "label": "Serve",
+        "title": "WEB Kids volunteers needed",
+        "body": "Volunteers meet Thursdays at 9:00 AM at Reeds Spring Primary to pack 100 weekend food bags for K–4 students. Sign up at the volunteer table in the foyer."
+      },
+      {
+        "label": "Learning",
+        "title": "Request a Bible study",
+        "body": "KCMC is planning fall studies and welcomes ideas for topics and resources. Contact the church office to suggest a study."
+      },
+      {
+        "label": "Music",
+        "title": "A place for your voice and both hands",
+        "body": "Chancel Choir and Bell Choir welcome new participants. No prior handbell experience is required; the team will teach you."
+      },
+      {
+        "label": "Church story",
+        "title": "Stained glass: the Apostle Philip",
+        "body": "The fourth window on the right recalls Philip, the Cross and the feeding of the 5,000 through the image of two loaves of bread."
+      }
     ],
     "groups": [
       "Book Club meets the first Monday of each month.",
@@ -157,6 +829,10 @@
   "sponsors": {
     "enabled": true,
     "policy": "Clearly labeled. Privacy respected. Never shown during prayer or worship video.",
-    "placements": ["Church News","Community impact","Events and ministry support"]
+    "placements": [
+      "Church News",
+      "Community impact",
+      "Events and ministry support"
+    ]
   }
 }
