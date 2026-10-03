@@ -40,3 +40,25 @@
 .desktop-nav a{padding:10px 8px;white-space:nowrap}
 .topbar>.inner>[data-share-app]{display:none}
 @media(max-width:600px){.topbar .inner{gap:7px}.topbar .brand{flex-shrink:1}}
+
+/* Public photo refresh: clear church image plus a dedicated family welcome. */
+.hero-card-with-photo{padding:0;overflow:hidden}
+.hero-service-info{padding:24px}
+.hero-church-window{margin:0;background:#0d2235}
+.hero-church-photo{display:block;width:100%;height:auto;aspect-ratio:1066/532;object-fit:cover}
+.photo-source{font-size:.75rem;line-height:1.5;padding:10px 14px;background:#102b40;color:#e4edf2}
+.photo-source a{color:#e4edf2;text-decoration:underline;text-underline-offset:3px}
+.family-welcome{background:linear-gradient(140deg,#102b40,#0a1d2b);border-top:1px solid rgba(255,255,255,.12);border-bottom:1px solid rgba(255,255,255,.12)}
+.family-welcome-grid{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);align-items:center;gap:clamp(24px,5vw,64px)}
+.family-photo-frame{margin:0;overflow:hidden;border:1px solid #526a7b;border-radius:24px;background:#102b40}
+.family-photo-frame[hidden]{display:none!important}
+.family-photo{display:block;width:100%;height:auto;aspect-ratio:2048/1535;object-fit:contain;background:#102b40}
+.family-welcome-copy{min-width:0}
+.family-welcome-copy h2{font-family:Georgia,serif;font-weight:400;font-size:clamp(2.2rem,4vw,3.7rem);line-height:1.08;letter-spacing:-.025em;margin:.35em 0;color:#f7fafc}
+.family-welcome .eyebrow{color:#f6dfa9}
+.family-description{font-size:1.07rem;line-height:1.7;color:#d9e5ed;margin-bottom:26px}
+.family-welcome .btns{gap:12px;flex-wrap:wrap}
+.family-welcome .btn{min-height:48px;white-space:normal;text-align:center}
+.family-without-photo{grid-template-columns:1fr}
+.family-without-photo .family-welcome-copy{max-width:740px}
+@media(max-width:760px){.family-welcome-grid{grid-template-columns:1fr;gap:25px}.family-photo-frame{border-radius:18px}.hero-service-info{padding:20px}.family-welcome .btns{display:grid;grid-template-columns:1fr}}
