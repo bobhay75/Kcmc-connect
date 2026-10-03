@@ -46,6 +46,22 @@ class PatchTests(unittest.TestCase):
         result=fix.transform(self.before)
         self.assertEqual(result['public-presentation.css'],self.before['public-presentation.css']+fix.CSS.encode())
         self.assertIn(b'alt="Church photo"',result['index.php'])
+    def test_source_labels_hidden_in_every_location(self):
+        # New photo layouts must not depend on a hero or family ancestor.
+        self.assertIn('.photo-source { display:none !important; }',fix.CSS)
+        self.assertIn('[data-hero-caption],',fix.CSS)
+        self.assertNotIn('[data-family-welcome]',fix.CSS)
+        self.assertNotIn('[data-hero-gallery]',fix.CSS)
+    def test_upgrade_previous_caption_patch(self):
+        previous=dict(self.before)
+        previous['public-presentation.css']+=fix.LEGACY_CSS.encode()
+        previous['public-presentation.js']=previous['public-presentation.js'].replace(fix.OLD_TIMER.encode(),fix.NEW_TIMER.encode())
+        for name in ('index.php','sw.js'):
+            previous[name]=previous[name].replace(b'tony-staff-20261001',fix.LEGACY_VERSION.encode()).replace(b'?v=1.0.0',b'?v='+fix.LEGACY_VERSION.encode())
+        desired=fix.transform(previous)
+        self.assertNotIn(fix.LEGACY_MARKER.encode(),desired['public-presentation.css'])
+        self.assertIn(fix.CSS.encode(),desired['public-presentation.css'])
+        self.assertEqual(fix.transform(desired),desired)
     def test_cache_only_no_private_policy_changes(self):
         result=fix.transform(self.before)
         self.assertEqual(result['sw.js'].split(b'function privatePolicy()')[1],self.before['sw.js'].split(b'function privatePolicy()')[1])

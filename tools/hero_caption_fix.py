@@ -18,14 +18,22 @@ import sys
 import tempfile
 
 FILES = ('public-presentation.js', 'public-presentation.css', 'index.php', 'sw.js')
-VERSION = 'hero-captions-20261002'
+LEGACY_VERSION = 'hero-captions-20261002'
+VERSION = 'photo-labels-20261003'
 CACHE = 'kcmc-connect-v3.0.3-public-only-' + VERSION
-MARKER = 'KCMC_PHOTO_CAPTIONS_HIDDEN_20261002'
-CSS = ('\n/* ' + MARKER + ' BEGIN */\n'
+LEGACY_MARKER = 'KCMC_PHOTO_CAPTIONS_HIDDEN_20261002'
+LEGACY_CSS = ('\n/* ' + LEGACY_MARKER + ' BEGIN */\n'
        '/* Hide visible photo labels only; keep alt text and carousel status. */\n'
        '[data-hero-gallery] [data-hero-caption],\n'
        '[data-hero-gallery] .photo-source,\n'
        '[data-family-welcome] .photo-source { display:none !important; }\n'
+       '/* ' + LEGACY_MARKER + ' END */\n')
+MARKER = 'KCMC_PHOTO_SUBTITLES_HIDDEN_20261003'
+CSS = ('\n/* ' + MARKER + ' BEGIN */\n'
+       '/* Hide visible photo labels only; keep alt text and carousel status. */\n'
+       '[data-hero-caption],\n'
+       '.hero-photo-caption,\n'
+       '.photo-source { display:none !important; }\n'
        '/* ' + MARKER + ' END */\n')
 OLD_TIMER = 'timer = setTimeout(() => { show(current + 1, false); schedule(); }, 8000);'
 NEW_TIMER = 'timer = setTimeout(() => { show(current + 1, false); schedule(); }, 420000);'
@@ -49,7 +57,7 @@ def versions(text, label):
     for asset in ('public-presentation.js', 'public-presentation.css'):
         pattern = re.escape(asset) + r'\?v=([A-Za-z0-9._-]+)'
         matches = list(re.finditer(pattern, text))
-        if len(matches) != 1 or matches[0].group(1) not in ('1.0.0', 'tony-staff-20261001', VERSION):
+        if len(matches) != 1 or matches[0].group(1) not in ('1.0.0', 'tony-staff-20261001', LEGACY_VERSION, VERSION):
             raise Stop('Unexpected ' + label + ' asset version: ' + asset)
         text = re.sub(pattern, asset + '?v=' + VERSION, text)
     return text
@@ -65,9 +73,14 @@ def transform(original):
     # The existing gallery and timer are validated above; do not require that layout.
     if '.hero-photo' not in css:
         raise Stop('Unexpected public gallery stylesheet; no files changed.')
+    if LEGACY_MARKER in css:
+        if css.count(LEGACY_MARKER) != 2 or LEGACY_CSS not in css:
+            raise Stop('Partial legacy caption patch detected.')
+        css = css.replace(LEGACY_CSS, '')
     if MARKER in css:
         if css.count(MARKER) != 2 or CSS not in css:
             raise Stop('Partial caption patch detected.')
+        text['public-presentation.css'] = css
     else:
         text['public-presentation.css'] = css + CSS
     index = text['index.php']
@@ -78,7 +91,8 @@ def transform(original):
     match = re.search(r"^const CACHE='([^']+)';", sw)
     allowed = ('kcmc-connect-v3.0.3-public-only',
                'kcmc-connect-v3.0.3-public-only-photos-20261001',
-               'kcmc-connect-v3.0.3-public-only-tony-staff-20261001', CACHE)
+               'kcmc-connect-v3.0.3-public-only-tony-staff-20261001',
+               'kcmc-connect-v3.0.3-public-only-' + LEGACY_VERSION, CACHE)
     if not match or match.group(1) not in allowed:
         raise Stop('Unknown service-worker release; no files changed.')
     sw = sw[:match.start(1)] + CACHE + sw[match.end(1):]
