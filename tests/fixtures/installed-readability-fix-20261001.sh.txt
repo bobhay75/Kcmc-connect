@@ -1,0 +1,121 @@
+(
+set -eu
+command -v python3 >/dev/null || { echo 'STOP: python3 is unavailable. Nothing changed.'; exit 1; }
+command -v php >/dev/null || { echo 'STOP: PHP CLI is unavailable. Nothing changed.'; exit 1; }
+python3 <<'PY'
+import os, sys, stat, shutil, tempfile, subprocess, shlex, fcntl, hashlib
+from pathlib import Path
+
+os.umask(0o077)
+app = Path.home() / 'public_html/kcmc-connect'
+items = {
+    'admin/health.php': '.health-stat',
+    'admin/audit.php': '.audit-row',
+    'admin/timecards.php': '.tc-card',
+    'member/timeclock.php': '.tc-card',
+}
+base = Path.home() / '.kcmc-readability-backups'
+if base.is_symlink():
+    sys.exit('STOP: backup folder is a symlink. Nothing changed.')
+base.mkdir(mode=0o700, exist_ok=True)
+base.chmod(0o700)
+lock = open(base / '.lock', 'a')
+fcntl.flock(lock, fcntl.LOCK_EX | fcntl.LOCK_NB)
+php = shutil.which('php')
+scope = 'body.portal-body :is(.health-stat,.health-check,.audit-row,.audit-empty,.tc-card,.correction-card)'
+marker = 'KCMC_READABILITY_FIX_V1_20261001'
+css = '\n/* ' + marker + ' BEGIN */\n' + '''
+S {color:#17324c;--ink:#17324c;--muted:#536273;--line:#607080;color-scheme:light}
+S .eyebrow {color:#715017}
+S :is(.portal-fine,.portal-lead,.muted,.tc-note,.audit-time,.health-meta) {color:#536273}
+S .btn.secondary {color:#17324c;background:#fff;border-color:#536273}
+S .portal-link-button {color:#174d75}
+S :is(input:not([type="checkbox"]):not([type="radio"]):not([type="hidden"]):not([type="submit"]):not([type="button"]):not([type="reset"]),select,textarea) {color:#17324c;background:#fff;border:1px solid #607080;caret-color:#17324c}
+S :is(input,textarea)::placeholder {color:#536273;opacity:1}
+S .portal-alert.warning {color:#77510c;background:#fff3d6;border-color:#a06b12}
+S .portal-alert.error {color:#7d2525;background:#fbe4e4;border-color:#a33434}
+S .portal-alert.success {color:#215b2d;background:#e6f3e7;border-color:#2b7a46}
+S :is(a,button,input,select,textarea,summary):focus-visible {outline:3px solid #174d75;outline-offset:3px}
+body.portal-body .audit-toolbar .audit-time {color:#c5d4dc}
+'''.replace('S ', scope + ' ') + '/* ' + marker + ' END */\n'
+
+changes = {}
+for rel, selector in items.items():
+    p = app / rel
+    if not p.is_file() or p.is_symlink() or p.resolve() != p.absolute():
+        sys.exit('STOP: expected regular file not found: ' + str(p))
+    old = p.read_bytes()
+    text = old.decode('utf-8')
+    if not all(s in text for s in ('KCMC', 'kcmc_', 'portal-body', selector)):
+        sys.exit('STOP: unexpected page structure: ' + rel)
+    if css in text and text.count(marker) == 2:
+        continue
+    if marker in text or text.count('</style>') != 1 or text.count('<style>') != 1:
+        sys.exit('STOP: existing patch or unexpected style block: ' + rel)
+    new = text.replace('</style>', css + '</style>', 1).encode('utf-8')
+    changes[rel] = (old, new, stat.S_IMODE(p.stat().st_mode), p.stat().st_gid)
+if not changes:
+    print('ALREADY INSTALLED: all four pages have this patch. No files changed.')
+    sys.exit(0)
+
+backup = Path(tempfile.mkdtemp(prefix='repair-', dir=str(base)))
+if backup.stat().st_dev != app.stat().st_dev:
+    sys.exit('STOP: backup and app are on different filesystems. No live files changed.')
+
+def lint(path):
+    result = subprocess.run([php, '-n', '-l', str(path)], stdout=subprocess.PIPE,
+                            stderr=subprocess.STDOUT, universal_newlines=True)
+    if result.returncode:
+        raise RuntimeError('PHP syntax check failed:\n' + result.stdout)
+
+def stage(path, content, mode, gid):
+    path.parent.mkdir(mode=0o700, parents=True, exist_ok=True)
+    path.write_bytes(content)
+    os.chmod(str(path), mode)
+    if path.stat().st_gid != gid:
+        os.chown(str(path), -1, gid)
+
+written = []
+try:
+    for rel, (old, new, mode, gid) in changes.items():
+        stage(backup / 'original' / rel, old, mode, gid)
+        stage(backup / 'patched' / rel, new, mode, gid)
+        lint(backup / 'patched' / rel)
+    for rel, (old, new, mode, gid) in changes.items():
+        if (app / rel).read_bytes() != old:
+            raise RuntimeError('A file changed during preparation: ' + rel)
+    undo = ['#!/bin/bash', 'set -eu', '# Immediate rollback only; do not use after later edits.']
+    for rel, (old, new, mode, gid) in changes.items():
+        target = shlex.quote(str(app / rel))
+        allowed = hashlib.sha256(old).hexdigest() + '|' + hashlib.sha256(new).hexdigest()
+        undo.append('h=$(sha256sum -- ' + target + '); h=${h%% *}')
+        undo.append('case "$h" in ' + allowed + ') ;; *) echo "STOP: a file changed since this repair."; exit 1;; esac')
+    for rel in changes:
+        undo.append('cp -p -- ' + shlex.quote(str(backup/'original'/rel)) + ' ' + shlex.quote(str(app/rel)))
+        undo.append('touch -- ' + shlex.quote(str(app/rel)))
+    undo.append('echo "Original presentation files restored."')
+    (backup / 'undo.sh').write_text('\n'.join(undo) + '\n')
+    for rel, (old, new, mode, gid) in changes.items():
+        if (app / rel).read_bytes() != old:
+            raise RuntimeError('File changed before installation: ' + rel)
+        os.replace(str(backup / 'patched' / rel), str(app / rel))
+        written.append(rel)
+        if (app / rel).read_bytes() != new:
+            raise RuntimeError('Verification failed: ' + rel)
+        lint(app / rel)
+except BaseException as exc:
+    for rel in reversed(written):
+        old, new, mode, gid = changes[rel]
+        restore = backup / 'restore' / rel
+        stage(restore, old, mode, gid)
+        os.replace(str(restore), str(app / rel))
+    print('STOP: ' + str(exc))
+    print('Any files changed by this run were restored. Backup: ' + str(backup))
+    sys.exit(1)
+print('SUCCESS: readability CSS installed; PHP syntax checks passed.')
+print('Changed only: ' + ', '.join(changes))
+print('Private backup: ' + str(backup))
+print('Immediate undo command: bash ' + shlex.quote(str(backup / 'undo.sh')))
+print('Now reopen the app and visually check the four affected screens.')
+PY
+)
