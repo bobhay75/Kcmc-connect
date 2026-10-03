@@ -10,6 +10,22 @@ $rows = kcmc_audit_recent_rows(KCMC_AUDIT_LOG, $actorNames, 75);
 ?><!doctype html>
 <html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="robots" content="noindex,nofollow"><title>Audit History • KCMC Connect</title><link rel="stylesheet" href="<?=kcmc_h(kcmc_url('styles.css?v=3.0.0'))?>"><style>
 .audit-shell{width:min(1100px,calc(100% - 28px));margin:24px auto 80px}.audit-toolbar{display:flex;justify-content:space-between;gap:12px;align-items:center;flex-wrap:wrap;margin:14px 0 20px}.audit-list{display:grid;gap:12px}.audit-row{background:#fff;color:#17324c;border:1px solid #dce3e7;border-radius:14px;padding:16px}.audit-head{display:flex;justify-content:space-between;gap:16px;align-items:flex-start;flex-wrap:wrap}.audit-head h2{font-size:1rem;margin:0}.audit-time{color:#607080;font-size:.9rem}.audit-actor{font-weight:700}.audit-context{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px}.audit-chip{background:#eef2f4;border-radius:999px;padding:5px 9px;font-size:.82rem;color:#41515f}.audit-empty{background:#fff;border:1px solid #dce3e7;border-radius:14px;padding:22px;color:#607080}.audit-toolbar a:focus-visible{outline:3px solid #174d75;outline-offset:3px}
+
+/* KCMC_READABILITY_FIX_V1_20261001 BEGIN */
+
+body.portal-body :is(.health-stat,.health-check,.audit-row,.audit-empty,.tc-card,.correction-card) {color:#17324c;--ink:#17324c;--muted:#536273;--line:#607080;color-scheme:light}
+body.portal-body :is(.health-stat,.health-check,.audit-row,.audit-empty,.tc-card,.correction-card) .eyebrow {color:#715017}
+body.portal-body :is(.health-stat,.health-check,.audit-row,.audit-empty,.tc-card,.correction-card) :is(.portal-fine,.portal-lead,.muted,.tc-note,.audit-time,.health-meta) {color:#536273}
+body.portal-body :is(.health-stat,.health-check,.audit-row,.audit-empty,.tc-card,.correction-card) .btn.secondary {color:#17324c;background:#fff;border-color:#536273}
+body.portal-body :is(.health-stat,.health-check,.audit-row,.audit-empty,.tc-card,.correction-card) .portal-link-button {color:#174d75}
+body.portal-body :is(.health-stat,.health-check,.audit-row,.audit-empty,.tc-card,.correction-card) :is(input:not([type="checkbox"]):not([type="radio"]):not([type="hidden"]):not([type="submit"]):not([type="button"]):not([type="reset"]),select,textarea) {color:#17324c;background:#fff;border:1px solid #607080;caret-color:#17324c}
+body.portal-body :is(.health-stat,.health-check,.audit-row,.audit-empty,.tc-card,.correction-card) :is(input,textarea)::placeholder {color:#536273;opacity:1}
+body.portal-body :is(.health-stat,.health-check,.audit-row,.audit-empty,.tc-card,.correction-card) .portal-alert.warning {color:#77510c;background:#fff3d6;border-color:#a06b12}
+body.portal-body :is(.health-stat,.health-check,.audit-row,.audit-empty,.tc-card,.correction-card) .portal-alert.error {color:#7d2525;background:#fbe4e4;border-color:#a33434}
+body.portal-body :is(.health-stat,.health-check,.audit-row,.audit-empty,.tc-card,.correction-card) .portal-alert.success {color:#215b2d;background:#e6f3e7;border-color:#2b7a46}
+body.portal-body :is(.health-stat,.health-check,.audit-row,.audit-empty,.tc-card,.correction-card) :is(a,button,input,select,textarea,summary):focus-visible {outline:3px solid #174d75;outline-offset:3px}
+body.portal-body .audit-toolbar .audit-time {color:#c5d4dc}
+/* KCMC_READABILITY_FIX_V1_20261001 END */
 </style></head><body class="portal-body"><main class="audit-shell">
 <a class="portal-back" href="<?=kcmc_h(kcmc_url('admin/operations.php'))?>">← Operations</a><p class="eyebrow">ADMINISTRATOR HISTORY</p><h1>Recent KCMC audit events</h1><p class="portal-lead">The newest 75 operational events are shown. This view omits IP hashes, private prayer content, passwords, invitation tokens, push endpoints and raw private records.</p>
 <div class="audit-toolbar"><span class="audit-time">CSV export includes the newest <?=kcmc_h((string)KCMC_AUDIT_VIEW_MAX_ROWS)?> privacy-minimized events.</span><a class="btn secondary" href="<?=kcmc_h(kcmc_url('admin/audit-export.php'))?>">Download CSV</a></div>

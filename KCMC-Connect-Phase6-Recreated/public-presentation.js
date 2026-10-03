@@ -77,3 +77,104 @@
   motion.addEventListener('change', () => { paused = true; schedule(); });
   schedule();
 })();
+
+/* Tony's visible photo refresh. Public page only; no publishing or private-data access. */
+(() => {
+  'use strict';
+  const home = document.querySelector('[data-view="home"]');
+  if (!home || home.querySelector('[data-family-welcome]')) return;
+  const churchPhoto = 'https://static.wixstatic.com/media/15d3f9_9c56441e59bd4f2a9763d79278fc1da4~mv2.jpg';
+  // Use the church site's optimized display image, not the 9.7 MB camera original.
+  const kidsPhoto = 'https://static.wixstatic.com/media/15d3f9_c62929ab03a84ac19805d8d57512700c~mv2.jpg/v1/fill/w_980%2Ch_735%2Cal_c%2Cq_85%2Cusm_0.66_1.00_0.01%2Cenc_auto/Sunday%20Worship.jpg';
+  const youthPage = 'https://www.kimberlingcitymethodist.com/youth';
+  const visitPage = 'https://www.kimberlingcitymethodist.com/visit';
+  const make = (tag, className, text) => {
+    const node = document.createElement(tag);
+    if (className) node.className = className;
+    if (text) node.textContent = text;
+    return node;
+  };
+  const link = (text, href, className) => {
+    const node = make('a', className, text);
+    node.href = href;
+    if (href.startsWith('https://')) {
+      node.target = '_blank';
+      node.rel = 'noopener noreferrer';
+    }
+    return node;
+  };
+
+  // Keep the existing local hero photo unless the church's published image loads.
+  const hero = home.querySelector('[data-hero-gallery]');
+  const firstPhoto = hero?.querySelector('[data-hero-photo]');
+  const serviceCard = hero?.querySelector('.hero-card');
+  if (firstPhoto && serviceCard) {
+    const probe = new Image();
+    probe.decoding = 'async';
+    probe.referrerPolicy = 'no-referrer';
+    probe.addEventListener('load', () => {
+      if (!probe.naturalWidth) return;
+      firstPhoto.src = churchPhoto;
+      firstPhoto.width = probe.naturalWidth;
+      firstPhoto.height = probe.naturalHeight;
+      firstPhoto.alt = 'Front of Kimberling City Methodist Church, from the church website';
+      firstPhoto.dataset.caption = 'Church exterior • from KCMC’s published Visit page';
+      const caption = hero.querySelector('[data-hero-caption]');
+      if (!firstPhoto.hidden && caption) caption.textContent = firstPhoto.dataset.caption;
+      const details = make('div', 'hero-service-info');
+      while (serviceCard.firstChild) details.append(serviceCard.firstChild);
+      const figure = make('figure', 'hero-church-window');
+      const image = make('img', 'hero-church-photo');
+      image.src = churchPhoto;
+      image.alt = firstPhoto.alt;
+      image.width = probe.naturalWidth;
+      image.height = probe.naturalHeight;
+      image.style.aspectRatio = `${probe.naturalWidth}/${probe.naturalHeight}`;
+      image.decoding = 'async';
+      image.referrerPolicy = 'no-referrer';
+      image.addEventListener('error', () => figure.remove(), {once: true});
+      const source = make('figcaption', 'photo-source');
+      source.append(link('Church photo · KCMC Visit page', visitPage, ''));
+      figure.append(image, source);
+      serviceCard.classList.add('hero-card-with-photo');
+      serviceCard.append(figure, details);
+    }, {once: true});
+    probe.src = churchPhoto;
+  }
+
+  const section = make('section', 'section family-welcome');
+  section.setAttribute('data-family-welcome', '');
+  section.setAttribute('aria-labelledby', 'family-welcome-title');
+  const layout = make('div', 'wrap family-welcome-grid');
+  const figure = make('figure', 'family-photo-frame');
+  const image = make('img', 'family-photo');
+  image.alt = 'Children and adults in a group photograph published on KCMC’s youth ministry page';
+  image.width = 980;
+  image.height = 735;
+  image.loading = 'lazy';
+  image.decoding = 'async';
+  image.referrerPolicy = 'no-referrer';
+  const source = make('figcaption', 'photo-source');
+  source.append(link('Photo · KCMC Youth page', youthPage, ''));
+  image.addEventListener('error', () => {
+    figure.hidden = true;
+    layout.classList.add('family-without-photo');
+  }, {once: true});
+  image.src = kidsPhoto;
+  figure.append(image, source);
+  const copy = make('div', 'family-welcome-copy');
+  const eyebrow = make('div', 'eyebrow', 'Kids, youth & families');
+  const title = make('h2', '', 'A place to belong. Room to grow.');
+  title.id = 'family-welcome-title';
+  const description = make('p', 'family-description', 'Faith, friendship, and a warm welcome for your family. Get to know KCMC’s children’s and youth ministries, and let our team help you plan your first visit.');
+  const actions = make('div', 'btns');
+  const visit = link('Plan your family’s visit', '#visit', 'btn gold');
+  visit.dataset.route = 'visit';
+  actions.append(visit, link('Explore kids & youth', youthPage, 'btn secondary'));
+  copy.append(eyebrow, title, description, actions);
+  layout.append(figure, copy);
+  section.append(layout);
+  const next = home.querySelector('.welcome-next');
+  if (next) next.before(section);
+  else hero?.after(section);
+})();

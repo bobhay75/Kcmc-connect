@@ -47,7 +47,7 @@ usort($kcmcAnnouncements, fn($a,$b)=>(int)($b['priority']??0)<=>(int)($a['priori
 <link rel="manifest" href="manifest.webmanifest?v=3.0.1">
 <link rel="preload" as="image" href="assets/visuals/kcmc-building-2024.webp" type="image/webp" fetchpriority="high">
 <link rel="stylesheet" href="styles.css?v=3.0.3">
-<link rel="stylesheet" href="public-presentation.css?v=1.0.0">
+<link rel="stylesheet" href="public-presentation.css?v=tony-staff-20261001">
 <link rel="icon" href="assets/icons/icon-192.png?v=3.0.1">
 <link rel="apple-touch-icon" href="assets/icons/icon-192.png?v=3.0.1">
 </head>
@@ -77,7 +77,7 @@ usort($kcmcAnnouncements, fn($a,$b)=>(int)($b['priority']??0)<=>(int)($a['priori
         <a href="#serve" data-route="serve">Serving</a>
         <a href="https://www.simplechurchgiving.net/app/giving/umckc" target="_blank" rel="noopener">Give online</a>
         <button type="button" data-share-app>Share KCMC Connect</button>
-        <a class="menu-account" href="<?=kcmc_h(kcmc_url($member ? 'member/' : 'member/login.php'))?>"><?=$member ? 'My account' : 'Sign in'?></a>
+        <a class="menu-account" href="<?=kcmc_h(kcmc_url($member ? 'member/' : 'admin/login.php'))?>"><?=$member ? 'My account' : 'Staff Sign In'?></a>
         <?php if($member && kcmc_has_role(['pastor_admin', 'recovery_admin'], $member)): ?><a href="<?=kcmc_h(kcmc_url('admin/'))?>">Administration</a><?php endif; ?>
       </nav>
     </details>
@@ -276,6 +276,6 @@ usort($kcmcAnnouncements, fn($a,$b)=>(int)($b['priority']??0)<=>(int)($a['priori
   </div>
 </div>
 <script src="app.js?v=3.0.2" defer></script>
-<script src="public-presentation.js?v=1.0.0" defer></script>
+<script src="public-presentation.js?v=tony-staff-20261001" defer></script>
 <a class="phase6-bulletin-fab" href="bulletin.php">Latest Bulletin</a>
 </body></html>

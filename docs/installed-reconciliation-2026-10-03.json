@@ -1,0 +1,28 @@
+{
+  "base_commit": "2146af219d2fd23136eae1685f91a2a2caec030e",
+  "tony_installer_commit": "2c767fd66299524a126f39c5350de8dac1ce1f85",
+  "tony_installer_blob": "24c473535af4020b65faef52255b47bc25a74bf7",
+  "tony_installer_sha256": "0220e1a40b3b17f64988dccb3af48dad4fc87e49bb2947a4d7507de812b71bea",
+  "photos_commit": "225c564138242f699a1bd31c75b5c78e65268ca7",
+  "installation_evidence": "https://github.com/bobhay75/Kcmc-connect/pull/88#issuecomment-5960919518",
+  "runtime_sha256": {
+    "admin/audit.php": "07fd9e1806925faa64e65bc9b916dfc61f8dfd96e8498941ff9628885706d867",
+    "admin/health.php": "8f89221fdabaaad204fc7005136c8fb559f6ca9f7ad9238a764dc86b8d1eb409",
+    "admin/timecards.php": "6950397e9f8d8c88bba1bd5696f62e84419f795d79922877898d89c71d9b6d47",
+    "care.php": "0c48c6d5dab7c18329158c68152c441d7194aa334daf074ac663a294e6b3855e",
+    "index.php": "e1fe431d980b4cc1c200d70d0fa1629841b029769885ebdb61e1af5b84d4b9b0",
+    "member/login.php": "2db61ebc38cbb126a6f67d858bdb60e2553ea015d36cfdced869828887ddc4de",
+    "member/timeclock.php": "c6362e46179aee886675ed2e0939d62103c72b7b970c2c56ed2f311f2d734e63",
+    "public-presentation.css": "d527b171de110a407529077630ef94b22a8afd355bdab9aabd3ad27e2812e927",
+    "public-presentation.js": "addcae606dfb2df9b8bd8b9cbf8f159ac9b8a4360a372c1b8d70409c20cf5e8f",
+    "sw.js": "762def01d565789b81a6c57d9eaa7cd546dbe0bbf42f415490e76eff890a6c9e"
+  },
+  "readability_installer": {
+    "source_filename": "kcmc-readability-fix.sh",
+    "source_file_id": "libfile_31630956a40c81918a7514401f7cb2d6",
+    "marker": "KCMC_READABILITY_FIX_V1_20261001",
+    "reference_sha256": "f0957ebc4c6a512e4a82a9583f9d227d69aaebd2a058a189c97ab3dec6837c0b",
+    "css_sha256": "d0aa33606a160919369ecc8a6459211028ffc36592937e422cd9a5e9c8841c43",
+    "reference_note": "Complete saved installer text recovered (121 lines); terminal LF restores recorded 5996-byte size. Raw materialization failed HTTP 502. The reference hash identifies this recovered text, not an independently downloaded original. No current host-byte readback."
+  }
+}
