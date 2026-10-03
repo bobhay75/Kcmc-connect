@@ -168,19 +168,31 @@ def check_controls_and_keyboard(page, label: str) -> int:
         page.keyboard.press("Tab")
         focused = page.evaluate("""() => {
             const el=document.activeElement, s=getComputedStyle(el), r=el.getBoundingClientRect();
-            return {id:el.getAttribute('data-reconciliation-control'),
+            return {id:el.getAttribute('data-reconciliation-control'), tag:el.tagName,
+                    type:el.getAttribute('type'), name:el.getAttribute('name'),
+                    focus:el.matches(':focus'), within:el.matches(':focus-within'),
                     visible:el.matches(':focus-visible'), outline:s.outlineStyle, width:parseFloat(s.outlineWidth),
                     color:s.outlineColor,
                     repaired:!!el.closest('.health-stat,.health-check,.audit-row,.audit-empty,.tc-card,.correction-card'),
                     left:r.left, right:r.right, top:r.top, bottom:r.bottom};
         }""")
         if focused["id"] in expected:
-            check(focused["visible"] and focused["outline"] != "none" and focused["width"] >= 3
-                  and (not focused["repaired"] or focused["color"] == "rgb(23, 77, 117)"),
-                  f"{label}: control {focused['id']} has visible keyboard focus ring")
-            check(focused["left"] >= -1 and focused["right"] <= page.viewport_size["width"] + 1
-                  and focused["bottom"] > 0 and focused["top"] < page.viewport_size["height"],
-                  f"{label}: focused control {focused['id']} is on screen")
+            # Check actual keyboard entry to every control strictly. Chromium's
+            # datetime-local picker has additional UA shadow-tree Tab stops: its
+            # host remains document.activeElement with :focus-within while the
+            # host's :focus-visible is false. Those internal stops are traversed,
+            # but they are not a new entry to the already-validated input.
+            if focused["id"] not in reached:
+                ring_ok = (focused["visible"] and focused["outline"] != "none" and focused["width"] >= 3
+                           and (not focused["repaired"] or focused["color"] == "rgb(23, 77, 117)"))
+                if not ring_ok:
+                    raise AssertionError(f"{label}: keyboard-entry focus failure: " + json.dumps(focused))
+                check(True, f"{label}: control {focused['id']} has visible keyboard-entry focus ring")
+            on_screen = (focused["left"] >= -1 and focused["right"] <= page.viewport_size["width"] + 1
+                         and focused["bottom"] > 0 and focused["top"] < page.viewport_size["height"])
+            if not on_screen:
+                raise AssertionError(f"{label}: focused control is off screen: " + json.dumps(focused))
+            check(True, f"{label}: focused control {focused['id']} is on screen")
             reached.add(focused["id"])
         if reached == set(expected):
             break
