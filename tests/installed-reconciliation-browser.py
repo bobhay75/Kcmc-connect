@@ -66,6 +66,19 @@ def seed_private(private: Path) -> None:
     next_month = (start.replace(day=28) + timedelta(days=4)).replace(day=23)
     end = next_month - timedelta(days=1)
     stamp = today.isoformat()
+    # A login alone yields only four measured text nodes. Seed representative
+    # audit rows explicitly so the real actor/time/context chip styles are all
+    # exercised, without depending on side effects of successful sign-in.
+    audit_rows = [
+        {"at": stamp + "T14:03:00Z", "action": "timeclock.period_reviewed",
+         "actor_id": "synthetic_admin", "ip_hash": "synthetic-hidden-ip",
+         "context": {"action": "return", "status": "returned", "count": 1,
+                     "token_hash": "synthetic-hidden-token"}},
+        {"at": stamp + "T14:04:00Z", "action": "member.status_changed",
+         "actor_id": "synthetic_admin", "context": {"role": "member", "active": True,
+                                                        "prayer_id": "synthetic-hidden-prayer"}},
+    ]
+    (private / "audit.ndjson").write_text("".join(json.dumps(row) + "\n" for row in audit_rows))
     entries = []
     for user_id, entry_id, status in [
         ("synthetic_admin", "admin_completed", "completed"),
@@ -278,6 +291,23 @@ def main() -> None:
                                 if path == "admin/audit.php":
                                     check(page.locator(".audit-toolbar .audit-time").evaluate("el => getComputedStyle(el).color") == "rgb(197, 212, 220)",
                                           label + ": toolbar uses installed dark-surface text color")
+                                    check(page.locator(".audit-row").count() >= 2
+                                          and page.get_by_role("heading", name="Time card reviewed", exact=True).count() == 1
+                                          and page.get_by_role("heading", name="Account status changed", exact=True).count() == 1,
+                                          label + ": representative synthetic audit rows render")
+                                    check(page.locator(".audit-chip").count() >= 5,
+                                          label + ": sanitized audit metadata chips render")
+                                    check("synthetic-hidden-" not in page.locator("body").inner_text(),
+                                          label + ": audit sensitive fixture metadata remains hidden")
+                                if path == "admin/timecards.php":
+                                    check(page.locator(".correction-card").count() == 1
+                                          and page.locator(".adjust-form").count() == 1,
+                                          label + ": synthetic correction and submitted-shift controls render")
+                                if path == "member/timeclock.php":
+                                    check(page.locator('select[name="category"]').count() == 1
+                                          and page.locator('textarea[name="description"]').count() == 1
+                                          and page.locator(".tc-correction").count() == 1,
+                                          label + ": synthetic open and completed shifts render")
                                 ratios = page.evaluate(CONTRAST_JS)
                                 check(len(ratios) >= 5, label + ": key text/control contrast samples exist")
                                 low = [row for row in ratios if row["ratio"] < 4.5]
