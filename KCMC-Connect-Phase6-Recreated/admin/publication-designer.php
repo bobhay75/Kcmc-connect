@@ -58,6 +58,14 @@ button,input,select,textarea{font:inherit}.shell{min-height:100vh;display:grid;g
     <button class="btn" id="deleteItem">Delete</button>
   </div>
   <input class="hidden" type="file" id="imagePicker" accept="image/*">
+  <h2>KCMC Photos</h2>
+  <div class="templates" id="assetLibrary">
+    <button class="template" data-asset="<?=kcmc_h(kcmc_url('assets/visuals/kcmc-building-2024.webp'))?>"><strong>Church Exterior</strong><br><span class="small">KCMC building</span></button>
+    <button class="template" data-asset="<?=kcmc_h(kcmc_url('assets/visuals/kcmc-worship-2017.webp'))?>"><strong>Worship</strong><br><span class="small">Church worship photo</span></button>
+    <button class="template" data-asset="<?=kcmc_h(kcmc_url('assets/visuals/kcmc-ministry-group.jpg'))?>"><strong>Church Family</strong><br><span class="small">Ministry group photo</span></button>
+    <button class="template" data-asset="<?=kcmc_h(kcmc_url('assets/visuals/kcmc-stage-2014.webp'))?>"><strong>Sanctuary Stage</strong><br><span class="small">KCMC stage photo</span></button>
+    <button class="template" data-asset="<?=kcmc_h(kcmc_url('assets/visuals/trunk-or-treat-2026.webp'))?>"><strong>Trunk or Treat</strong><br><span class="small">Approved event graphic</span></button>
+  </div>
   <div class="field"><label>Page size<select id="pageSize"><option value="letter">Letter 8.5×11</option><option value="half">Half sheet 5.5×8.5</option><option value="postcard">Postcard 6×4</option></select></label></div>
   <div class="field"><label>Orientation<select id="orientation"><option value="portrait">Portrait</option><option value="landscape">Landscape</option></select></label></div>
   <p class="small">Projects save in this browser only in v1. No church records or private member data are touched.</p>
@@ -123,6 +131,7 @@ function escapeHtml(s){return s.replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','
 document.getElementById('templates').addEventListener('click',e=>{const b=e.target.closest('[data-template]');if(b)template(b.dataset.template)});
 document.getElementById('addText').onclick=()=>makeItem('text');document.getElementById('addShape').onclick=()=>makeItem('shape');
 document.getElementById('addImage').onclick=()=>imagePicker.click();imagePicker.onchange=e=>{const f=e.target.files[0];if(!f)return;const r=new FileReader();r.onload=()=>{const el=makeItem('image',80,80,320,220);const img=document.createElement('img');img.src=r.result;el.insertBefore(img,el.firstChild)};r.readAsDataURL(f);imagePicker.value=''};
+document.getElementById('assetLibrary').addEventListener('click',e=>{const b=e.target.closest('[data-asset]');if(!b)return;const el=makeItem('image',80,80,320,220);const img=document.createElement('img');img.src=b.dataset.asset;img.alt=b.querySelector('strong')?.textContent||'KCMC photo';el.insertBefore(img,el.firstChild);setStatus('KCMC photo added')});
 document.getElementById('deleteItem').onclick=()=>{if(selected){selected.remove();clearSelection()}};
 document.getElementById('newBtn').onclick=()=>{projectId=null;page.innerHTML='';clearSelection();template('flyer')};
 document.getElementById('duplicateBtn').onclick=()=>{projectId=null;setStatus('Duplicate ready — save with a new name')};
