@@ -1,0 +1,66 @@
+name: KCMC installed runtime reconciliation
+on:
+  pull_request:
+    paths:
+      - 'KCMC-Connect-Phase6-Recreated/**'
+      - 'tests/**'
+      - 'docs/installed-reconciliation-2026-10-03.*'
+      - '.github/workflows/installed-reconciliation.yml'
+permissions:
+  contents: read
+jobs:
+  verify-installed-runtime:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+          persist-credentials: false
+      - name: Fetch reviewed source objects (read only)
+        run: |
+          git fetch --no-tags origin 2146af219d2fd23136eae1685f91a2a2caec030e 2c767fd66299524a126f39c5350de8dac1ce1f85 225c564138242f699a1bd31c75b5c78e65268ca7
+      - name: Verify exact runtime, scope and preserved sources
+        run: |
+          set -euo pipefail
+          mkdir -p reconciliation-artifacts
+          python3 tests/installed-reconciliation-source.py | tee reconciliation-artifacts/source.txt
+          git diff --check 2146af219d2fd23136eae1685f91a2a2caec030e
+          git diff --stat 2146af219d2fd23136eae1685f91a2a2caec030e > reconciliation-artifacts/diff-stat.txt
+      - name: Security, PHP and production-smoke fixtures
+        run: |
+          set -euo pipefail
+          php -r 'foreach (["curl", "openssl"] as $e) { if (!extension_loaded($e)) exit(1); }'
+          bash tests/security-contract.sh | tee reconciliation-artifacts/security.txt
+          bash tests/production-smoke-contract.sh | tee reconciliation-artifacts/production-smoke-fixtures.txt
+          node --check KCMC-Connect-Phase6-Recreated/public-presentation.js
+          for f in tests/*contract.php; do php "$f"; done | tee reconciliation-artifacts/php-contracts.txt
+      - name: Install browser dependencies
+        run: |
+          python3 -m pip install --disable-pip-version-check --no-cache-dir playwright pillow
+          python3 -m playwright install --with-deps chromium
+      - name: Browser, staff entry and private-page readability
+        env:
+          KCMC_REVIEW_OUTPUT: /tmp/kcmc-reconciliation-public
+          KCMC_RECONCILIATION_OUTPUT: /tmp/kcmc-reconciliation-private
+        run: |
+          set -euo pipefail
+          python3 tests/tony-launch-cleanup-browser.py | tee reconciliation-artifacts/public-browser.txt
+          python3 tests/visible-photos-review.py | tee reconciliation-artifacts/photo-browser.txt
+          python3 tests/signed-in-workflows-browser.py | tee reconciliation-artifacts/signed-in-browser.txt
+          python3 tests/installed-reconciliation-browser.py | tee reconciliation-artifacts/staff-readability-browser.txt
+      - name: Retain review evidence (no deployment)
+        if: always()
+        run: |
+          mkdir -p reconciliation-artifacts
+          git rev-parse HEAD > reconciliation-artifacts/SOURCE-COMMIT.txt
+          cp docs/installed-reconciliation-2026-10-03.json reconciliation-artifacts/
+          if [ -d /tmp/kcmc-reconciliation-public ]; then cp -a /tmp/kcmc-reconciliation-public reconciliation-artifacts/public-screenshots; fi
+          if [ -d /tmp/kcmc-reconciliation-private ]; then cp -a /tmp/kcmc-reconciliation-private reconciliation-artifacts/private-fixture-screenshots; fi
+          if [ -d photo-review-artifacts ]; then cp -a photo-review-artifacts reconciliation-artifacts/photo-review; fi
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: kcmc-installed-reconciliation
+          path: reconciliation-artifacts/
+          retention-days: 7

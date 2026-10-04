@@ -39,12 +39,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 }
 ?><!doctype html>
-<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="robots" content="noindex,nofollow"><title>Member Sign In • KCMC Connect</title><link rel="stylesheet" href="<?=kcmc_h(kcmc_url('styles.css?v=3.0.0'))?>"></head>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="robots" content="noindex,nofollow"><title>Staff Sign In • KCMC Connect</title><link rel="stylesheet" href="<?=kcmc_h(kcmc_url('styles.css?v=3.0.0'))?>"></head>
 <body class="portal-body"><main class="portal-shell portal-narrow">
   <a class="portal-back" href="<?=kcmc_h(kcmc_url())?>">← KCMC Connect</a>
   <section class="portal-card">
-    <p class="eyebrow">KCMC MEMBERS</p><h1>Welcome back.</h1>
-    <p class="portal-lead">Prayer and member information stay behind verified sign-in.</p>
+    <p class="eyebrow">KCMC STAFF</p><h1>Welcome back.</h1>
+    <p class="portal-lead">Staff and authorized ministry teams sign in here. Everyone can use the public app for free without an account. Private records remain protected.</p>
     <?php if ($error): ?><p class="portal-alert error" role="alert"><?=kcmc_h($error)?></p><?php endif; ?>
     <?php if (isset($_GET['expired'])): ?><p class="portal-alert warning">Your secure KCMC session expired. Sign in again to continue.</p><?php endif; ?>
     <?php if (isset($_GET['activated'])): ?><p class="portal-alert success">Your password is ready. You can sign in now.</p><?php endif; ?>
@@ -56,6 +56,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
       <button class="btn gold" type="submit">Sign in securely</button>
     </form>
     <p class="portal-fine"><strong>Forgot your password?</strong> Ask a KCMC Connect administrator for a recipient-bound, one-time password-reset link.</p>
-    <p class="portal-fine"><strong>New pastor administrator or member?</strong> Use the recipient-bound, one-time invitation issued by a KCMC Connect administrator to create your password.</p>
+    <p class="portal-fine"><strong>Need staff or authorized ministry access?</strong> Use the recipient-bound, one-time invitation issued by a KCMC Connect administrator to create your password.</p>
   </section>
 </main></body></html>
