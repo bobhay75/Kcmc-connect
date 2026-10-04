@@ -68,7 +68,7 @@ button,input,select,textarea{font:inherit}.shell{min-height:100vh;display:grid;g
   </div>
   <div class="field"><label>Page size<select id="pageSize"><option value="letter">Letter 8.5×11</option><option value="half">Half sheet 5.5×8.5</option><option value="postcard">Postcard 6×4</option></select></label></div>
   <div class="field"><label>Orientation<select id="orientation"><option value="portrait">Portrait</option><option value="landscape">Landscape</option></select></label></div>
-  <p class="small">Projects save in this browser only in v1. No church records or private member data are touched.</p>
+  <p class="small">Projects are shared between authorized KCMC admins. Shared projects accept approved KCMC library photos; personal uploads remain local to the current edit until dedicated media storage is added.</p>
 </aside>
 <main class="canvas-wrap">
   <div id="page" class="page" aria-label="publication canvas"></div>
@@ -101,6 +101,8 @@ button,input,select,textarea{font:inherit}.shell{min-height:100vh;display:grid;g
 <script>
 (()=>{
 const page=document.getElementById('page'),status=document.getElementById('status');
+const projectEndpoint=<?=json_encode(kcmc_url('admin/publication-projects.php'), JSON_UNESCAPED_SLASHES)?>;
+const csrf=<?=json_encode(kcmc_csrf(), JSON_UNESCAPED_SLASHES)?>;
 const pageSize=document.getElementById('pageSize'),orientation=document.getElementById('orientation');
 const props=document.getElementById('properties'),noSel=document.getElementById('noSelection');
 let selected=null,drag=null,projectId=null;
@@ -123,17 +125,29 @@ function template(name){page.innerHTML='';clearSelection();pageSize.value=name==
  if(name==='memorial'){const h=makeItem('text',90,70,610,85);h.innerText='A SERVICE OF REMEMBRANCE';h.style.fontSize='34px';h.style.fontWeight='700';h.style.textAlign='center';const t=makeItem('text',110,190,570,600);t.innerText='Name\nDates\n\nPrelude\nWelcome\nScripture\nRemembrances\nMessage\nPrayer\nClosing';t.style.textAlign='center';t.style.fontSize='22px'}
  if(name==='study'){const h=makeItem('text',70,55,650,70);h.innerText='BIBLE STUDY';h.style.fontSize='38px';h.style.fontWeight='700';const t=makeItem('text',70,150,650,720);t.innerText='Scripture:\n\nMain idea:\n\nNotes:\n\nQuestions:\n1.\n2.\n3.';t.style.fontSize='22px'}
  clearSelection();setStatus('Template loaded')}
-function serialize(){return {id:projectId||crypto.randomUUID(),name:prompt('Project name','Untitled publication')||'Untitled publication',pageSize:pageSize.value,orientation:orientation.value,html:page.innerHTML,updated:new Date().toISOString()}}
-function save(){const p=serialize();projectId=p.id;const all=JSON.parse(localStorage.getItem('kcmc-publications-v1')||'[]').filter(x=>x.id!==p.id);all.unshift(p);localStorage.setItem('kcmc-publications-v1',JSON.stringify(all.slice(0,30)));renderSaved();setStatus('Saved in this browser')}
-function load(id){const all=JSON.parse(localStorage.getItem('kcmc-publications-v1')||'[]');const p=all.find(x=>x.id===id);if(!p)return;projectId=p.id;pageSize.value=p.pageSize;orientation.value=p.orientation;applyPage();page.innerHTML=p.html;page.querySelectorAll('.item').forEach(el=>{let h=el.querySelector('.handle');if(!h){h=document.createElement('span');h.className='handle';el.appendChild(h)}wire(el,h)});clearSelection();setStatus('Loaded '+p.name)}
-function renderSaved(){const all=JSON.parse(localStorage.getItem('kcmc-publications-v1')||'[]'),box=document.getElementById('savedList');box.innerHTML='';all.forEach(p=>{const b=document.createElement('button');b.className='template';b.innerHTML='<strong>'+escapeHtml(p.name)+'</strong><br><span class="small">'+new Date(p.updated).toLocaleString()+'</span>';b.onclick=()=>load(p.id);box.appendChild(b)})}
+function itemData(el){const cs=getComputedStyle(el),img=el.querySelector('img');return {
+ type:el.dataset.type||'text',x:parseFloat(el.style.left)||0,y:parseFloat(el.style.top)||0,w:parseFloat(el.style.width)||el.offsetWidth,h:parseFloat(el.style.height)||el.offsetHeight,
+ fontFamily:cs.fontFamily.replaceAll('"','').split(',')[0],fontSize:parseFloat(cs.fontSize)||24,fontWeight:cs.fontWeight==='700'||parseInt(cs.fontWeight)>=700?'700':'400',fontStyle:cs.fontStyle==='italic'?'italic':'normal',
+ textAlign:['left','center','right'].includes(cs.textAlign)?cs.textAlign:'left',color:rgbToHex(cs.color),fill:rgbToHex(cs.backgroundColor)==='#000000'?'#ffffff':rgbToHex(cs.backgroundColor),
+ borderColor:rgbToHex(cs.borderColor),borderWidth:parseFloat(cs.borderWidth)||0,opacity:parseFloat(cs.opacity)||1,
+ ...(el.dataset.type==='text'?{text:[...el.childNodes].filter(n=>!(n.nodeType===1&&n.classList?.contains('handle'))).map(n=>n.textContent).join('')}:{ }),
+ ...(el.dataset.type==='image'?{src:img?.getAttribute('src')||'',alt:img?.alt||'KCMC photo'}:{ })
+}}
+function serialize(){return {id:projectId,name:prompt('Project name','Untitled publication')||'Untitled publication',pageSize:pageSize.value,orientation:orientation.value,items:[...page.querySelectorAll('.item')].map(itemData)}}
+function restoreItem(item){const el=makeItem(item.type,item.x,item.y,item.w,item.h);el.style.fontFamily=item.fontFamily||'Arial';el.style.fontSize=(item.fontSize||24)+'px';el.style.fontWeight=item.fontWeight||'400';el.style.fontStyle=item.fontStyle||'normal';el.style.textAlign=item.textAlign||'left';el.style.color=item.color||'#17324c';el.style.background=item.fill||'#ffffff';el.style.borderColor=item.borderColor||'#17324c';el.style.borderStyle=(item.borderWidth||0)>0?'solid':'none';el.style.borderWidth=(item.borderWidth||0)+'px';el.style.opacity=item.opacity??1;
+ if(item.type==='text'){el.childNodes.forEach(n=>{if(!(n.nodeType===1&&n.classList?.contains('handle')))n.remove()});el.insertBefore(document.createTextNode(item.text||''),el.firstChild)}
+ if(item.type==='image'){const img=document.createElement('img');img.src=item.src||'';img.alt=item.alt||'KCMC photo';el.insertBefore(img,el.firstChild)}
+ return el}
+async function save(){const p=serialize();setStatus('Saving…');try{const r=await fetch(projectEndpoint,{method:'POST',headers:{'Content-Type':'application/json'},credentials:'same-origin',body:JSON.stringify({...p,csrf})});const j=await r.json();if(!r.ok||!j.ok)throw new Error(j.error||'Save failed');projectId=j.project.id;setStatus('Saved for KCMC admins');await renderSaved()}catch(err){setStatus(err.message||'Save failed')}}
+function loadProject(p){projectId=p.id;pageSize.value=p.pageSize;orientation.value=p.orientation;applyPage();page.innerHTML='';(p.items||[]).forEach(restoreItem);clearSelection();setStatus('Loaded '+p.name)}
+async function renderSaved(){const box=document.getElementById('savedList');box.innerHTML='<span class="small">Loading…</span>';try{const r=await fetch(projectEndpoint,{credentials:'same-origin'}),j=await r.json();if(!r.ok||!j.ok)throw new Error(j.error||'Could not load projects');box.innerHTML='';(j.projects||[]).forEach(p=>{const b=document.createElement('button');b.className='template';b.innerHTML='<strong>'+escapeHtml(p.name)+'</strong><br><span class="small">'+new Date(p.updated).toLocaleString()+'</span>';b.onclick=()=>loadProject(p);box.appendChild(b)});if(!(j.projects||[]).length)box.innerHTML='<span class="small">No shared projects yet.</span>'}catch(err){box.innerHTML='<span class="small">'+escapeHtml(err.message||'Could not load projects')+'</span>'}}
 function escapeHtml(s){return s.replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[c]))}
 document.getElementById('templates').addEventListener('click',e=>{const b=e.target.closest('[data-template]');if(b)template(b.dataset.template)});
 document.getElementById('addText').onclick=()=>makeItem('text');document.getElementById('addShape').onclick=()=>makeItem('shape');
 document.getElementById('addImage').onclick=()=>imagePicker.click();imagePicker.onchange=e=>{const f=e.target.files[0];if(!f)return;const r=new FileReader();r.onload=()=>{const el=makeItem('image',80,80,320,220);const img=document.createElement('img');img.src=r.result;el.insertBefore(img,el.firstChild)};r.readAsDataURL(f);imagePicker.value=''};
 document.getElementById('assetLibrary').addEventListener('click',e=>{const b=e.target.closest('[data-asset]');if(!b)return;const el=makeItem('image',80,80,320,220);const img=document.createElement('img');img.src=b.dataset.asset;img.alt=b.querySelector('strong')?.textContent||'KCMC photo';el.insertBefore(img,el.firstChild);setStatus('KCMC photo added')});
 document.getElementById('deleteItem').onclick=()=>{if(selected){selected.remove();clearSelection()}};
-document.getElementById('newBtn').onclick=()=>{projectId=null;page.innerHTML='';clearSelection();template('flyer')};
+document.getElementById('newBtn').onclick=()=>{projectId=null;page.innerHTML='';clearSelection();template('flyer');setStatus('New publication')};
 document.getElementById('duplicateBtn').onclick=()=>{projectId=null;setStatus('Duplicate ready — save with a new name')};
 document.getElementById('saveBtn').onclick=save;document.getElementById('printBtn').onclick=()=>window.print();
 pageSize.onchange=applyPage;orientation.onchange=applyPage;
