@@ -101,14 +101,15 @@ for name, content in expected.items():
 # preservation proof remains authoritative rather than being weakened.
 pr93 = {
     'admin/index.php': 'c130b7523b8a59fdde1101fee61a065402108674',
-    'admin/publication-designer.php': '4c3ace717d7dd079941944a72898be71a9bd5df0',
+    'admin/publication-designer.php': 'c5dc2a942cc5a8ccc68fc48a24b06aa5dcd03577',
+    'admin/publication-projects.php': 'c3e88927599e32d31d69503db536eff9882ab79f',
 }
 for name, blob in pr93.items():
     actual = git('hash-object', PREFIX + name).decode().strip()
     check(actual == blob, name + ': exact PR93 reviewed blob retained')
 
 changed = set(git('diff', '--name-only', BASE, '--', PREFIX).decode().splitlines())
-check(changed == ({PREFIX + p for p in expected} | {PREFIX + p for p in pr93}), 'runtime diff is PR91/PR92 reviewed runtime plus exactly two PR93 admin files')
+check(changed == ({PREFIX + p for p in expected} | {PREFIX + p for p in pr93}), 'runtime diff is PR91/PR92 reviewed runtime plus exactly three PR93 admin files')
 changed_since_reconciled = set(git('diff', '--name-only', RECONCILED, '--', PREFIX).decode().splitlines())
 check(changed_since_reconciled == ({PREFIX + p for p in approved} | {PREFIX + p for p in pr93}), 'post-reconciliation diff is exactly PR92 approved deltas plus PR93 admin additions')
 for path in ['.cpanel.yml', 'KCMC-Connect-Phase6-Recreated/data/content.json', 'KCMC-Connect-Phase6-Recreated/config.example.php']:
