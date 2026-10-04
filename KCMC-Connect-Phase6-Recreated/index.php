@@ -113,7 +113,7 @@ usort($kcmcAnnouncements, fn($a,$b)=>(int)($b['priority']??0)<=>(int)($a['priori
           <button type="button" data-hero-toggle>Pause photos</button>
           <button type="button" data-hero-next aria-label="Next church photo">→</button>
         </div>
-        <p class="hero-photo-caption" data-hero-caption>Church exterior • photo archive, May 2024</p>
+        <p class="hero-photo-caption" data-hero-caption hidden>Church exterior • photo archive, May 2024</p>
         <p class="sr-only" data-hero-status role="status" aria-live="polite"></p>
       </div>
       <aside class="hero-card" aria-label="Next worship services">

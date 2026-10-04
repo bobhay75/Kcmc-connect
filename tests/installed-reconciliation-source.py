@@ -72,6 +72,9 @@ for name, content in expected.items():
 # Do not normalize whole files, skip changed files, or accept arbitrary hashes:
 # every other byte (including PHP, CSS, alt text and fallback code) must survive.
 approved = {
+    'index.php': [
+        ('<p class="hero-photo-caption" data-hero-caption>', '<p class="hero-photo-caption" data-hero-caption hidden>'),
+    ],
     'public-presentation.js': [
         ('}, 8000);', '}, 420000);'),
         ("firstPhoto.dataset.caption = 'Church exterior • from KCMC’s published Visit page';", "firstPhoto.dataset.caption = '';"),
@@ -96,7 +99,7 @@ for name, content in expected.items():
 changed = set(git('diff', '--name-only', BASE, '--', PREFIX).decode().splitlines())
 check(changed == {PREFIX + p for p in expected}, 'runtime diff is exactly six Tony files plus four readability pages')
 changed_since_reconciled = set(git('diff', '--name-only', RECONCILED, '--', PREFIX).decode().splitlines())
-check(changed_since_reconciled == {PREFIX + p for p in approved}, 'PR92 runtime diff is exactly presentation JavaScript and staff timeclock copy')
+check(changed_since_reconciled == {PREFIX + p for p in approved}, 'PR92 runtime diff is exactly presentation JavaScript, hidden hero caption markup and staff timeclock copy')
 for path in ['.cpanel.yml', 'KCMC-Connect-Phase6-Recreated/data/content.json', 'KCMC-Connect-Phase6-Recreated/config.example.php']:
     check((ROOT / path).read_bytes() == source(BASE, path), path + ': unchanged')
 login = (ROOT / PREFIX / 'member/login.php').read_bytes()

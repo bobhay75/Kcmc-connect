@@ -176,6 +176,7 @@ with tempfile.TemporaryDirectory(prefix='kcmc-public-review-') as td:
                 plain = c3.new_page()
                 plain.goto(base + '/')
                 check(plain.locator('[data-hero-photo]:visible').count() == 1, 'no-JavaScript static photo fallback works')
+                check(plain.locator('[data-hero-caption]').is_hidden(), 'no-JavaScript fallback keeps the source caption hidden')
                 plain.locator('#siteMenu summary').click()
                 check(plain.locator('.menu-account').is_visible(), 'native menu works without JavaScript')
                 c3.close()
