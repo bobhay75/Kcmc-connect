@@ -96,10 +96,21 @@ for name, content in expected.items():
         content = content.replace(old, new, 1)
     check((ROOT / PREFIX / name).read_bytes() == content, name + ': exact PR91 bytes plus approved PR92 differences only')
 
+# PR93 adds only an admin navigation link and a new protected publication
+# designer. Pin their Git blob identities so the older PR91/PR92 byte-level
+# preservation proof remains authoritative rather than being weakened.
+pr93 = {
+    'admin/index.php': 'c130b7523b8a59fdde1101fee61a065402108674',
+    'admin/publication-designer.php': '4c3ace717d7dd079941944a72898be71a9bd5df0',
+}
+for name, blob in pr93.items():
+    actual = git('hash-object', PREFIX + name).decode().strip()
+    check(actual == blob, name + ': exact PR93 reviewed blob retained')
+
 changed = set(git('diff', '--name-only', BASE, '--', PREFIX).decode().splitlines())
-check(changed == {PREFIX + p for p in expected}, 'runtime diff is exactly six Tony files plus four readability pages')
+check(changed == ({PREFIX + p for p in expected} | {PREFIX + p for p in pr93}), 'runtime diff is PR91/PR92 reviewed runtime plus exactly two PR93 admin files')
 changed_since_reconciled = set(git('diff', '--name-only', RECONCILED, '--', PREFIX).decode().splitlines())
-check(changed_since_reconciled == {PREFIX + p for p in approved}, 'PR92 runtime diff is exactly presentation JavaScript, hidden hero caption markup and staff timeclock copy')
+check(changed_since_reconciled == ({PREFIX + p for p in approved} | {PREFIX + p for p in pr93}), 'post-reconciliation diff is exactly PR92 approved deltas plus PR93 admin additions')
 for path in ['.cpanel.yml', 'KCMC-Connect-Phase6-Recreated/data/content.json', 'KCMC-Connect-Phase6-Recreated/config.example.php']:
     check((ROOT / path).read_bytes() == source(BASE, path), path + ': unchanged')
 login = (ROOT / PREFIX / 'member/login.php').read_bytes()
