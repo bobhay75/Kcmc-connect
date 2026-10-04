@@ -42,7 +42,7 @@
     timer = null;
     toggle.textContent = paused ? 'Play photos' : 'Pause photos';
     if (!paused && !hovering && !document.hidden && onHome()) {
-      timer = setTimeout(() => { show(current + 1, false); schedule(); }, 8000);
+      timer = setTimeout(() => { show(current + 1, false); schedule(); }, 420000);
     }
   }
   function show(index, announce) {
@@ -118,9 +118,9 @@
       firstPhoto.width = probe.naturalWidth;
       firstPhoto.height = probe.naturalHeight;
       firstPhoto.alt = 'Front of Kimberling City Methodist Church, from the church website';
-      firstPhoto.dataset.caption = 'Church exterior • from KCMC’s published Visit page';
+      firstPhoto.dataset.caption = '';
       const caption = hero.querySelector('[data-hero-caption]');
-      if (!firstPhoto.hidden && caption) caption.textContent = firstPhoto.dataset.caption;
+      if (caption) caption.hidden = true;
       const details = make('div', 'hero-service-info');
       while (serviceCard.firstChild) details.append(serviceCard.firstChild);
       const figure = make('figure', 'hero-church-window');
@@ -133,9 +133,7 @@
       image.decoding = 'async';
       image.referrerPolicy = 'no-referrer';
       image.addEventListener('error', () => figure.remove(), {once: true});
-      const source = make('figcaption', 'photo-source');
-      source.append(link('Church photo · KCMC Visit page', visitPage, ''));
-      figure.append(image, source);
+      figure.append(image);
       serviceCard.classList.add('hero-card-with-photo');
       serviceCard.append(figure, details);
     }, {once: true});
@@ -154,14 +152,13 @@
   image.loading = 'lazy';
   image.decoding = 'async';
   image.referrerPolicy = 'no-referrer';
-  const source = make('figcaption', 'photo-source');
-  source.append(link('Photo · KCMC Youth page', youthPage, ''));
+  const source = null;
   image.addEventListener('error', () => {
     figure.hidden = true;
     layout.classList.add('family-without-photo');
   }, {once: true});
   image.src = kidsPhoto;
-  figure.append(image, source);
+  figure.append(image);
   const copy = make('div', 'family-welcome-copy');
   const eyebrow = make('div', 'eyebrow', 'Kids, youth & families');
   const title = make('h2', '', 'A place to belong. Room to grow.');
