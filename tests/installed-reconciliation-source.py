@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Read-only exact-source verification. Never calls an installer or a host."""
+"""Verify PR91 provenance plus only PR92's approved deltas; never call a host."""
 import ast
 import hashlib
 import json
@@ -10,6 +10,7 @@ import subprocess
 ROOT = Path(__file__).resolve().parents[1]
 PREFIX = 'KCMC-Connect-Phase6-Recreated/'
 BASE = '2146af219d2fd23136eae1685f91a2a2caec030e'
+RECONCILED = 'b1fe32017781be8a570ae114148d66fca82bc867'
 TONY = '2c767fd66299524a126f39c5350de8dac1ce1f85'
 PHOTOS = '225c564138242f699a1bd31c75b5c78e65268ca7'
 INSTALLER_SHA256 = '0220e1a40b3b17f64988dccb3af48dad4fc87e49bb2947a4d7507de812b71bea'
@@ -59,20 +60,49 @@ for name in READABILITY_FILES:
     check(content.replace(css, b'', 1) == original, name + ': only installed inline CSS changes')
     expected[name] = content
 
-manifest = json.loads((ROOT / 'docs/installed-reconciliation-2026-10-03.json').read_text())
+manifest_path = 'docs/installed-reconciliation-2026-10-03.json'
+check((ROOT / manifest_path).read_bytes() == source(RECONCILED, manifest_path), 'PR91 provenance manifest remains byte-for-byte unchanged')
+manifest = json.loads((ROOT / manifest_path).read_text())
 check(set(manifest['runtime_sha256']) == set(expected), 'manifest contains exactly the ten installed runtime files')
 for name, content in expected.items():
-    check((ROOT / PREFIX / name).read_bytes() == content, name + ': byte-for-byte reviewed runtime match')
+    check(source(RECONCILED, PREFIX + name) == content, name + ': PR91 byte-for-byte reviewed runtime match')
     check(hashlib.sha256(content).hexdigest() == manifest['runtime_sha256'][name], name + ': recorded SHA-256 match')
+
+# Exact, single-occurrence replacements enumerate the approved PR92 changes.
+# Do not normalize whole files, skip changed files, or accept arbitrary hashes:
+# every other byte (including PHP, CSS, alt text and fallback code) must survive.
+approved = {
+    'public-presentation.js': [
+        ('}, 8000);', '}, 420000);'),
+        ("firstPhoto.dataset.caption = 'Church exterior • from KCMC’s published Visit page';", "firstPhoto.dataset.caption = '';"),
+        ('if (!firstPhoto.hidden && caption) caption.textContent = firstPhoto.dataset.caption;', 'if (caption) caption.hidden = true;'),
+        ("      const source = make('figcaption', 'photo-source');\n      source.append(link('Church photo · KCMC Visit page', visitPage, ''));\n      figure.append(image, source);", '      figure.append(image);'),
+        ("  const source = make('figcaption', 'photo-source');\n  source.append(link('Photo · KCMC Youth page', youthPage, ''));", '  const source = null;'),
+        ('  figure.append(image, source);', '  figure.append(image);'),
+    ],
+    'member/timeclock.php': [
+        ('<p class="eyebrow">EMPLOYEE TIME</p><h1>Time Clock</h1>', '<p class="eyebrow">STAFF TIME CLOCK</p><h1>Clock In / Clock Out</h1>'),
+        ('<h2>You are clocked out.</h2><form', '<h2>You are clocked out.</h2><p class="tc-note">Start your shift here. Your clock-in time is recorded by the KCMC server.</p><form'),
+        ('type="submit">Clock Out</button>', 'type="submit">Clock Out &amp; Save Shift</button>'),
+    ],
+}
+for name, content in expected.items():
+    for old, new in approved.get(name, []):
+        old, new = old.encode(), new.encode()
+        check(content.count(old) == 1, name + ': approved replacement has exactly one source anchor')
+        content = content.replace(old, new, 1)
+    check((ROOT / PREFIX / name).read_bytes() == content, name + ': exact PR91 bytes plus approved PR92 differences only')
 
 changed = set(git('diff', '--name-only', BASE, '--', PREFIX).decode().splitlines())
 check(changed == {PREFIX + p for p in expected}, 'runtime diff is exactly six Tony files plus four readability pages')
+changed_since_reconciled = set(git('diff', '--name-only', RECONCILED, '--', PREFIX).decode().splitlines())
+check(changed_since_reconciled == {PREFIX + p for p in approved}, 'PR92 runtime diff is exactly presentation JavaScript and staff timeclock copy')
 for path in ['.cpanel.yml', 'KCMC-Connect-Phase6-Recreated/data/content.json', 'KCMC-Connect-Phase6-Recreated/config.example.php']:
     check((ROOT / path).read_bytes() == source(BASE, path), path + ': unchanged')
 login = (ROOT / PREFIX / 'member/login.php').read_bytes()
 check(login.split(b'?><!doctype html>', 1)[0] == base['member/login.php'].split(b'?><!doctype html>', 1)[0], 'staff authentication PHP remains byte-for-byte unchanged')
 js = (ROOT / PREFIX / 'public-presentation.js').read_text()
 css = (ROOT / PREFIX / 'public-presentation.css').read_text()
-check('8000' in js and '420000' not in js, 'installed eight-second rotation retained; uninstalled seven-minute patch excluded')
-check('KCMC hero caption fix' not in css, 'uninstalled caption CSS absent (exact-byte checks are authoritative)')
-print('Installed reconciliation exact-source checks passed.')
+check('}, 420000);' in js and '}, 8000);' not in js, 'approved seven-minute rotation retained')
+check('KCMC hero caption fix' not in css, 'no additional caption CSS introduced (exact-byte checks are authoritative)')
+print('Installed reconciliation provenance and approved PR92 exact-source checks passed.')

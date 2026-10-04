@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 """Isolated public-page acceptance. No production requests, private records or writes."""
 from __future__ import annotations
+from datetime import datetime, timezone
 import hashlib
 import json
 import os
@@ -11,7 +12,7 @@ import subprocess
 import tempfile
 import time
 import urllib.request
-from playwright.sync_api import sync_playwright
+from playwright.sync_api import expect, sync_playwright
 
 ROOT = Path(__file__).resolve().parents[1]
 APP = ROOT / 'KCMC-Connect-Phase6-Recreated'
@@ -95,7 +96,7 @@ with tempfile.TemporaryDirectory(prefix='kcmc-public-review-') as td:
                     first = page.locator('[data-hero-photo]:visible').get_attribute('src')
                     page.locator('[data-hero-next]').click()
                     check(page.locator('[data-hero-photo]:visible').get_attribute('src') != first, 'manual next photo works')
-                    check('2017' in page.locator('[data-hero-caption]').inner_text(), 'historical worship date is visible')
+                    check('2017' in page.locator('[data-hero-photo]:visible').get_attribute('alt'), 'historical worship date remains in accessible photo description')
                     page.locator('#siteMenu summary').click()
                     check(page.locator('#siteMenu').get_attribute('open') is not None, 'dropdown opens')
                     check(page.locator('.menu-account').is_visible(), 'sign-in is available inside the menu')
@@ -126,18 +127,49 @@ with tempfile.TemporaryDirectory(prefix='kcmc-public-review-') as td:
                 check(not errors, 'no browser JavaScript errors: ' + '; '.join(errors))
                 check(not failures, 'no failed local assets: ' + '; '.join(failures))
                 context.close()
-                # Normal-motion autoplay and the first pause click are tested separately.
+                # Freeze browser time before navigation so interval boundaries are
+                # exact and acceptance never needs a seven-minute wall-clock wait.
                 c2 = browser.new_context(viewport={'width':390,'height':844}, reduced_motion='no-preference')
                 auto = c2.new_page()
+                auto.clock.install(time=datetime(2031, 1, 1, tzinfo=timezone.utc))
+                auto.clock.pause_at(datetime(2031, 1, 1, 0, 0, 1, tzinfo=timezone.utc))
                 auto.goto(base + '/', wait_until='networkidle')
+                auto.wait_for_function("[...document.querySelectorAll('[data-hero-photo]')].every(img => img.complete && img.naturalWidth > 0)")
+                photo = auto.locator('[data-hero-photo]:visible')
+                first = photo.get_attribute('src')
                 check(auto.locator('[data-hero-toggle]').inner_text() == 'Pause photos', 'normal motion offers a pause control')
-                auto.wait_for_timeout(8300)
-                check('2017' in auto.locator('[data-hero-caption]').inner_text(), '8-second automatic rotation advances')
+                auto.clock.run_for(8000)
+                check(photo.get_attribute('src') == first, 'photo does not advance at the retired 8-second interval')
+                auto.clock.run_for(411999)
+                check(photo.get_attribute('src') == first, 'photo remains unchanged through 419999 ms')
+                auto.clock.run_for(1)
+                check(photo.get_attribute('src') == auto.locator('[data-hero-photo]').nth(1).get_attribute('src'), 'automatic rotation advances exactly at 420000 ms')
                 auto.locator('[data-hero-toggle]').click()
                 check(auto.locator('[data-hero-toggle]').inner_text() == 'Play photos', 'first pause click actually stops rotation')
-                frozen = auto.locator('[data-hero-caption]').inner_text()
-                auto.wait_for_timeout(8300)
-                check(auto.locator('[data-hero-caption]').inner_text() == frozen, 'paused photo remains unchanged')
+                frozen = photo.get_attribute('src')
+                auto.clock.run_for(420000)
+                check(photo.get_attribute('src') == frozen, 'paused photo remains unchanged for a full seven-minute interval')
+                auto.locator('[data-hero-toggle]').click()
+                auto.mouse.move(0, 0)  # Pointer hover intentionally suspends autoplay.
+                check(auto.locator('[data-hero-toggle]').inner_text() == 'Pause photos', 'play control resumes automatic rotation')
+                auto.clock.run_for(419999)
+                check(photo.get_attribute('src') == frozen, 'resumed rotation waits a full interval')
+                auto.clock.run_for(1)
+                check(photo.get_attribute('src') == auto.locator('[data-hero-photo]').nth(2).get_attribute('src'), 'resumed rotation advances at seven minutes')
+                auto.locator('[data-hero-previous]').click()
+                check(photo.get_attribute('src') == frozen and auto.locator('[data-hero-toggle]').inner_text() == 'Play photos', 'manual previous works and pauses rotation')
+                auto.mouse.move(0, 0)
+                auto.clock.run_for(420000)
+                check(photo.get_attribute('src') == frozen, 'manual selection stays paused for a full interval')
+                auto.locator('[data-hero-toggle]').click()
+                auto.mouse.move(0, 0)
+                auto.emulate_media(reduced_motion='reduce')
+                # Chromium dispatches the media-query change asynchronously.
+                expect(auto.locator('[data-hero-toggle]')).to_have_text('Play photos')
+                auto.clock.run_for(420000)
+                check(photo.get_attribute('src') == frozen and auto.locator('[data-hero-toggle]').inner_text() == 'Play photos', 'reduced-motion change stops automatic rotation')
+                auto.locator('[data-hero-next]').click()
+                check(photo.get_attribute('src') == auto.locator('[data-hero-photo]').nth(2).get_attribute('src'), 'manual next remains available with reduced motion')
                 c2.close()
                 # JavaScript-disabled welcome remains usable; no dead visible gallery buttons.
                 c3 = browser.new_context(java_script_enabled=False, viewport={'width':390,'height':844})

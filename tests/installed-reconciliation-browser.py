@@ -316,6 +316,14 @@ def main() -> None:
                                           and page.locator(".adjust-form").count() == 1,
                                           label + ": synthetic correction and submitted-shift controls render")
                                 if path == "member/timeclock.php":
+                                    check(page.locator("main > .eyebrow").inner_text() == "STAFF TIME CLOCK"
+                                          and page.get_by_role("heading", name="Clock In / Clock Out", exact=True).count() == 1,
+                                          label + ": approved staff timeclock heading renders")
+                                    clock_out = page.get_by_role("button", name="Clock Out & Save Shift", exact=True)
+                                    check(clock_out.is_visible()
+                                          and clock_out.locator("xpath=..").locator('input[name="action"]').input_value() == "clock_out"
+                                          and len(clock_out.locator("xpath=..").locator('input[name="csrf"]').input_value()) >= 32,
+                                          label + ": clarified clock-out control retains protected action and CSRF")
                                     check(page.locator('select[name="category"]').count() == 1
                                           and page.locator('textarea[name="description"]').count() == 1
                                           and page.locator(".tc-correction").count() == 1,
