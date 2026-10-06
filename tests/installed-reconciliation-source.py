@@ -109,6 +109,12 @@ for name, content in expected.items():
         source_end = content.find(b"  const section = make('section', 'section family-welcome');", source_start)
         if source_start >= 0 and source_end > source_start:
             content = content[:source_start] + marker + b"\n\n" + content[source_end:]
+    if name == 'index.php':
+        # PR99 intentionally adds the approved church-family photo as one additional hero frame.
+        anchor = b'    <img class="hero-photo" data-hero-photo src="./assets/visuals/kcmc-stage-2014.webp" alt="KCMC worship stage, photographed in 2014" loading="lazy" decoding="async" width="640" height="480" hidden>\n'
+        addition = b'    <img class="hero-photo" data-hero-photo src="./assets/visuals/kcmc-ministry-group.jpg" alt="KCMC church family and ministry group" loading="lazy" decoding="async" width="640" height="480" hidden>\n'
+        check(content.count(anchor) == 1, 'index.php: approved hero insertion anchor is unique')
+        content = content.replace(anchor, anchor + addition, 1)
     check(actual == content, name + ': exact reviewed runtime plus approved differences only')
 
 # PR93 adds only an admin navigation link and a new protected publication
