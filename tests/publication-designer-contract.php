@@ -14,6 +14,10 @@ $designerChecks = [
   "KCMC asset library" => 'id="assetLibrary"',
   "editable project name" => 'id="projectName"',
   "duplicate preserves shared storage" => "Independent copy ready — click Save",
+  "multi-page controls" => 'id="pageIndicator"',
+  "twelve-page cap" => "pageState.length>=12",
+  "multi-page serializer" => "pages:pageState.map",
+  "all-page print renderer" => "renderPrintPages()",
 ];
 foreach ($designerChecks as $label => $needle) {
     if (strpos($src, $needle) === false) { fwrite(STDERR, "FAIL: $label\n"); exit(1); }
@@ -30,6 +34,9 @@ $storeChecks = [
   "approved asset allowlist" => "kcmc-building-2024.webp",
   "atomic private-store helper" => "kcmc_update_json_store",
   "audit record" => "publication_project_saved",
+  "multi-page validator" => "Publication must contain between 1 and 12 pages.",
+  "legacy one-page migration" => "pub_normalize_project",
+  "store version two" => '$state[\'version\'] = 2;',
 ];
 foreach ($storeChecks as $label => $needle) {
     if (strpos($store, $needle) === false) { fwrite(STDERR, "FAIL: $label\n"); exit(1); }

@@ -6,7 +6,7 @@ kcmc_private_headers();
 header('Content-Type: application/json; charset=utf-8');
 
 $storePath = KCMC_PRIVATE_DATA . '/publications.json';
-$defaultStore = ['version' => 1, 'projects' => []];
+$defaultStore = ['version' => 2, 'projects' => []];
 
 function pub_fail(string $message, int $status = 400): never {
     http_response_code($status);
@@ -74,10 +74,38 @@ function pub_item(array $item): array {
     return $out;
 }
 
+function pub_page(array $page): array {
+    $pageSize = in_array((string)($page['pageSize'] ?? ''), ['letter', 'half', 'postcard'], true) ? (string)$page['pageSize'] : 'letter';
+    $orientation = in_array((string)($page['orientation'] ?? ''), ['portrait', 'landscape'], true) ? (string)$page['orientation'] : 'portrait';
+    $rawItems = $page['items'] ?? [];
+    if (!is_array($rawItems) || count($rawItems) > 100) pub_fail('Publication page has too many items.');
+    $items = [];
+    foreach ($rawItems as $item) {
+        if (!is_array($item)) pub_fail('Invalid publication item.');
+        $items[] = pub_item($item);
+    }
+    return [
+        'pageSize' => $pageSize,
+        'orientation' => $orientation,
+        'items' => $items,
+    ];
+}
+
+function pub_normalize_project(array $project): array {
+    if (isset($project['pages']) && is_array($project['pages']) && count($project['pages']) > 0) return $project;
+    $project['pages'] = [[
+        'pageSize' => in_array((string)($project['pageSize'] ?? ''), ['letter', 'half', 'postcard'], true) ? (string)$project['pageSize'] : 'letter',
+        'orientation' => in_array((string)($project['orientation'] ?? ''), ['portrait', 'landscape'], true) ? (string)$project['orientation'] : 'portrait',
+        'items' => is_array($project['items'] ?? null) ? array_values(array_filter($project['items'], 'is_array')) : [],
+    ]];
+    unset($project['pageSize'], $project['orientation'], $project['items']);
+    return $project;
+}
+
 $method = strtoupper((string)($_SERVER['REQUEST_METHOD'] ?? 'GET'));
 if ($method === 'GET') {
     $store = kcmc_read_json_store($storePath, $defaultStore);
-    $projects = array_values(array_filter($store['projects'] ?? [], 'is_array'));
+    $projects = array_map('pub_normalize_project', array_values(array_filter($store['projects'] ?? [], 'is_array')));
     usort($projects, static fn(array $a, array $b): int => strcmp((string)($b['updated'] ?? ''), (string)($a['updated'] ?? '')));
     echo json_encode(['ok' => true, 'projects' => $projects], JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
     exit;
@@ -92,22 +120,28 @@ if (!kcmc_verify_csrf($body['csrf'] ?? null)) pub_fail('Invalid session token.',
 $name = pub_text($body['name'] ?? '', 120);
 if ($name === '') $name = 'Untitled publication';
 $id = is_string($body['id'] ?? null) && preg_match('/\Apub_[a-f0-9]{24}\z/', (string)$body['id']) ? (string)$body['id'] : kcmc_random_id('pub');
-$pageSize = in_array((string)($body['pageSize'] ?? ''), ['letter', 'half', 'postcard'], true) ? (string)$body['pageSize'] : 'letter';
-$orientation = in_array((string)($body['orientation'] ?? ''), ['portrait', 'landscape'], true) ? (string)$body['orientation'] : 'portrait';
-$rawItems = $body['items'] ?? [];
-if (!is_array($rawItems) || count($rawItems) > 100) pub_fail('Publication has too many items.');
-$items = [];
-foreach ($rawItems as $item) {
-    if (!is_array($item)) pub_fail('Invalid publication item.');
-    $items[] = pub_item($item);
+$rawPages = $body['pages'] ?? null;
+if ($rawPages === null) {
+    $rawPages = [[
+        'pageSize' => $body['pageSize'] ?? 'letter',
+        'orientation' => $body['orientation'] ?? 'portrait',
+        'items' => $body['items'] ?? [],
+    ]];
+}
+if (!is_array($rawPages) || count($rawPages) < 1 || count($rawPages) > 12) pub_fail('Publication must contain between 1 and 12 pages.');
+$pages = [];
+$totalItems = 0;
+foreach ($rawPages as $rawPage) {
+    if (!is_array($rawPage)) pub_fail('Invalid publication page.');
+    $validated = pub_page($rawPage);
+    $totalItems += count($validated['items']);
+    $pages[] = $validated;
 }
 $now = gmdate('c');
 $project = [
     'id' => $id,
     'name' => $name,
-    'pageSize' => $pageSize,
-    'orientation' => $orientation,
-    'items' => $items,
+    'pages' => $pages,
     'updated' => $now,
     'updated_by' => (string)($user['id'] ?? ''),
 ];
@@ -124,8 +158,8 @@ kcmc_update_json_store($storePath, $defaultStore, function (array &$state) use (
     }
     if (!$found) array_unshift($projects, $project);
     usort($projects, static fn(array $a, array $b): int => strcmp((string)($b['updated'] ?? ''), (string)($a['updated'] ?? '')));
-    $state['version'] = 1;
+    $state['version'] = 2;
     $state['projects'] = array_slice($projects, 0, 50);
 });
-kcmc_audit('publication_project_saved', ['publication_id' => $id, 'item_count' => count($items)]);
+kcmc_audit('publication_project_saved', ['publication_id' => $id, 'page_count' => count($pages), 'item_count' => $totalItems]);
 echo json_encode(['ok' => true, 'project' => $project], JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
