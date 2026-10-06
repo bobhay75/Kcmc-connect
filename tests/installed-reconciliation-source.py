@@ -126,7 +126,7 @@ check(login.split(b'?><!doctype html>', 1)[0] == base['member/login.php'].split(
 js = (ROOT / PREFIX / 'public-presentation.js').read_text()
 css = (ROOT / PREFIX / 'public-presentation.css').read_text()
 check('}, 420000);' in js and '}, 8000);' not in js, 'approved seven-minute rotation retained')
-check("data-hero-caption" not in js and "photos[current].alt || ''" in js, 'hero rotation no longer depends on removed caption element')
+check("const caption = gallery.querySelector('[data-hero-caption]');" not in js and "!controls || !caption || !toggle" not in js and "photos[current].alt || ''" in js, 'primary hero rotation no longer depends on removed caption element')
 check('KCMC hero caption fix' not in css, 'no additional caption CSS introduced (exact-byte checks are authoritative)')
 index = (ROOT / PREFIX / 'index.php').read_text()
 check('data-caption=' not in index and 'data-hero-caption' not in index and 'photo archive,' not in index, 'public homepage carries no obsolete hero caption payload')
