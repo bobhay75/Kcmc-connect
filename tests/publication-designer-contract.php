@@ -36,7 +36,7 @@ $storeChecks = [
   "audit record" => "publication_project_saved",
   "multi-page validator" => "Publication must contain between 1 and 12 pages.",
   "legacy one-page migration" => "pub_normalize_project",
-  "store version two" => "$state['version'] = 2;",
+  "store version two" => '$state[\'version\'] = 2;',
 ];
 foreach ($storeChecks as $label => $needle) {
     if (strpos($store, $needle) === false) { fwrite(STDERR, "FAIL: $label\n"); exit(1); }
