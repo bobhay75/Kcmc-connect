@@ -32,6 +32,22 @@ function pub_color(mixed $value, string $fallback): string {
     return preg_match('/\A#[0-9a-f]{6}\z/', $v) ? $v : $fallback;
 }
 
+function pub_media_exists(string $id): bool {
+    static $index = null;
+    if ($index === null) {
+        $index = [];
+        $store = kcmc_read_json_store(KCMC_PRIVATE_DATA . '/publication-media.json', ['version' => 1, 'media' => []]);
+        foreach (($store['media'] ?? []) as $media) {
+            if (!is_array($media)) continue;
+            $mediaId = (string)($media['id'] ?? '');
+            $file = (string)($media['file'] ?? '');
+            if ($mediaId !== '' && $file !== '') $index[$mediaId] = $file;
+        }
+    }
+    if (!isset($index[$id])) return false;
+    return is_file(KCMC_PRIVATE_DATA . '/publication-media/' . $index[$id]);
+}
+
 function pub_item(array $item): array {
     $type = (string)($item['type'] ?? '');
     if (!in_array($type, ['text', 'shape', 'image'], true)) pub_fail('Unsupported publication item.');
@@ -55,20 +71,28 @@ function pub_item(array $item): array {
     if ($type === 'text') {
         $out['text'] = pub_text($item['text'] ?? '', 12000);
     } elseif ($type === 'image') {
-        $src = pub_text($item['src'] ?? '', 300);
-        $allowed = [
-            'kcmc-building-2024.webp',
-            'kcmc-worship-2017.webp',
-            'kcmc-ministry-group.jpg',
-            'kcmc-stage-2014.webp',
-            'trunk-or-treat-2026.webp',
-        ];
-        $path = (string)(parse_url($src, PHP_URL_PATH) ?? '');
-        $base = basename($path);
-        if (!str_contains($path, '/assets/visuals/') || !in_array($base, $allowed, true)) {
-            pub_fail('Only approved KCMC library photos can be stored in shared projects.');
+        $mediaId = pub_text($item['mediaId'] ?? '', 40);
+        if ($mediaId !== '') {
+            if (!preg_match('/\Apubmedia_[a-f0-9]{24}\z/', $mediaId) || !pub_media_exists($mediaId)) {
+                pub_fail('Shared publication photo is unavailable.');
+            }
+            $out['mediaId'] = $mediaId;
+        } else {
+            $src = pub_text($item['src'] ?? '', 300);
+            $allowed = [
+                'kcmc-building-2024.webp',
+                'kcmc-worship-2017.webp',
+                'kcmc-ministry-group.jpg',
+                'kcmc-stage-2014.webp',
+                'trunk-or-treat-2026.webp',
+            ];
+            $path = (string)(parse_url($src, PHP_URL_PATH) ?? '');
+            $base = basename($path);
+            if (!str_contains($path, '/assets/visuals/') || !in_array($base, $allowed, true)) {
+                pub_fail('Only approved KCMC library or shared photos can be stored in projects.');
+            }
+            $out['src'] = kcmc_url('assets/visuals/' . $base);
         }
-        $out['src'] = kcmc_url('assets/visuals/' . $base);
         $out['alt'] = pub_text($item['alt'] ?? '', 180);
     }
     return $out;
