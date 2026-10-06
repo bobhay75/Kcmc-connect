@@ -104,11 +104,11 @@ for name, content in expected.items():
     actual = (ROOT / PREFIX / name).read_bytes()
     if name == 'public-presentation.js':
         # PR99 intentionally removes only the obsolete nested hero-card photo injection.
-        marker = b"  // Keep the hero as a single rotating image plane; do not inject a second photo into the service card.\n\n"
+        marker = b"  // Keep the hero as a single rotating image plane; do not inject a second photo into the service card."
         source_start = content.find(b"  // Keep the existing local hero photo unless the church's published image loads.\n")
-        source_end = content.find(b"\n\n  const section = make('section', 'section family-welcome');", source_start)
+        source_end = content.find(b"  const section = make('section', 'section family-welcome');", source_start)
         if source_start >= 0 and source_end > source_start:
-            content = content[:source_start] + marker + content[source_end:]
+            content = content[:source_start] + marker + b"\n\n" + content[source_end:]
     check(actual == content, name + ': exact reviewed runtime plus approved differences only')
 
 # PR93 adds only an admin navigation link and a new protected publication
