@@ -7,6 +7,8 @@ kcmc_private_headers();
 const KCMC_PUBLICATION_MEDIA_MAX_BYTES = 5242880;
 const KCMC_PUBLICATION_MEDIA_MAX_PIXELS = 40000000;
 const KCMC_PUBLICATION_MEDIA_MAX_SIDE = 8000;
+const KCMC_PUBLICATION_MEDIA_MAX_FILES = 500;
+const KCMC_PUBLICATION_MEDIA_TOTAL_BYTES = 524288000;
 
 $mediaDir = KCMC_PRIVATE_DATA . '/publication-media';
 $mediaStore = KCMC_PRIVATE_DATA . '/publication-media.json';
@@ -140,12 +142,18 @@ $item = [
 try {
     kcmc_update_json_store($mediaStore, $defaultStore, function (array &$state) use ($item): void {
         $items = array_values(array_filter($state['media'] ?? [], 'is_array'));
+        $totalBytes = 0;
+        foreach ($items as $existing) $totalBytes += (int)($existing['bytes'] ?? 0);
+        if (count($items) >= KCMC_PUBLICATION_MEDIA_MAX_FILES || ($totalBytes + (int)$item['bytes']) > KCMC_PUBLICATION_MEDIA_TOTAL_BYTES) {
+            throw new RuntimeException('publication_media_capacity');
+        }
         array_unshift($items, $item);
         $state['version'] = 1;
-        $state['media'] = array_slice($items, 0, 200);
+        $state['media'] = $items;
     });
 } catch (Throwable $e) {
     @unlink($destination);
+    if ($e->getMessage() === 'publication_media_capacity') publication_media_fail('Shared photo library is full. Remove unused photos before uploading more.', 409);
     publication_media_fail('Could not record the uploaded photo.', 500);
 }
 
