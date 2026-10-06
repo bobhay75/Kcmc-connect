@@ -32,6 +32,7 @@ button,input,select,textarea{font:inherit}.shell{min-height:100vh;display:grid;g
 <header class="topbar">
   <div class="brand"><a href="<?=kcmc_h(kcmc_url('admin/'))?>" class="btn">← Publishing Desk</a><strong>Publication Designer</strong><span class="status" id="status">Ready</span></div>
   <div class="actions">
+    <label class="field" style="margin:0;min-width:220px"><span class="small">Project name</span><input id="projectName" maxlength="80" value="Untitled publication" aria-label="Project name"></label>
     <button class="btn" id="newBtn">New</button>
     <button class="btn" id="duplicateBtn">Duplicate</button>
     <button class="btn" id="saveBtn">Save</button>
@@ -133,13 +134,14 @@ function itemData(el){const cs=getComputedStyle(el),img=el.querySelector('img');
  ...(el.dataset.type==='text'?{text:[...el.childNodes].filter(n=>!(n.nodeType===1&&n.classList?.contains('handle'))).map(n=>n.textContent).join('')}:{ }),
  ...(el.dataset.type==='image'?{src:img?.getAttribute('src')||'',alt:img?.alt||'KCMC photo'}:{ })
 }}
-function serialize(){return {id:projectId,name:prompt('Project name','Untitled publication')||'Untitled publication',pageSize:pageSize.value,orientation:orientation.value,items:[...page.querySelectorAll('.item')].map(itemData)}}
+function currentProjectName(){return document.getElementById('projectName').value.trim().slice(0,80)||'Untitled publication'}
+function serialize(){return {id:projectId,name:currentProjectName(),pageSize:pageSize.value,orientation:orientation.value,items:[...page.querySelectorAll('.item')].map(itemData)}}
 function restoreItem(item){const el=makeItem(item.type,item.x,item.y,item.w,item.h);el.style.fontFamily=item.fontFamily||'Arial';el.style.fontSize=(item.fontSize||24)+'px';el.style.fontWeight=item.fontWeight||'400';el.style.fontStyle=item.fontStyle||'normal';el.style.textAlign=item.textAlign||'left';el.style.color=item.color||'#17324c';el.style.background=item.fill||'#ffffff';el.style.borderColor=item.borderColor||'#17324c';el.style.borderStyle=(item.borderWidth||0)>0?'solid':'none';el.style.borderWidth=(item.borderWidth||0)+'px';el.style.opacity=item.opacity??1;
  if(item.type==='text'){el.childNodes.forEach(n=>{if(!(n.nodeType===1&&n.classList?.contains('handle')))n.remove()});el.insertBefore(document.createTextNode(item.text||''),el.firstChild)}
  if(item.type==='image'){const img=document.createElement('img');img.src=item.src||'';img.alt=item.alt||'KCMC photo';el.insertBefore(img,el.firstChild)}
  return el}
 async function save(){const p=serialize();setStatus('Saving…');try{const r=await fetch(projectEndpoint,{method:'POST',headers:{'Content-Type':'application/json'},credentials:'same-origin',body:JSON.stringify({...p,csrf})});const j=await r.json();if(!r.ok||!j.ok)throw new Error(j.error||'Save failed');projectId=j.project.id;setStatus('Saved for KCMC admins');await renderSaved()}catch(err){setStatus(err.message||'Save failed')}}
-function loadProject(p){projectId=p.id;pageSize.value=p.pageSize;orientation.value=p.orientation;applyPage();page.innerHTML='';(p.items||[]).forEach(restoreItem);clearSelection();setStatus('Loaded '+p.name)}
+function loadProject(p){projectId=p.id;document.getElementById('projectName').value=String(p.name||'Untitled publication').slice(0,80);pageSize.value=p.pageSize;orientation.value=p.orientation;applyPage();page.innerHTML='';(p.items||[]).forEach(restoreItem);clearSelection();setStatus('Loaded '+p.name)}
 async function renderSaved(){const box=document.getElementById('savedList');box.innerHTML='<span class="small">Loading…</span>';try{const r=await fetch(projectEndpoint,{credentials:'same-origin'}),j=await r.json();if(!r.ok||!j.ok)throw new Error(j.error||'Could not load projects');box.innerHTML='';(j.projects||[]).forEach(p=>{const b=document.createElement('button');b.className='template';b.innerHTML='<strong>'+escapeHtml(p.name)+'</strong><br><span class="small">'+new Date(p.updated).toLocaleString()+'</span>';b.onclick=()=>loadProject(p);box.appendChild(b)});if(!(j.projects||[]).length)box.innerHTML='<span class="small">No shared projects yet.</span>'}catch(err){box.innerHTML='<span class="small">'+escapeHtml(err.message||'Could not load projects')+'</span>'}}
 function escapeHtml(s){return s.replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[c]))}
 document.getElementById('templates').addEventListener('click',e=>{const b=e.target.closest('[data-template]');if(b)template(b.dataset.template)});
@@ -147,8 +149,8 @@ document.getElementById('addText').onclick=()=>makeItem('text');document.getElem
 document.getElementById('addImage').onclick=()=>imagePicker.click();imagePicker.onchange=e=>{const f=e.target.files[0];if(!f)return;const r=new FileReader();r.onload=()=>{const el=makeItem('image',80,80,320,220);const img=document.createElement('img');img.src=r.result;el.insertBefore(img,el.firstChild)};r.readAsDataURL(f);imagePicker.value=''};
 document.getElementById('assetLibrary').addEventListener('click',e=>{const b=e.target.closest('[data-asset]');if(!b)return;const el=makeItem('image',80,80,320,220);const img=document.createElement('img');img.src=b.dataset.asset;img.alt=b.querySelector('strong')?.textContent||'KCMC photo';el.insertBefore(img,el.firstChild);setStatus('KCMC photo added')});
 document.getElementById('deleteItem').onclick=()=>{if(selected){selected.remove();clearSelection()}};
-document.getElementById('newBtn').onclick=()=>{projectId=null;page.innerHTML='';clearSelection();template('flyer');setStatus('New publication')};
-document.getElementById('duplicateBtn').onclick=()=>{projectId=null;setStatus('Duplicate ready — save with a new name')};
+document.getElementById('newBtn').onclick=()=>{projectId=null;document.getElementById('projectName').value='Untitled publication';page.innerHTML='';clearSelection();template('flyer');setStatus('New publication')};
+document.getElementById('duplicateBtn').onclick=()=>{const name=currentProjectName();projectId=null;document.getElementById('projectName').value=(name+' - Copy').slice(0,80);setStatus('Independent copy ready — click Save')};
 document.getElementById('saveBtn').onclick=save;document.getElementById('printBtn').onclick=()=>window.print();
 pageSize.onchange=applyPage;orientation.onchange=applyPage;
 fontFamily.onchange=()=>selected&&(selected.style.fontFamily=fontFamily.value);fontSize.oninput=()=>selected&&(selected.style.fontSize=fontSize.value+'px');
