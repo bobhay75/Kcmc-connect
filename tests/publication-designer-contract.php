@@ -12,11 +12,13 @@ $designerChecks = [
   "print PDF path" => "window.print()",
   "publisher templates" => 'data-template="flyer"',
   "KCMC asset library" => 'id="assetLibrary"',
+  "editable project name" => 'id="projectName"',
+  "duplicate preserves shared storage" => "Independent copy ready — click Save",
 ];
 foreach ($designerChecks as $label => $needle) {
     if (strpos($src, $needle) === false) { fwrite(STDERR, "FAIL: $label\n"); exit(1); }
 }
-foreach (['kimberling-city-missouri-bridge-2024.jpg', 'data/content.json', 'localStorage.setItem'] as $forbidden) {
+foreach (['kimberling-city-missouri-bridge-2024.jpg', 'data/content.json', 'localStorage.setItem', 'prompt('] as $forbidden) {
     if (strpos($src, $forbidden) !== false) { fwrite(STDERR, "FAIL: forbidden designer content $forbidden\n"); exit(1); }
 }
 
