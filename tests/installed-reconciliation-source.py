@@ -76,7 +76,7 @@ approved = {
         (' data-caption="Church exterior • photo archive, May 2024"', ''),
         (' data-caption="Worship gathering • photo archive, June 2017"', ''),
         (' data-caption="Worship space • photo archive, October 2014"', ''),
-        ('<p class="hero-photo-caption" data-hero-caption>Church exterior • photo archive, May 2024</p>', ''),
+        ('\n        <p class="hero-photo-caption" data-hero-caption>Church exterior • photo archive, May 2024</p>', ''),
     ],
     'public-presentation.js': [
         ('}, 8000);', '}, 420000);'),
