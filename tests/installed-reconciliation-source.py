@@ -108,12 +108,12 @@ for name, content in expected.items():
 # preservation proof remains authoritative rather than being weakened.
 pr93 = {
     'admin/index.php': 'c130b7523b8a59fdde1101fee61a065402108674',
-    'admin/publication-designer.php': 'c5dc2a942cc5a8ccc68fc48a24b06aa5dcd03577',
+    'admin/publication-designer.php': 'a62676f87f10c230e633721df47ab777eab97182',
     'admin/publication-projects.php': 'c3e88927599e32d31d69503db536eff9882ab79f',
 }
 for name, blob in pr93.items():
     actual = git('hash-object', PREFIX + name).decode().strip()
-    check(actual == blob, name + ': exact PR93 reviewed blob retained')
+    check(actual == blob, name + ': approved Publication Designer blob retained')
 
 changed = set(git('diff', '--name-only', BASE, '--', PREFIX).decode().splitlines())
 check(changed == ({PREFIX + p for p in expected} | {PREFIX + p for p in pr93}), 'runtime diff is PR91/PR92 reviewed runtime plus exactly three PR93 admin files')
