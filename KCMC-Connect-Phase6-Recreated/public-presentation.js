@@ -102,41 +102,7 @@
     return node;
   };
 
-  // Keep the existing local hero photo unless the church's published image loads.
-  const hero = home.querySelector('[data-hero-gallery]');
-  const firstPhoto = hero?.querySelector('[data-hero-photo]');
-  const serviceCard = hero?.querySelector('.hero-card');
-  if (firstPhoto && serviceCard) {
-    const probe = new Image();
-    probe.decoding = 'async';
-    probe.referrerPolicy = 'no-referrer';
-    probe.addEventListener('load', () => {
-      if (!probe.naturalWidth) return;
-      firstPhoto.src = churchPhoto;
-      firstPhoto.width = probe.naturalWidth;
-      firstPhoto.height = probe.naturalHeight;
-      firstPhoto.alt = 'Front of Kimberling City Methodist Church, from the church website';
-      firstPhoto.dataset.caption = '';
-      const caption = hero.querySelector('[data-hero-caption]');
-      if (caption) caption.hidden = true;
-      const details = make('div', 'hero-service-info');
-      while (serviceCard.firstChild) details.append(serviceCard.firstChild);
-      const figure = make('figure', 'hero-church-window');
-      const image = make('img', 'hero-church-photo');
-      image.src = churchPhoto;
-      image.alt = firstPhoto.alt;
-      image.width = probe.naturalWidth;
-      image.height = probe.naturalHeight;
-      image.style.aspectRatio = `${probe.naturalWidth}/${probe.naturalHeight}`;
-      image.decoding = 'async';
-      image.referrerPolicy = 'no-referrer';
-      image.addEventListener('error', () => figure.remove(), {once: true});
-      figure.append(image);
-      serviceCard.classList.add('hero-card-with-photo');
-      serviceCard.append(figure, details);
-    }, {once: true});
-    probe.src = churchPhoto;
-  }
+  // Keep the hero as a single rotating image plane; do not inject a second photo into the service card.
 
   const section = make('section', 'section family-welcome');
   section.setAttribute('data-family-welcome', '');

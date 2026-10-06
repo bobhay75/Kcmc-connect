@@ -101,7 +101,21 @@ for name, content in expected.items():
         old, new = old.encode(), new.encode()
         check(content.count(old) == 1, name + ': approved replacement has exactly one source anchor')
         content = content.replace(old, new, 1)
-    check((ROOT / PREFIX / name).read_bytes() == content, name + ': exact PR91 bytes plus approved PR92 differences only')
+    actual = (ROOT / PREFIX / name).read_bytes()
+    if name == 'public-presentation.js':
+        # PR99 intentionally removes only the obsolete nested hero-card photo injection.
+        marker = b"  // Keep the hero as a single rotating image plane; do not inject a second photo into the service card."
+        source_start = content.find(b"  // Keep the existing local hero photo unless the church's published image loads.\n")
+        source_end = content.find(b"  const section = make('section', 'section family-welcome');", source_start)
+        if source_start >= 0 and source_end > source_start:
+            content = content[:source_start] + marker + b"\n\n" + content[source_end:]
+    if name == 'index.php':
+        # PR99 intentionally adds the approved church-family photo as one additional hero frame.
+        anchor = b'    <img class="hero-photo" data-hero-photo src="./assets/visuals/kcmc-stage-2014.webp" alt="KCMC worship stage, photographed in 2014" loading="lazy" decoding="async" width="640" height="480" hidden>\n'
+        addition = b'    <img class="hero-photo" data-hero-photo src="./assets/visuals/kcmc-ministry-group.jpg" alt="KCMC church family and ministry group" loading="lazy" decoding="async" width="640" height="480" hidden>\n'
+        check(content.count(anchor) == 1, 'index.php: approved hero insertion anchor is unique')
+        content = content.replace(anchor, anchor + addition, 1)
+    check(actual == content, name + ': exact reviewed runtime plus approved differences only')
 
 # PR93 adds only an admin navigation link and a new protected publication
 # designer. Pin their Git blob identities so the older PR91/PR92 byte-level
@@ -130,4 +144,6 @@ check("const caption = gallery.querySelector('[data-hero-caption]');" not in js 
 check('KCMC hero caption fix' not in css, 'no additional caption CSS introduced (exact-byte checks are authoritative)')
 index = (ROOT / PREFIX / 'index.php').read_text()
 check('data-caption=' not in index and 'data-hero-caption' not in index and 'photo archive,' not in index, 'public homepage carries no obsolete hero caption payload')
+check('kcmc-ministry-group.jpg' in index, 'approved church-family photo is included in hero rotation')
+check('hero-card-with-photo' not in js and 'hero-church-window' not in js, 'hero service card no longer injects a second building photo')
 print('Installed reconciliation provenance and approved PR92 exact-source checks passed.')
