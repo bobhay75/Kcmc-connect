@@ -117,22 +117,22 @@ for name, content in expected.items():
         content = content.replace(anchor, anchor + addition, 1)
     check(actual == content, name + ': exact reviewed runtime plus approved differences only')
 
-# PR93 adds only an admin navigation link and a new protected publication
-# designer. Pin their Git blob identities so the older PR91/PR92 byte-level
-# preservation proof remains authoritative rather than being weakened.
-pr93 = {
+# Publication Designer changes remain constrained to the same three reviewed
+# admin files. Pin their exact Git blobs so older runtime provenance checks stay
+# byte-for-byte authoritative while allowing the approved multi-page upgrade.
+publication = {
     'admin/index.php': 'c130b7523b8a59fdde1101fee61a065402108674',
-    'admin/publication-designer.php': 'a62676f87f10c230e633721df47ab777eab97182',
-    'admin/publication-projects.php': 'c3e88927599e32d31d69503db536eff9882ab79f',
+    'admin/publication-designer.php': '29158b71f7eea006e60dc20b32afe0964a479726',
+    'admin/publication-projects.php': '417ee943da4542d22351043e975e439d380687e3',
 }
-for name, blob in pr93.items():
+for name, blob in publication.items():
     actual = git('hash-object', PREFIX + name).decode().strip()
     check(actual == blob, name + ': approved Publication Designer blob retained')
 
 changed = set(git('diff', '--name-only', BASE, '--', PREFIX).decode().splitlines())
-check(changed == ({PREFIX + p for p in expected} | {PREFIX + p for p in pr93}), 'runtime diff is PR91/PR92 reviewed runtime plus exactly three PR93 admin files')
+check(changed == ({PREFIX + p for p in expected} | {PREFIX + p for p in publication}), 'runtime diff is reviewed runtime plus exactly three Publication Designer admin files')
 changed_since_reconciled = set(git('diff', '--name-only', RECONCILED, '--', PREFIX).decode().splitlines())
-check(changed_since_reconciled == ({PREFIX + p for p in approved} | {PREFIX + p for p in pr93}), 'post-reconciliation diff is exactly PR92 approved deltas plus PR93 admin additions')
+check(changed_since_reconciled == ({PREFIX + p for p in approved} | {PREFIX + p for p in publication}), 'post-reconciliation diff is approved runtime deltas plus Publication Designer admin files')
 for path in ['.cpanel.yml', 'KCMC-Connect-Phase6-Recreated/data/content.json', 'KCMC-Connect-Phase6-Recreated/config.example.php']:
     check((ROOT / path).read_bytes() == source(BASE, path), path + ': unchanged')
 login = (ROOT / PREFIX / 'member/login.php').read_bytes()
