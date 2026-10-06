@@ -22,10 +22,9 @@
   if (!gallery) return;
   const photos = [...gallery.querySelectorAll('[data-hero-photo]')];
   const controls = gallery.querySelector('[data-hero-controls]');
-  const caption = gallery.querySelector('[data-hero-caption]');
   const status = gallery.querySelector('[data-hero-status]');
   const toggle = gallery.querySelector('[data-hero-toggle]');
-  if (photos.length < 2 || !controls || !caption || !toggle) return;
+  if (photos.length < 2 || !controls || !toggle) return;
   const motion = window.matchMedia('(prefers-reduced-motion: reduce)');
   let current = 0;
   let paused = motion.matches;
@@ -54,8 +53,7 @@
       photo.hidden = i !== current;
       photo.classList.toggle('is-current', i === current);
     });
-    caption.textContent = photos[current].dataset.caption || '';
-    if (announce && status) status.textContent = `Photo ${current + 1} of ${photos.length}. ${caption.textContent}`;
+    if (announce && status) status.textContent = `Photo ${current + 1} of ${photos.length}. ${photos[current].alt || ''}`;
   }
   function manualStep(step) {
     paused = true;
