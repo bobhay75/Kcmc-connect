@@ -122,15 +122,16 @@ for name, content in expected.items():
 # byte-for-byte authoritative while allowing the approved multi-page upgrade.
 publication = {
     'admin/index.php': 'c130b7523b8a59fdde1101fee61a065402108674',
-    'admin/publication-designer.php': '29158b71f7eea006e60dc20b32afe0964a479726',
-    'admin/publication-projects.php': '417ee943da4542d22351043e975e439d380687e3',
+    'admin/publication-designer.php': 'db4f6b45dd8313578c81084a96ba5af508479b62',
+    'admin/publication-projects.php': '35068412431e1ae48dfccf4bcf18b3713fae45b0',
+    'admin/publication-media.php': '8610de8eef17ee596150e5ae81b06fb52a864ba5',
 }
 for name, blob in publication.items():
     actual = git('hash-object', PREFIX + name).decode().strip()
     check(actual == blob, name + ': approved Publication Designer blob retained')
 
 changed = set(git('diff', '--name-only', BASE, '--', PREFIX).decode().splitlines())
-check(changed == ({PREFIX + p for p in expected} | {PREFIX + p for p in publication}), 'runtime diff is reviewed runtime plus exactly three Publication Designer admin files')
+check(changed == ({PREFIX + p for p in expected} | {PREFIX + p for p in publication}), 'runtime diff is reviewed runtime plus exactly four Publication Designer admin files')
 changed_since_reconciled = set(git('diff', '--name-only', RECONCILED, '--', PREFIX).decode().splitlines())
 check(changed_since_reconciled == ({PREFIX + p for p in approved} | {PREFIX + p for p in publication}), 'post-reconciliation diff is approved runtime deltas plus Publication Designer admin files')
 for path in ['.cpanel.yml', 'KCMC-Connect-Phase6-Recreated/data/content.json', 'KCMC-Connect-Phase6-Recreated/config.example.php']:
