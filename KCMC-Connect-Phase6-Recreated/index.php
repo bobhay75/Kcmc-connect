@@ -89,9 +89,9 @@ usort($kcmcAnnouncements, fn($a,$b)=>(int)($b['priority']??0)<=>(int)($a['priori
 <main id="mainContent">
 <section class="view active" data-view="home">
   <section class="hero hero-imagery" data-hero-gallery aria-label="Welcome to KCMC">
-    <img class="hero-photo is-current" data-hero-photo data-caption="Church exterior • photo archive, May 2024" src="./assets/visuals/kcmc-building-2024.webp" alt="Kimberling City Methodist Church exterior, photographed in 2024" loading="eager" decoding="async" fetchpriority="high" width="640" height="513">
-    <img class="hero-photo" data-hero-photo data-caption="Worship gathering • photo archive, June 2017" src="./assets/visuals/kcmc-worship-2017.webp" alt="People gathered for worship at KCMC, photographed in 2017" loading="lazy" decoding="async" width="640" height="344" hidden>
-    <img class="hero-photo" data-hero-photo data-caption="Worship space • photo archive, October 2014" src="./assets/visuals/kcmc-stage-2014.webp" alt="KCMC worship stage, photographed in 2014" loading="lazy" decoding="async" width="640" height="480" hidden>
+    <img class="hero-photo is-current" data-hero-photo src="./assets/visuals/kcmc-building-2024.webp" alt="Kimberling City Methodist Church exterior, photographed in 2024" loading="eager" decoding="async" fetchpriority="high" width="640" height="513">
+    <img class="hero-photo" data-hero-photo src="./assets/visuals/kcmc-worship-2017.webp" alt="People gathered for worship at KCMC, photographed in 2017" loading="lazy" decoding="async" width="640" height="344" hidden>
+    <img class="hero-photo" data-hero-photo src="./assets/visuals/kcmc-stage-2014.webp" alt="KCMC worship stage, photographed in 2014" loading="lazy" decoding="async" width="640" height="480" hidden>
     <div class="wrap hero-grid">
       <div>
         <div class="eyebrow">Welcome to Kimberling City Methodist Church</div>
@@ -113,7 +113,6 @@ usort($kcmcAnnouncements, fn($a,$b)=>(int)($b['priority']??0)<=>(int)($a['priori
           <button type="button" data-hero-toggle>Pause photos</button>
           <button type="button" data-hero-next aria-label="Next church photo">→</button>
         </div>
-        <p class="hero-photo-caption" data-hero-caption hidden>Church exterior • photo archive, May 2024</p>
         <p class="sr-only" data-hero-status role="status" aria-live="polite"></p>
       </div>
       <aside class="hero-card" aria-label="Next worship services">
