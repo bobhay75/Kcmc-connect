@@ -78,6 +78,7 @@ approved = {
         (' data-caption="Worship gathering • photo archive, June 2017"', ''),
         (' data-caption="Worship space • photo archive, October 2014"', ''),
         ('\n        <p class="hero-photo-caption" data-hero-caption hidden>Church exterior • photo archive, May 2024</p>', ''),
+        ('    <img class="hero-photo" data-hero-photo src="./assets/visuals/kcmc-stage-2014.webp" alt="KCMC worship stage, photographed in 2014" loading="lazy" decoding="async" width="640" height="480" hidden>', '    <img class="hero-photo" data-hero-photo src="./assets/visuals/kcmc-stage-2014.webp" alt="KCMC worship stage, photographed in 2014" loading="lazy" decoding="async" width="640" height="480" hidden>\n    <img class="hero-photo" data-hero-photo src="./assets/visuals/kcmc-ministry-group.jpg" alt="KCMC ministry group gathered for a church community photo" loading="lazy" decoding="async" width="640" height="480" hidden>\n    <img class="hero-photo" data-hero-photo src="./assets/visuals/trunk-or-treat-2026.webp" alt="KCMC families and community members at the 2026 Trunk or Treat" loading="lazy" decoding="async" width="640" height="480" hidden>'),
     ],
     'public-presentation.js': [
         ('}, 8000);', '}, 420000);'),
@@ -130,4 +131,7 @@ check("const caption = gallery.querySelector('[data-hero-caption]');" not in js 
 check('KCMC hero caption fix' not in css, 'no additional caption CSS introduced (exact-byte checks are authoritative)')
 index = (ROOT / PREFIX / 'index.php').read_text()
 check('data-caption=' not in index and 'data-hero-caption' not in index and 'photo archive,' not in index, 'public homepage carries no obsolete hero caption payload')
+check(index.count('data-hero-photo') == 5, 'public homepage includes all five reviewed church and ministry gallery photos')
+check('kcmc-ministry-group.jpg' in index and 'KCMC ministry group gathered for a church community photo' in index, 'ministry group photo has a useful alt description')
+check('trunk-or-treat-2026.webp' in index and 'KCMC families and community members at the 2026 Trunk or Treat' in index, 'approved Trunk or Treat photo has a useful alt description')
 print('Installed reconciliation provenance and approved PR92 exact-source checks passed.')

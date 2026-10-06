@@ -92,6 +92,8 @@ usort($kcmcAnnouncements, fn($a,$b)=>(int)($b['priority']??0)<=>(int)($a['priori
     <img class="hero-photo is-current" data-hero-photo src="./assets/visuals/kcmc-building-2024.webp" alt="Kimberling City Methodist Church exterior, photographed in 2024" loading="eager" decoding="async" fetchpriority="high" width="640" height="513">
     <img class="hero-photo" data-hero-photo src="./assets/visuals/kcmc-worship-2017.webp" alt="People gathered for worship at KCMC, photographed in 2017" loading="lazy" decoding="async" width="640" height="344" hidden>
     <img class="hero-photo" data-hero-photo src="./assets/visuals/kcmc-stage-2014.webp" alt="KCMC worship stage, photographed in 2014" loading="lazy" decoding="async" width="640" height="480" hidden>
+    <img class="hero-photo" data-hero-photo src="./assets/visuals/kcmc-ministry-group.jpg" alt="KCMC ministry group gathered for a church community photo" loading="lazy" decoding="async" width="640" height="480" hidden>
+    <img class="hero-photo" data-hero-photo src="./assets/visuals/trunk-or-treat-2026.webp" alt="KCMC families and community members at the 2026 Trunk or Treat" loading="lazy" decoding="async" width="640" height="480" hidden>
     <div class="wrap hero-grid">
       <div>
         <div class="eyebrow">Welcome to Kimberling City Methodist Church</div>
