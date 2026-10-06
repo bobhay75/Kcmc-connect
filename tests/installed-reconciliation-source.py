@@ -101,7 +101,15 @@ for name, content in expected.items():
         old, new = old.encode(), new.encode()
         check(content.count(old) == 1, name + ': approved replacement has exactly one source anchor')
         content = content.replace(old, new, 1)
-    check((ROOT / PREFIX / name).read_bytes() == content, name + ': exact PR91 bytes plus approved PR92 differences only')
+    actual = (ROOT / PREFIX / name).read_bytes()
+    if name == 'public-presentation.js':
+        # PR99 intentionally removes only the obsolete nested hero-card photo injection.
+        marker = b"  // Keep the hero as a single rotating image plane; do not inject a second photo into the service card.\n\n"
+        source_start = content.find(b"  // Keep the existing local hero photo unless the church's published image loads.\n")
+        source_end = content.find(b"\n\n  const section = make('section', 'section family-welcome');", source_start)
+        if source_start >= 0 and source_end > source_start:
+            content = content[:source_start] + marker + content[source_end:]
+    check(actual == content, name + ': exact reviewed runtime plus approved differences only')
 
 # PR93 adds only an admin navigation link and a new protected publication
 # designer. Pin their Git blob identities so the older PR91/PR92 byte-level
@@ -130,4 +138,6 @@ check("const caption = gallery.querySelector('[data-hero-caption]');" not in js 
 check('KCMC hero caption fix' not in css, 'no additional caption CSS introduced (exact-byte checks are authoritative)')
 index = (ROOT / PREFIX / 'index.php').read_text()
 check('data-caption=' not in index and 'data-hero-caption' not in index and 'photo archive,' not in index, 'public homepage carries no obsolete hero caption payload')
+check('kcmc-ministry-group.jpg' in index, 'approved church-family photo is included in hero rotation')
+check('hero-card-with-photo' not in js and 'hero-church-window' not in js, 'hero service card no longer injects a second building photo')
 print('Installed reconciliation provenance and approved PR92 exact-source checks passed.')
