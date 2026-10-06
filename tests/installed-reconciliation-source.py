@@ -85,6 +85,9 @@ approved = {
         ("      const source = make('figcaption', 'photo-source');\n      source.append(link('Church photo · KCMC Visit page', visitPage, ''));\n      figure.append(image, source);", '      figure.append(image);'),
         ("  const source = make('figcaption', 'photo-source');\n  source.append(link('Photo · KCMC Youth page', youthPage, ''));", '  const source = null;'),
         ('  figure.append(image, source);', '  figure.append(image);'),
+        ("  const caption = gallery.querySelector('[data-hero-caption]');\n", ''),
+        ('  if (photos.length < 2 || !controls || !caption || !toggle) return;', '  if (photos.length < 2 || !controls || !toggle) return;'),
+        ("    caption.textContent = photos[current].dataset.caption || '';\n    if (announce && status) status.textContent = `Photo ${current + 1} of ${photos.length}. ${caption.textContent}`;", "    if (announce && status) status.textContent = `Photo ${current + 1} of ${photos.length}. ${photos[current].alt || ''}`;"),
     ],
     'member/timeclock.php': [
         ('<p class="eyebrow">EMPLOYEE TIME</p><h1>Time Clock</h1>', '<p class="eyebrow">STAFF TIME CLOCK</p><h1>Clock In / Clock Out</h1>'),
@@ -122,6 +125,7 @@ check(login.split(b'?><!doctype html>', 1)[0] == base['member/login.php'].split(
 js = (ROOT / PREFIX / 'public-presentation.js').read_text()
 css = (ROOT / PREFIX / 'public-presentation.css').read_text()
 check('}, 420000);' in js and '}, 8000);' not in js, 'approved seven-minute rotation retained')
+check("data-hero-caption" not in js and "photos[current].alt || ''" in js, 'hero rotation no longer depends on removed caption element')
 check('KCMC hero caption fix' not in css, 'no additional caption CSS introduced (exact-byte checks are authoritative)')
 index = (ROOT / PREFIX / 'index.php').read_text()
 check('data-caption=' not in index and 'data-hero-caption' not in index and 'photo archive,' not in index, 'public homepage carries no obsolete hero caption payload')
