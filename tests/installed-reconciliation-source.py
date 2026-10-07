@@ -115,6 +115,11 @@ for name, content in expected.items():
         addition = b'    <img class="hero-photo" data-hero-photo src="./assets/visuals/kcmc-ministry-group.jpg" alt="KCMC church family and ministry group" loading="lazy" decoding="async" width="640" height="480" hidden>\n'
         check(content.count(anchor) == 1, 'index.php: approved hero insertion anchor is unique')
         content = content.replace(anchor, anchor + addition, 1)
+    image_delta = json.loads((ROOT / 'tests/fixtures/supplied-images-runtime-delta.json').read_text(encoding='utf-8'))
+    check(set(image_delta) == {'index.php', 'public-presentation.js', 'sw.js'}, 'supplied image runtime delta is limited to public photo surfaces')
+    for old, new in image_delta.get(name, []):
+        check(content.count(old.encode()) == 1, name + ': supplied image replacement anchor is unique')
+        content = content.replace(old.encode(), new.encode(), 1)
     check(actual == content, name + ': exact reviewed runtime plus approved differences only')
 
 # Publication Designer changes remain constrained to the same three reviewed
@@ -122,18 +127,24 @@ for name, content in expected.items():
 # byte-for-byte authoritative while allowing the approved multi-page upgrade.
 publication = {
     'admin/index.php': 'c130b7523b8a59fdde1101fee61a065402108674',
-    'admin/publication-designer.php': 'db4f6b45dd8313578c81084a96ba5af508479b62',
-    'admin/publication-projects.php': '35068412431e1ae48dfccf4bcf18b3713fae45b0',
+    'admin/publication-designer.php': '4f5c1aa57aff3669fc0b9aabb1b8a77de9a1bd0c',
+    'admin/publication-projects.php': '5aa61e6e23da4ec7a327d8345f8f0067c1c5140b',
     'admin/publication-media.php': '8610de8eef17ee596150e5ae81b06fb52a864ba5',
 }
 for name, blob in publication.items():
     actual = git('hash-object', PREFIX + name).decode().strip()
     check(actual == blob, name + ': approved Publication Designer blob retained')
 
+image_inventory = json.loads((ROOT / 'docs/supplied-images-2026-10-06.json').read_text())
+check(len(image_inventory) == 9, 'exactly nine supplied assets inventoried')
+image_paths = {PREFIX + 'assets/visuals/' + a['file'] for a in image_inventory}
+for asset in image_inventory:
+    check(hashlib.sha256((ROOT / PREFIX / 'assets/visuals' / asset['file']).read_bytes()).hexdigest() == asset['sha256'], asset['file'] + ': supplied bytes preserved')
+
 changed = set(git('diff', '--name-only', BASE, '--', PREFIX).decode().splitlines())
-check(changed == ({PREFIX + p for p in expected} | {PREFIX + p for p in publication}), 'runtime diff is reviewed runtime plus exactly four Publication Designer admin files')
+check(changed == ({PREFIX + p for p in expected} | {PREFIX + p for p in publication} | image_paths), 'runtime diff is reviewed runtime plus exactly four Publication Designer admin files')
 changed_since_reconciled = set(git('diff', '--name-only', RECONCILED, '--', PREFIX).decode().splitlines())
-check(changed_since_reconciled == ({PREFIX + p for p in approved} | {PREFIX + p for p in publication}), 'post-reconciliation diff is approved runtime deltas plus Publication Designer admin files')
+check(changed_since_reconciled == ({PREFIX + p for p in approved} | {PREFIX + 'sw.js'} | {PREFIX + p for p in publication} | image_paths), 'post-reconciliation diff is approved runtime deltas plus Publication Designer admin files')
 for path in ['.cpanel.yml', 'KCMC-Connect-Phase6-Recreated/data/content.json', 'KCMC-Connect-Phase6-Recreated/config.example.php']:
     check((ROOT / path).read_bytes() == source(BASE, path), path + ': unchanged')
 login = (ROOT / PREFIX / 'member/login.php').read_bytes()

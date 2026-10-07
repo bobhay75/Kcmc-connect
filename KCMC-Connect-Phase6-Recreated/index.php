@@ -93,6 +93,11 @@ usort($kcmcAnnouncements, fn($a,$b)=>(int)($b['priority']??0)<=>(int)($a['priori
     <img class="hero-photo" data-hero-photo src="./assets/visuals/kcmc-worship-2017.webp" alt="People gathered for worship at KCMC, photographed in 2017" loading="lazy" decoding="async" width="640" height="344" hidden>
     <img class="hero-photo" data-hero-photo src="./assets/visuals/kcmc-stage-2014.webp" alt="KCMC worship stage, photographed in 2014" loading="lazy" decoding="async" width="640" height="480" hidden>
     <img class="hero-photo" data-hero-photo src="./assets/visuals/kcmc-ministry-group.jpg" alt="KCMC church family and ministry group" loading="lazy" decoding="async" width="640" height="480" hidden>
+    <img class="hero-photo" data-hero-photo src="./assets/visuals/kcmc-congregation-gathering.jpg" alt="People seated around tables facing the KCMC worship stage" loading="lazy" decoding="async" width="2048" height="1105" hidden>
+    <img class="hero-photo" data-hero-photo src="./assets/visuals/kcmc-family-outdoor-event.jpg" alt="Children and adults enjoying balloons and an inflatable slide at a Kimberling City outdoor event" loading="lazy" decoding="async" width="2048" height="1536" hidden>
+    <img class="hero-photo" data-hero-photo style="object-fit:contain" src="./assets/visuals/kcmc-bridge-logo.jpg" alt="Kimberling City Methodist Church logo with a blue bridge and black cross" loading="lazy" decoding="async" width="1156" height="1156" hidden>
+    <img class="hero-photo" data-hero-photo style="object-fit:contain" src="./assets/visuals/kcmc-bridge-wordmark.png" alt="Kimberling City Methodist Church bridge and cross logo over a sunset bridge photograph" loading="lazy" decoding="async" width="2048" height="706" hidden>
+    <img class="hero-photo" data-hero-photo style="object-fit:contain" src="./assets/visuals/kcmc-bridge-logo-composite.png" alt="Sunset bridge photograph with the Kimberling City Methodist Church logo inset at lower right" loading="lazy" decoding="async" width="2048" height="1144" hidden>
     <div class="wrap hero-grid">
       <div>
         <div class="eyebrow">Welcome to Kimberling City Methodist Church</div>
@@ -123,6 +128,14 @@ usort($kcmcAnnouncements, fn($a,$b)=>(int)($b['priority']??0)<=>(int)($a['priori
         <p>Front Porch Gospel, Traditional Worship, and Contemporary Worship each offer a distinct style with a common mission.</p>
         <div class="btns"><a class="btn gold" href="#watch" data-route="watch">Watch worship</a><a class="btn secondary" href="https://maps.app.goo.gl/W6kRCHvbaVJ7mwte7" target="_blank" rel="noopener">Directions</a></div>
       </aside>
+    </div>
+  </section>
+
+  <section class="section" aria-label="KCMC kids and family photos">
+    <div class="wrap grid3" data-kcmc-photo-gallery>
+      <div><img style="display:block;width:100%;height:auto;border-radius:18px" src="./assets/visuals/kcmc-family-outdoor-event.jpg" alt="Children and adults enjoying balloons and an inflatable slide at a Kimberling City outdoor event" loading="lazy" decoding="async" width="2048" height="1536"></div>
+      <div><img style="display:block;width:100%;height:auto;border-radius:18px" src="./assets/visuals/kcmc-kids-safari.jpg" alt="Children seated in a decorated safari cart inside KCMC" loading="lazy" decoding="async" width="2048" height="1536"></div>
+      <div><img style="display:block;width:100%;height:auto;border-radius:18px" src="./assets/visuals/kcmc-kids-game-room.jpg" alt="Children playing foosball and other table games in the KCMC game room" loading="lazy" decoding="async" width="2048" height="1289"></div>
     </div>
   </section>
 
@@ -276,6 +289,6 @@ usort($kcmcAnnouncements, fn($a,$b)=>(int)($b['priority']??0)<=>(int)($a['priori
   </div>
 </div>
 <script src="app.js?v=3.0.2" defer></script>
-<script src="public-presentation.js?v=tony-staff-20261001" defer></script>
+<script src="public-presentation.js?v=kcmc-photos-20261006" defer></script>
 <a class="phase6-bulletin-fab" href="bulletin.php">Latest Bulletin</a>
 </body></html>

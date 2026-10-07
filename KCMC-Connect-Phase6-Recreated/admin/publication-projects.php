@@ -85,6 +85,15 @@ function pub_item(array $item): array {
                 'kcmc-ministry-group.jpg',
                 'kcmc-stage-2014.webp',
                 'trunk-or-treat-2026.webp',
+                'kcmc-congregation-gathering.jpg',
+                'kcmc-family-outdoor-event.jpg',
+                'kcmc-bridge-logo.jpg',
+                'kcmc-kids-safari.jpg',
+                'kcmc-kids-game-room.jpg',
+                'kcmc-kids-summer-group.jpg',
+                'kcmc-church-wordmark.jpg',
+                'kcmc-bridge-wordmark.png',
+                'kcmc-bridge-logo-composite.png',
             ];
             $path = (string)(parse_url($src, PHP_URL_PATH) ?? '');
             $base = basename($path);
