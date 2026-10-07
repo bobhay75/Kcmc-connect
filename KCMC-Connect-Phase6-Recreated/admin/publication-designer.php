@@ -21,6 +21,7 @@ button,input,select,textarea{font:inherit}.shell{min-height:100vh;display:grid;g
 .canvas-wrap{overflow:auto;padding:28px;display:grid;place-items:start center;background:linear-gradient(45deg,#e7ecef 25%,transparent 25%),linear-gradient(-45deg,#e7ecef 25%,transparent 25%),linear-gradient(45deg,transparent 75%,#e7ecef 75%),linear-gradient(-45deg,transparent 75%,#e7ecef 75%);background-size:24px 24px;background-position:0 0,0 12px,12px -12px,-12px 0}
 .page{position:relative;background:#fff;box-shadow:0 8px 26px rgba(0,0,0,.16);transform-origin:top center}
 .item{position:absolute;min-width:40px;min-height:28px;border:1px dashed transparent;overflow:hidden}.item.selected{border-color:#1e6fa8;box-shadow:0 0 0 2px rgba(30,111,168,.16)}.item[contenteditable="true"]:focus{outline:none}
+.item[data-type="text"]{white-space:pre-wrap;padding:6px}
 .item img{width:100%;height:100%;object-fit:cover;display:block}.handle{position:absolute;width:12px;height:12px;background:#1e6fa8;border:2px solid #fff;border-radius:50%;right:-7px;bottom:-7px;cursor:nwse-resize;display:none}.selected .handle{display:block}
 .toolbar{display:grid;grid-template-columns:repeat(2,1fr);gap:8px;margin-bottom:12px}.page-nav{display:grid;grid-template-columns:1fr auto 1fr;gap:8px;align-items:center;margin:8px 0}.page-nav .small{text-align:center}.print-pages{display:none}.status{font-size:.85rem;color:#607080}.small{font-size:.82rem;color:#607080}.hidden{display:none!important}
 @media(max-width:900px){.workspace{grid-template-columns:1fr}.panel.right{border-left:0;border-top:1px solid var(--line)}.panel{border-right:0;border-bottom:1px solid var(--line)}}
@@ -139,12 +140,34 @@ function template(name){page.innerHTML='';clearSelection();pageSize.value=name==
  if(name==='memorial'){const h=makeItem('text',90,70,610,85);h.innerText='A SERVICE OF REMEMBRANCE';h.style.fontSize='34px';h.style.fontWeight='700';h.style.textAlign='center';const t=makeItem('text',110,190,570,600);t.innerText='Name\nDates\n\nPrelude\nWelcome\nScripture\nRemembrances\nMessage\nPrayer\nClosing';t.style.textAlign='center';t.style.fontSize='22px'}
  if(name==='study'){const h=makeItem('text',70,55,650,70);h.innerText='BIBLE STUDY';h.style.fontSize='38px';h.style.fontWeight='700';const t=makeItem('text',70,150,650,720);t.innerText='Scripture:\n\nMain idea:\n\nNotes:\n\nQuestions:\n1.\n2.\n3.';t.style.fontSize='22px'}
  clearSelection();resetPagesFromCanvas();setStatus('Template loaded')}
+// Serialize only plain text. BRs and editable block lines must survive without
+// copying HTML or counting the resize handle as publication content.
+function publicationText(root){
+ const blocks=new Set(['DIV','P','LI','H1','H2','H3','H4','H5','H6','BLOCKQUOTE']);
+ function children(parent){
+  let text='',previousBlock=false,previousParagraph=false;
+  for(const node of parent.childNodes){
+   if(node.nodeType!==1&&node.nodeType!==3)continue;
+   if(node.nodeType===1&&node.classList.contains('handle'))continue;
+   const tag=node.nodeType===1?node.tagName:'',block=blocks.has(tag),paragraph=tag==='P';
+   const value=node.nodeType===3?node.nodeValue:tag==='BR'?'\n':children(node);
+   if(text&&(block||previousBlock)){
+    const required=paragraph||previousParagraph?2:1;
+    const trailing=(text.match(/\n*$/)||[''])[0].length;
+    text+='\n'.repeat(Math.max(0,required-trailing));
+   }
+   text+=value;previousBlock=block;previousParagraph=paragraph;
+  }
+  return text;
+ }
+ return children(root);
+}
 function itemData(el){const cs=getComputedStyle(el),img=el.querySelector('img');return {
  type:el.dataset.type||'text',x:parseFloat(el.style.left)||0,y:parseFloat(el.style.top)||0,w:parseFloat(el.style.width)||el.offsetWidth,h:parseFloat(el.style.height)||el.offsetHeight,
  fontFamily:cs.fontFamily.replaceAll('"','').split(',')[0],fontSize:parseFloat(cs.fontSize)||24,fontWeight:cs.fontWeight==='700'||parseInt(cs.fontWeight)>=700?'700':'400',fontStyle:cs.fontStyle==='italic'?'italic':'normal',
  textAlign:['left','center','right'].includes(cs.textAlign)?cs.textAlign:'left',color:rgbToHex(cs.color),fill:rgbToHex(cs.backgroundColor)==='#000000'?'#ffffff':rgbToHex(cs.backgroundColor),
  borderColor:rgbToHex(cs.borderColor),borderWidth:parseFloat(cs.borderWidth)||0,opacity:parseFloat(cs.opacity)||1,
- ...(el.dataset.type==='text'?{text:[...el.childNodes].filter(n=>!(n.nodeType===1&&n.classList?.contains('handle'))).map(n=>n.textContent).join('')}:{ }),
+ ...(el.dataset.type==='text'?{text:publicationText(el)}:{ }),
  ...(el.dataset.type==='image'?(el.dataset.mediaId?{mediaId:el.dataset.mediaId,alt:img?.alt||'KCMC photo'}:{src:img?.getAttribute('src')||'',alt:img?.alt||'KCMC photo'}):{ })
 }}
 function currentProjectName(){return document.getElementById('projectName').value.trim().slice(0,80)||'Untitled publication'}
@@ -177,7 +200,7 @@ prevPage.onclick=()=>showPage(currentPageIndex-1);nextPage.onclick=()=>showPage(
 addPage.onclick=()=>{commitCurrentPage();if(pageState.length>=12)return;pageState.push({pageSize:pageSize.value,orientation:orientation.value,items:[]});currentPageIndex=pageState.length-1;renderPageData(pageState[currentPageIndex]);setStatus('Blank page added')};
 duplicatePage.onclick=()=>{commitCurrentPage();if(pageState.length>=12)return;const copy=JSON.parse(JSON.stringify(pageState[currentPageIndex]));pageState.splice(currentPageIndex+1,0,copy);currentPageIndex++;renderPageData(copy);setStatus('Page duplicated')};
 deletePage.onclick=()=>{commitCurrentPage();if(pageState.length<=1)return;pageState.splice(currentPageIndex,1);currentPageIndex=Math.min(currentPageIndex,pageState.length-1);renderPageData(pageState[currentPageIndex]);setStatus('Page deleted')};
-function buildPrintPage(p){const out=document.createElement('div');out.className='page';applyPage(out,p.pageSize,p.orientation);for(const item of (p.items||[])){const el=document.createElement('div');el.className='item';Object.assign(el.style,{left:item.x+'px',top:item.y+'px',width:item.w+'px',height:item.h+'px',fontFamily:item.fontFamily||'Arial',fontSize:(item.fontSize||24)+'px',fontWeight:item.fontWeight||'400',fontStyle:item.fontStyle||'normal',textAlign:item.textAlign||'left',color:item.color||'#17324c',background:item.fill||'#ffffff',borderColor:item.borderColor||'#17324c',borderStyle:(item.borderWidth||0)>0?'solid':'none',borderWidth:(item.borderWidth||0)+'px',opacity:item.opacity??1});if(item.type==='text')el.textContent=item.text||'';else if(item.type==='image'){const img=document.createElement('img');img.src=item.mediaId?mediaEndpoint+'?id='+encodeURIComponent(item.mediaId):(item.src||'');img.alt=item.alt||'KCMC photo';el.appendChild(img)}out.appendChild(el)}return out}
+function buildPrintPage(p){const out=document.createElement('div');out.className='page';applyPage(out,p.pageSize,p.orientation);for(const item of (p.items||[])){const el=document.createElement('div');el.className='item';el.dataset.type=item.type;Object.assign(el.style,{left:item.x+'px',top:item.y+'px',width:item.w+'px',height:item.h+'px',fontFamily:item.fontFamily||'Arial',fontSize:(item.fontSize||24)+'px',fontWeight:item.fontWeight||'400',fontStyle:item.fontStyle||'normal',textAlign:item.textAlign||'left',color:item.color||'#17324c',background:item.fill||'#ffffff',borderColor:item.borderColor||'#17324c',borderStyle:(item.borderWidth||0)>0?'solid':'none',borderWidth:(item.borderWidth||0)+'px',opacity:item.opacity??1});if(item.type==='text')el.textContent=item.text||'';else if(item.type==='image'){const img=document.createElement('img');img.src=item.mediaId?mediaEndpoint+'?id='+encodeURIComponent(item.mediaId):(item.src||'');img.alt=item.alt||'KCMC photo';el.appendChild(img)}out.appendChild(el)}return out}
 async function renderPrintPages(){commitCurrentPage();const box=document.getElementById('printPages');box.innerHTML='';pageState.forEach(p=>box.appendChild(buildPrintPage(p)));const images=[...box.querySelectorAll('img')];await Promise.all(images.map(img=>img.complete?Promise.resolve():new Promise(resolve=>{img.onload=resolve;img.onerror=resolve})))}
 document.getElementById('saveBtn').onclick=save;document.getElementById('printBtn').onclick=async()=>{setStatus('Preparing all pages…');await renderPrintPages();setStatus('Print dialog ready');window.print()};
 pageSize.onchange=()=>{applyPage();commitCurrentPage()};orientation.onchange=()=>{applyPage();commitCurrentPage()};
