@@ -47,7 +47,7 @@ usort($kcmcAnnouncements, fn($a,$b)=>(int)($b['priority']??0)<=>(int)($a['priori
 <link rel="manifest" href="manifest.webmanifest?v=3.0.1">
 <link rel="preload" as="image" href="assets/visuals/kcmc-building-2024.webp" type="image/webp" fetchpriority="high">
 <link rel="stylesheet" href="styles.css?v=3.0.3">
-<link rel="stylesheet" href="public-presentation.css?v=tony-staff-20261001">
+<link rel="stylesheet" href="public-presentation.css?v=contemporary-bright-20261007">
 <link rel="icon" href="assets/icons/icon-192.png?v=3.0.1">
 <link rel="apple-touch-icon" href="assets/icons/icon-192.png?v=3.0.1">
 </head>
@@ -148,12 +148,29 @@ usort($kcmcAnnouncements, fn($a,$b)=>(int)($b['priority']??0)<=>(int)($a['priori
     </div>
   </section>
 
-  <section class="section">
-    <div class="wrap video-card">
-      <div class="video-art contemporary-art"><div><span class="pill">Worship online</span><br><br><b>Contemporary<br>Worship</b></div></div>
-      <div class="video-copy"><div class="eyebrow">Messages &amp; worship</div><h2 style="font-family:Georgia,serif;font-size:3rem;font-weight:400;margin:.15em 0">Worship wherever you are.</h2><p class="muted">Find KCMC messages and worship on the church’s official Facebook page. Facebook may ask you to sign in.</p><div class="btns"><a class="btn gold" href="https://www.facebook.com/KimberlingCityMethodistChurch/live_videos" target="_blank" rel="noopener">Watch messages</a><a class="btn secondary" href="https://www.facebook.com/KimberlingCityMethodistChurch/live_videos" target="_blank" rel="noopener">All live videos</a></div></div>
+  <!-- KCMC_CONTEMPORARY_FEATURE_20261002 BEGIN -->
+  <section class="section cw-section" data-contemporary-feature aria-labelledby="cw-title">
+    <div class="wrap">
+      <div class="cw-feature">
+        <div class="cw-copy">
+          <p class="cw-kicker">Sunday mornings <span>10:30 AM</span></p>
+          <h2 id="cw-title">Contemporary<br><span>Worship.</span></h2>
+          <p class="cw-intro">Come as you are. Find your place.</p>
+          <p class="cw-description">A relaxed, coffee-shop setting with fellowship, refreshments, and an uplifting message from the Bible.</p>
+          <p class="cw-family">Bringing the family? Launch Kids meets during the 10:30 service.</p>
+          <div class="cw-actions">
+            <a class="cw-button cw-primary" href="#visit" data-route="visit">Plan your Sunday <span aria-hidden="true">&#8594;</span></a>
+            <a class="cw-button cw-secondary" href="https://www.facebook.com/KimberlingCityMethodistChurch/live_videos" target="_blank" rel="noopener noreferrer">Watch messages</a>
+          </div>
+          <p class="cw-online-note">Messages and worship are on our official Facebook page. Facebook may ask you to sign in.</p>
+        </div>
+        <div class="cw-media">
+          <img src="assets/visuals/kcmc-worship-2017.webp" alt="People gathered around tables for worship at KCMC, photographed in 2017" width="640" height="344" loading="lazy" decoding="async">
+        </div>
+      </div>
     </div>
   </section>
+  <!-- KCMC_CONTEMPORARY_FEATURE_20261002 END -->
 
   <section class="section alt">
     <div class="wrap contact-strip"><div><div class="eyebrow">Need a person?</div><h2>Call the church office.</h2><p class="muted"><?=kcmc_h($kcmcOfficeHours)?> • <?=kcmc_h($kcmcPhone)?> • <?=kcmc_h($kcmcEmail)?></p></div><div class="btns" style="align-content:center"><a class="btn gold" href="<?=kcmc_h($kcmcPhoneHref)?>">Call now</a><a class="btn secondary" href="<?=kcmc_h($kcmcEmailHref)?>">Email</a></div></div>
@@ -276,6 +293,6 @@ usort($kcmcAnnouncements, fn($a,$b)=>(int)($b['priority']??0)<=>(int)($a['priori
   </div>
 </div>
 <script src="app.js?v=3.0.2" defer></script>
-<script src="public-presentation.js?v=tony-staff-20261001" defer></script>
+<script src="public-presentation.js?v=contemporary-bright-20261007" defer></script>
 <a class="phase6-bulletin-fab" href="bulletin.php">Latest Bulletin</a>
 </body></html>

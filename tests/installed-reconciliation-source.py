@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Verify PR91 provenance plus only PR92's approved deltas; never call a host."""
+"""Verify installed provenance and enumerated approved deltas; never call a host."""
 import ast
 import hashlib
 import json
@@ -96,6 +96,13 @@ approved = {
         ('type="submit">Clock Out</button>', 'type="submit">Clock Out &amp; Save Shift</button>'),
     ],
 }
+# Reviewed PR90 presentation only; no installer or caption patch is executed.
+bright_bytes = (ROOT / 'tests/fixtures/contemporary-bright-reviewed.json').read_bytes()
+check(hashlib.sha256(bright_bytes).hexdigest() == 'b85e1c0dfbd0f38e877fb2e96f639784b79966b50eccbdbb76b0817997d9183a', 'reviewed bright presentation fixture remains exact')
+bright = json.loads(bright_bytes)
+for name in bright['replacements']:
+    approved.setdefault(name, [])
+
 for name, content in expected.items():
     for old, new in approved.get(name, []):
         old, new = old.encode(), new.encode()
@@ -115,6 +122,11 @@ for name, content in expected.items():
         addition = b'    <img class="hero-photo" data-hero-photo src="./assets/visuals/kcmc-ministry-group.jpg" alt="KCMC church family and ministry group" loading="lazy" decoding="async" width="640" height="480" hidden>\n'
         check(content.count(anchor) == 1, 'index.php: approved hero insertion anchor is unique')
         content = content.replace(anchor, anchor + addition, 1)
+    for old, new in bright['replacements'].get(name, []):
+        check(content.count(old.encode()) == 1, name + ': bright presentation anchor is unique')
+        content = content.replace(old.encode(), new.encode(), 1)
+    if name == 'public-presentation.css':
+        content += bright['css_append'].encode()
     check(actual == content, name + ': exact reviewed runtime plus approved differences only')
 
 # Publication Designer changes remain constrained to the same three reviewed
