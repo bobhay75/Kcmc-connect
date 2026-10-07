@@ -31,7 +31,7 @@ button,input,select,textarea{font:inherit}.shell{min-height:100vh;display:grid;g
 <body>
 <div class="shell">
 <header class="topbar">
-  <div class="brand"><a href="<?=kcmc_h(kcmc_url('admin/'))?>" class="btn">← Publishing Desk</a><strong>Publication Designer</strong><span class="status" id="status">Ready</span></div>
+  <div class="brand"><a href="<?=kcmc_h(kcmc_url('admin/'))?>" class="btn">← Publishing Desk</a><strong>Publication Designer</strong><span class="status" id="status" role="status" aria-live="polite" aria-atomic="true">Ready</span></div>
   <div class="actions">
     <label class="field" style="margin:0;min-width:220px"><span class="small">Project name</span><input id="projectName" maxlength="80" value="Untitled publication" aria-label="Project name"></label>
     <button class="btn" id="newBtn">New</button>
@@ -122,14 +122,14 @@ button,input,select,textarea{font:inherit}.shell{min-height:100vh;display:grid;g
 </div>
 <script>
 (()=>{
-const page=document.getElementById('page'),status=document.getElementById('status');
+const page=document.getElementById('page'),status=document.getElementById('status'),saveButton=document.getElementById('saveBtn');
 const projectEndpoint=<?=json_encode(kcmc_url('admin/publication-projects.php'), JSON_UNESCAPED_SLASHES)?>;
 const mediaEndpoint=<?=json_encode(kcmc_url('admin/publication-media.php'), JSON_UNESCAPED_SLASHES)?>;
 const csrf=<?=json_encode(kcmc_csrf(), JSON_UNESCAPED_SLASHES)?>;
 const pageSize=document.getElementById('pageSize'),orientation=document.getElementById('orientation');
 const imagePicker=document.getElementById('imagePicker'),sharedMediaLibrary=document.getElementById('sharedMediaLibrary');
 const props=document.getElementById('properties'),noSel=document.getElementById('noSelection');
-let selected=null,drag=null,projectId=null,currentPageIndex=0,pageState=[];
+let selected=null,drag=null,projectId=null,currentPageIndex=0,pageState=[],projectGeneration=0,saveInFlight=false;
 const inch=96,sizes={letter:[8.5,11],half:[5.5,8.5],postcard:[6,4]};
 function setStatus(t){status.textContent=t}
 function applyPage(target=page,sizeValue=pageSize.value,orientationValue=orientation.value){let [w,h]=sizes[sizeValue]||sizes.letter;if(orientationValue==='landscape')[w,h]=[h,w];target.style.width=(w*inch)+'px';target.style.height=(h*inch)+'px'}
@@ -191,8 +191,19 @@ function restoreItem(item){const el=makeItem(item.type,item.x,item.y,item.w,item
  if(item.type==='text'){el.childNodes.forEach(n=>{if(!(n.nodeType===1&&n.classList?.contains('handle')))n.remove()});el.insertBefore(document.createTextNode(item.text||''),el.firstChild)}
  if(item.type==='image'){const img=document.createElement('img');if(item.mediaId){el.dataset.mediaId=item.mediaId;img.src=mediaEndpoint+'?id='+encodeURIComponent(item.mediaId)}else{img.src=item.src||''}img.alt=item.alt||'KCMC photo';el.insertBefore(img,el.firstChild)}
  return el}
-async function save(){const p=serialize();setStatus('Saving…');try{const r=await fetch(projectEndpoint,{method:'POST',headers:{'Content-Type':'application/json'},credentials:'same-origin',body:JSON.stringify({...p,csrf})});const j=await r.json();if(!r.ok||!j.ok)throw new Error(j.error||'Save failed');projectId=j.project.id;setStatus('Saved for KCMC admins');await renderSaved()}catch(err){setStatus(err.message||'Save failed')}}
-function loadProject(p){projectId=p.id;document.getElementById('projectName').value=String(p.name||'Untitled publication').slice(0,80);const legacy={pageSize:p.pageSize||'letter',orientation:p.orientation||'portrait',items:Array.isArray(p.items)?p.items:[]};pageState=(Array.isArray(p.pages)&&p.pages.length?p.pages:[legacy]).slice(0,12).map(pg=>({pageSize:pg.pageSize||'letter',orientation:pg.orientation||'portrait',items:Array.isArray(pg.items)?pg.items:[]}));currentPageIndex=0;renderPageData(pageState[0]);setStatus('Loaded '+p.name+' • '+pageState.length+' page'+(pageState.length===1?'':'s'))}
+async function save(){
+ if(saveInFlight)return;
+ const p=serialize(),generation=projectGeneration;
+ saveInFlight=true;saveButton.disabled=true;setStatus('Saving…');
+ try{
+  const r=await fetch(projectEndpoint,{method:'POST',headers:{'Content-Type':'application/json'},credentials:'same-origin',body:JSON.stringify({...p,csrf})});
+  const j=await r.json();if(!r.ok||!j.ok)throw new Error(j.error||'Save failed');
+  if(generation===projectGeneration){projectId=j.project.id;setStatus('Saved for KCMC admins')}
+  await renderSaved();
+ }catch(err){if(generation===projectGeneration)setStatus(err.message||'Save failed')}
+ finally{saveInFlight=false;saveButton.disabled=false}
+}
+function loadProject(p){projectGeneration++;projectId=p.id;document.getElementById('projectName').value=String(p.name||'Untitled publication').slice(0,80);const legacy={pageSize:p.pageSize||'letter',orientation:p.orientation||'portrait',items:Array.isArray(p.items)?p.items:[]};pageState=(Array.isArray(p.pages)&&p.pages.length?p.pages:[legacy]).slice(0,12).map(pg=>({pageSize:pg.pageSize||'letter',orientation:pg.orientation||'portrait',items:Array.isArray(pg.items)?pg.items:[]}));currentPageIndex=0;renderPageData(pageState[0]);setStatus('Loaded '+p.name+' • '+pageState.length+' page'+(pageState.length===1?'':'s'))}
 async function renderSaved(){const box=document.getElementById('savedList');box.innerHTML='<span class="small">Loading…</span>';try{const r=await fetch(projectEndpoint,{credentials:'same-origin'}),j=await r.json();if(!r.ok||!j.ok)throw new Error(j.error||'Could not load projects');box.innerHTML='';(j.projects||[]).forEach(p=>{const b=document.createElement('button');b.className='template';b.innerHTML='<strong>'+escapeHtml(p.name)+'</strong><br><span class="small">'+new Date(p.updated).toLocaleString()+'</span>';b.onclick=()=>loadProject(p);box.appendChild(b)});if(!(j.projects||[]).length)box.innerHTML='<span class="small">No shared projects yet.</span>'}catch(err){box.innerHTML='<span class="small">'+escapeHtml(err.message||'Could not load projects')+'</span>'}}
 function escapeHtml(s){return s.replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[c]))}
 document.getElementById('templates').addEventListener('click',e=>{const b=e.target.closest('[data-template]');if(b)template(b.dataset.template)});
@@ -203,8 +214,8 @@ document.getElementById('addImage').onclick=()=>imagePicker.click();
 imagePicker.onchange=async e=>{const file=e.target.files[0];if(!file)return;setStatus('Uploading photo…');const form=new FormData();form.append('csrf',csrf);form.append('photo',file);try{const r=await fetch(mediaEndpoint,{method:'POST',credentials:'same-origin',body:form}),j=await r.json();if(!r.ok||!j.ok)throw new Error(j.error||'Upload failed');addSharedMediaToCanvas(j.media);await renderSharedMedia();setStatus('Photo uploaded and added')}catch(err){setStatus(err.message||'Upload failed')}finally{imagePicker.value=''}};
 document.getElementById('assetLibrary').addEventListener('click',e=>{const b=e.target.closest('[data-asset]');if(!b)return;const el=makeItem('image',80,80,320,220);const img=document.createElement('img');img.src=b.dataset.asset;img.alt=b.dataset.alt||b.querySelector('strong')?.textContent||'KCMC photo';el.insertBefore(img,el.firstChild);setStatus('KCMC photo added')});
 document.getElementById('deleteItem').onclick=()=>{if(selected){selected.remove();clearSelection()}};
-document.getElementById('newBtn').onclick=()=>{projectId=null;document.getElementById('projectName').value='Untitled publication';page.innerHTML='';clearSelection();template('flyer');setStatus('New publication')};
-document.getElementById('duplicateBtn').onclick=()=>{commitCurrentPage();const name=currentProjectName();projectId=null;document.getElementById('projectName').value=(name+' - Copy').slice(0,80);setStatus('Independent copy ready — click Save')};
+document.getElementById('newBtn').onclick=()=>{projectGeneration++;projectId=null;document.getElementById('projectName').value='Untitled publication';page.innerHTML='';clearSelection();template('flyer');setStatus('New publication')};
+document.getElementById('duplicateBtn').onclick=()=>{commitCurrentPage();const name=currentProjectName();projectGeneration++;projectId=null;document.getElementById('projectName').value=name.slice(0,73)+' - Copy';setStatus('Independent copy ready — click Save')};
 prevPage.onclick=()=>showPage(currentPageIndex-1);nextPage.onclick=()=>showPage(currentPageIndex+1);
 addPage.onclick=()=>{commitCurrentPage();if(pageState.length>=12)return;pageState.push({pageSize:pageSize.value,orientation:orientation.value,items:[]});currentPageIndex=pageState.length-1;renderPageData(pageState[currentPageIndex]);setStatus('Blank page added')};
 duplicatePage.onclick=()=>{commitCurrentPage();if(pageState.length>=12)return;const copy=JSON.parse(JSON.stringify(pageState[currentPageIndex]));pageState.splice(currentPageIndex+1,0,copy);currentPageIndex++;renderPageData(copy);setStatus('Page duplicated')};

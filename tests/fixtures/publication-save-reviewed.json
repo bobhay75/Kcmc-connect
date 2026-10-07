@@ -1,0 +1,33 @@
+{
+  "source_commit": "c19214a0078ae8a4d306954a76ca4a8f96dadcb2",
+  "replacements": [
+    [
+      "<span class=\"status\" id=\"status\">Ready</span>",
+      "<span class=\"status\" id=\"status\" role=\"status\" aria-live=\"polite\" aria-atomic=\"true\">Ready</span>"
+    ],
+    [
+      "const page=document.getElementById('page'),status=document.getElementById('status');",
+      "const page=document.getElementById('page'),status=document.getElementById('status'),saveButton=document.getElementById('saveBtn');"
+    ],
+    [
+      "let selected=null,drag=null,projectId=null,currentPageIndex=0,pageState=[];",
+      "let selected=null,drag=null,projectId=null,currentPageIndex=0,pageState=[],projectGeneration=0,saveInFlight=false;"
+    ],
+    [
+      "async function save(){const p=serialize();setStatus('Saving…');try{const r=await fetch(projectEndpoint,{method:'POST',headers:{'Content-Type':'application/json'},credentials:'same-origin',body:JSON.stringify({...p,csrf})});const j=await r.json();if(!r.ok||!j.ok)throw new Error(j.error||'Save failed');projectId=j.project.id;setStatus('Saved for KCMC admins');await renderSaved()}catch(err){setStatus(err.message||'Save failed')}}",
+      "async function save(){\n if(saveInFlight)return;\n const p=serialize(),generation=projectGeneration;\n saveInFlight=true;saveButton.disabled=true;setStatus('Saving…');\n try{\n  const r=await fetch(projectEndpoint,{method:'POST',headers:{'Content-Type':'application/json'},credentials:'same-origin',body:JSON.stringify({...p,csrf})});\n  const j=await r.json();if(!r.ok||!j.ok)throw new Error(j.error||'Save failed');\n  if(generation===projectGeneration){projectId=j.project.id;setStatus('Saved for KCMC admins')}\n  await renderSaved();\n }catch(err){if(generation===projectGeneration)setStatus(err.message||'Save failed')}\n finally{saveInFlight=false;saveButton.disabled=false}\n}"
+    ],
+    [
+      "function loadProject(p){projectId=p.id;",
+      "function loadProject(p){projectGeneration++;projectId=p.id;"
+    ],
+    [
+      "document.getElementById('newBtn').onclick=()=>{projectId=null;",
+      "document.getElementById('newBtn').onclick=()=>{projectGeneration++;projectId=null;"
+    ],
+    [
+      "document.getElementById('duplicateBtn').onclick=()=>{commitCurrentPage();const name=currentProjectName();projectId=null;document.getElementById('projectName').value=(name+' - Copy').slice(0,80);setStatus('Independent copy ready — click Save')};",
+      "document.getElementById('duplicateBtn').onclick=()=>{commitCurrentPage();const name=currentProjectName();projectGeneration++;projectId=null;document.getElementById('projectName').value=name.slice(0,73)+' - Copy';setStatus('Independent copy ready — click Save')};"
+    ]
+  ]
+}

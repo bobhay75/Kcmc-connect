@@ -147,9 +147,23 @@ publication = {
     'admin/publication-projects.php': '5aa61e6e23da4ec7a327d8345f8f0067c1c5140b',
     'admin/publication-media.php': '8610de8eef17ee596150e5ae81b06fb52a864ba5',
 }
+# Save responses may update only the editor project that initiated them.
+publisher_bytes = (ROOT / 'tests/fixtures/publication-save-reviewed.json').read_bytes()
+check(hashlib.sha256(publisher_bytes).hexdigest() == '102b657b0d2bcb233f26c0987027930aaacd0976e9d0e41bb7716168f3c952e3', 'reviewed publication save delta remains exact')
+publisher = json.loads(publisher_bytes)
+check(set(publisher) == {'source_commit', 'replacements'} and publisher['source_commit'] == 'c19214a0078ae8a4d306954a76ca4a8f96dadcb2', 'publication repair source remains pinned')
 for name, blob in publication.items():
-    actual = git('hash-object', PREFIX + name).decode().strip()
-    check(actual == blob, name + ': approved Publication Designer blob retained')
+    if name == 'admin/publication-designer.php':
+        content = source(publisher['source_commit'], PREFIX + name)
+        header = b'blob ' + str(len(content)).encode() + b'\0'
+        check(hashlib.sha1(header + content).hexdigest() == blob, name + ': approved repair baseline blob retained')
+        for old, new in publisher['replacements']:
+            check(content.count(old.encode()) == 1, name + ': publication repair anchor is unique')
+            content = content.replace(old.encode(), new.encode(), 1)
+        check((ROOT / PREFIX / name).read_bytes() == content, name + ': exact reviewed save repair only')
+    else:
+        actual = git('hash-object', PREFIX + name).decode().strip()
+        check(actual == blob, name + ': approved Publication Designer blob retained')
 
 image_inventory = json.loads((ROOT / 'docs/supplied-images-2026-10-06.json').read_text())
 check(len(image_inventory) == 9, 'exactly nine supplied assets inventoried')
