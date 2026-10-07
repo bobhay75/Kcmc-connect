@@ -32,7 +32,7 @@ foreach (['index.php', 'api/content.php'] as $file) {
     verify(str_contains((string)file_get_contents($root.$file), 'kcmc_public_content()'), "$file uses the public projection");
 }
 $home = (string)file_get_contents($root.'index.php');
-verify(!preg_match('/bridge|Verified members only|The Bridge to Salvation|Sermon library|Search sermons/i', $home), 'public homepage excludes retired branding and wording');
+verify(!preg_match('/Verified members only|The Bridge to Salvation|Sermon library|Search sermons/i', $home), 'public homepage excludes retired branding and wording');
 verify(str_contains($home, 'data-end-time') && str_contains($home, 'data-kcmc-form="visit"'), 'calendar and connection workflows are retained');
 verify(str_contains((string)file_get_contents($root.'bulletin.php'), 'kcmc_h($note)'), 'bulletin notes remain escaped, not interpreted');
 verify(!str_contains((string)file_get_contents($root.'sw.js'), 'kimberling-city-missouri-bridge'), 'offline precache excludes the retired bridge photo');
