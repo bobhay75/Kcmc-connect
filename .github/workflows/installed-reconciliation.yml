@@ -49,6 +49,7 @@ jobs:
           python3 tests/visible-photos-review.py | tee reconciliation-artifacts/photo-browser.txt
           python3 tests/signed-in-workflows-browser.py | tee reconciliation-artifacts/signed-in-browser.txt
           python3 tests/installed-reconciliation-browser.py | tee reconciliation-artifacts/staff-readability-browser.txt
+          python3 tests/publication-text-roundtrip-browser.py | tee reconciliation-artifacts/publication-text-browser.txt
       - name: Retain review evidence (no deployment)
         if: always()
         run: |

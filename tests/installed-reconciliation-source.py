@@ -122,7 +122,7 @@ for name, content in expected.items():
 # byte-for-byte authoritative while allowing the approved multi-page upgrade.
 publication = {
     'admin/index.php': 'c130b7523b8a59fdde1101fee61a065402108674',
-    'admin/publication-designer.php': 'db4f6b45dd8313578c81084a96ba5af508479b62',
+    'admin/publication-designer.php': 'ab4081307a5eb3f0c75cfd98603ea895e4bc8a70',
     'admin/publication-projects.php': '35068412431e1ae48dfccf4bcf18b3713fae45b0',
     'admin/publication-media.php': '8610de8eef17ee596150e5ae81b06fb52a864ba5',
 }
