@@ -21,10 +21,7 @@ ROOT = Path(__file__).resolve().parents[1]
 APP = ROOT / 'KCMC-Connect-Phase6-Recreated'
 OUT = ROOT / 'photo-review-artifacts'
 OUT.mkdir(exist_ok=True)
-PHOTOS = {
-    'church-front.jpg': 'https://static.wixstatic.com/media/15d3f9_9c56441e59bd4f2a9763d79278fc1da4~mv2.jpg',
-    'kids-group.jpg': 'https://static.wixstatic.com/media/15d3f9_c62929ab03a84ac19805d8d57512700c~mv2.jpg/v1/fill/w_980%2Ch_735%2Cal_c%2Cq_85%2Cusm_0.66_1.00_0.01%2Cenc_auto/Sunday%20Worship.jpg',
-}
+PHOTOS = {'kids-group.jpg': './assets/visuals/kcmc-kids-summer-group.jpg'}
 
 def check(ok: bool, message: str) -> None:
     if not ok:
@@ -60,10 +57,7 @@ def export_preview(html: str, photos: dict[str, bytes]) -> None:
 photo_bytes: dict[str, bytes] = {}
 manifest = {}
 for name, url in PHOTOS.items():
-    request = urllib.request.Request(url, headers={'User-Agent': 'Mozilla/5.0 KCMC-photo-review', 'Accept': 'image/jpeg'})
-    with urllib.request.urlopen(request, timeout=45) as response:
-        check(response.status == 200, name + ' source returned HTTP 200')
-        blob = response.read(600_001)
+    blob = (APP / url.removeprefix('./')).read_bytes()
     check(len(blob) <= 600_000, name + ' is under the 600 KB mobile image budget')
     path = OUT / name
     path.write_bytes(blob)
@@ -112,10 +106,10 @@ with tempfile.TemporaryDirectory(prefix='kcmc-photos-review-') as td:
                     page = context.new_page()
                     page.on('pageerror', lambda error: errors.append(str(error)))
                     for url, blob in photo_bytes.items():
-                        page.route(url, lambda route, request, body=blob: route.fulfill(status=200, content_type='image/jpeg', body=body))
+                        page.route('**/' + url.removeprefix('./'), lambda route, request, body=blob: route.fulfill(status=200, content_type='image/jpeg', body=body))
                     page.goto(base, wait_until='networkidle')
                     check(page.locator('.hero-church-photo, .hero-church-window, .hero-card-with-photo').count() == 0, f'{width}px no nested picture-on-picture hero')
-                    check(page.locator('[data-hero-photo]').count() == 4, f'{width}px four approved local hero frames')
+                    check(page.locator('[data-hero-photo]').count() == 9, f'{width}px nine approved local hero frames')
                     check('kcmc-building-2024.webp' in page.locator('[data-hero-photo]').first.get_attribute('src'), f'{width}px local church exterior remains first hero frame')
                     check(page.locator('[data-hero-toggle]').inner_text() == 'Play photos', f'{width}px reduced-motion setting retained')
                     check(page.locator('[data-hero-caption]').count() == 0, f'{width}px no hero source caption element')
@@ -126,6 +120,15 @@ with tempfile.TemporaryDirectory(prefix='kcmc-photos-review-') as td:
                     page.locator('[data-hero-next]').click()
                     page.locator('[data-hero-next]').click()
                     check('kcmc-ministry-group.jpg' in page.locator('[data-hero-photo]:visible').get_attribute('src'), f'{width}px church-family frame participates in gallery')
+                    for filename in ['kcmc-congregation-gathering.jpg', 'kcmc-family-outdoor-event.jpg', 'kcmc-bridge-logo.jpg', 'kcmc-bridge-wordmark.png', 'kcmc-bridge-logo-composite.png']:
+                        page.locator('[data-hero-next]').click()
+                        active = page.locator('[data-hero-photo]:visible')
+                        check(filename in active.get_attribute('src'), f'{width}px {filename} participates in rotation')
+                        check(bool(active.get_attribute('alt')), 'rotating supplied image has alt text')
+                        check(active.evaluate('(img) => img.complete && img.naturalWidth > 0'), 'rotating image decoded')
+                    for _ in range(5):
+                        page.locator('[data-hero-previous]').click()
+                    check(page.locator('[data-kcmc-photo-gallery] img').count() == 3, 'three supplied family activity photos in public gallery')
                     page.locator('[data-hero-previous]').click()
                     page.locator('[data-hero-previous]').click()
                     page.locator('[data-hero-previous]').click()
@@ -135,7 +138,7 @@ with tempfile.TemporaryDirectory(prefix='kcmc-photos-review-') as td:
                     page.locator('.family-photo').evaluate('(img) => img.decode()')
                     check(family.count() == 1, f'{width}px one family section')
                     check(page.locator('.family-photo').get_attribute('src') == PHOTOS['kids-group.jpg'], f'{width}px new kids photo loads')
-                    check('published' in page.locator('.family-photo').get_attribute('alt'), f'{width}px source-aware photo description')
+                    check('summer kick-off' in page.locator('.family-photo').get_attribute('alt'), f'{width}px useful supplied photo description')
                     check(page.locator('.family-photo-frame .photo-source, .family-photo-frame figcaption').count() == 0, f'{width}px family photo has no visible source caption')
                     check(family.get_by_role('link', name='Explore kids & youth').get_attribute('href') == 'https://www.kimberlingcitymethodist.com/youth', f'{width}px youth ministry destination retained')
                     check(page.evaluate('document.documentElement.scrollWidth <= innerWidth'), f'{width}px no horizontal overflow')
@@ -157,10 +160,10 @@ with tempfile.TemporaryDirectory(prefix='kcmc-photos-review-') as td:
                     page.keyboard.press('Escape')
                     check(page.locator('#siteMenu').get_attribute('open') is None, f'{width}px menu keyboard control retained')
                     context.close()
-                fallback = browser.new_context(viewport={'width': 390, 'height': 844}, reduced_motion='reduce')
+                fallback = browser.new_context(service_workers='block', viewport={'width': 390, 'height': 844}, reduced_motion='reduce')
                 page = fallback.new_page()
                 for url in photo_bytes:
-                    page.route(url, lambda route: route.abort())
+                    page.route('**/' + url.removeprefix('./'), lambda route: route.abort())
                 page.goto(base, wait_until='networkidle')
                 page.locator('[data-family-welcome]').scroll_into_view_if_needed()
                 page.wait_for_function("document.querySelector('.family-photo-frame')?.hidden === true")

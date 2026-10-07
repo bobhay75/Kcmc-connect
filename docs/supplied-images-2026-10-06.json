@@ -1,0 +1,110 @@
+[
+  {
+    "original": "kcmc4.jpg",
+    "file": "kcmc-congregation-gathering.jpg",
+    "title": "Congregation gathering",
+    "alt": "People seated around tables facing the KCMC worship stage",
+    "classification": "hero-suitable",
+    "placement": "Hero and Publisher",
+    "width": 2048,
+    "height": 1105,
+    "bytes": 277265,
+    "sha256": "9bcf70bd63180f36330fc01a709b8c8dc73036cda9af935f9676fe2851a8a9e4"
+  },
+  {
+    "original": "kcmc6.jpg",
+    "file": "kcmc-family-outdoor-event.jpg",
+    "title": "Outdoor family event",
+    "alt": "Children and adults enjoying balloons and an inflatable slide at a Kimberling City outdoor event",
+    "classification": "hero-suitable",
+    "placement": "Hero, gallery and Publisher",
+    "width": 2048,
+    "height": 1536,
+    "bytes": 569816,
+    "sha256": "6ca77e8f7f2b6d9bc7fc3b7e4338dca0d58809873209cb7c6a30494b9f163f5c"
+  },
+  {
+    "original": "kcmc7.jpg",
+    "file": "kcmc-bridge-logo.jpg",
+    "title": "Bridge and cross logo",
+    "alt": "Kimberling City Methodist Church logo with a blue bridge and black cross",
+    "classification": "hero-suitable",
+    "placement": "Hero and Publisher (bridge artwork approved by Tony)",
+    "width": 1156,
+    "height": 1156,
+    "bytes": 67354,
+    "sha256": "9926f5ee356f67aa076fd6912b9a4cea8e458f4e4202a6af2c49360c06ecc082"
+  },
+  {
+    "original": "kcmc8.jpg",
+    "file": "kcmc-kids-safari.jpg",
+    "title": "Kids safari activity",
+    "alt": "Children seated in a decorated safari cart inside KCMC",
+    "classification": "kids/family/gallery",
+    "placement": "Gallery and Publisher",
+    "width": 2048,
+    "height": 1536,
+    "bytes": 359032,
+    "sha256": "652fbe2f8eaaf1ce2eddfb187797cabb67d887b71fa17d14b4e2a06e22fc50bf"
+  },
+  {
+    "original": "kcmc9.jpg",
+    "file": "kcmc-kids-game-room.jpg",
+    "title": "Kids game room",
+    "alt": "Children playing foosball and other table games in the KCMC game room",
+    "classification": "kids/family/gallery",
+    "placement": "Gallery and Publisher",
+    "width": 2048,
+    "height": 1289,
+    "bytes": 313874,
+    "sha256": "094d137b2591821e7796dab7f5deaddd9733f7ab31ccd36551f9132205f50598"
+  },
+  {
+    "original": "kcmc kids.jpg",
+    "file": "kcmc-kids-summer-group.jpg",
+    "title": "Summer kids and family group",
+    "alt": "Children and adults gathered in front of the stage for the KCMC summer kick-off",
+    "classification": "kids/family/gallery",
+    "placement": "Family welcome and Publisher",
+    "width": 1440,
+    "height": 1080,
+    "bytes": 175475,
+    "sha256": "d45a5a91efa83c22ea41aa878ce4d7c0f7e4c254b238a9a2ebd1b9ac90e7824e"
+  },
+  {
+    "original": "kcmc logo3.jpg",
+    "file": "kcmc-church-wordmark.jpg",
+    "title": "Church photo wordmark",
+    "alt": "Kimberling City United Methodist Church wordmark over a church exterior photo, with Loving God Loving Others",
+    "classification": "publication/branding-only",
+    "placement": "Publisher only",
+    "width": 1181,
+    "height": 574,
+    "bytes": 93545,
+    "sha256": "957b2d8994596713673de3badc1a6abfb8044975e06c97af6ddb0f45c2e1effb"
+  },
+  {
+    "original": "kcmc logo.png",
+    "file": "kcmc-bridge-wordmark.png",
+    "title": "Bridge photo wordmark",
+    "alt": "Kimberling City Methodist Church bridge and cross logo over a sunset bridge photograph",
+    "classification": "hero-suitable",
+    "placement": "Hero and Publisher (bridge artwork approved by Tony)",
+    "width": 2048,
+    "height": 706,
+    "bytes": 1715447,
+    "sha256": "c67a448f587586e62eb3daf4f27912ea137c08011fa2e070aff89bd290d85a00"
+  },
+  {
+    "original": "kcmc bridge 2.png",
+    "file": "kcmc-bridge-logo-composite.png",
+    "title": "Bridge photo with inset logo",
+    "alt": "Sunset bridge photograph with the Kimberling City Methodist Church logo inset at lower right",
+    "classification": "hero-suitable",
+    "placement": "Hero and Publisher (bridge artwork approved by Tony)",
+    "width": 2048,
+    "height": 1144,
+    "bytes": 3755093,
+    "sha256": "0c56385f540160ae7c704c3496f8c7fd329b3a995faf75aa1f9832496a31c45d"
+  }
+]

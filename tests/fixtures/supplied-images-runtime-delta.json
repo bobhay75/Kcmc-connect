@@ -1,0 +1,48 @@
+{
+  "index.php": [
+    [
+      "    <div class=\"wrap hero-grid\">",
+      "    <img class=\"hero-photo\" data-hero-photo src=\"./assets/visuals/kcmc-congregation-gathering.jpg\" alt=\"People seated around tables facing the KCMC worship stage\" loading=\"lazy\" decoding=\"async\" width=\"2048\" height=\"1105\" hidden>\n    <img class=\"hero-photo\" data-hero-photo src=\"./assets/visuals/kcmc-family-outdoor-event.jpg\" alt=\"Children and adults enjoying balloons and an inflatable slide at a Kimberling City outdoor event\" loading=\"lazy\" decoding=\"async\" width=\"2048\" height=\"1536\" hidden>\n    <img class=\"hero-photo\" data-hero-photo style=\"object-fit:contain\" src=\"./assets/visuals/kcmc-bridge-logo.jpg\" alt=\"Kimberling City Methodist Church logo with a blue bridge and black cross\" loading=\"lazy\" decoding=\"async\" width=\"1156\" height=\"1156\" hidden>\n    <img class=\"hero-photo\" data-hero-photo style=\"object-fit:contain\" src=\"./assets/visuals/kcmc-bridge-wordmark.png\" alt=\"Kimberling City Methodist Church bridge and cross logo over a sunset bridge photograph\" loading=\"lazy\" decoding=\"async\" width=\"2048\" height=\"706\" hidden>\n    <img class=\"hero-photo\" data-hero-photo style=\"object-fit:contain\" src=\"./assets/visuals/kcmc-bridge-logo-composite.png\" alt=\"Sunset bridge photograph with the Kimberling City Methodist Church logo inset at lower right\" loading=\"lazy\" decoding=\"async\" width=\"2048\" height=\"1144\" hidden>\n    <div class=\"wrap hero-grid\">"
+    ],
+    [
+      "  <section class=\"section welcome-next\">",
+      "  <section class=\"section\" aria-label=\"KCMC kids and family photos\">\n    <div class=\"wrap grid3\" data-kcmc-photo-gallery>\n      <div><img style=\"display:block;width:100%;height:auto;border-radius:18px\" src=\"./assets/visuals/kcmc-family-outdoor-event.jpg\" alt=\"Children and adults enjoying balloons and an inflatable slide at a Kimberling City outdoor event\" loading=\"lazy\" decoding=\"async\" width=\"2048\" height=\"1536\"></div>\n      <div><img style=\"display:block;width:100%;height:auto;border-radius:18px\" src=\"./assets/visuals/kcmc-kids-safari.jpg\" alt=\"Children seated in a decorated safari cart inside KCMC\" loading=\"lazy\" decoding=\"async\" width=\"2048\" height=\"1536\"></div>\n      <div><img style=\"display:block;width:100%;height:auto;border-radius:18px\" src=\"./assets/visuals/kcmc-kids-game-room.jpg\" alt=\"Children playing foosball and other table games in the KCMC game room\" loading=\"lazy\" decoding=\"async\" width=\"2048\" height=\"1289\"></div>\n    </div>\n  </section>\n\n  <section class=\"section welcome-next\">"
+    ],
+    [
+      "public-presentation.js?v=contemporary-bright-20261007",
+      "public-presentation.js?v=tony-bright-photos-20261007"
+    ]
+  ],
+  "public-presentation.js": [
+    [
+      "  const churchPhoto = 'https://static.wixstatic.com/media/15d3f9_9c56441e59bd4f2a9763d79278fc1da4~mv2.jpg';\n  // Use the church site's optimized display image, not the 9.7 MB camera original.\n  const kidsPhoto = 'https://static.wixstatic.com/media/15d3f9_c62929ab03a84ac19805d8d57512700c~mv2.jpg/v1/fill/w_980%2Ch_735%2Cal_c%2Cq_85%2Cusm_0.66_1.00_0.01%2Cenc_auto/Sunday%20Worship.jpg';\n",
+      "  const kidsPhoto = './assets/visuals/kcmc-kids-summer-group.jpg';\n"
+    ],
+    [
+      "Children and adults in a group photograph published on KCMC’s youth ministry page",
+      "Children and adults gathered in front of the stage for the KCMC summer kick-off"
+    ],
+    [
+      "  image.width = 980;\n  image.height = 735;",
+      "  image.width = 1440;\n  image.height = 1080;"
+    ],
+    [
+      "  else hero?.after(section);",
+      "  else home.querySelector('[data-hero-gallery]')?.after(section);"
+    ]
+  ],
+  "sw.js": [
+    [
+      "const CACHE='kcmc-connect-v3.0.3-public-only-contemporary-bright-20261007';",
+      "const CACHE='kcmc-connect-v3.0.3-public-only-tony-bright-photos-20261007';"
+    ],
+    [
+      "public-presentation.js?v=contemporary-bright-20261007",
+      "public-presentation.js?v=tony-bright-photos-20261007"
+    ],
+    [
+      "  './assets/visuals/trunk-or-treat-2026.webp'",
+      "  './assets/visuals/trunk-or-treat-2026.webp',\n  './assets/visuals/kcmc-congregation-gathering.jpg',\n  './assets/visuals/kcmc-family-outdoor-event.jpg',\n  './assets/visuals/kcmc-bridge-logo.jpg',\n  './assets/visuals/kcmc-kids-safari.jpg',\n  './assets/visuals/kcmc-kids-game-room.jpg',\n  './assets/visuals/kcmc-kids-summer-group.jpg',\n  './assets/visuals/kcmc-bridge-wordmark.png',\n  './assets/visuals/kcmc-bridge-logo-composite.png'"
+    ]
+  ]
+}

@@ -81,9 +81,7 @@
   'use strict';
   const home = document.querySelector('[data-view="home"]');
   if (!home || home.querySelector('[data-family-welcome]')) return;
-  const churchPhoto = 'https://static.wixstatic.com/media/15d3f9_9c56441e59bd4f2a9763d79278fc1da4~mv2.jpg';
-  // Use the church site's optimized display image, not the 9.7 MB camera original.
-  const kidsPhoto = 'https://static.wixstatic.com/media/15d3f9_c62929ab03a84ac19805d8d57512700c~mv2.jpg/v1/fill/w_980%2Ch_735%2Cal_c%2Cq_85%2Cusm_0.66_1.00_0.01%2Cenc_auto/Sunday%20Worship.jpg';
+  const kidsPhoto = './assets/visuals/kcmc-kids-summer-group.jpg';
   const youthPage = 'https://www.kimberlingcitymethodist.com/youth';
   const visitPage = 'https://www.kimberlingcitymethodist.com/visit';
   const make = (tag, className, text) => {
@@ -110,9 +108,9 @@
   const layout = make('div', 'wrap family-welcome-grid');
   const figure = make('figure', 'family-photo-frame');
   const image = make('img', 'family-photo');
-  image.alt = 'Children and adults in a group photograph published on KCMC’s youth ministry page';
-  image.width = 980;
-  image.height = 735;
+  image.alt = 'Children and adults gathered in front of the stage for the KCMC summer kick-off';
+  image.width = 1440;
+  image.height = 1080;
   image.loading = 'lazy';
   image.decoding = 'async';
   image.referrerPolicy = 'no-referrer';
@@ -137,5 +135,5 @@
   section.append(layout);
   const next = home.querySelector('.welcome-next');
   if (next) next.before(section);
-  else hero?.after(section);
+  else home.querySelector('[data-hero-gallery]')?.after(section);
 })();

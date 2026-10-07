@@ -1,11 +1,19 @@
-const CACHE='kcmc-connect-v3.0.3-public-only-contemporary-bright-20261007';
+const CACHE='kcmc-connect-v3.0.3-public-only-tony-bright-photos-20261007';
 // Connection-intake client refresh: worker install reruns cache:'reload' and overwrites cached app.js.
 const CORE=[
-  './','./styles.css?v=3.0.3','./public-presentation.css?v=contemporary-bright-20261007','./public-presentation.js?v=contemporary-bright-20261007','./app.js?v=3.0.2','./manifest.webmanifest?v=3.0.1',
+  './','./styles.css?v=3.0.3','./public-presentation.css?v=contemporary-bright-20261007','./public-presentation.js?v=tony-bright-photos-20261007','./app.js?v=3.0.2','./manifest.webmanifest?v=3.0.1',
   './bulletin.php','./news.php','./events.php','./care.php','./connect.php',
   './assets/icons/icon-192.png','./assets/icons/icon-512.png',
   './assets/visuals/kcmc-building-2024.webp','./assets/visuals/kcmc-worship-2017.webp','./assets/visuals/kcmc-stage-2014.webp',
-  './assets/visuals/trunk-or-treat-2026.webp'
+  './assets/visuals/trunk-or-treat-2026.webp',
+  './assets/visuals/kcmc-congregation-gathering.jpg',
+  './assets/visuals/kcmc-family-outdoor-event.jpg',
+  './assets/visuals/kcmc-bridge-logo.jpg',
+  './assets/visuals/kcmc-kids-safari.jpg',
+  './assets/visuals/kcmc-kids-game-room.jpg',
+  './assets/visuals/kcmc-kids-summer-group.jpg',
+  './assets/visuals/kcmc-bridge-wordmark.png',
+  './assets/visuals/kcmc-bridge-logo-composite.png'
 ];
 const PUBLIC_PATHS=new Set(CORE.map(path=>new URL(path,self.location.href).pathname));
 PUBLIC_PATHS.add(new URL('./index.php',self.location.href).pathname);

@@ -26,7 +26,7 @@ Reviewed October 7, 2026. Implemented source, public observations, and productio
 ## Tony's scope and newer directions
 - Keep service times correct, welcome visitors without an account, use Message terminology, preserve author-supplied note text/blanks, and keep private prayer information protected.
 - The earlier monthly-news source exclusion does not exclude Mary Lou's Friday updates.
-- PR #103 records Tony's later instruction to rotate all supplied bridge photos/artwork, superseding the September 29 bridge exclusion. That separate image proposal remains under review; this repair does not remove or replace its supplied assets.
+- PR #103 records Tony's later instruction to rotate all supplied bridge photos/artwork, superseding the September 29 bridge exclusion. The combined source now includes all nine supplied images in the Publication Designer, the requested public photo/artwork placements, and local family photos, while preserving their original bytes. Production placement still requires deployment and device checks.
 - Church name, hosting migration, member-directory publication and church-wide rollout remain separate leadership decisions. Tony controls Services/Announcements/Dropbox archive cleanup.
 
 ## Decisions for Tony
