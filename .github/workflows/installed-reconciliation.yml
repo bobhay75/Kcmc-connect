@@ -19,7 +19,7 @@ jobs:
           persist-credentials: false
       - name: Fetch reviewed source objects (read only)
         run: |
-          git fetch --no-tags origin 2146af219d2fd23136eae1685f91a2a2caec030e 2c767fd66299524a126f39c5350de8dac1ce1f85 225c564138242f699a1bd31c75b5c78e65268ca7 b1fe32017781be8a570ae114148d66fca82bc867 c19214a0078ae8a4d306954a76ca4a8f96dadcb2 61c70f590735522adbfd6be02dab6888924a54fd
+          git fetch --no-tags origin 2146af219d2fd23136eae1685f91a2a2caec030e 2c767fd66299524a126f39c5350de8dac1ce1f85 225c564138242f699a1bd31c75b5c78e65268ca7 b1fe32017781be8a570ae114148d66fca82bc867 c19214a0078ae8a4d306954a76ca4a8f96dadcb2 61c70f590735522adbfd6be02dab6888924a54fd f4442fc4cce2121828544b79b8ba3591c5fe0dab
       - name: Verify exact runtime, scope and preserved sources
         run: |
           set -euo pipefail

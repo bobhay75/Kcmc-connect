@@ -1,6 +1,6 @@
 # KCMC Connect 3.0 — cPanel Deployment
 
-The repository deploys this directory to `/home/bobsome1/public_html/kcmc-connect/` through the root `.cpanel.yml` file.
+The standard repository deployment uses the root `.cpanel.yml` file to deploy this directory to `/home/bobsome1/public_html/kcmc-connect/`. For the existing host repair, use the scoped release procedure below and align the repository separately before considering cPanel **Deploy HEAD**.
 
 ## Preserved production data
 
@@ -13,7 +13,25 @@ Deployment intentionally preserves:
 
 Never copy `data/private/` into Git or a public download. Apache denies web access to both `data/` and `backups/`.
 
-Newsletter page photographs are also prohibited. Deployment removes the retired August page images; only extracted text and separately approved ministry photos belong in the app.
+Newsletter page photographs are also prohibited. The standard repository deployment removes the retired August page images; only extracted text and separately approved ministry photos belong in the app. The scoped installer replaces only its allowlisted release files and does not perform that broader removal.
+
+## Existing-host scoped release
+
+The host successfully installed [`61c70f590735522adbfd6be02dab6888924a54fd`](https://github.com/bobhay75/Kcmc-connect/commit/61c70f590735522adbfd6be02dab6888924a54fd), confirmed by the owner receipt and fresh public service-worker, stylesheet, JavaScript and photo reads. Its cache namespace is `kcmc-connect-v3.0.3-public-only-tony-bright-photos-20261007`. Signed-in Publisher workflows and real-device install, offline and push acceptance still need their separate checks.
+
+The October 8 repair is tracked in [PR #108](https://github.com/bobhay75/Kcmc-connect/pull/108) at runtime commit [`f4442fc4cce2121828544b79b8ba3591c5fe0dab`](https://github.com/bobhay75/Kcmc-connect/commit/f4442fc4cce2121828544b79b8ba3591c5fe0dab). Its host installation is still pending.
+
+Follow the [scoped-release instructions](https://github.com/bobhay75/Kcmc-connect/blob/main/tools/kcmc-scoped-release/README.md) and use the separately supplied immutable, checksum-verified launcher. Repository alignment remains a separate step; the scoped installer does not establish that the host checkout is aligned.
+
+1. Close Publisher tabs, allow pending saves/uploads to finish and keep Publisher idle until apply or rollback completes. Confirm web PHP and the host command use the same `KCMC_PRIVATE_DATA_DIR`, or the existing default `data/private` directory. A CLI check does not establish a different PHP-FPM environment.
+2. Verify the release launcher against its published SHA-256 and immutable commit. Run the scoped installer preflight before apply. It accepts an exact complete allowlisted baseline, refuses unknown or mixed file versions, verifies staged source bytes and syntax, and checks preserved files.
+3. Apply only the 16 allowlisted application files: six code files, the Publisher media endpoint and nine supplied images. The installer privately backs up affected files and `data/content.json` outside `public_html`, installs dependencies before their consumers and replaces the service worker last. It performs no Git operations or broad sync.
+4. Save the printed backup/session directory and read the anonymous HTTP verification result. `config.php`, editorial content, accounts, prayer records and other private records are not replaced. Publisher publication/media JSON is fingerprinted under application-compatible locks without copying or restoring it; the two coordination lock files may be created.
+5. Use the scoped rollback instructions for a failed code release. Rollback checks file versions and Publisher-store fingerprints, refuses later changes and restores only affected code/assets. It does not restore private/editorial records. Keep Publisher idle and confirm the same web storage selection before any later rollback.
+6. Align the host repository separately, only after confirming its checkout is clean, to the reviewed runtime commit without copying live configuration or data into Git. The scoped installation does not advance that repository. Do not use **Deploy HEAD** while it still points to older code; `.cpanel.yml` performs a broad `rsync --delete` that could overwrite the scoped repair.
+7. Complete the signed-in Publisher and one-device acceptance checks below. Public readbacks and CI do not establish those results.
+
+Before the separately approved single Hope Keepers insertion, close Publishing Desk tabs, let pending editorial saves finish and keep Publishing Desk idle until the guarded insertion and verification complete. Preserve all other saved events and editorial fields.
 
 ## First-run recovery setup
 
@@ -100,17 +118,16 @@ The VAPID subject must be either a valid `mailto:` address or an HTTPS URL. Neve
 
 ### Controlled Web Push verification
 
-1. Sign in to KCMC Connect on a test device and open **Notifications**.
-2. Press **Enable notifications**. Confirm the browser permission prompt appears only after that explicit click.
-3. Confirm the page reports an active subscription for that account.
-4. From a Pastor or Recovery administrator account, open **Push updates**.
-5. Confirm the page reports delivery ready and at least one active subscription.
-6. Check the confirmation box and send one generic update.
-7. Confirm the device receives the generic KCMC notification and tapping it opens the public KCMC app.
-8. Disable notifications on the device and confirm the stored subscription becomes inactive.
-9. Repeat one send only if needed to verify a stale endpoint returns 404/410 and is automatically deactivated.
+Follow the remaining [real-device acceptance gate in issue 20](https://github.com/bobhay75/Kcmc-connect/issues/20) on one owner-controlled, authorized mobile device:
 
-Do not claim production push support until this controlled real-device sequence succeeds.
+1. Sign in and open **Notifications**. Press **Enable notifications** and confirm the browser permission prompt follows that explicit click.
+2. From a Pastor or Recovery administrator account on that device, open **Push updates**. Confirm delivery is ready and at least one subscription belongs to the signed-in account.
+3. Background KCMC Connect and use **Test my device**. No broadcast is required.
+4. Confirm at least one delivery is accepted, the generic notification appears while KCMC Connect is backgrounded, and tapping it opens KCMC Connect.
+5. Turn notifications off from the member Notifications page. For an account with only this test device subscribed, confirm its signed-in-account subscription count returns to zero; preserve any other authorized device subscriptions.
+6. Confirm no unexpected failed delivery remains. Stale 404/410 endpoints should be removed automatically.
+
+Record the background receipt, tap navigation and unsubscribe/removal observations before closing issue 20 or claiming production push acceptance.
 
 ## Prayer privacy checks
 
@@ -129,10 +146,12 @@ Before launch, verify all of the following:
 1. Confirm the homepage, current bulletin and all navigation views.
 2. Confirm worship times are 8:00 AM, 9:15 AM and 10:30 AM against the church's current public schedule.
 3. Confirm office hours match the last approved Publishing Desk value. Missing hours fall back to Tuesday–Thursday, 9:00 AM–4:00 PM; later corrections or temporary closures must survive public reads and another deployment. Resolve conflicting source schedules before changing the saved value.
-4. Confirm Chrome DevTools shows the `kcmc-connect-v3.0.2-public-only` service worker cache.
-5. Publish a harmless bulletin-note change and verify it survives another deployment.
-6. Confirm `config.php`, `data/private/` and `backups/` were not overwritten.
-7. Confirm `/admin/setup.php` redirects to sign-in after the first account exists.
-8. Confirm no file or URL under `assets/newsletter/` is present in the deployed app.
+4. On one authorized mobile device, install/open the app, close and reopen it, and confirm the active service worker/cache matches the installed release. The confirmed `61c70` cache is `kcmc-connect-v3.0.3-public-only-tony-bright-photos-20261007`; use the October 8 release's pinned namespace after that release is installed. Check its public images and navigation online, then reopen the previously loaded public views offline. Private member/admin/API responses must remain network-only.
+5. With an authorized staff account, check Publisher Save, reopen, Duplicate, page changes, photo upload/library selection and print on the installed release. Preserve authored paragraphs and check that a delayed save/upload does not change a different project or page. Record failures; do not treat anonymous route checks as this acceptance.
+6. If an owner authorizes a bulletin-note pilot, publish the agreed harmless change and verify it survives the next approved deployment. This is a separate editorial action, not part of the installer's read-only checks.
+7. Confirm `config.php`, live `data/content.json`, `data/private/` and `backups/` were preserved.
+8. Confirm `/admin/setup.php` redirects to sign-in after the first account exists.
+9. Confirm no file or URL under `assets/newsletter/` is present in the deployed app. Report any remaining prohibited assets separately; the scoped installer does not delete files outside its allowlist.
+10. Complete the issue 20 one-device Web Push sequence above.
 
 No shared administrator password or secret application backdoor is supported.

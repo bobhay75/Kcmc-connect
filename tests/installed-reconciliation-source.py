@@ -189,10 +189,25 @@ image_paths = {PREFIX + 'assets/visuals/' + a['file'] for a in image_inventory}
 for asset in image_inventory:
     check(hashlib.sha256((ROOT / PREFIX / 'assets/visuals' / asset['file']).read_bytes()).hexdigest() == asset['sha256'], asset['file'] + ': supplied bytes preserved')
 
+# The deployment guide is documentation only, with its complete approved delta
+# pinned independently. This permits one named document without exempting any
+# application path from the exact runtime checks above.
+guide_bytes = (ROOT / 'tests/fixtures/deployment-guide-reviewed.json').read_bytes()
+check(hashlib.sha256(guide_bytes).hexdigest() == '4bb31d71293977e1d05cb9e3a2f935d87150c92a897ec9a14330b6de93d9e94b', 'reviewed deployment guide delta remains exact')
+guide = json.loads(guide_bytes)
+check(set(guide) == {'source_commit', 'replacements'} and guide['source_commit'] == 'f4442fc4cce2121828544b79b8ba3591c5fe0dab', 'deployment guide source remains pinned')
+guide_path = PREFIX + 'DEPLOY.md'
+check(set(guide['replacements']) == {guide_path}, 'documentation scope is exactly the deployment guide')
+guide_content = source(guide['source_commit'], guide_path)
+for old, new in guide['replacements'][guide_path]:
+    check(guide_content.count(old.encode()) == 1, 'deployment guide replacement anchor is unique')
+    guide_content = guide_content.replace(old.encode(), new.encode(), 1)
+check((ROOT / guide_path).read_bytes() == guide_content, 'deployment guide matches the exact reviewed documentation delta')
+documentation_paths = {guide_path}
 changed = set(git('diff', '--name-only', BASE, '--', PREFIX).decode().splitlines())
-check(changed == ({PREFIX + p for p in expected} | {PREFIX + p for p in publication} | image_paths), 'runtime diff is reviewed runtime plus exactly four Publication Designer admin files')
+check(changed == ({PREFIX + p for p in expected} | {PREFIX + p for p in publication} | image_paths | documentation_paths), 'application diff is reviewed runtime plus exactly four Publication Designer admin files and the deployment guide')
 changed_since_reconciled = set(git('diff', '--name-only', RECONCILED, '--', PREFIX).decode().splitlines())
-check(changed_since_reconciled == ({PREFIX + p for p in approved} | {PREFIX + 'sw.js'} | {PREFIX + p for p in publication} | image_paths), 'post-reconciliation diff is approved runtime deltas plus Publication Designer admin files')
+check(changed_since_reconciled == ({PREFIX + p for p in approved} | {PREFIX + 'sw.js'} | {PREFIX + p for p in publication} | image_paths | documentation_paths), 'post-reconciliation diff is approved runtime deltas plus Publication Designer admin files and the deployment guide')
 for path in ['.cpanel.yml', 'KCMC-Connect-Phase6-Recreated/data/content.json', 'KCMC-Connect-Phase6-Recreated/config.example.php']:
     check((ROOT / path).read_bytes() == source(BASE, path), path + ': unchanged')
 login = (ROOT / PREFIX / 'member/login.php').read_bytes()

@@ -23,7 +23,7 @@ import unicodedata
 
 
 HOST_CONTENT_FILE = "/home/bobsome1/public_html/kcmc-connect/data/content.json"
-SOURCE_COMMIT = "61c70f590735522adbfd6be02dab6888924a54fd"
+SOURCE_COMMIT = "f4442fc4cce2121828544b79b8ba3591c5fe0dab"
 SOURCE_PATH = "KCMC-Connect-Phase6-Recreated/data/content.json"
 SOURCE_BLOB_SHA1 = "e7eb008c163a524f036d52b5e8e6203f3c1a60d9"
 SOURCE_URL = ("https://github.com/bobhay75/Kcmc-connect/blob/" +
