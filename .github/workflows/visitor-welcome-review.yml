@@ -1,0 +1,32 @@
+name: KCMC visitor welcome review
+on:
+  push:
+    branches: ['fix/brighter-hero-visitor-welcome-20261008']
+  pull_request:
+    paths:
+      - 'KCMC-Connect-Phase6-Recreated/**'
+      - 'tests/visitor-welcome*'
+      - '.github/workflows/visitor-welcome-review.yml'
+permissions:
+  contents: read
+jobs:
+  review:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          persist-credentials: false
+      - name: Package tracked source for isolated review (not a release)
+        run: |
+          mkdir -p visitor-review-artifacts
+          git rev-parse HEAD > visitor-review-artifacts/SOURCE-COMMIT.txt
+          git archive --format=tar.gz HEAD > visitor-review-artifacts/review-source.tar.gz
+          php -l KCMC-Connect-Phase6-Recreated/api/connection.php
+          node --check KCMC-Connect-Phase6-Recreated/public-presentation.js
+      - uses: actions/upload-artifact@v4
+        with:
+          name: kcmc-visitor-welcome-review
+          path: visitor-review-artifacts/
+          retention-days: 3
