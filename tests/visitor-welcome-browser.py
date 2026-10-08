@@ -28,8 +28,9 @@ with tempfile.TemporaryDirectory(prefix='kcmc-visitor-review-') as td:
     for key in list(env):
         if key.startswith('KCMC_VISITOR_WELCOME_'): del env[key]
     log=(work/'php.log').open('w')
-    # Configuration changes are test fixtures, not production OPcache timing tests.
-    server=subprocess.Popen(['php','-d','opcache.enable_cli=0','-d','sendmail_path='+str(executable),'-S',f'127.0.0.1:{port}','-t',str(local)],stdout=log,stderr=log,env=env)
+    # cli-server can cache PHP configuration even when enable_cli=0. Disable
+    # OPcache only in this temporary fixture so its same-second edits are real.
+    server=subprocess.Popen(['php','-d','opcache.enable=0','-d','opcache.enable_cli=0','-d','sendmail_path='+str(executable),'-S',f'127.0.0.1:{port}','-t',str(local)],stdout=log,stderr=log,env=env)
     try:
         for _ in range(80):
             try: urllib.request.urlopen(base,timeout=1).read();break
