@@ -118,9 +118,11 @@
   const shareButtons=[...document.querySelectorAll('[data-share-app]')];
   const shareStatus=document.querySelector('[data-share-status]');
   const setShareStatus=message=>{if(shareStatus)shareStatus.textContent=message;};
-  async function shareKcmc(){
-    const shareUrl=new URL('./',window.location.href).href;
-    const payload={title:'KCMC Connect',text:'Kimberling City Methodist Church — worship, events, care and connection.',url:shareUrl};
+  async function shareKcmc(event){
+    const visit=event?.currentTarget?.hasAttribute('data-share-visit')===true;
+    const appUrl=new URL('./',window.location.href).href;
+    const shareUrl=visit?appUrl+'#visit':appUrl;
+    const payload={title:'KCMC Connect',text:visit?'Come sit with me at Kimberling City Methodist Church this Sunday. Choose 8:00, 9:15 or 10:30 AM and plan your visit.':'Kimberling City Methodist Church — worship, events, care and connection.',url:shareUrl};
     if(typeof navigator.share==='function'){
       try{await navigator.share(payload);setShareStatus('KCMC Connect share sheet opened.');return;}
       catch(error){if(error?.name==='AbortError'){setShareStatus('Share canceled.');return;}}
@@ -169,6 +171,8 @@
     const status=form.querySelector('.form-status');
     if(!form.checkValidity()){form.reportValidity();status.textContent='Please complete the required fields.';status.className='form-status error';return;}
     const kind=form.dataset.kcmcForm||'';
+    const nextSteps=form.querySelector('[data-visit-next-steps]');
+    if(nextSteps)nextSteps.hidden=true;
     const data=new FormData(form),payload={kind};
     for(const [key,value] of data.entries())payload[key]=String(value);
     const submit=form.querySelector('button[type="submit"]');
@@ -179,6 +183,7 @@
       if(!response.ok||!result?.ok)throw new Error(result?.message||'Your request could not be saved.');
       form.reset();
       status.textContent=result.message||'Thank you. KCMC has received your request.';status.className='form-status success';
+      if(kind==='visit'&&nextSteps)nextSteps.hidden=false;
     }catch(error){status.textContent=error?.message||'Your request could not be saved. Please try again.';status.className='form-status error';}
     finally{if(submit)submit.disabled=false;}
   }

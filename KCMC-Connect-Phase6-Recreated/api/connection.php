@@ -2,6 +2,7 @@
 declare(strict_types=1);
 require_once __DIR__ . '/../lib/bootstrap.php';
 require_once __DIR__ . '/../lib/connection-intake.php';
+require_once __DIR__ . '/../lib/visitor-welcome.php';
 
 kcmc_private_headers();
 header('Content-Type: application/json; charset=utf-8');
@@ -59,4 +60,16 @@ $auditAction = match ($kind) {
     default => 'connection.submitted',
 };
 kcmc_audit($auditAction, ['count' => 1]);
-kcmc_connection_json(201, ['ok' => true, 'duplicate' => false, 'message' => 'Thank you. KCMC has received your request.']);
+$welcome = ['status' => 'not_applicable'];
+if ($kind === 'visit') {
+    // A mail/configuration problem must never turn a saved visit into a failed form.
+    try {
+        $welcome = kcmc_visitor_welcome_send((string)$result['id'], $validated['value']);
+    } catch (Throwable) {
+        $welcome = ['status' => 'unavailable'];
+    }
+}
+$message = $kind === 'visit'
+    ? kcmc_visitor_welcome_confirmation((string)$welcome['status'])
+    : 'Thank you. KCMC has received your request.';
+kcmc_connection_json(201, ['ok' => true, 'duplicate' => false, 'message' => $message, 'welcome_email' => (string)$welcome['status']]);

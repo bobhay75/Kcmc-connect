@@ -116,9 +116,10 @@ async function worker(source) {
   fixed.offline();
   const index = fs.readFileSync(path.join(APP, 'index.php'), 'utf8');
   const heroPaths = [...index.matchAll(/data-hero-photo[^>]*src="([^"]+)"/g)].map(match => match[1]);
-  assert.equal(heroPaths.length, 9);
+  assert.equal(heroPaths.length, 8);
+  assert.ok(heroPaths.every(path => !path.includes('stage-2014')));
   for (const asset of heroPaths) assert.equal((await fixed.request(asset)).status, 200, asset + ' is available offline');
-  console.log('PASS: all nine real hero paths are anonymously cached and available offline');
+  console.log('PASS: all eight retained hero paths are anonymously cached and available offline');
   for (const relative of ['./member/login.php', './admin/publication-designer.php', './api/public-content.php', './data/content.json', './backups/test.json', './?token=synthetic', './assets/visuals/kcmc-ministry-group.jpg?token=synthetic']) {
     await assert.rejects(fixed.request(relative), /Synthetic offline/);
     assert(!fixed.rows.has(new URL(relative, 'https://public.example.invalid/app/sw.js').href));

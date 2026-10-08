@@ -114,6 +114,24 @@ offline = json.loads(offline_bytes)
 check(set(offline) == {'source_commit', 'replacements'} and offline['source_commit'] == '61c70f590735522adbfd6be02dab6888924a54fd', 'offline repair source remains pinned')
 check(set(offline['replacements']) == {'index.php', 'public-presentation.js', 'sw.js'}, 'offline repair scope remains public photo/runtime cache surfaces')
 
+# Owner-requested visitor welcome scope. The proposed delta is enumerated byte
+# for byte against current main; merge and deployment still require approval.
+visitor_bytes = (ROOT / 'tests/fixtures/visitor-welcome-reviewed.json').read_bytes()
+check(hashlib.sha256(visitor_bytes).hexdigest() == 'c1063495d8d493eea0fb3561648442f0c9967504193fc27b2e0fcde494c211ab', 'visitor delta fixture remains exact')
+visitor = json.loads(visitor_bytes)
+check(visitor['source_commit'] == 'b6093050dafe9a8d5b2ad4d958fdae742bc06624', 'visitor baseline remains current reviewed main')
+check(set(visitor['replacements']) == {'index.php', 'public-presentation.css', 'sw.js', 'app.js', 'api/connection.php', 'admin/connections.php'}, 'visitor changes are confined to six named existing files')
+check(set(visitor['new_files']) == {'lib/visitor-welcome.php'}, 'one independent visitor mail module is introduced')
+
+def apply_visitor(name, content):
+    if name not in visitor['replacements']:
+        return content
+    check(hashlib.sha256(content).hexdigest() == visitor['baseline_sha256'][name], name + ': visitor baseline bytes match')
+    for old, new in visitor['replacements'][name]:
+        check(content.count(old.encode()) == 1, name + ': visitor replacement anchor is unique')
+        content = content.replace(old.encode(), new.encode(), 1)
+    return content
+
 for name, content in expected.items():
     for old, new in approved.get(name, []):
         old, new = old.encode(), new.encode()
@@ -144,7 +162,15 @@ for name, content in expected.items():
     for old, new in offline['replacements'].get(name, []):
         check(content.count(old.encode()) == 1, name + ': offline repair anchor is unique')
         content = content.replace(old.encode(), new.encode(), 1)
-    check(actual == content, name + ': exact reviewed runtime plus approved differences only')
+    content = apply_visitor(name, content)
+    check(actual == content, name + ': exact reviewed runtime plus enumerated visitor differences only')
+
+for name in set(visitor['replacements']) - set(expected):
+    content = apply_visitor(name, source(visitor['source_commit'], PREFIX + name))
+    check((ROOT / PREFIX / name).read_bytes() == content, name + ': only exact visitor delta permitted')
+for name, sha in visitor['new_files'].items():
+    check(hashlib.sha256((ROOT / PREFIX / name).read_bytes()).hexdigest() == sha, name + ': exact separately tested visitor module')
+visitor_paths = {PREFIX + p for p in visitor['replacements']} | {PREFIX + p for p in visitor['new_files']}
 
 # Publication Designer changes remain constrained to the same three reviewed
 # admin files. Pin their exact Git blobs so older runtime provenance checks stay
@@ -205,9 +231,9 @@ for old, new in guide['replacements'][guide_path]:
 check((ROOT / guide_path).read_bytes() == guide_content, 'deployment guide matches the exact reviewed documentation delta')
 documentation_paths = {guide_path}
 changed = set(git('diff', '--name-only', BASE, '--', PREFIX).decode().splitlines())
-check(changed == ({PREFIX + p for p in expected} | {PREFIX + p for p in publication} | image_paths | documentation_paths), 'application diff is reviewed runtime plus exactly four Publication Designer admin files and the deployment guide')
+check(changed == ({PREFIX + p for p in expected} | {PREFIX + p for p in publication} | image_paths | documentation_paths | visitor_paths), 'application diff is exact runtime, Publisher, documentation and enumerated visitor scope')
 changed_since_reconciled = set(git('diff', '--name-only', RECONCILED, '--', PREFIX).decode().splitlines())
-check(changed_since_reconciled == ({PREFIX + p for p in approved} | {PREFIX + 'sw.js'} | {PREFIX + p for p in publication} | image_paths | documentation_paths), 'post-reconciliation diff is approved runtime deltas plus Publication Designer admin files and the deployment guide')
+check(changed_since_reconciled == ({PREFIX + p for p in approved} | {PREFIX + 'sw.js'} | {PREFIX + p for p in publication} | image_paths | documentation_paths | visitor_paths), 'post-reconciliation diff is exact reviewed source plus enumerated visitor scope')
 for path in ['.cpanel.yml', 'KCMC-Connect-Phase6-Recreated/data/content.json', 'KCMC-Connect-Phase6-Recreated/config.example.php']:
     check((ROOT / path).read_bytes() == source(BASE, path), path + ': unchanged')
 login = (ROOT / PREFIX / 'member/login.php').read_bytes()
