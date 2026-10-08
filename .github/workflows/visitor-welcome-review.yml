@@ -5,30 +5,47 @@ on:
   pull_request:
     paths:
       - 'KCMC-Connect-Phase6-Recreated/**'
-      - 'tests/visitor-welcome*'
+      - 'tests/**'
       - '.github/workflows/visitor-welcome-review.yml'
 permissions:
   contents: read
 jobs:
   review:
     runs-on: ubuntu-latest
-    timeout-minutes: 10
+    timeout-minutes: 15
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
         with:
           ref: ${{ github.event.pull_request.head.sha || github.sha }}
           fetch-depth: 0
           persist-credentials: false
-      - name: Package tracked source for isolated review (not a release)
+      - name: Exact source and synthetic mail contracts
         run: |
+          set -euo pipefail
           mkdir -p visitor-review-artifacts
           git rev-parse HEAD > visitor-review-artifacts/SOURCE-COMMIT.txt
           git archive --format=tar.gz HEAD > visitor-review-artifacts/review-source.tar.gz
-          git bundle create visitor-review-artifacts/review-history.bundle --all
-          php -l KCMC-Connect-Phase6-Recreated/api/connection.php
-          node --check KCMC-Connect-Phase6-Recreated/public-presentation.js
+          python3 tests/installed-reconciliation-source.py | tee visitor-review-artifacts/source.txt
+          php tests/visitor-welcome-contract.php | tee visitor-review-artifacts/mail-contract.txt
+          php tests/connection-intake-contract.php | tee visitor-review-artifacts/intake-contract.txt
+          node --check KCMC-Connect-Phase6-Recreated/app.js
+          node tests/public-photo-offline-source.cjs | tee visitor-review-artifacts/offline-source.txt
+          git diff --check b6093050dafe9a8d5b2ad4d958fdae742bc06624
+      - name: Install isolated browser
+        run: |
+          python3 -m pip install --disable-pip-version-check --no-cache-dir playwright pillow
+          python3 -m playwright install --with-deps chromium
+      - name: Browser, actual captured PHP mail and offline regressions
+        env:
+          KCMC_WELCOME_REVIEW_OUTPUT: visitor-review-artifacts
+        run: |
+          set -euo pipefail
+          python3 tests/visitor-welcome-browser.py | tee visitor-review-artifacts/visitor-browser.txt
+          python3 tests/public-photo-offline-browser.py | tee visitor-review-artifacts/offline-browser.txt
+          python3 tests/visible-photos-review.py | tee visitor-review-artifacts/photo-browser.txt
       - uses: actions/upload-artifact@v4
+        if: always()
         with:
           name: kcmc-visitor-welcome-review
           path: visitor-review-artifacts/
-          retention-days: 3
+          retention-days: 7
