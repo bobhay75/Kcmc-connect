@@ -28,7 +28,8 @@ with tempfile.TemporaryDirectory(prefix='kcmc-visitor-review-') as td:
     for key in list(env):
         if key.startswith('KCMC_VISITOR_WELCOME_'): del env[key]
     log=(work/'php.log').open('w')
-    server=subprocess.Popen(['php','-d','sendmail_path='+str(executable),'-S',f'127.0.0.1:{port}','-t',str(local)],stdout=log,stderr=log,env=env)
+    # Configuration changes are test fixtures, not production OPcache timing tests.
+    server=subprocess.Popen(['php','-d','opcache.enable_cli=0','-d','sendmail_path='+str(executable),'-S',f'127.0.0.1:{port}','-t',str(local)],stdout=log,stderr=log,env=env)
     try:
         for _ in range(80):
             try: urllib.request.urlopen(base,timeout=1).read();break
@@ -96,7 +97,7 @@ with tempfile.TemporaryDirectory(prefix='kcmc-visitor-review-') as td:
             check(form.get_by_role('link',name='Find a group').is_visible(),'email failure does not remove connection options')
             (capture/'fail').unlink();configure(False)
             status,result=submit('disabled@example.invalid')
-            check(status==201 and result['welcome_email']=='not_configured' and len(list(capture.glob('*.eml')))==1,'disabled mail remains fail-closed without losing the visit')
+            check(status==201 and result['welcome_email']=='not_configured' and len(list(capture.glob('*.eml')))==1,'disabled mail remains fail-closed without losing the visit: '+json.dumps(result))
             def api(payload,headers=None,method='POST'):
                 request=urllib.request.Request(base+'api/connection.php',data=json.dumps(payload).encode() if method=='POST' else None,method=method,headers=headers or {})
                 try:
