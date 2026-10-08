@@ -1,16 +1,16 @@
 {
-  "commit": "61c70f590735522adbfd6be02dab6888924a54fd",
+  "commit": "f4442fc4cce2121828544b79b8ba3591c5fe0dab",
   "app": "/home/bobsome1/public_html/kcmc-connect",
   "files": [
     {
       "path": "admin/publication-designer.php",
-      "git_sha": "0d768e40bf1294f2eb4ee8db406a0305af44e319",
-      "bytes": 32506,
-      "sha256": "fe401dba16db2bf2611dc2f8199965d6faad423efcfd085f0e65a14794329793",
+      "git_sha": "66b17b8f230e5794e5b239e4a1563b307dc12404",
+      "bytes": 32812,
+      "sha256": "1b2ae59a2f5b04df5030e3fbad23479d7199b336a5ca2e350293a3bc4d640da7",
       "baseline_sha256": "d03b73fe34e3773c8aa0bc469778ad6b84089d584bd89c7e5f17239a915c702f",
       "baseline_bytes": 20913,
       "baseline_mode": "0644",
-      "url": "https://raw.githubusercontent.com/bobhay75/Kcmc-connect/61c70f590735522adbfd6be02dab6888924a54fd/KCMC-Connect-Phase6-Recreated/admin/publication-designer.php"
+      "url": "https://raw.githubusercontent.com/bobhay75/Kcmc-connect/f4442fc4cce2121828544b79b8ba3591c5fe0dab/KCMC-Connect-Phase6-Recreated/admin/publication-designer.php"
     },
     {
       "path": "admin/publication-media.php",
@@ -20,17 +20,17 @@
       "baseline_sha256": null,
       "baseline_bytes": null,
       "baseline_mode": null,
-      "url": "https://raw.githubusercontent.com/bobhay75/Kcmc-connect/61c70f590735522adbfd6be02dab6888924a54fd/KCMC-Connect-Phase6-Recreated/admin/publication-media.php"
+      "url": "https://raw.githubusercontent.com/bobhay75/Kcmc-connect/f4442fc4cce2121828544b79b8ba3591c5fe0dab/KCMC-Connect-Phase6-Recreated/admin/publication-media.php"
     },
     {
       "path": "admin/publication-projects.php",
-      "git_sha": "5aa61e6e23da4ec7a327d8345f8f0067c1c5140b",
-      "bytes": 9117,
-      "sha256": "aaf667a192407869f5d0255dcb648f3253c41671423578cf39d1866a2aeab205",
+      "git_sha": "f31404ee86d18e08be2de47d9b94682450d17c7c",
+      "bytes": 9170,
+      "sha256": "df4065f13e757f9d9310a8ce01cb1174df94e8dd52f32246c84a010697650312",
       "baseline_sha256": "c953df4f774ccd3df5c8969d2fcc88fe77e66ed9e690a37f062a4608e77aa8a8",
       "baseline_bytes": 6087,
       "baseline_mode": "0644",
-      "url": "https://raw.githubusercontent.com/bobhay75/Kcmc-connect/61c70f590735522adbfd6be02dab6888924a54fd/KCMC-Connect-Phase6-Recreated/admin/publication-projects.php"
+      "url": "https://raw.githubusercontent.com/bobhay75/Kcmc-connect/f4442fc4cce2121828544b79b8ba3591c5fe0dab/KCMC-Connect-Phase6-Recreated/admin/publication-projects.php"
     },
     {
       "path": "assets/visuals/kcmc-bridge-logo-composite.png",
@@ -40,7 +40,7 @@
       "baseline_sha256": null,
       "baseline_bytes": null,
       "baseline_mode": null,
-      "url": "https://raw.githubusercontent.com/bobhay75/Kcmc-connect/61c70f590735522adbfd6be02dab6888924a54fd/KCMC-Connect-Phase6-Recreated/assets/visuals/kcmc-bridge-logo-composite.png"
+      "url": "https://raw.githubusercontent.com/bobhay75/Kcmc-connect/f4442fc4cce2121828544b79b8ba3591c5fe0dab/KCMC-Connect-Phase6-Recreated/assets/visuals/kcmc-bridge-logo-composite.png"
     },
     {
       "path": "assets/visuals/kcmc-bridge-logo.jpg",
@@ -50,7 +50,7 @@
       "baseline_sha256": null,
       "baseline_bytes": null,
       "baseline_mode": null,
-      "url": "https://raw.githubusercontent.com/bobhay75/Kcmc-connect/61c70f590735522adbfd6be02dab6888924a54fd/KCMC-Connect-Phase6-Recreated/assets/visuals/kcmc-bridge-logo.jpg"
+      "url": "https://raw.githubusercontent.com/bobhay75/Kcmc-connect/f4442fc4cce2121828544b79b8ba3591c5fe0dab/KCMC-Connect-Phase6-Recreated/assets/visuals/kcmc-bridge-logo.jpg"
     },
     {
       "path": "assets/visuals/kcmc-bridge-wordmark.png",
@@ -60,7 +60,7 @@
       "baseline_sha256": null,
       "baseline_bytes": null,
       "baseline_mode": null,
-      "url": "https://raw.githubusercontent.com/bobhay75/Kcmc-connect/61c70f590735522adbfd6be02dab6888924a54fd/KCMC-Connect-Phase6-Recreated/assets/visuals/kcmc-bridge-wordmark.png"
+      "url": "https://raw.githubusercontent.com/bobhay75/Kcmc-connect/f4442fc4cce2121828544b79b8ba3591c5fe0dab/KCMC-Connect-Phase6-Recreated/assets/visuals/kcmc-bridge-wordmark.png"
     },
     {
       "path": "assets/visuals/kcmc-church-wordmark.jpg",
@@ -70,7 +70,7 @@
       "baseline_sha256": null,
       "baseline_bytes": null,
       "baseline_mode": null,
-      "url": "https://raw.githubusercontent.com/bobhay75/Kcmc-connect/61c70f590735522adbfd6be02dab6888924a54fd/KCMC-Connect-Phase6-Recreated/assets/visuals/kcmc-church-wordmark.jpg"
+      "url": "https://raw.githubusercontent.com/bobhay75/Kcmc-connect/f4442fc4cce2121828544b79b8ba3591c5fe0dab/KCMC-Connect-Phase6-Recreated/assets/visuals/kcmc-church-wordmark.jpg"
     },
     {
       "path": "assets/visuals/kcmc-congregation-gathering.jpg",
@@ -80,7 +80,7 @@
       "baseline_sha256": null,
       "baseline_bytes": null,
       "baseline_mode": null,
-      "url": "https://raw.githubusercontent.com/bobhay75/Kcmc-connect/61c70f590735522adbfd6be02dab6888924a54fd/KCMC-Connect-Phase6-Recreated/assets/visuals/kcmc-congregation-gathering.jpg"
+      "url": "https://raw.githubusercontent.com/bobhay75/Kcmc-connect/f4442fc4cce2121828544b79b8ba3591c5fe0dab/KCMC-Connect-Phase6-Recreated/assets/visuals/kcmc-congregation-gathering.jpg"
     },
     {
       "path": "assets/visuals/kcmc-family-outdoor-event.jpg",
@@ -90,7 +90,7 @@
       "baseline_sha256": null,
       "baseline_bytes": null,
       "baseline_mode": null,
-      "url": "https://raw.githubusercontent.com/bobhay75/Kcmc-connect/61c70f590735522adbfd6be02dab6888924a54fd/KCMC-Connect-Phase6-Recreated/assets/visuals/kcmc-family-outdoor-event.jpg"
+      "url": "https://raw.githubusercontent.com/bobhay75/Kcmc-connect/f4442fc4cce2121828544b79b8ba3591c5fe0dab/KCMC-Connect-Phase6-Recreated/assets/visuals/kcmc-family-outdoor-event.jpg"
     },
     {
       "path": "assets/visuals/kcmc-kids-game-room.jpg",
@@ -100,7 +100,7 @@
       "baseline_sha256": null,
       "baseline_bytes": null,
       "baseline_mode": null,
-      "url": "https://raw.githubusercontent.com/bobhay75/Kcmc-connect/61c70f590735522adbfd6be02dab6888924a54fd/KCMC-Connect-Phase6-Recreated/assets/visuals/kcmc-kids-game-room.jpg"
+      "url": "https://raw.githubusercontent.com/bobhay75/Kcmc-connect/f4442fc4cce2121828544b79b8ba3591c5fe0dab/KCMC-Connect-Phase6-Recreated/assets/visuals/kcmc-kids-game-room.jpg"
     },
     {
       "path": "assets/visuals/kcmc-kids-safari.jpg",
@@ -110,7 +110,7 @@
       "baseline_sha256": null,
       "baseline_bytes": null,
       "baseline_mode": null,
-      "url": "https://raw.githubusercontent.com/bobhay75/Kcmc-connect/61c70f590735522adbfd6be02dab6888924a54fd/KCMC-Connect-Phase6-Recreated/assets/visuals/kcmc-kids-safari.jpg"
+      "url": "https://raw.githubusercontent.com/bobhay75/Kcmc-connect/f4442fc4cce2121828544b79b8ba3591c5fe0dab/KCMC-Connect-Phase6-Recreated/assets/visuals/kcmc-kids-safari.jpg"
     },
     {
       "path": "assets/visuals/kcmc-kids-summer-group.jpg",
@@ -120,17 +120,17 @@
       "baseline_sha256": null,
       "baseline_bytes": null,
       "baseline_mode": null,
-      "url": "https://raw.githubusercontent.com/bobhay75/Kcmc-connect/61c70f590735522adbfd6be02dab6888924a54fd/KCMC-Connect-Phase6-Recreated/assets/visuals/kcmc-kids-summer-group.jpg"
+      "url": "https://raw.githubusercontent.com/bobhay75/Kcmc-connect/f4442fc4cce2121828544b79b8ba3591c5fe0dab/KCMC-Connect-Phase6-Recreated/assets/visuals/kcmc-kids-summer-group.jpg"
     },
     {
       "path": "index.php",
-      "git_sha": "781e18b6490c851a619c5b6150ce4d5d1898cae7",
-      "bytes": 32929,
-      "sha256": "0cd9bee7066cbcd3d18941b749ca5990f65e9ce3124f8330703add0143808a8f",
+      "git_sha": "79bbf9b521563cf55f60a76685b6770a21a9dd79",
+      "bytes": 32937,
+      "sha256": "62ce1fc0cacfbe79dae426a2d39b68fb9e7aeef85e9bf7f927f48123e9e11fc2",
       "baseline_sha256": "59eac1492cb976eb02fb11030ce46da71c943b514dc8b4ad660a718f791334a5",
       "baseline_bytes": 29760,
       "baseline_mode": "0644",
-      "url": "https://raw.githubusercontent.com/bobhay75/Kcmc-connect/61c70f590735522adbfd6be02dab6888924a54fd/KCMC-Connect-Phase6-Recreated/index.php"
+      "url": "https://raw.githubusercontent.com/bobhay75/Kcmc-connect/f4442fc4cce2121828544b79b8ba3591c5fe0dab/KCMC-Connect-Phase6-Recreated/index.php"
     },
     {
       "path": "public-presentation.css",
@@ -140,27 +140,27 @@
       "baseline_sha256": "d527b171de110a407529077630ef94b22a8afd355bdab9aabd3ad27e2812e927",
       "baseline_bytes": 5793,
       "baseline_mode": "0644",
-      "url": "https://raw.githubusercontent.com/bobhay75/Kcmc-connect/61c70f590735522adbfd6be02dab6888924a54fd/KCMC-Connect-Phase6-Recreated/public-presentation.css"
+      "url": "https://raw.githubusercontent.com/bobhay75/Kcmc-connect/f4442fc4cce2121828544b79b8ba3591c5fe0dab/KCMC-Connect-Phase6-Recreated/public-presentation.css"
     },
     {
       "path": "public-presentation.js",
-      "git_sha": "a0cbbd2859d2646e254a271b3830f57eb9be9a1e",
-      "bytes": 5910,
-      "sha256": "5dfe8c3dc99e5c8771f383157cdfc1f3def1f4e72810094a16e6203dbaf4c150",
+      "git_sha": "1621a4f27871ad8a9dafc61d92b26b4eb776bd12",
+      "bytes": 6173,
+      "sha256": "eb1b70aa00615b2acd75b3173612d56da66d7a03ddff73271ce84c85f432e354",
       "baseline_sha256": "9a25e8b69e5773ee8ca0cdd6b813f7a931ea4c489fd885088cf45dfb9697cc8d",
       "baseline_bytes": 7746,
       "baseline_mode": "0644",
-      "url": "https://raw.githubusercontent.com/bobhay75/Kcmc-connect/61c70f590735522adbfd6be02dab6888924a54fd/KCMC-Connect-Phase6-Recreated/public-presentation.js"
+      "url": "https://raw.githubusercontent.com/bobhay75/Kcmc-connect/f4442fc4cce2121828544b79b8ba3591c5fe0dab/KCMC-Connect-Phase6-Recreated/public-presentation.js"
     },
     {
       "path": "sw.js",
-      "git_sha": "b9c74c775e4e0cdb5b7db956e128584a162ee8b6",
-      "bytes": 5679,
-      "sha256": "11091e96760a045f952650a8e720ed02607307cb87173f5978cd9f246c6fdfd0",
+      "git_sha": "51c756311fe07a87592119a6773b647c2f8fd8bc",
+      "bytes": 5741,
+      "sha256": "e5579b08f6fbac14e85e10ca8c066e94b4988d5ae4d00158a92f66c1c8709939",
       "baseline_sha256": "762def01d565789b81a6c57d9eaa7cd546dbe0bbf42f415490e76eff890a6c9e",
       "baseline_bytes": 5239,
       "baseline_mode": "0644",
-      "url": "https://raw.githubusercontent.com/bobhay75/Kcmc-connect/61c70f590735522adbfd6be02dab6888924a54fd/KCMC-Connect-Phase6-Recreated/sw.js"
+      "url": "https://raw.githubusercontent.com/bobhay75/Kcmc-connect/f4442fc4cce2121828544b79b8ba3591c5fe0dab/KCMC-Connect-Phase6-Recreated/sw.js"
     }
   ],
   "preserve_guards": [
@@ -246,7 +246,7 @@
   "expected_php_min": "8.1",
   "public_base_url": "https://bobsome1.com/kcmc-connect/",
   "postcheck_markers": {
-    "sw.js": "kcmc-connect-v3.0.3-public-only-tony-bright-photos-20261007",
+    "sw.js": "kcmc-connect-v3.0.3-public-only-tony-bright-photos-offline-20261008",
     "public-presentation.js": "420000",
     "public-presentation.css": "filter:brightness(1.16) contrast(.88) saturate(1.04)"
   }

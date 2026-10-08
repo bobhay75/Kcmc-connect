@@ -16,7 +16,7 @@ jobs:
           ref: ${{ github.event.pull_request.head.sha }}
           persist-credentials: false
       - name: Fetch known host source object (read only)
-        run: git fetch --no-tags origin ae004a659a7c2fb334296fa41f54dd5263f4d5c0
+        run: git fetch --no-tags origin ae004a659a7c2fb334296fa41f54dd5263f4d5c0 61c70f590735522adbfd6be02dab6888924a54fd
       - name: Verify immutable source pins and transaction fixtures
         env:
           PYTHONDONTWRITEBYTECODE: '1'
@@ -25,6 +25,9 @@ jobs:
           python3 tools/kcmc-scoped-release/verify-inventory.py
           python3 tools/kcmc-scoped-release/test_installer.py
           python3 tools/kcmc-scoped-release/test_content_review.py
+          python3 tools/kcmc-scoped-release/test_insert_hope_keepers.py
+          python3 tools/kcmc-scoped-release/test_align_repository.py
+          python3 tools/kcmc-scoped-release/insert-hope-keepers.py --verify-source KCMC-Connect-Phase6-Recreated/data/content.json
   host-python-compatibility:
     runs-on: ubuntu-latest
     timeout-minutes: 10
@@ -39,3 +42,5 @@ jobs:
           docker pull python:3.6.15-slim-buster
           docker run --rm --network none -e PYTHONDONTWRITEBYTECODE=1 -v "$PWD:/review:ro" -w /review python:3.6.15-slim-buster python tools/kcmc-scoped-release/test_installer.py
           docker run --rm --network none -e PYTHONDONTWRITEBYTECODE=1 -v "$PWD:/review:ro" -w /review python:3.6.15-slim-buster python tools/kcmc-scoped-release/test_content_review.py
+          docker run --rm --network none -e PYTHONDONTWRITEBYTECODE=1 -v "$PWD:/review:ro" -w /review python:3.6.15-slim-buster python tools/kcmc-scoped-release/test_insert_hope_keepers.py
+          docker run --rm --network none -e PYTHONDONTWRITEBYTECODE=1 -v "$PWD:/review:ro" -w /review python:3.6.15-slim-buster python -c "import importlib.util; p='tools/kcmc-scoped-release/align-repository.py'; s=importlib.util.spec_from_file_location('align_review',p); m=importlib.util.module_from_spec(s); s.loader.exec_module(m); compile(open('tools/kcmc-scoped-release/test_align_repository.py').read(), 'alignment-fixtures', 'exec'); print('PASS: alignment helper imports and fixtures parse under Python 3.6; real Git transactions run in the current-Python job.')"

@@ -1,0 +1,126 @@
+{
+  "61c70f590735522adbfd6be02dab6888924a54fd": {
+    "admin/publication-designer.php": {
+      "bytes": 32506,
+      "mode": 420,
+      "sha256": "fe401dba16db2bf2611dc2f8199965d6faad423efcfd085f0e65a14794329793"
+    },
+    "admin/publication-media.php": {
+      "bytes": 7994,
+      "mode": 420,
+      "sha256": "1ce8b5d44756593a6bd678c8a81232248177f5e6c158e90ab52843b2cdd29488"
+    },
+    "admin/publication-projects.php": {
+      "bytes": 9117,
+      "mode": 420,
+      "sha256": "aaf667a192407869f5d0255dcb648f3253c41671423578cf39d1866a2aeab205"
+    },
+    "assets/visuals/kcmc-bridge-logo-composite.png": {
+      "bytes": 3755093,
+      "mode": 420,
+      "sha256": "0c56385f540160ae7c704c3496f8c7fd329b3a995faf75aa1f9832496a31c45d"
+    },
+    "assets/visuals/kcmc-bridge-logo.jpg": {
+      "bytes": 67354,
+      "mode": 420,
+      "sha256": "9926f5ee356f67aa076fd6912b9a4cea8e458f4e4202a6af2c49360c06ecc082"
+    },
+    "assets/visuals/kcmc-bridge-wordmark.png": {
+      "bytes": 1715447,
+      "mode": 420,
+      "sha256": "c67a448f587586e62eb3daf4f27912ea137c08011fa2e070aff89bd290d85a00"
+    },
+    "assets/visuals/kcmc-church-wordmark.jpg": {
+      "bytes": 93545,
+      "mode": 420,
+      "sha256": "957b2d8994596713673de3badc1a6abfb8044975e06c97af6ddb0f45c2e1effb"
+    },
+    "assets/visuals/kcmc-congregation-gathering.jpg": {
+      "bytes": 277265,
+      "mode": 420,
+      "sha256": "9bcf70bd63180f36330fc01a709b8c8dc73036cda9af935f9676fe2851a8a9e4"
+    },
+    "assets/visuals/kcmc-family-outdoor-event.jpg": {
+      "bytes": 569816,
+      "mode": 420,
+      "sha256": "6ca77e8f7f2b6d9bc7fc3b7e4338dca0d58809873209cb7c6a30494b9f163f5c"
+    },
+    "assets/visuals/kcmc-kids-game-room.jpg": {
+      "bytes": 313874,
+      "mode": 420,
+      "sha256": "094d137b2591821e7796dab7f5deaddd9733f7ab31ccd36551f9132205f50598"
+    },
+    "assets/visuals/kcmc-kids-safari.jpg": {
+      "bytes": 359032,
+      "mode": 420,
+      "sha256": "652fbe2f8eaaf1ce2eddfb187797cabb67d887b71fa17d14b4e2a06e22fc50bf"
+    },
+    "assets/visuals/kcmc-kids-summer-group.jpg": {
+      "bytes": 175475,
+      "mode": 420,
+      "sha256": "d45a5a91efa83c22ea41aa878ce4d7c0f7e4c254b238a9a2ebd1b9ac90e7824e"
+    },
+    "index.php": {
+      "bytes": 32929,
+      "mode": 420,
+      "sha256": "0cd9bee7066cbcd3d18941b749ca5990f65e9ce3124f8330703add0143808a8f"
+    },
+    "public-presentation.css": {
+      "bytes": 9111,
+      "mode": 420,
+      "sha256": "6e2183564ce17513ac1f85020e98f4c855ff89f0d8caac776b117bde8234bde2"
+    },
+    "public-presentation.js": {
+      "bytes": 5910,
+      "mode": 420,
+      "sha256": "5dfe8c3dc99e5c8771f383157cdfc1f3def1f4e72810094a16e6203dbaf4c150"
+    },
+    "sw.js": {
+      "bytes": 5679,
+      "mode": 420,
+      "sha256": "11091e96760a045f952650a8e720ed02607307cb87173f5978cd9f246c6fdfd0"
+    }
+  },
+  "ae004a659a7c2fb334296fa41f54dd5263f4d5c0": {
+    "admin/publication-designer.php": {
+      "bytes": 20913,
+      "mode": 420,
+      "sha256": "d03b73fe34e3773c8aa0bc469778ad6b84089d584bd89c7e5f17239a915c702f"
+    },
+    "admin/publication-media.php": null,
+    "admin/publication-projects.php": {
+      "bytes": 6087,
+      "mode": 420,
+      "sha256": "c953df4f774ccd3df5c8969d2fcc88fe77e66ed9e690a37f062a4608e77aa8a8"
+    },
+    "assets/visuals/kcmc-bridge-logo-composite.png": null,
+    "assets/visuals/kcmc-bridge-logo.jpg": null,
+    "assets/visuals/kcmc-bridge-wordmark.png": null,
+    "assets/visuals/kcmc-church-wordmark.jpg": null,
+    "assets/visuals/kcmc-congregation-gathering.jpg": null,
+    "assets/visuals/kcmc-family-outdoor-event.jpg": null,
+    "assets/visuals/kcmc-kids-game-room.jpg": null,
+    "assets/visuals/kcmc-kids-safari.jpg": null,
+    "assets/visuals/kcmc-kids-summer-group.jpg": null,
+    "index.php": {
+      "bytes": 29760,
+      "mode": 420,
+      "sha256": "59eac1492cb976eb02fb11030ce46da71c943b514dc8b4ad660a718f791334a5"
+    },
+    "public-presentation.css": {
+      "bytes": 5793,
+      "mode": 420,
+      "sha256": "d527b171de110a407529077630ef94b22a8afd355bdab9aabd3ad27e2812e927"
+    },
+    "public-presentation.js": {
+      "bytes": 7746,
+      "mode": 420,
+      "sha256": "9a25e8b69e5773ee8ca0cdd6b813f7a931ea4c489fd885088cf45dfb9697cc8d"
+    },
+    "sw.js": {
+      "bytes": 5239,
+      "mode": 420,
+      "sha256": "762def01d565789b81a6c57d9eaa7cd546dbe0bbf42f415490e76eff890a6c9e"
+    }
+  }
+}

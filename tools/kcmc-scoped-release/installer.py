@@ -23,17 +23,20 @@ import uuid
 
 APP_ROOT = Path('/home/bobsome1/public_html/kcmc-connect')
 BACKUP_ROOT = Path('/home/bobsome1/kcmc-release-backups')
-COMMIT = '61c70f590735522adbfd6be02dab6888924a54fd'
+COMMIT = 'f4442fc4cce2121828544b79b8ba3591c5fe0dab'
 SOURCE_ROOT = 'https://raw.githubusercontent.com/bobhay75/Kcmc-connect/' + COMMIT + '/KCMC-Connect-Phase6-Recreated/'
 PUBLIC_ROOT = 'https://bobsome1.com/kcmc-connect/'
 MAX_BYTES = 16 * 1024 * 1024
 CONTENT_PATH = 'data/content.json'
 PUBLISHER_STORES = ('publications.json', 'publication-media.json')
+BASELINE_IDS = ('ae004a659a7c2fb334296fa41f54dd5263f4d5c0', '61c70f590735522adbfd6be02dab6888924a54fd')
+# Complete allowlisted preimage bundles; FILES baseline_sha256 remains ae004 provenance.
+BASELINES = json.loads('{"61c70f590735522adbfd6be02dab6888924a54fd": {"admin/publication-designer.php": {"bytes": 32506, "mode": 420, "sha256": "fe401dba16db2bf2611dc2f8199965d6faad423efcfd085f0e65a14794329793"}, "admin/publication-media.php": {"bytes": 7994, "mode": 420, "sha256": "1ce8b5d44756593a6bd678c8a81232248177f5e6c158e90ab52843b2cdd29488"}, "admin/publication-projects.php": {"bytes": 9117, "mode": 420, "sha256": "aaf667a192407869f5d0255dcb648f3253c41671423578cf39d1866a2aeab205"}, "assets/visuals/kcmc-bridge-logo-composite.png": {"bytes": 3755093, "mode": 420, "sha256": "0c56385f540160ae7c704c3496f8c7fd329b3a995faf75aa1f9832496a31c45d"}, "assets/visuals/kcmc-bridge-logo.jpg": {"bytes": 67354, "mode": 420, "sha256": "9926f5ee356f67aa076fd6912b9a4cea8e458f4e4202a6af2c49360c06ecc082"}, "assets/visuals/kcmc-bridge-wordmark.png": {"bytes": 1715447, "mode": 420, "sha256": "c67a448f587586e62eb3daf4f27912ea137c08011fa2e070aff89bd290d85a00"}, "assets/visuals/kcmc-church-wordmark.jpg": {"bytes": 93545, "mode": 420, "sha256": "957b2d8994596713673de3badc1a6abfb8044975e06c97af6ddb0f45c2e1effb"}, "assets/visuals/kcmc-congregation-gathering.jpg": {"bytes": 277265, "mode": 420, "sha256": "9bcf70bd63180f36330fc01a709b8c8dc73036cda9af935f9676fe2851a8a9e4"}, "assets/visuals/kcmc-family-outdoor-event.jpg": {"bytes": 569816, "mode": 420, "sha256": "6ca77e8f7f2b6d9bc7fc3b7e4338dca0d58809873209cb7c6a30494b9f163f5c"}, "assets/visuals/kcmc-kids-game-room.jpg": {"bytes": 313874, "mode": 420, "sha256": "094d137b2591821e7796dab7f5deaddd9733f7ab31ccd36551f9132205f50598"}, "assets/visuals/kcmc-kids-safari.jpg": {"bytes": 359032, "mode": 420, "sha256": "652fbe2f8eaaf1ce2eddfb187797cabb67d887b71fa17d14b4e2a06e22fc50bf"}, "assets/visuals/kcmc-kids-summer-group.jpg": {"bytes": 175475, "mode": 420, "sha256": "d45a5a91efa83c22ea41aa878ce4d7c0f7e4c254b238a9a2ebd1b9ac90e7824e"}, "index.php": {"bytes": 32929, "mode": 420, "sha256": "0cd9bee7066cbcd3d18941b749ca5990f65e9ce3124f8330703add0143808a8f"}, "public-presentation.css": {"bytes": 9111, "mode": 420, "sha256": "6e2183564ce17513ac1f85020e98f4c855ff89f0d8caac776b117bde8234bde2"}, "public-presentation.js": {"bytes": 5910, "mode": 420, "sha256": "5dfe8c3dc99e5c8771f383157cdfc1f3def1f4e72810094a16e6203dbaf4c150"}, "sw.js": {"bytes": 5679, "mode": 420, "sha256": "11091e96760a045f952650a8e720ed02607307cb87173f5978cd9f246c6fdfd0"}}, "ae004a659a7c2fb334296fa41f54dd5263f4d5c0": {"admin/publication-designer.php": {"bytes": 20913, "mode": 420, "sha256": "d03b73fe34e3773c8aa0bc469778ad6b84089d584bd89c7e5f17239a915c702f"}, "admin/publication-media.php": null, "admin/publication-projects.php": {"bytes": 6087, "mode": 420, "sha256": "c953df4f774ccd3df5c8969d2fcc88fe77e66ed9e690a37f062a4608e77aa8a8"}, "assets/visuals/kcmc-bridge-logo-composite.png": null, "assets/visuals/kcmc-bridge-logo.jpg": null, "assets/visuals/kcmc-bridge-wordmark.png": null, "assets/visuals/kcmc-church-wordmark.jpg": null, "assets/visuals/kcmc-congregation-gathering.jpg": null, "assets/visuals/kcmc-family-outdoor-event.jpg": null, "assets/visuals/kcmc-kids-game-room.jpg": null, "assets/visuals/kcmc-kids-safari.jpg": null, "assets/visuals/kcmc-kids-summer-group.jpg": null, "index.php": {"bytes": 29760, "mode": 420, "sha256": "59eac1492cb976eb02fb11030ce46da71c943b514dc8b4ad660a718f791334a5"}, "public-presentation.css": {"bytes": 5793, "mode": 420, "sha256": "d527b171de110a407529077630ef94b22a8afd355bdab9aabd3ad27e2812e927"}, "public-presentation.js": {"bytes": 7746, "mode": 420, "sha256": "9a25e8b69e5773ee8ca0cdd6b813f7a931ea4c489fd885088cf45dfb9697cc8d"}, "sw.js": {"bytes": 5239, "mode": 420, "sha256": "762def01d565789b81a6c57d9eaa7cd546dbe0bbf42f415490e76eff890a6c9e"}}}')
 # Filled only from the reviewed immutable inventory and owner host receipt.
-FILES = json.loads('{"admin/publication-designer.php": {"baseline_sha256": "d03b73fe34e3773c8aa0bc469778ad6b84089d584bd89c7e5f17239a915c702f", "bytes": 32506, "sha256": "fe401dba16db2bf2611dc2f8199965d6faad423efcfd085f0e65a14794329793"}, "admin/publication-media.php": {"baseline_sha256": null, "bytes": 7994, "sha256": "1ce8b5d44756593a6bd678c8a81232248177f5e6c158e90ab52843b2cdd29488"}, "admin/publication-projects.php": {"baseline_sha256": "c953df4f774ccd3df5c8969d2fcc88fe77e66ed9e690a37f062a4608e77aa8a8", "bytes": 9117, "sha256": "aaf667a192407869f5d0255dcb648f3253c41671423578cf39d1866a2aeab205"}, "assets/visuals/kcmc-bridge-logo-composite.png": {"baseline_sha256": null, "bytes": 3755093, "sha256": "0c56385f540160ae7c704c3496f8c7fd329b3a995faf75aa1f9832496a31c45d"}, "assets/visuals/kcmc-bridge-logo.jpg": {"baseline_sha256": null, "bytes": 67354, "sha256": "9926f5ee356f67aa076fd6912b9a4cea8e458f4e4202a6af2c49360c06ecc082"}, "assets/visuals/kcmc-bridge-wordmark.png": {"baseline_sha256": null, "bytes": 1715447, "sha256": "c67a448f587586e62eb3daf4f27912ea137c08011fa2e070aff89bd290d85a00"}, "assets/visuals/kcmc-church-wordmark.jpg": {"baseline_sha256": null, "bytes": 93545, "sha256": "957b2d8994596713673de3badc1a6abfb8044975e06c97af6ddb0f45c2e1effb"}, "assets/visuals/kcmc-congregation-gathering.jpg": {"baseline_sha256": null, "bytes": 277265, "sha256": "9bcf70bd63180f36330fc01a709b8c8dc73036cda9af935f9676fe2851a8a9e4"}, "assets/visuals/kcmc-family-outdoor-event.jpg": {"baseline_sha256": null, "bytes": 569816, "sha256": "6ca77e8f7f2b6d9bc7fc3b7e4338dca0d58809873209cb7c6a30494b9f163f5c"}, "assets/visuals/kcmc-kids-game-room.jpg": {"baseline_sha256": null, "bytes": 313874, "sha256": "094d137b2591821e7796dab7f5deaddd9733f7ab31ccd36551f9132205f50598"}, "assets/visuals/kcmc-kids-safari.jpg": {"baseline_sha256": null, "bytes": 359032, "sha256": "652fbe2f8eaaf1ce2eddfb187797cabb67d887b71fa17d14b4e2a06e22fc50bf"}, "assets/visuals/kcmc-kids-summer-group.jpg": {"baseline_sha256": null, "bytes": 175475, "sha256": "d45a5a91efa83c22ea41aa878ce4d7c0f7e4c254b238a9a2ebd1b9ac90e7824e"}, "index.php": {"baseline_sha256": "59eac1492cb976eb02fb11030ce46da71c943b514dc8b4ad660a718f791334a5", "bytes": 32929, "sha256": "0cd9bee7066cbcd3d18941b749ca5990f65e9ce3124f8330703add0143808a8f"}, "public-presentation.css": {"baseline_sha256": "d527b171de110a407529077630ef94b22a8afd355bdab9aabd3ad27e2812e927", "bytes": 9111, "sha256": "6e2183564ce17513ac1f85020e98f4c855ff89f0d8caac776b117bde8234bde2"}, "public-presentation.js": {"baseline_sha256": "9a25e8b69e5773ee8ca0cdd6b813f7a931ea4c489fd885088cf45dfb9697cc8d", "bytes": 5910, "sha256": "5dfe8c3dc99e5c8771f383157cdfc1f3def1f4e72810094a16e6203dbaf4c150"}, "sw.js": {"baseline_sha256": "762def01d565789b81a6c57d9eaa7cd546dbe0bbf42f415490e76eff890a6c9e", "bytes": 5679, "sha256": "11091e96760a045f952650a8e720ed02607307cb87173f5978cd9f246c6fdfd0"}}')
+FILES = json.loads('{"admin/publication-designer.php": {"baseline_sha256": "d03b73fe34e3773c8aa0bc469778ad6b84089d584bd89c7e5f17239a915c702f", "bytes": 32812, "sha256": "1b2ae59a2f5b04df5030e3fbad23479d7199b336a5ca2e350293a3bc4d640da7"}, "admin/publication-media.php": {"baseline_sha256": null, "bytes": 7994, "sha256": "1ce8b5d44756593a6bd678c8a81232248177f5e6c158e90ab52843b2cdd29488"}, "admin/publication-projects.php": {"baseline_sha256": "c953df4f774ccd3df5c8969d2fcc88fe77e66ed9e690a37f062a4608e77aa8a8", "bytes": 9170, "sha256": "df4065f13e757f9d9310a8ce01cb1174df94e8dd52f32246c84a010697650312"}, "assets/visuals/kcmc-bridge-logo-composite.png": {"baseline_sha256": null, "bytes": 3755093, "sha256": "0c56385f540160ae7c704c3496f8c7fd329b3a995faf75aa1f9832496a31c45d"}, "assets/visuals/kcmc-bridge-logo.jpg": {"baseline_sha256": null, "bytes": 67354, "sha256": "9926f5ee356f67aa076fd6912b9a4cea8e458f4e4202a6af2c49360c06ecc082"}, "assets/visuals/kcmc-bridge-wordmark.png": {"baseline_sha256": null, "bytes": 1715447, "sha256": "c67a448f587586e62eb3daf4f27912ea137c08011fa2e070aff89bd290d85a00"}, "assets/visuals/kcmc-church-wordmark.jpg": {"baseline_sha256": null, "bytes": 93545, "sha256": "957b2d8994596713673de3badc1a6abfb8044975e06c97af6ddb0f45c2e1effb"}, "assets/visuals/kcmc-congregation-gathering.jpg": {"baseline_sha256": null, "bytes": 277265, "sha256": "9bcf70bd63180f36330fc01a709b8c8dc73036cda9af935f9676fe2851a8a9e4"}, "assets/visuals/kcmc-family-outdoor-event.jpg": {"baseline_sha256": null, "bytes": 569816, "sha256": "6ca77e8f7f2b6d9bc7fc3b7e4338dca0d58809873209cb7c6a30494b9f163f5c"}, "assets/visuals/kcmc-kids-game-room.jpg": {"baseline_sha256": null, "bytes": 313874, "sha256": "094d137b2591821e7796dab7f5deaddd9733f7ab31ccd36551f9132205f50598"}, "assets/visuals/kcmc-kids-safari.jpg": {"baseline_sha256": null, "bytes": 359032, "sha256": "652fbe2f8eaaf1ce2eddfb187797cabb67d887b71fa17d14b4e2a06e22fc50bf"}, "assets/visuals/kcmc-kids-summer-group.jpg": {"baseline_sha256": null, "bytes": 175475, "sha256": "d45a5a91efa83c22ea41aa878ce4d7c0f7e4c254b238a9a2ebd1b9ac90e7824e"}, "index.php": {"baseline_sha256": "59eac1492cb976eb02fb11030ce46da71c943b514dc8b4ad660a718f791334a5", "bytes": 32937, "sha256": "62ce1fc0cacfbe79dae426a2d39b68fb9e7aeef85e9bf7f927f48123e9e11fc2"}, "public-presentation.css": {"baseline_sha256": "d527b171de110a407529077630ef94b22a8afd355bdab9aabd3ad27e2812e927", "bytes": 9111, "sha256": "6e2183564ce17513ac1f85020e98f4c855ff89f0d8caac776b117bde8234bde2"}, "public-presentation.js": {"baseline_sha256": "9a25e8b69e5773ee8ca0cdd6b813f7a931ea4c489fd885088cf45dfb9697cc8d", "bytes": 6173, "sha256": "eb1b70aa00615b2acd75b3173612d56da66d7a03ddff73271ce84c85f432e354"}, "sw.js": {"baseline_sha256": "762def01d565789b81a6c57d9eaa7cd546dbe0bbf42f415490e76eff890a6c9e", "bytes": 5741, "sha256": "e5579b08f6fbac14e85e10ca8c066e94b4988d5ae4d00158a92f66c1c8709939"}}')
 GUARDS = json.loads('{".htaccess": "993e7a8936737dbf9ba852e60604141de15e24d7399e644393282ed99b7ff690", "admin/audit.php": "07fd9e1806925faa64e65bc9b916dfc61f8dfd96e8498941ff9628885706d867", "admin/health.php": "8f89221fdabaaad204fc7005136c8fb559f6ca9f7ad9238a764dc86b8d1eb409", "admin/index.php": "9233559775bdcd1a95bce16c4a06d80d085a0e51e52aadc214985bcba750b5a0", "admin/timecards.php": "6950397e9f8d8c88bba1bd5696f62e84419f795d79922877898d89c71d9b6d47", "assets/visuals/kcmc-building-2024.webp": "cd2a12a3211b89ee523bef80a4fee5c3ed7429f6404b2d23530bae61f600e0fb", "assets/visuals/kcmc-ministry-group.jpg": "94fdec9c87cafdb00ca59c2f977145007debbe633b8036c4f5db0cd2670e6e4a", "assets/visuals/kcmc-stage-2014.webp": "904827c79e9332706b8c19c73d4cb211c116629a0f974f4d6df211596df6c994", "assets/visuals/kcmc-worship-2017.webp": "4593491d1f8f2d8592bc6382928eb51a41170b910ed2bd2271c491a7866315a8", "care.php": "0c48c6d5dab7c18329158c68152c441d7194aa334daf074ac663a294e6b3855e", "lib/bootstrap.php": "32cff7ba681a9c5163be880af62a358b331b6dbfe91b0fce9621497ef9413b31", "member/login.php": "2db61ebc38cbb126a6f67d858bdb60e2553ea015d36cfdced869828887ddc4de", "member/timeclock.php": "7864fdee399f90ae5a5bea97fa4c0bf9b5a6a23255f4de31051d21c03bf1663d"}')
 BASELINE_EXPECTATIONS = json.loads('{"admin/publication-designer.php": {"bytes": 20913, "mode": 420}, "admin/publication-projects.php": {"bytes": 6087, "mode": 420}, "index.php": {"bytes": 29760, "mode": 420}, "public-presentation.css": {"bytes": 5793, "mode": 420}, "public-presentation.js": {"bytes": 7746, "mode": 420}, "sw.js": {"bytes": 5239, "mode": 420}}')
-GIT_SHAS = json.loads('{"admin/publication-designer.php": "0d768e40bf1294f2eb4ee8db406a0305af44e319", "admin/publication-media.php": "8610de8eef17ee596150e5ae81b06fb52a864ba5", "admin/publication-projects.php": "5aa61e6e23da4ec7a327d8345f8f0067c1c5140b", "assets/visuals/kcmc-bridge-logo-composite.png": "b789dd80629facf4877bdbc738952cc7434828ac", "assets/visuals/kcmc-bridge-logo.jpg": "c9879869137c1ff45363266268b584973bd0c246", "assets/visuals/kcmc-bridge-wordmark.png": "1c49662e0f31b7beca2932887879a286073b308d", "assets/visuals/kcmc-church-wordmark.jpg": "38b31ac1e7db8fcd1db77496440831849aaa885b", "assets/visuals/kcmc-congregation-gathering.jpg": "47b1d86c8bae2d946734c441656339e80da20b98", "assets/visuals/kcmc-family-outdoor-event.jpg": "e2518862f928ec05d586c9a076a1a51541b05a62", "assets/visuals/kcmc-kids-game-room.jpg": "e47dad1d5e77feaf07a1a6b1d24cfdb4d3c8ff73", "assets/visuals/kcmc-kids-safari.jpg": "279141e9ffb1bd7f6541b91a1c63d8d7e828a7b0", "assets/visuals/kcmc-kids-summer-group.jpg": "d86f7fb394dab54360a6b76c9d4b3f197318a3ff", "index.php": "781e18b6490c851a619c5b6150ce4d5d1898cae7", "public-presentation.css": "703e1424b39cfc0e6eacb7585cf47ca1b9fdad4b", "public-presentation.js": "a0cbbd2859d2646e254a271b3830f57eb9be9a1e", "sw.js": "b9c74c775e4e0cdb5b7db956e128584a162ee8b6"}')
+GIT_SHAS = json.loads('{"admin/publication-designer.php": "66b17b8f230e5794e5b239e4a1563b307dc12404", "admin/publication-media.php": "8610de8eef17ee596150e5ae81b06fb52a864ba5", "admin/publication-projects.php": "f31404ee86d18e08be2de47d9b94682450d17c7c", "assets/visuals/kcmc-bridge-logo-composite.png": "b789dd80629facf4877bdbc738952cc7434828ac", "assets/visuals/kcmc-bridge-logo.jpg": "c9879869137c1ff45363266268b584973bd0c246", "assets/visuals/kcmc-bridge-wordmark.png": "1c49662e0f31b7beca2932887879a286073b308d", "assets/visuals/kcmc-church-wordmark.jpg": "38b31ac1e7db8fcd1db77496440831849aaa885b", "assets/visuals/kcmc-congregation-gathering.jpg": "47b1d86c8bae2d946734c441656339e80da20b98", "assets/visuals/kcmc-family-outdoor-event.jpg": "e2518862f928ec05d586c9a076a1a51541b05a62", "assets/visuals/kcmc-kids-game-room.jpg": "e47dad1d5e77feaf07a1a6b1d24cfdb4d3c8ff73", "assets/visuals/kcmc-kids-safari.jpg": "279141e9ffb1bd7f6541b91a1c63d8d7e828a7b0", "assets/visuals/kcmc-kids-summer-group.jpg": "d86f7fb394dab54360a6b76c9d4b3f197318a3ff", "index.php": "79bbf9b521563cf55f60a76685b6770a21a9dd79", "public-presentation.css": "703e1424b39cfc0e6eacb7585cf47ca1b9fdad4b", "public-presentation.js": "1621a4f27871ad8a9dafc61d92b26b4eb776bd12", "sw.js": "51c756311fe07a87592119a6773b647c2f8fd8bc"}')
 ALLOWED = set(['index.php', 'public-presentation.js', 'public-presentation.css', 'sw.js',
                'admin/publication-designer.php', 'admin/publication-projects.php',
                'admin/publication-media.php',
@@ -241,6 +244,15 @@ def locked():
 
 
 def inventory():
+    require(re.match(r'\A[0-9a-f]{40}\Z', COMMIT) is not None, 'Oct 8 release is pending approved runtime SHA; installation is on hold')
+    require(set(BASELINES) == set(BASELINE_IDS), 'Unknown baseline bundle')
+    for bundle in BASELINES.values():
+        require(isinstance(bundle, dict) and set(bundle) == set(FILES), 'Incomplete baseline bundle')
+        for item in bundle.values():
+            require(item is None or (isinstance(item, dict) and set(item) == set(['sha256', 'bytes', 'mode']) and
+                    isinstance(item['sha256'], str) and re.match(r'\A[0-9a-f]{64}\Z', item['sha256']) is not None and
+                    isinstance(item['bytes'], int) and 0 < item['bytes'] <= MAX_BYTES and
+                    isinstance(item['mode'], int) and 0 <= item['mode'] <= 0o7777), 'Invalid baseline preimage')
     require(FILES and set(FILES).issubset(ALLOWED), 'Empty or out-of-scope inventory')
     require('sw.js' in FILES, 'Service worker must be part of this release')
     for path, item in FILES.items():
@@ -420,13 +432,15 @@ def read_session(session):
     data, info = read_private(session / 'manifest.json')
     require(info['mode'] == 0o600 and info['uid'] == os.getuid(), 'Unsafe session manifest')
     value = json.loads(data.decode('utf-8'))
-    require(isinstance(value, dict) and set(value) == set(['version', 'app', 'commit', 'phase', 'files', 'protected', 'publisher', 'intent']) and
+    require(isinstance(value, dict) and set(value) == set(['version', 'app', 'commit', 'phase', 'baseline_id', 'files', 'protected', 'publisher', 'intent']) and
             value['version'] == 1 and value['phase'] in ('prepared', 'applying', 'applied', 'failed', 'rolling_back', 'rolled_back'),
             'Unknown session journal format')
     require(isinstance(value['files'], dict) and isinstance(value['protected'], dict) and
             value['commit'] == COMMIT and value['app'] == str(APP_ROOT) and
             set(value['files']) == set(FILES), 'Session scope/source mismatch')
     require(value['intent'] is None or value['intent'] in FILES, 'Unknown session installation intent')
+    require(value['baseline_id'] in BASELINE_IDS, 'Unknown session baseline')
+    bundle = BASELINES[value['baseline_id']]
     metadata_keys = set(['sha256', 'bytes', 'mode', 'uid', 'gid', 'dev', 'ino', 'mtime_ns', 'atime_ns'])
     def valid_metadata(record):
         require(isinstance(record, dict) and set(record) == metadata_keys and
@@ -439,10 +453,10 @@ def read_session(session):
         baseline = record['original']
         if baseline is not None:
             valid_metadata(baseline)
-        require((baseline['sha256'] if baseline else None) == FILES[path]['baseline_sha256'], 'Session baseline changed')
-        if path in BASELINE_EXPECTATIONS:
-            require(baseline is not None and all(baseline[key] == expected for key, expected in BASELINE_EXPECTATIONS[path].items()),
-                    'Session baseline receipt changed')
+        expected = bundle[path]
+        require((baseline is None if expected is None else baseline is not None and
+                all(baseline[key] == expected[key] for key in ('sha256', 'bytes', 'mode'))),
+                'Session selected baseline preimage changed')
         for kind in ('candidate', 'installed'):
             if record[kind] is not None:
                 valid_metadata(record[kind])
@@ -465,6 +479,18 @@ def read_session(session):
     return value
 
 
+def select_baseline(originals):
+    matches = []
+    for baseline_id in BASELINE_IDS:
+        expected = BASELINES[baseline_id]
+        if all((originals[path][1] is None if expected[path] is None else
+                originals[path][1] is not None and all(originals[path][1][key] == expected[path][key]
+                for key in ('sha256', 'bytes', 'mode'))) for path in FILES):
+            matches.append(baseline_id)
+    require(len(matches) == 1, 'Live files are not one complete approved baseline; mixed or newer files require review')
+    return matches[0]
+
+
 def prepare_unlocked():
     inventory()
     originals = {}
@@ -472,11 +498,8 @@ def prepare_unlocked():
     publisher = capture_stores()
     for path, approved in FILES.items():
         data, info = read_file(APP_ROOT / path, missing=True)
-        require((info['sha256'] if info else None) == approved['baseline_sha256'], 'Live baseline drift: ' + path)
-        if path in BASELINE_EXPECTATIONS:
-            require(info is not None and info['bytes'] == BASELINE_EXPECTATIONS[path]['bytes'] and
-                    info['mode'] == BASELINE_EXPECTATIONS[path]['mode'], 'Owner receipt size/mode drift: ' + path)
         originals[path] = (data, info)
+    baseline_id = select_baseline(originals)
     name = 'release-' + datetime.datetime.utcnow().strftime('%Y%m%dT%H%M%SZ-') + uuid.uuid4().hex[:12]
     session = BACKUP_ROOT / name
     private_dir(session)
@@ -513,7 +536,7 @@ def prepare_unlocked():
     check_protected(protected)
     check_stores(publisher)
     value = {'version': 1, 'app': str(APP_ROOT), 'commit': COMMIT, 'phase': 'prepared',
-             'files': records, 'protected': protected, 'publisher': publisher, 'intent': None}
+             'baseline_id': baseline_id, 'files': records, 'protected': protected, 'publisher': publisher, 'intent': None}
     journal(session, value)
     return session
 

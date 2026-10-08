@@ -80,6 +80,8 @@ class InstallerTests(unittest.TestCase):
             lock.write_bytes(b'')
             lock.chmod(0o640)
         self.installer.APP_ROOT = self.live
+        self.installer.COMMIT = 'f' * 40
+        self.installer.SOURCE_ROOT = 'https://raw.githubusercontent.com/bobhay75/Kcmc-connect/' + self.installer.COMMIT + '/KCMC-Connect-Phase6-Recreated/'
         self.installer.BACKUP_ROOT = self.backups
         self.installer.FILES = {
             path: {'sha256': digest(data), 'bytes': len(data),
@@ -94,6 +96,13 @@ class InstallerTests(unittest.TestCase):
         self.installer.GIT_SHAS = {
             path: hashlib.sha1(('blob ' + str(len(data)) + '\0').encode('ascii') + data).hexdigest()
             for path, data in self.after.items()
+        }
+        old_id, previous_id = self.installer.BASELINE_IDS
+        self.installer.BASELINES = {
+            old_id: {path: None if data is None else {'sha256': digest(data), 'bytes': len(data),
+                     'mode': self.original_modes[path]} for path, data in self.before.items()},
+            previous_id: {path: {'sha256': digest(data), 'bytes': len(data), 'mode': 0o644}
+                          for path, data in self.after.items()},
         }
         self.fetches, self.lints, self.http_calls = [], [], []
 
@@ -144,6 +153,23 @@ class InstallerTests(unittest.TestCase):
         self.installer.FILES[path] = {'sha256': digest(new), 'bytes': len(new),
                                       'baseline_sha256': None if old is None else digest(old)}
         self.installer.GIT_SHAS[path] = hashlib.sha1(('blob ' + str(len(new)) + '\0').encode('ascii') + new).hexdigest()
+        old_id, previous_id = self.installer.BASELINE_IDS
+        self.installer.BASELINES[old_id][path] = None if old is None else {'sha256': digest(old), 'bytes': len(old), 'mode': 0o644}
+        self.installer.BASELINES[previous_id][path] = {'sha256': digest(new), 'bytes': len(new), 'mode': 0o644}
+
+    def activate_previous_release(self):
+        previous = dict(self.after)
+        self.before = previous
+        self.original_modes = {path: 0o644 for path in previous}
+        for path, data in previous.items():
+            target = self.live / path
+            target.write_bytes(data)
+            target.chmod(0o644)
+            future = data + b'\n/* synthetic Oct 8 approved repair */\n'
+            self.after[path] = future
+            self.installer.FILES[path]['sha256'] = digest(future)
+            self.installer.FILES[path]['bytes'] = len(future)
+            self.installer.GIT_SHAS[path] = hashlib.sha1(('blob ' + str(len(future)) + '\0').encode('ascii') + future).hexdigest()
 
     def http_fixture(self, bad_static=None, bad_admin=None):
         seen = []
@@ -852,6 +878,95 @@ class InstallerTests(unittest.TestCase):
                 with mock.patch.object(self.installer.urllib.request, 'urlopen', side_effect=opened):
                     with self.assertRaises(Exception):
                         self.real_http()
+
+
+    def test_pending_runtime_pin_refuses_before_live_changes(self):
+        self.installer.COMMIT = 'PENDING_APPROVED_OCT8_COMMIT'
+        before = self.live_snapshot()
+        with self.assertRaises(Exception):
+            self.prepare()
+        self.assertEqual(self.live_snapshot(), before)
+        self.assertFalse(self.fetches)
+        self.assertFalse(self.writes)
+
+    def test_complete_ae004_records_the_selected_bundle(self):
+        session = self.prepare()
+        self.assertEqual(self.installer.read_session(session)['baseline_id'], self.installer.BASELINE_IDS[0])
+
+    def test_complete_previous_release_upgrades_and_restores_existing_media(self):
+        self.activate_previous_release()
+        before = self.live_snapshot()
+        session = self.prepare()
+        self.assertEqual(self.installer.read_session(session)['baseline_id'], self.installer.BASELINE_IDS[1])
+        self.installer.apply(session=str(session))
+        self.assert_release_bytes()
+        self.installer.rollback(str(session))
+        self.assert_baseline()
+        self.assertEqual(self.live_snapshot(), before)
+        self.assertTrue((self.live / 'admin/publication-media.php').exists())
+
+    def test_mixed_old_and_previous_files_refuse_before_download(self):
+        path = 'index.php'
+        (self.live / path).write_bytes(self.after[path])
+        (self.live / path).chmod(0o644)
+        before = self.live_snapshot()
+        with self.assertRaises(Exception):
+            self.prepare()
+        self.assertEqual(self.live_snapshot(), before)
+        self.assertFalse(self.fetches)
+        self.assertFalse(self.writes)
+
+    def test_previous_release_missing_one_file_is_not_an_old_bundle(self):
+        self.activate_previous_release()
+        (self.live / 'admin/publication-media.php').unlink()
+        before = self.live_snapshot()
+        with self.assertRaises(Exception):
+            self.prepare()
+        self.assertEqual(self.live_snapshot(), before)
+        self.assertFalse(self.fetches)
+        self.assertFalse(self.writes)
+
+    def test_unknown_session_baseline_is_refused(self):
+        session = self.prepare()
+        value = self.installer.read_session(session)
+        value['baseline_id'] = 'e' * 40
+        self.installer.journal(session, value)
+        with self.assertRaises(Exception):
+            self.installer.apply(session=str(session))
+        self.assertFalse(self.writes)
+        self.assert_baseline()
+
+    def test_allowed_baseline_label_cannot_relabel_original_preimages(self):
+        session = self.prepare()
+        value = self.installer.read_session(session)
+        value['baseline_id'] = self.installer.BASELINE_IDS[1]
+        self.installer.journal(session, value)
+        with self.assertRaises(Exception):
+            self.installer.apply(session=str(session))
+        self.assertFalse(self.writes)
+        self.assert_baseline()
+
+    def test_automatic_rollback_preserves_complete_previous_release(self):
+        self.activate_previous_release()
+        before = self.live_snapshot()
+        session = self.prepare()
+        def bad_http():
+            raise RuntimeError('synthetic failed repair verification')
+        self.installer.verify_http = bad_http
+        with self.assertRaises(Exception):
+            self.installer.apply(session=str(session))
+        self.assertEqual(self.live_snapshot(), before)
+        self.assert_baseline()
+        self.assertTrue((self.live / 'admin/publication-media.php').exists())
+
+    def test_incomplete_baseline_definition_is_refused(self):
+        self.installer.BASELINES[self.installer.BASELINE_IDS[1]].pop('sw.js')
+        before = self.live_snapshot()
+        with self.assertRaises(Exception):
+            self.prepare()
+        self.assertEqual(self.live_snapshot(), before)
+        self.assertFalse(self.fetches)
+        self.assertFalse(self.writes)
 
 
 if __name__ == '__main__':
