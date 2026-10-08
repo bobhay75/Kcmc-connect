@@ -21,8 +21,8 @@ function pub_number(mixed $value, float $min, float $max): float {
     return round($n, 2);
 }
 
-function pub_text(mixed $value, int $max): string {
-    $text = is_string($value) ? trim($value) : '';
+function pub_text(mixed $value, int $max, bool $preserveWhitespace = false): string {
+    $text = is_string($value) ? ($preserveWhitespace ? $value : trim($value)) : '';
     if (kcmc_text_length($text) > $max) pub_fail('Publication text is too long.');
     return $text;
 }
@@ -69,7 +69,7 @@ function pub_item(array $item): array {
         'opacity' => pub_number($item['opacity'] ?? 1, 0.1, 1),
     ];
     if ($type === 'text') {
-        $out['text'] = pub_text($item['text'] ?? '', 12000);
+        $out['text'] = pub_text($item['text'] ?? '', 12000, true);
     } elseif ($type === 'image') {
         $mediaId = pub_text($item['mediaId'] ?? '', 40);
         if ($mediaId !== '') {
@@ -192,7 +192,7 @@ kcmc_update_json_store($storePath, $defaultStore, function (array &$state) use (
     if (!$found) array_unshift($projects, $project);
     usort($projects, static fn(array $a, array $b): int => strcmp((string)($b['updated'] ?? ''), (string)($a['updated'] ?? '')));
     $state['version'] = 2;
-    $state['projects'] = array_slice($projects, 0, 50);
+    $state['projects'] = $projects;
 });
 kcmc_audit('publication_project_saved', ['publication_id' => $id, 'page_count' => count($pages), 'item_count' => $totalItems]);
 echo json_encode(['ok' => true, 'project' => $project], JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);

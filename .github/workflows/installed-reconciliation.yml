@@ -19,7 +19,7 @@ jobs:
           persist-credentials: false
       - name: Fetch reviewed source objects (read only)
         run: |
-          git fetch --no-tags origin 2146af219d2fd23136eae1685f91a2a2caec030e 2c767fd66299524a126f39c5350de8dac1ce1f85 225c564138242f699a1bd31c75b5c78e65268ca7 b1fe32017781be8a570ae114148d66fca82bc867 c19214a0078ae8a4d306954a76ca4a8f96dadcb2
+          git fetch --no-tags origin 2146af219d2fd23136eae1685f91a2a2caec030e 2c767fd66299524a126f39c5350de8dac1ce1f85 225c564138242f699a1bd31c75b5c78e65268ca7 b1fe32017781be8a570ae114148d66fca82bc867 c19214a0078ae8a4d306954a76ca4a8f96dadcb2 61c70f590735522adbfd6be02dab6888924a54fd
       - name: Verify exact runtime, scope and preserved sources
         run: |
           set -euo pipefail
@@ -34,6 +34,8 @@ jobs:
           bash tests/security-contract.sh | tee reconciliation-artifacts/security.txt
           bash tests/production-smoke-contract.sh | tee reconciliation-artifacts/production-smoke-fixtures.txt
           node --check KCMC-Connect-Phase6-Recreated/public-presentation.js
+          node tests/public-photo-offline-source.cjs | tee reconciliation-artifacts/public-photo-offline-source.txt
+          node tests/publication-fidelity-source.cjs | tee reconciliation-artifacts/publication-fidelity-source.txt
           for f in tests/*contract.php; do php "$f"; done | tee reconciliation-artifacts/php-contracts.txt
       - name: Install browser dependencies
         run: |
@@ -53,6 +55,38 @@ jobs:
           python3 tests/publication-text-roundtrip-browser.py | tee reconciliation-artifacts/publication-text-browser.txt
           python3 tests/publication-save-race-browser.py | tee reconciliation-artifacts/publication-save-browser.txt
           python3 tests/contemporary-bright-browser.py | tee reconciliation-artifacts/contemporary-bright-browser.txt
+          python3 tests/public-photo-offline-browser.py | tee reconciliation-artifacts/public-photo-offline-browser.txt
+          python3 tests/publication-fidelity-browser.py | tee reconciliation-artifacts/publication-fidelity-browser.txt
+      - name: Reproduce each Publisher defect on pinned previous source
+        run: |
+          python3 <<'PY'
+          import hashlib
+          from pathlib import Path
+          import subprocess
+          import tempfile
+          base = '61c70f590735522adbfd6be02dab6888924a54fd'
+          pins = {'publication-designer.php': 'fe401dba16db2bf2611dc2f8199965d6faad423efcfd085f0e65a14794329793', 'publication-projects.php': 'aaf667a192407869f5d0255dcb648f3253c41671423578cf39d1866a2aeab205'}
+          expected = {'whitespace': 'Authored boundary tabs/spaces/blank lines lost by real PHP validator', 'black': 'Opaque black was serialized as white', 'postcard': 'Postcard landscape must be 6×4 inches', 'upload': 'New: stale upload overwrote the current editor status'}
+          with tempfile.TemporaryDirectory(prefix='kcmc-publisher-previous-') as td:
+              app = Path(td)
+              (app / 'admin').mkdir()
+              for name, sha in pins.items():
+                  raw = subprocess.check_output(['git', 'show', base + ':KCMC-Connect-Phase6-Recreated/admin/' + name])
+                  assert hashlib.sha256(raw).hexdigest() == sha
+                  (app / 'admin' / name).write_bytes(raw)
+              for case, marker in expected.items():
+                  result = subprocess.run(['python3', 'tests/publication-fidelity-browser.py', '--app', str(app), '--case', case], capture_output=True, text=True)
+                  output = result.stdout + result.stderr
+                  Path('reconciliation-artifacts/publication-negative-' + case + '.txt').write_text(output)
+                  assert result.returncode != 0 and marker in output, case + ': expected semantic defect was not reproduced'
+                  print('PASS: pinned previous source reproduces ' + case)
+              for case, marker in [('new', '51st save must preserve every existing publication'), ('update', 'update must preserve every other existing publication')]:
+                  result = subprocess.run(['php', 'tests/publication-project-retention-contract.php', str(app / 'admin/publication-projects.php'), case], capture_output=True, text=True)
+                  output = result.stdout + result.stderr
+                  Path('reconciliation-artifacts/publication-retention-negative-' + case + '.txt').write_text(output)
+                  assert result.returncode != 0 and marker in output, case + ': expected project retention defect was not reproduced'
+                  print('PASS: pinned previous source reproduces project retention ' + case)
+          PY
       - name: Retain review evidence (no deployment)
         if: always()
         run: |

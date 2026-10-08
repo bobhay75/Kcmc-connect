@@ -1,0 +1,49 @@
+{
+  "source_commit": "61c70f590735522adbfd6be02dab6888924a54fd",
+  "replacements": {
+    "admin/publication-designer.php": [
+      [
+        "let selected=null,drag=null,projectId=null,currentPageIndex=0,pageState=[],projectGeneration=0,saveInFlight=false;\nconst inch=96,sizes={letter:[8.5,11],half:[5.5,8.5],postcard:[6,4]};\n",
+        "let selected=null,drag=null,projectId=null,currentPageIndex=0,pageState=[],projectGeneration=0,canvasGeneration=0,saveInFlight=false;\nconst inch=96,sizes={letter:[8.5,11],half:[5.5,8.5],postcard:[4,6]};\n"
+      ],
+      [
+        "function syncProps(){if(!selected)return;const cs=getComputedStyle(selected);fontFamily.value=cs.fontFamily.replaceAll('\"','').split(',')[0];fontSize.value=parseInt(cs.fontSize)||24;textColor.value=rgbToHex(cs.color);fillColor.value=rgbToHex(cs.backgroundColor)==='#000000'?'#ffffff':rgbToHex(cs.backgroundColor);borderColor.value=rgbToHex(cs.borderColor);borderWidth.value=parseInt(cs.borderWidth)||0;opacity.value=Math.round((parseFloat(cs.opacity)||1)*100)}\n",
+        "function syncProps(){if(!selected)return;const cs=getComputedStyle(selected);fontFamily.value=cs.fontFamily.replaceAll('\"','').split(',')[0];fontSize.value=parseInt(cs.fontSize)||24;textColor.value=rgbToHex(cs.color);fillColor.value=publicationFill(cs.backgroundColor);borderColor.value=rgbToHex(cs.borderColor);borderWidth.value=parseInt(cs.borderWidth)||0;opacity.value=Math.round((parseFloat(cs.opacity)||1)*100)}\n"
+      ],
+      [
+        "function rgbToHex(v){const m=v.match(/\\d+/g);if(!m||m.length<3)return '#17324c';return '#'+m.slice(0,3).map(n=>(+n).toString(16).padStart(2,'0')).join('')}\n",
+        "function rgbToHex(v){const m=v.match(/\\d+/g);if(!m||m.length<3)return '#17324c';return '#'+m.slice(0,3).map(n=>(+n).toString(16).padStart(2,'0')).join('')}\nfunction publicationFill(v){const alpha=v.match(/^rgba\\([^)]*,\\s*([\\d.]+)\\s*\\)$/);return v==='transparent'||(alpha&&Number(alpha[1])===0)?'#ffffff':rgbToHex(v)}\n"
+      ],
+      [
+        " textAlign:['left','center','right'].includes(cs.textAlign)?cs.textAlign:'left',color:rgbToHex(cs.color),fill:rgbToHex(cs.backgroundColor)==='#000000'?'#ffffff':rgbToHex(cs.backgroundColor),\n",
+        " textAlign:['left','center','right'].includes(cs.textAlign)?cs.textAlign:'left',color:rgbToHex(cs.color),fill:publicationFill(cs.backgroundColor),\n"
+      ],
+      [
+        "function renderPageData(p){pageSize.value=p?.pageSize||'letter';orientation.value=p?.orientation||'portrait';applyPage();page.innerHTML='';(p?.items||[]).forEach(restoreItem);clearSelection();updatePageControls()}\n",
+        "function renderPageData(p){canvasGeneration++;pageSize.value=p?.pageSize||'letter';orientation.value=p?.orientation||'portrait';applyPage();page.innerHTML='';(p?.items||[]).forEach(restoreItem);clearSelection();updatePageControls()}\n"
+      ],
+      [
+        "function resetPagesFromCanvas(){pageState=[currentPageData()];currentPageIndex=0;updatePageControls()}\n",
+        "function resetPagesFromCanvas(){canvasGeneration++;pageState=[currentPageData()];currentPageIndex=0;updatePageControls()}\n"
+      ],
+      [
+        "imagePicker.onchange=async e=>{const file=e.target.files[0];if(!file)return;setStatus('Uploading photo…');const form=new FormData();form.append('csrf',csrf);form.append('photo',file);try{const r=await fetch(mediaEndpoint,{method:'POST',credentials:'same-origin',body:form}),j=await r.json();if(!r.ok||!j.ok)throw new Error(j.error||'Upload failed');addSharedMediaToCanvas(j.media);await renderSharedMedia();setStatus('Photo uploaded and added')}catch(err){setStatus(err.message||'Upload failed')}finally{imagePicker.value=''}};\n",
+        "imagePicker.onchange=async e=>{const file=e.target.files[0];if(!file)return;const generation=projectGeneration,canvas=canvasGeneration,isCurrent=()=>generation===projectGeneration&&canvas===canvasGeneration;setStatus('Uploading photo…');const form=new FormData();form.append('csrf',csrf);form.append('photo',file);try{const r=await fetch(mediaEndpoint,{method:'POST',credentials:'same-origin',body:form}),j=await r.json();if(!r.ok||!j.ok)throw new Error(j.error||'Upload failed');if(isCurrent())addSharedMediaToCanvas(j.media);await renderSharedMedia();if(isCurrent())setStatus('Photo uploaded and added')}catch(err){if(isCurrent())setStatus(err.message||'Upload failed')}finally{imagePicker.value=''}};\n"
+      ]
+    ],
+    "admin/publication-projects.php": [
+      [
+        "function pub_text(mixed $value, int $max): string {\n    $text = is_string($value) ? trim($value) : '';\n",
+        "function pub_text(mixed $value, int $max, bool $preserveWhitespace = false): string {\n    $text = is_string($value) ? ($preserveWhitespace ? $value : trim($value)) : '';\n"
+      ],
+      [
+        "        $out['text'] = pub_text($item['text'] ?? '', 12000);\n",
+        "        $out['text'] = pub_text($item['text'] ?? '', 12000, true);\n"
+      ],
+      [
+        "    $state['projects'] = array_slice($projects, 0, 50);\n",
+        "    $state['projects'] = $projects;\n"
+      ]
+    ]
+  }
+}

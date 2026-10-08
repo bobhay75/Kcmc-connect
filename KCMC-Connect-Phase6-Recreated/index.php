@@ -306,6 +306,6 @@ usort($kcmcAnnouncements, fn($a,$b)=>(int)($b['priority']??0)<=>(int)($a['priori
   </div>
 </div>
 <script src="app.js?v=3.0.2" defer></script>
-<script src="public-presentation.js?v=tony-bright-photos-20261007" defer></script>
+<script src="public-presentation.js?v=tony-bright-photos-offline-20261008" defer></script>
 <a class="phase6-bulletin-fab" href="bulletin.php">Latest Bulletin</a>
 </body></html>
