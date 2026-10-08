@@ -1,0 +1,35 @@
+{
+  "source_commit": "61c70f590735522adbfd6be02dab6888924a54fd",
+  "replacements": {
+    "index.php": [
+      [
+        "public-presentation.js?v=tony-bright-photos-20261007",
+        "public-presentation.js?v=tony-bright-photos-offline-20261008"
+      ]
+    ],
+    "public-presentation.js": [
+      [
+        "  function show(index, announce) {\n    const next = (index + photos.length) % photos.length;\n    // Never replace a usable frame with a broken or not-yet-loaded image.\n    if (!photos[next].complete || photos[next].naturalWidth === 0) return;",
+        "  function show(index, announce, step = 1) {\n    const direction = step < 0 ? -1 : 1;\n    let next = ((index % photos.length) + photos.length) % photos.length;\n    // Skip unavailable frames in the requested direction; keep a usable current frame.\n    let remaining = photos.length;\n    while (remaining > 0 && (!photos[next].complete || photos[next].naturalWidth === 0)) {\n      next = (next + direction + photos.length) % photos.length;\n      remaining -= 1;\n    }\n    if (remaining === 0) return;"
+      ],
+      [
+        "    show(current + step, true);",
+        "    show(current + step, true, step);"
+      ]
+    ],
+    "sw.js": [
+      [
+        "const CACHE='kcmc-connect-v3.0.3-public-only-tony-bright-photos-20261007';",
+        "const CACHE='kcmc-connect-v3.0.3-public-only-tony-bright-photos-offline-20261008';"
+      ],
+      [
+        "public-presentation.js?v=tony-bright-photos-20261007",
+        "public-presentation.js?v=tony-bright-photos-offline-20261008"
+      ],
+      [
+        "  './assets/visuals/trunk-or-treat-2026.webp',",
+        "  './assets/visuals/trunk-or-treat-2026.webp',\n  './assets/visuals/kcmc-ministry-group.jpg',"
+      ]
+    ]
+  }
+}

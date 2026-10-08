@@ -108,6 +108,11 @@ image_bytes = (ROOT / 'tests/fixtures/supplied-images-runtime-delta.json').read_
 check(hashlib.sha256(image_bytes).hexdigest() == 'f4b79cacf3985f4f5b5d0605f3308f594b78eff91ac5955f8098c4df8763a322', 'reviewed supplied image delta remains exact')
 image_delta = json.loads(image_bytes)
 check(set(image_delta) == {'index.php', 'public-presentation.js', 'sw.js'}, 'supplied image runtime delta is limited to public photo surfaces')
+offline_bytes = (ROOT / 'tests/fixtures/public-photo-offline-reviewed.json').read_bytes()
+check(hashlib.sha256(offline_bytes).hexdigest() == '38eaa8ddcd3022d4e21bf7e46c1586ab2bb258390141ce374de745c4140f7bb4', 'reviewed offline photo delta remains exact')
+offline = json.loads(offline_bytes)
+check(set(offline) == {'source_commit', 'replacements'} and offline['source_commit'] == '61c70f590735522adbfd6be02dab6888924a54fd', 'offline repair source remains pinned')
+check(set(offline['replacements']) == {'index.php', 'public-presentation.js', 'sw.js'}, 'offline repair scope remains public photo/runtime cache surfaces')
 
 for name, content in expected.items():
     for old, new in approved.get(name, []):
@@ -136,6 +141,9 @@ for name, content in expected.items():
     for old, new in image_delta.get(name, []):
         check(content.count(old.encode()) == 1, name + ': supplied image replacement anchor is unique')
         content = content.replace(old.encode(), new.encode(), 1)
+    for old, new in offline['replacements'].get(name, []):
+        check(content.count(old.encode()) == 1, name + ': offline repair anchor is unique')
+        content = content.replace(old.encode(), new.encode(), 1)
     check(actual == content, name + ': exact reviewed runtime plus approved differences only')
 
 # Publication Designer changes remain constrained to the same three reviewed
@@ -152,6 +160,11 @@ publisher_bytes = (ROOT / 'tests/fixtures/publication-save-reviewed.json').read_
 check(hashlib.sha256(publisher_bytes).hexdigest() == '102b657b0d2bcb233f26c0987027930aaacd0976e9d0e41bb7716168f3c952e3', 'reviewed publication save delta remains exact')
 publisher = json.loads(publisher_bytes)
 check(set(publisher) == {'source_commit', 'replacements'} and publisher['source_commit'] == 'c19214a0078ae8a4d306954a76ca4a8f96dadcb2', 'publication repair source remains pinned')
+editor_bytes = (ROOT / 'tests/fixtures/publication-editor-reviewed.json').read_bytes()
+check(hashlib.sha256(editor_bytes).hexdigest() == 'd927f303e159be1a97eece7d2ea7f624f4d950156e825e03ccf6cbfdef05a6db', 'reviewed publication fidelity delta remains exact')
+editor = json.loads(editor_bytes)
+check(set(editor) == {'source_commit', 'replacements'} and editor['source_commit'] == '61c70f590735522adbfd6be02dab6888924a54fd', 'publication fidelity source remains pinned')
+check(set(editor['replacements']) == {'admin/publication-designer.php', 'admin/publication-projects.php'}, 'publication fidelity scope remains exactly editor and project endpoint')
 for name, blob in publication.items():
     if name == 'admin/publication-designer.php':
         content = source(publisher['source_commit'], PREFIX + name)
@@ -160,10 +173,15 @@ for name, blob in publication.items():
         for old, new in publisher['replacements']:
             check(content.count(old.encode()) == 1, name + ': publication repair anchor is unique')
             content = content.replace(old.encode(), new.encode(), 1)
-        check((ROOT / PREFIX / name).read_bytes() == content, name + ': exact reviewed save repair only')
+        check(content == source(editor['source_commit'], PREFIX + name), name + ': save repair exactly reaches the fidelity baseline')
     else:
-        actual = git('hash-object', PREFIX + name).decode().strip()
-        check(actual == blob, name + ': approved Publication Designer blob retained')
+        content = source(editor['source_commit'], PREFIX + name)
+        header = b'blob ' + str(len(content)).encode() + b'\0'
+        check(hashlib.sha1(header + content).hexdigest() == blob, name + ': approved Publication Designer baseline blob retained')
+    for old, new in editor['replacements'].get(name, []):
+        check(content.count(old.encode()) == 1, name + ': publication fidelity anchor is unique')
+        content = content.replace(old.encode(), new.encode(), 1)
+    check((ROOT / PREFIX / name).read_bytes() == content, name + ': exact reviewed save/fidelity deltas only')
 
 image_inventory = json.loads((ROOT / 'docs/supplied-images-2026-10-06.json').read_text())
 check(len(image_inventory) == 9, 'exactly nine supplied assets inventoried')
@@ -188,4 +206,4 @@ index = (ROOT / PREFIX / 'index.php').read_text()
 check('data-caption=' not in index and 'data-hero-caption' not in index and 'photo archive,' not in index, 'public homepage carries no obsolete hero caption payload')
 check('kcmc-ministry-group.jpg' in index, 'approved church-family photo is included in hero rotation')
 check('hero-card-with-photo' not in js and 'hero-church-window' not in js, 'hero service card no longer injects a second building photo')
-print('Installed reconciliation provenance and approved PR92 exact-source checks passed.')
+print('Installed reconciliation provenance and approved runtime exact-source checks passed.')

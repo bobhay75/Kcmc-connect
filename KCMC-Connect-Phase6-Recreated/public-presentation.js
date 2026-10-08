@@ -44,10 +44,16 @@
       timer = setTimeout(() => { show(current + 1, false); schedule(); }, 420000);
     }
   }
-  function show(index, announce) {
-    const next = (index + photos.length) % photos.length;
-    // Never replace a usable frame with a broken or not-yet-loaded image.
-    if (!photos[next].complete || photos[next].naturalWidth === 0) return;
+  function show(index, announce, step = 1) {
+    const direction = step < 0 ? -1 : 1;
+    let next = ((index % photos.length) + photos.length) % photos.length;
+    // Skip unavailable frames in the requested direction; keep a usable current frame.
+    let remaining = photos.length;
+    while (remaining > 0 && (!photos[next].complete || photos[next].naturalWidth === 0)) {
+      next = (next + direction + photos.length) % photos.length;
+      remaining -= 1;
+    }
+    if (remaining === 0) return;
     current = next;
     photos.forEach((photo, i) => {
       photo.hidden = i !== current;
@@ -57,7 +63,7 @@
   }
   function manualStep(step) {
     paused = true;
-    show(current + step, true);
+    show(current + step, true, step);
     schedule();
   }
   gallery.querySelector('[data-hero-previous]')?.addEventListener('click', () => manualStep(-1));
