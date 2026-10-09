@@ -30,6 +30,7 @@ jobs:
           python3 tests/publication-fidelity-browser.py | tee interaction-artifacts/fidelity.txt
           python3 tests/publication-text-roundtrip-browser.py | tee interaction-artifacts/text.txt
           python3 tests/publication-save-race-browser.py | tee interaction-artifacts/races.txt
+          python3 tests/publication-all-controls-browser.py | tee interaction-artifacts/all-controls.txt
       - name: Reproduce both bugs on the pinned previous source
         run: |
           set -euo pipefail
