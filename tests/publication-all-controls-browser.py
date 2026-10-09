@@ -103,6 +103,15 @@ def run():
             page.locator('#sharedMediaLibrary button').first.click()
             check(page.locator('#page .item[data-type="image"]').count() == prior + 1, 'Shared Photos button reuses stored photo')
 
+            # Remove stacked audit images through the real Delete control so later
+            # formatting/mouse tests target unobscured text, not an intentional
+            # topmost image layer.
+            while page.locator('#page .item[data-type="image"]').count():
+                top_image = page.locator('#page .item[data-type="image"]').last
+                top_image.click(position={'x': 12, 'y': 12})
+                page.locator('#deleteItem').click()
+            check(page.locator('#page .item[data-type="image"]').count() == 0, 'Delete repeatedly removes stacked image items')
+
             # Page size and orientation.
             page.locator('#pageSize').select_option('half')
             check(page.locator('#page').evaluate('el => [el.style.width, el.style.height]') == ['528px', '816px'], 'Half-sheet page size applies 5.5×8.5 dimensions')
@@ -130,7 +139,8 @@ def run():
 
             # Formatting controls on a text item.
             target = page.locator('#page .item[data-type="text"]').last
-            target.click(position={'x': 12, 'y': 12})
+            target.focus()
+            check(target.evaluate('el => el.classList.contains("selected")'), 'focus selects text item for formatting')
             page.locator('#fontFamily').select_option('Georgia')
             check('Georgia' in style(page, '#page .item.selected', 'fontFamily'), 'Font family control applies')
             page.locator('#fontSize').fill('36')
