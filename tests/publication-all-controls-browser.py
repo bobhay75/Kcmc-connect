@@ -129,7 +129,7 @@ def run():
             page.locator('#prevPage').click()
 
             # Formatting controls on a text item.
-            target = page.locator('#page .item[data-type="text"]').first
+            target = page.locator('#page .item[data-type="text"]').last
             target.click(position={'x': 12, 'y': 12})
             page.locator('#fontFamily').select_option('Georgia')
             check('Georgia' in style(page, '#page .item.selected', 'fontFamily'), 'Font family control applies')
