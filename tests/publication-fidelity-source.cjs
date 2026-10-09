@@ -80,6 +80,8 @@ function harness(){
   ${sizes[0]}
   function setStatus(value){env.status=value}
   function clearSelection(){selected=null}
+  function recordHistory(){}
+  function resetHistory(){}
   async function renderSharedMedia(){env.refreshes++}
   ${snippets}
   template('flyer');
