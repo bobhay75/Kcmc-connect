@@ -32,7 +32,7 @@ with sync_playwright() as p:
         check(page.locator('.cw-copy').evaluate('(el) => el.scrollWidth <= el.clientWidth'), f'{width}px: text fits')
         check(page.locator('.cw-media img').evaluate('(el) => el.naturalWidth > 0 && getComputedStyle(el).objectFit === "contain"'), f'{width}px: original photograph loads without cropping')
         check(page.locator('.cw-media').evaluate('(el) => getComputedStyle(el, "::after").content === "none"'), f'{width}px: no dark image overlay')
-        check(page.locator('.cw-section').evaluate('(el) => getComputedStyle(el).backgroundColor') == 'rgb(247, 241, 231)', f'{width}px: warm light section')
+        check(page.locator('.cw-section').evaluate('(el) => getComputedStyle(el).backgroundColor') == 'rgb(13, 34, 53)', f'{width}px: consistent blue section')
         check(page.locator('.cw-primary').bounding_box()['height'] >= 44, f'{width}px: usable tap target')
         ratios = page.evaluate('''() => {
             const rgb = s => s.match(/[\\d.]+/g).slice(0,3).map(Number);

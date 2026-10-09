@@ -26,7 +26,8 @@ PINS = {
     'public-presentation.js': '5dfe8c3dc99e5c8771f383157cdfc1f3def1f4e72810094a16e6203dbaf4c150',
     'sw.js': '11091e96760a045f952650a8e720ed02607307cb87173f5978cd9f246c6fdfd0',
 }
-MISSING = 'assets/visuals/kcmc-ministry-group.jpg'
+STALE_MISSING = 'assets/visuals/kcmc-ministry-group.jpg'
+MISSING = 'assets/visuals/kcmc-congregation-gathering.jpg'
 
 
 def check(condition, label):
@@ -49,13 +50,14 @@ def build_site(site, sources):
     index = sources['index.php'].decode()
     hero = re.search(r'<section class="hero hero-imagery" data-hero-gallery.*?</section>', index, re.S).group()
     paths = re.findall(r'data-hero-photo[^>]*src="\./([^"]+)"', hero)
-    expected_count = 9 if site.name == 'stale' else 8
-    check(len(paths) == expected_count and MISSING in paths, 'fixture retains historical nine or current eight real hero paths')
+    expected_count = 9 if site.name == 'stale' else 4
+    missing_path = STALE_MISSING if site.name == 'stale' else MISSING
+    check(len(paths) == expected_count and missing_path in paths, 'fixture retains historical nine or current four real hero paths')
     if site.name != 'stale':
-        check(not any('stage-2014' in path for path in paths), 'current fixture excludes rejected stage')
+        check(not any(re.search(r'stage-2014|ministry-group|bridge-', path) for path in paths), 'current fixture excludes rejected stage, kids poster and logo composites')
     script = re.search(r'<script src="(public-presentation\.js\?v=[^"]+)" defer>', index).group(1)
     html = ('<!doctype html><html><head><meta name="viewport" content="width=device-width, initial-scale=1">'
-            '<link rel="stylesheet" href="styles.css?v=3.0.3"><link rel="stylesheet" href="public-presentation.css?v=visitor-welcome-20261008"></head>'
+            '<link rel="stylesheet" href="styles.css?v=3.0.3"><link rel="stylesheet" href="public-presentation.css?v=blue-fish-menu-20261009"></head>'
             '<body><header style="height:100px">Synthetic offline review</header><main><section class="view active" data-view="home">'
             + hero + '<div data-family-welcome></div></section></main>'
             + '<script src="' + script + '" defer></script>'
@@ -167,14 +169,14 @@ with tempfile.TemporaryDirectory(prefix='kcmc-public-photo-offline-') as td:
             context.close()
 
             context, page = warm_offline(browser, origin + '/fixed/')
-            check(page.locator('[data-hero-photo]').evaluate_all('(imgs) => imgs.every(img => img.naturalWidth > 0)'), 'fixed real worker serves all eight hero images after a warm offline reload')
-            for expected in list(range(1, 8)) + [0]:
+            check(page.locator('[data-hero-photo]').evaluate_all('(imgs) => imgs.every(img => img.naturalWidth > 0)'), 'fixed real worker serves all four hero images after a warm offline reload')
+            for expected in list(range(1, 4)) + [0]:
                 page.locator('[data-hero-next]').click()
                 assert_one_photo(page, expected, 'offline Next reaches photo ' + str(expected + 1))
             page.locator('[data-hero-previous]').click()
-            assert_one_photo(page, 7, 'offline Previous wraps backward to final supplied bridge artwork')
+            assert_one_photo(page, 3, 'offline Previous wraps backward to the outdoor family event')
             check(page.locator('[data-hero-toggle]').inner_text() == 'Play photos', 'manual navigation pauses automatic changes')
-            check(page.locator('[data-hero-status]').inner_text().startswith('Photo 8 of 8.'), 'manual navigation announces the actual selected frame')
+            check(page.locator('[data-hero-status]').inner_text().startswith('Photo 4 of 4.'), 'manual navigation announces the actual selected frame')
             for relative in ['member/login.php', 'admin/publication-designer.php', 'api/public-content.php', 'data/content.json', 'backups/test.json', '?token=synthetic', MISSING + '?token=synthetic']:
                 result = page.evaluate('''async path => {
                     const url = new URL(path, location.href); let resolved = false;
@@ -199,9 +201,9 @@ with tempfile.TemporaryDirectory(prefix='kcmc-public-photo-offline-') as td:
             assert_one_photo(page, 1, 'Previous skips missing third frame backward')
             page.locator('[data-hero-next]').click()
             assert_one_photo(page, 3, 'Next skips missing third frame forward')
-            for expected in (4, 5, 6, 7, 0):
+            for expected in (0, 1, 3, 0):
                 page.locator('[data-hero-next]').click()
-                assert_one_photo(page, expected, 'missing-frame recovery reaches remaining supplied artwork')
+                assert_one_photo(page, expected, 'missing-frame recovery reaches the remaining real photographs')
             context.close()
             browser.close()
     finally:

@@ -47,12 +47,16 @@ with tempfile.TemporaryDirectory(prefix='kcmc-visitor-review-') as td:
                 page=context.new_page();page.on('pageerror',lambda e:errors.append(str(e)))
                 page.goto(base,wait_until='networkidle')
                 photos=page.locator('[data-hero-photo]')
-                check(photos.count()==8,f'{width}px eight retained hero photos')
+                check(photos.count()==4,f'{width}px four retained church and event photographs')
                 check(page.locator('[data-hero-photo][src*="stage-2014"]').count()==0,'rejected empty stage is absent')
                 check(page.locator('[data-hero-photo]:visible').count()==1,'one hero photo plane')
                 check(page.locator('.hero-church-photo,.hero-church-window,[data-hero-caption]').count()==0,'no nested hero image or source subtitle')
                 check(page.locator('[data-hero-toggle]').inner_text()=='Play photos','reduced-motion preference preserved')
-                check(page.locator('.hero').evaluate("el=>getComputedStyle(el).backgroundColor")=='rgb(247, 241, 231)','hero has a light rather than dark background')
+                for selector in ('.hero', '.invite-neighbor', '.cw-section', '.family-welcome'):
+                    check(page.locator(selector).evaluate("el=>getComputedStyle(el).backgroundColor")=='rgb(13, 34, 53)', selector+' uses the same blue background')
+                for selector in ('.hero-card', '.invite-neighbor-card', '.cw-feature'):
+                    check(page.locator(selector).evaluate("el=>getComputedStyle(el).backgroundColor")=='rgb(20, 51, 75)', selector+' uses a blue card surface')
+                check(page.locator('[data-hero-photo][src*="ministry-group"],[data-hero-photo][src*="bridge-"]').count()==0,'photographed poster and layered logo artwork are absent')
                 check(page.locator('.hero-photo').first.evaluate("el=>getComputedStyle(el).filter")=='none','hero photo is not darkened by a filter')
                 check(page.evaluate('document.documentElement.scrollWidth<=innerWidth'),f'{width}px no horizontal overflow')
                 page.screenshot(path=str(OUT/f'hero-{width}.png'),full_page=False)

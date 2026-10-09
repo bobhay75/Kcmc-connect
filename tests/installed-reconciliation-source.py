@@ -132,6 +132,38 @@ def apply_visitor(name, content):
         content = content.replace(old.encode(), new.encode(), 1)
     return content
 
+# Owner-requested blue theme, fish navigation and photographic cleanup.
+# Every runtime delta is enumerated against the already reconstructed PR110 bytes.
+appearance_bytes = (ROOT / 'tests/fixtures/public-appearance-reviewed.json').read_bytes()
+def git_blob(content):
+    return hashlib.sha1(b'blob ' + str(len(content)).encode() + b'\0' + content).hexdigest()
+check(git_blob(appearance_bytes) == 'b55e7fe921bc8e5040f20cdae612eb78a759e537', 'public appearance delta fixture remains exact')
+appearance = json.loads(appearance_bytes)
+check(set(appearance) == {'source_commit', 'baseline_git_blob', 'replacements', 'new_assets', 'preserved_assets'}, 'appearance fixture has only the reviewed fields')
+check(appearance['source_commit'] == '268bebca444bd4970bb4ecaa0d6eceb6a11988fd', 'appearance baseline is deployed PR110')
+check(set(appearance['replacements']) == {'index.php', 'public-presentation.css', 'public-presentation.js', 'sw.js'}, 'appearance scope is exactly four public runtime files')
+check(set(appearance['baseline_git_blob']) == set(appearance['replacements']), 'every appearance source has an exact baseline blob')
+check(set(appearance['replacements']) <= set(expected) | set(visitor['replacements']), 'appearance sources remain covered by historical reconstruction')
+check(set(appearance['new_assets']) == {'assets/visuals/kcmc-building-retouched-20261009.jpg'}, 'one separate retouched exterior asset is permitted')
+check(set(appearance['preserved_assets']) == {'assets/visuals/kcmc-building-2024.webp', 'assets/visuals/kcmc-ministry-group.jpg', 'assets/visuals/kcmc-bridge-logo.jpg', 'assets/visuals/kcmc-bridge-wordmark.png', 'assets/visuals/kcmc-bridge-logo-composite.png'}, 'original and removed public artwork remain archived intact')
+
+def apply_appearance(name, content):
+    if name not in appearance['replacements']:
+        return content
+    check(git_blob(content) == appearance['baseline_git_blob'][name], name + ': PR110 reconstruction matches the appearance baseline')
+    for old, new in appearance['replacements'][name]:
+        check(content.count(old.encode()) == 1, name + ': appearance replacement anchor is unique')
+        content = content.replace(old.encode(), new.encode(), 1)
+    return content
+
+for name, info in appearance['new_assets'].items():
+    content = (ROOT / PREFIX / name).read_bytes()
+    check(git_blob(content) == info['git_blob'] and len(content) == info['bytes'], name + ': exact retouched web image bytes')
+    check(len(content) <= 600_000, name + ': mobile image budget')
+for name, blob in appearance['preserved_assets'].items():
+    check(git_blob((ROOT / PREFIX / name).read_bytes()) == blob, name + ': original archive bytes are unchanged')
+appearance_paths = {PREFIX + p for p in appearance['replacements']} | {PREFIX + p for p in appearance['new_assets']}
+
 for name, content in expected.items():
     for old, new in approved.get(name, []):
         old, new = old.encode(), new.encode()
@@ -162,11 +194,11 @@ for name, content in expected.items():
     for old, new in offline['replacements'].get(name, []):
         check(content.count(old.encode()) == 1, name + ': offline repair anchor is unique')
         content = content.replace(old.encode(), new.encode(), 1)
-    content = apply_visitor(name, content)
-    check(actual == content, name + ': exact reviewed runtime plus enumerated visitor differences only')
+    content = apply_appearance(name, apply_visitor(name, content))
+    check(actual == content, name + ': exact reviewed runtime plus enumerated visitor and appearance differences only')
 
 for name in set(visitor['replacements']) - set(expected):
-    content = apply_visitor(name, source(visitor['source_commit'], PREFIX + name))
+    content = apply_appearance(name, apply_visitor(name, source(visitor['source_commit'], PREFIX + name)))
     check((ROOT / PREFIX / name).read_bytes() == content, name + ': only exact visitor delta permitted')
 for name, sha in visitor['new_files'].items():
     check(hashlib.sha256((ROOT / PREFIX / name).read_bytes()).hexdigest() == sha, name + ': exact separately tested visitor module')
@@ -241,9 +273,9 @@ for old, new in guide['replacements'][guide_path]:
 check((ROOT / guide_path).read_bytes() == guide_content, 'deployment guide matches the exact reviewed documentation delta')
 documentation_paths = {guide_path}
 changed = set(git('diff', '--name-only', BASE, '--', PREFIX).decode().splitlines())
-check(changed == ({PREFIX + p for p in expected} | {PREFIX + p for p in publication} | image_paths | documentation_paths | visitor_paths), 'application diff is exact runtime, Publisher, documentation and enumerated visitor scope')
+check(changed == ({PREFIX + p for p in expected} | {PREFIX + p for p in publication} | image_paths | documentation_paths | visitor_paths | appearance_paths), 'application diff is exact runtime, Publisher, documentation and enumerated visitor/appearance scope')
 changed_since_reconciled = set(git('diff', '--name-only', RECONCILED, '--', PREFIX).decode().splitlines())
-check(changed_since_reconciled == ({PREFIX + p for p in approved} | {PREFIX + 'sw.js'} | {PREFIX + p for p in publication} | image_paths | documentation_paths | visitor_paths), 'post-reconciliation diff is exact reviewed source plus enumerated visitor scope')
+check(changed_since_reconciled == ({PREFIX + p for p in approved} | {PREFIX + 'sw.js'} | {PREFIX + p for p in publication} | image_paths | documentation_paths | visitor_paths | appearance_paths), 'post-reconciliation diff is exact reviewed source plus enumerated visitor/appearance scope')
 for path in ['.cpanel.yml', 'KCMC-Connect-Phase6-Recreated/data/content.json', 'KCMC-Connect-Phase6-Recreated/config.example.php']:
     check((ROOT / path).read_bytes() == source(BASE, path), path + ': unchanged')
 login = (ROOT / PREFIX / 'member/login.php').read_bytes()
@@ -255,6 +287,6 @@ check("const caption = gallery.querySelector('[data-hero-caption]');" not in js 
 check('KCMC hero caption fix' not in css, 'no additional caption CSS introduced (exact-byte checks are authoritative)')
 index = (ROOT / PREFIX / 'index.php').read_text()
 check('data-caption=' not in index and 'data-hero-caption' not in index and 'photo archive,' not in index, 'public homepage carries no obsolete hero caption payload')
-check('kcmc-ministry-group.jpg' in index, 'approved church-family photo is included in hero rotation')
+check('kcmc-ministry-group.jpg' not in index, 'owner-rejected photograph of the kids poster is absent from public output')
 check('hero-card-with-photo' not in js and 'hero-church-window' not in js, 'hero service card no longer injects a second building photo')
 print('Installed reconciliation provenance and approved runtime exact-source checks passed.')
