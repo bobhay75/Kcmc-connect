@@ -137,7 +137,7 @@ def apply_visitor(name, content):
 appearance_bytes = (ROOT / 'tests/fixtures/public-appearance-reviewed.json').read_bytes()
 def git_blob(content):
     return hashlib.sha1(b'blob ' + str(len(content)).encode() + b'\0' + content).hexdigest()
-check(git_blob(appearance_bytes) == 'a3505d8c9146988e5b4f188cd282e9b792d25ba8', 'public appearance delta fixture remains exact')
+check(git_blob(appearance_bytes) == 'b55e7fe921bc8e5040f20cdae612eb78a759e537', 'public appearance delta fixture remains exact')
 appearance = json.loads(appearance_bytes)
 check(set(appearance) == {'source_commit', 'baseline_git_blob', 'replacements', 'new_assets', 'preserved_assets'}, 'appearance fixture has only the reviewed fields')
 check(appearance['source_commit'] == '268bebca444bd4970bb4ecaa0d6eceb6a11988fd', 'appearance baseline is deployed PR110')

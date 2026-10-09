@@ -1,4 +1,4 @@
-const CACHE='kcmc-connect-v3.0.3-blue-fish-menu-20261009';
+const CACHE='kcmc-connect-v3.0.3-public-only-blue-fish-menu-20261009';
 // Connection-intake client refresh: worker install reruns cache:'reload' and overwrites cached app.js.
 const CORE=[
   './','./styles.css?v=3.0.3','./public-presentation.css?v=blue-fish-menu-20261009','./public-presentation.js?v=blue-fish-menu-20261009','./app.js?v=visitor-welcome-20261008','./manifest.webmanifest?v=3.0.1',
