@@ -1,0 +1,34 @@
+{
+  "source_commit": "b6093050dafe9a8d5b2ad4d958fdae742bc06624",
+  "baseline_sha256": "1b2ae59a2f5b04df5030e3fbad23479d7199b336a5ca2e350293a3bc4d640da7",
+  "replacements": [
+    [
+      "border:1px dashed transparent;overflow:hidden",
+      "border:0 solid transparent;overflow:hidden"
+    ],
+    [
+      ".item.selected{border-color:#1e6fa8;box-shadow:",
+      ".item.selected{box-shadow:"
+    ],
+    [
+      "right:-7px;bottom:-7px;cursor:nwse-resize;",
+      "right:2px;bottom:2px;cursor:nwse-resize;touch-action:none;user-select:none;"
+    ],
+    [
+      "width:12px;height:12px;background:#1e6fa8;",
+      "width:16px;height:16px;background:#1e6fa8;"
+    ],
+    [
+      "function clearSelection(){if(selected)selected.classList.remove('selected');selected=null;props.classList.add('hidden');noSel.classList.remove('hidden')}",
+      "function finishTextEdit(el){if(el?.dataset.type==='text'){el.classList.remove('editing');el.contentEditable='false';ensureItemHandle(el)}}\nfunction clearSelection(){if(selected){finishTextEdit(selected);selected.classList.remove('selected')}selected=null;drag=null;props.classList.add('hidden');noSel.classList.remove('hidden')}"
+    ],
+    [
+      "function select(el){clearSelection();selected=el;el.classList.add('selected');props.classList.remove('hidden');noSel.classList.add('hidden');syncProps()}",
+      "// A template or Select All can replace text children, including the old handle.\n// Recreate it on selection/input; delegated events never retain a detached handle.\nfunction ensureItemHandle(el){\n let handle=el.querySelector(':scope > .handle');\n if(!handle){handle=document.createElement('span');handle.className='handle';el.appendChild(handle)}\n handle.contentEditable='false';handle.setAttribute('aria-hidden','true');return handle;\n}\nfunction select(el){if(selected!==el)clearSelection();selected=el;if(!el.classList.contains('editing'))ensureItemHandle(el);el.classList.add('selected');props.classList.remove('hidden');noSel.classList.add('hidden');syncProps()}\nfunction beginTextEdit(el){\n if(el.dataset.type!=='text')return;\n select(el);drag=null;el.querySelectorAll('.handle').forEach(handle=>handle.remove());el.contentEditable='true';el.classList.add('editing');el.focus({preventScroll:true});\n const range=document.createRange();range.selectNodeContents(el);range.collapse(false);\n const selection=window.getSelection();selection.removeAllRanges();selection.addRange(range);\n setStatus('Editing text — press Escape when finished.');\n}"
+    ],
+    [
+      "function wire(el,handle){el.addEventListener('mousedown',e=>{if(e.target===handle)return;if(e.button!==0)return;select(el);const r=el.getBoundingClientRect(),pr=page.getBoundingClientRect();drag={mode:'move',el,dx:e.clientX-r.left,dy:e.clientY-r.top,pr};e.preventDefault()});handle.addEventListener('mousedown',e=>{const r=el.getBoundingClientRect();drag={mode:'resize',el,sx:e.clientX,sy:e.clientY,sw:r.width,sh:r.height};e.stopPropagation();e.preventDefault()})}",
+      "function wire(el){\n el.tabIndex=0;if(el.dataset.type==='text'){el.contentEditable='false';el.setAttribute('aria-label','Text box — double-click or press Enter to edit')}\n el.addEventListener('focus',()=>select(el));\n el.addEventListener('mousedown',e=>{\n  if(e.button!==0)return;\n  const resizing=e.target instanceof Element&&e.target.closest('.handle');\n  select(el);\n  // Native mouse selection/caret placement must remain available while typing.\n  if(!resizing&&el.classList.contains('editing'))return;\n  const r=el.getBoundingClientRect(),pr=page.getBoundingClientRect();\n  drag=resizing?{mode:'resize',el,sx:e.clientX,sy:e.clientY,sw:r.width,sh:r.height}:{mode:'move',el,dx:e.clientX-r.left,dy:e.clientY-r.top,pr};\n  e.preventDefault();el.focus({preventScroll:true});\n });\n el.addEventListener('dblclick',e=>{if(!(e.target instanceof Element&&e.target.closest('.handle'))&&el.dataset.type==='text'){e.preventDefault();beginTextEdit(el)}});\n el.addEventListener('keydown',e=>{\n  if(e.key==='Escape'){e.preventDefault();finishTextEdit(el);drag=null;setStatus('Text finished — drag the box to move it.');return}\n  if(!el.classList.contains('editing')&&(e.key==='Enter'||e.key==='F2')&&el.dataset.type==='text'){e.preventDefault();beginTextEdit(el);return}\n  if(!el.classList.contains('editing')&&['ArrowLeft','ArrowRight','ArrowUp','ArrowDown'].includes(e.key)){\n   e.preventDefault();const step=e.shiftKey?10:1,axis=['ArrowLeft','ArrowRight'].includes(e.key)?'left':'top';\n   el.style[axis]=Math.max(0,(parseFloat(el.style[axis])||0)+(['ArrowLeft','ArrowUp'].includes(e.key)?-step:step))+'px';\n  }\n });\n el.addEventListener('input',()=>{if(!el.classList.contains('editing'))ensureItemHandle(el)});\n el.addEventListener('blur',()=>finishTextEdit(el));\n // Pasted text remains literal; no external images or HTML enter the editor.\n el.addEventListener('paste',e=>{\n  if(el.dataset.type!=='text')return;e.preventDefault();\n  if(!el.classList.contains('editing'))return;\n  const text=e.clipboardData?.getData('text/plain')||'',selection=window.getSelection();\n  if(!selection.rangeCount||!el.contains(selection.anchorNode)||!el.contains(selection.focusNode))return;\n  const range=selection.getRangeAt(0);range.deleteContents();const node=document.createTextNode(text);range.insertNode(node);range.setStartAfter(node);range.collapse(true);selection.removeAllRanges();selection.addRange(range);\n });\n el.addEventListener('drop',e=>{if(el.dataset.type==='text')e.preventDefault()});\n}"
+    ]
+  ]
+}

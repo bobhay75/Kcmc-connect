@@ -181,7 +181,17 @@ for name, blob in publication.items():
     for old, new in editor['replacements'].get(name, []):
         check(content.count(old.encode()) == 1, name + ': publication fidelity anchor is unique')
         content = content.replace(old.encode(), new.encode(), 1)
-    check((ROOT / PREFIX / name).read_bytes() == content, name + ': exact reviewed save/fidelity deltas only')
+    if name == 'admin/publication-designer.php':
+        interaction_bytes = (ROOT / 'tests/fixtures/publication-interaction-reviewed.json').read_bytes()
+        check(hashlib.sha256(interaction_bytes).hexdigest() == '979e63e56690eeba8e088b0e26743699a90b7f037877e462e877b661cc162bed', 'reviewed Publisher interaction delta remains exact')
+        interaction = json.loads(interaction_bytes)
+        check(set(interaction) == {'source_commit', 'baseline_sha256', 'replacements'} and interaction['source_commit'] == 'b6093050dafe9a8d5b2ad4d958fdae742bc06624', 'interaction source remains pinned to reviewed main')
+        check(hashlib.sha256(content).hexdigest() == interaction['baseline_sha256'], 'prior Publisher proofs exactly reconstruct interaction baseline')
+        check(len(interaction['replacements']) == 7, 'interaction upgrade permits exactly seven named replacements')
+        for old, new in interaction['replacements']:
+            check(content.count(old.encode()) == 1, 'Publisher interaction replacement anchor is unique')
+            content = content.replace(old.encode(), new.encode(), 1)
+    check((ROOT / PREFIX / name).read_bytes() == content, name + ': exact reviewed save/fidelity/interaction deltas only')
 
 image_inventory = json.loads((ROOT / 'docs/supplied-images-2026-10-06.json').read_text())
 check(len(image_inventory) == 9, 'exactly nine supplied assets inventoried')

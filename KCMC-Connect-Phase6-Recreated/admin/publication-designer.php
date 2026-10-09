@@ -20,9 +20,9 @@ button,input,select,textarea{font:inherit}.shell{min-height:100vh;display:grid;g
 .templates{display:grid;gap:8px}.template{border:1px solid #cfd8dd;border-radius:10px;padding:10px;text-align:left;background:#fff;cursor:pointer}.template:hover{background:#f5f8fa}.media-card{display:grid;grid-template-columns:56px 1fr;gap:9px;align-items:center}.media-card img{width:56px;height:46px;object-fit:cover;border-radius:7px;background:#e9eef2}
 .canvas-wrap{overflow:auto;padding:28px;display:grid;place-items:start center;background:linear-gradient(45deg,#e7ecef 25%,transparent 25%),linear-gradient(-45deg,#e7ecef 25%,transparent 25%),linear-gradient(45deg,transparent 75%,#e7ecef 75%),linear-gradient(-45deg,transparent 75%,#e7ecef 75%);background-size:24px 24px;background-position:0 0,0 12px,12px -12px,-12px 0}
 .page{position:relative;background:#fff;box-shadow:0 8px 26px rgba(0,0,0,.16);transform-origin:top center}
-.item{position:absolute;min-width:40px;min-height:28px;border:1px dashed transparent;overflow:hidden}.item.selected{border-color:#1e6fa8;box-shadow:0 0 0 2px rgba(30,111,168,.16)}.item[contenteditable="true"]:focus{outline:none}
+.item{position:absolute;min-width:40px;min-height:28px;border:0 solid transparent;overflow:hidden}.item.selected{box-shadow:0 0 0 2px rgba(30,111,168,.16)}.item[contenteditable="true"]:focus{outline:none}
 .item[data-type="text"]{white-space:pre-wrap;padding:6px}
-.item img{width:100%;height:100%;object-fit:cover;display:block}.handle{position:absolute;width:12px;height:12px;background:#1e6fa8;border:2px solid #fff;border-radius:50%;right:-7px;bottom:-7px;cursor:nwse-resize;display:none}.selected .handle{display:block}
+.item img{width:100%;height:100%;object-fit:cover;display:block}.handle{position:absolute;width:16px;height:16px;background:#1e6fa8;border:2px solid #fff;border-radius:50%;right:2px;bottom:2px;cursor:nwse-resize;touch-action:none;user-select:none;display:none}.selected .handle{display:block}
 .toolbar{display:grid;grid-template-columns:repeat(2,1fr);gap:8px;margin-bottom:12px}.page-nav{display:grid;grid-template-columns:1fr auto 1fr;gap:8px;align-items:center;margin:8px 0}.page-nav .small{text-align:center}.print-pages{display:none}.status{font-size:.85rem;color:#607080}.small{font-size:.82rem;color:#607080}.hidden{display:none!important}
 @media(max-width:900px){.workspace{grid-template-columns:1fr}.panel.right{border-left:0;border-top:1px solid var(--line)}.panel{border-right:0;border-bottom:1px solid var(--line)}}
 @media print{body{background:#fff}.topbar,.panel,.canvas-wrap{display:none!important}.workspace{display:block}.print-pages{display:block}.print-pages .page{box-shadow:none;margin:0 auto;transform:none!important;break-after:page;page-break-after:always}.print-pages .page:last-child{break-after:auto;page-break-after:auto}}
@@ -133,10 +133,58 @@ let selected=null,drag=null,projectId=null,currentPageIndex=0,pageState=[],proje
 const inch=96,sizes={letter:[8.5,11],half:[5.5,8.5],postcard:[4,6]};
 function setStatus(t){status.textContent=t}
 function applyPage(target=page,sizeValue=pageSize.value,orientationValue=orientation.value){let [w,h]=sizes[sizeValue]||sizes.letter;if(orientationValue==='landscape')[w,h]=[h,w];target.style.width=(w*inch)+'px';target.style.height=(h*inch)+'px'}
-function clearSelection(){if(selected)selected.classList.remove('selected');selected=null;props.classList.add('hidden');noSel.classList.remove('hidden')}
-function select(el){clearSelection();selected=el;el.classList.add('selected');props.classList.remove('hidden');noSel.classList.add('hidden');syncProps()}
+function finishTextEdit(el){if(el?.dataset.type==='text'){el.classList.remove('editing');el.contentEditable='false';ensureItemHandle(el)}}
+function clearSelection(){if(selected){finishTextEdit(selected);selected.classList.remove('selected')}selected=null;drag=null;props.classList.add('hidden');noSel.classList.remove('hidden')}
+// A template or Select All can replace text children, including the old handle.
+// Recreate it on selection/input; delegated events never retain a detached handle.
+function ensureItemHandle(el){
+ let handle=el.querySelector(':scope > .handle');
+ if(!handle){handle=document.createElement('span');handle.className='handle';el.appendChild(handle)}
+ handle.contentEditable='false';handle.setAttribute('aria-hidden','true');return handle;
+}
+function select(el){if(selected!==el)clearSelection();selected=el;if(!el.classList.contains('editing'))ensureItemHandle(el);el.classList.add('selected');props.classList.remove('hidden');noSel.classList.add('hidden');syncProps()}
+function beginTextEdit(el){
+ if(el.dataset.type!=='text')return;
+ select(el);drag=null;el.querySelectorAll('.handle').forEach(handle=>handle.remove());el.contentEditable='true';el.classList.add('editing');el.focus({preventScroll:true});
+ const range=document.createRange();range.selectNodeContents(el);range.collapse(false);
+ const selection=window.getSelection();selection.removeAllRanges();selection.addRange(range);
+ setStatus('Editing text — press Escape when finished.');
+}
 function makeItem(type,x=80,y=80,w=300,h=80){const el=document.createElement('div');el.className='item';el.dataset.type=type;Object.assign(el.style,{left:x+'px',top:y+'px',width:w+'px',height:h+'px'});if(type==='text'){el.contentEditable='true';el.innerText='Double-click and type';el.style.fontFamily='Arial';el.style.fontSize='28px';el.style.padding='6px'}else if(type==='shape'){el.style.background='#e9eef2';el.style.border='2px solid #17324c'}const handle=document.createElement('span');handle.className='handle';el.appendChild(handle);wire(el,handle);page.appendChild(el);select(el);return el}
-function wire(el,handle){el.addEventListener('mousedown',e=>{if(e.target===handle)return;if(e.button!==0)return;select(el);const r=el.getBoundingClientRect(),pr=page.getBoundingClientRect();drag={mode:'move',el,dx:e.clientX-r.left,dy:e.clientY-r.top,pr};e.preventDefault()});handle.addEventListener('mousedown',e=>{const r=el.getBoundingClientRect();drag={mode:'resize',el,sx:e.clientX,sy:e.clientY,sw:r.width,sh:r.height};e.stopPropagation();e.preventDefault()})}
+function wire(el){
+ el.tabIndex=0;if(el.dataset.type==='text'){el.contentEditable='false';el.setAttribute('aria-label','Text box — double-click or press Enter to edit')}
+ el.addEventListener('focus',()=>select(el));
+ el.addEventListener('mousedown',e=>{
+  if(e.button!==0)return;
+  const resizing=e.target instanceof Element&&e.target.closest('.handle');
+  select(el);
+  // Native mouse selection/caret placement must remain available while typing.
+  if(!resizing&&el.classList.contains('editing'))return;
+  const r=el.getBoundingClientRect(),pr=page.getBoundingClientRect();
+  drag=resizing?{mode:'resize',el,sx:e.clientX,sy:e.clientY,sw:r.width,sh:r.height}:{mode:'move',el,dx:e.clientX-r.left,dy:e.clientY-r.top,pr};
+  e.preventDefault();el.focus({preventScroll:true});
+ });
+ el.addEventListener('dblclick',e=>{if(!(e.target instanceof Element&&e.target.closest('.handle'))&&el.dataset.type==='text'){e.preventDefault();beginTextEdit(el)}});
+ el.addEventListener('keydown',e=>{
+  if(e.key==='Escape'){e.preventDefault();finishTextEdit(el);drag=null;setStatus('Text finished — drag the box to move it.');return}
+  if(!el.classList.contains('editing')&&(e.key==='Enter'||e.key==='F2')&&el.dataset.type==='text'){e.preventDefault();beginTextEdit(el);return}
+  if(!el.classList.contains('editing')&&['ArrowLeft','ArrowRight','ArrowUp','ArrowDown'].includes(e.key)){
+   e.preventDefault();const step=e.shiftKey?10:1,axis=['ArrowLeft','ArrowRight'].includes(e.key)?'left':'top';
+   el.style[axis]=Math.max(0,(parseFloat(el.style[axis])||0)+(['ArrowLeft','ArrowUp'].includes(e.key)?-step:step))+'px';
+  }
+ });
+ el.addEventListener('input',()=>{if(!el.classList.contains('editing'))ensureItemHandle(el)});
+ el.addEventListener('blur',()=>finishTextEdit(el));
+ // Pasted text remains literal; no external images or HTML enter the editor.
+ el.addEventListener('paste',e=>{
+  if(el.dataset.type!=='text')return;e.preventDefault();
+  if(!el.classList.contains('editing'))return;
+  const text=e.clipboardData?.getData('text/plain')||'',selection=window.getSelection();
+  if(!selection.rangeCount||!el.contains(selection.anchorNode)||!el.contains(selection.focusNode))return;
+  const range=selection.getRangeAt(0);range.deleteContents();const node=document.createTextNode(text);range.insertNode(node);range.setStartAfter(node);range.collapse(true);selection.removeAllRanges();selection.addRange(range);
+ });
+ el.addEventListener('drop',e=>{if(el.dataset.type==='text')e.preventDefault()});
+}
 document.addEventListener('mousemove',e=>{if(!drag)return;if(drag.mode==='move'){const x=Math.max(0,e.clientX-drag.pr.left-drag.dx),y=Math.max(0,e.clientY-drag.pr.top-drag.dy);drag.el.style.left=x+'px';drag.el.style.top=y+'px'}else{drag.el.style.width=Math.max(40,drag.sw+e.clientX-drag.sx)+'px';drag.el.style.height=Math.max(28,drag.sh+e.clientY-drag.sy)+'px'}});
 document.addEventListener('mouseup',()=>drag=null);page.addEventListener('mousedown',e=>{if(e.target===page)clearSelection()});
 function syncProps(){if(!selected)return;const cs=getComputedStyle(selected);fontFamily.value=cs.fontFamily.replaceAll('"','').split(',')[0];fontSize.value=parseInt(cs.fontSize)||24;textColor.value=rgbToHex(cs.color);fillColor.value=publicationFill(cs.backgroundColor);borderColor.value=rgbToHex(cs.borderColor);borderWidth.value=parseInt(cs.borderWidth)||0;opacity.value=Math.round((parseFloat(cs.opacity)||1)*100)}
