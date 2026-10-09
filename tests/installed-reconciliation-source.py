@@ -250,7 +250,7 @@ for name, blob in publication.items():
             check(content.count(old.encode()) == 1, 'Publisher interaction replacement anchor is unique')
             content = content.replace(old.encode(), new.encode(), 1)
         arrange_bytes = (ROOT / 'tests/fixtures/publication-arrange-reviewed.json').read_bytes()
-        check(hashlib.sha256(arrange_bytes).hexdigest() == 'f65d80794ebc496050523b306b01732b536ba530d17e151561720e1a583005de', 'reviewed Publisher arrange/history fixture remains exact')
+        check(hashlib.sha256(arrange_bytes).hexdigest() == 'ed79995f2e022f8852442a46a9d4311458ce17478f0563c0ed1f14075e80b63e', 'reviewed Publisher arrange/history fixture remains exact')
         arrange = json.loads(arrange_bytes)
         check(set(arrange) == {'source_commit', 'source_git_blob', 'target_git_blob', 'scope', 'features'}, 'arrange/history fixture has only reviewed fields')
         check(arrange['source_commit'] == '87e2936559e79a860f2d07f6012c2a8cbb26cb59', 'arrange/history baseline remains audited main')
