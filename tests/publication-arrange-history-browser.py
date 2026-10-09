@@ -104,7 +104,9 @@ def run():
             check(page.locator('#undoBtn').is_disabled(), 'Loading a project resets document history')
             text = page.locator('#page .item[data-type="text"]').first
             old_text = text.inner_text()
-            text.dblclick()
+            text.focus()
+            page.keyboard.press('Enter')
+            check(text.evaluate('el => el.isContentEditable && document.activeElement === el'), 'keyboard Enter opens overlapped text for editing')
             page.keyboard.press('ControlOrMeta+A')
             page.keyboard.type('Changed by history audit')
             page.keyboard.press('Escape')
