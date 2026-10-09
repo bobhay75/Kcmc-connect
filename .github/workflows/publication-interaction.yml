@@ -46,7 +46,7 @@ jobs:
               for filename in ['publication-designer.php', 'publication-projects.php']:
                   raw = subprocess.check_output(['git', 'show', base + ':KCMC-Connect-Phase6-Recreated/admin/' + filename])
                   if filename == 'publication-designer.php':
-                      assert hashlib.sha256(raw).hexdigest() == 'c2807999cc69a026683c5dffed2c5f75dd16041fbacdd2428fabaa2c24d4a294'
+                      assert hashlib.sha256(raw).hexdigest() == '1b2ae59a2f5b04df5030e3fbad23479d7199b336a5ca2e350293a3bc4d640da7'
                   (app / 'admin' / filename).write_bytes(raw)
               for case, marker in [('typing', 'double-click must focus an editable text box'), ('handles', 'selected template text must retain one resize handle: flyer')]:
                   result = subprocess.run(['python3', 'tests/publication-interaction-browser.py', '--app', str(app), '--case', case], capture_output=True, text=True)
