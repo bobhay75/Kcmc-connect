@@ -81,7 +81,8 @@ if grep -q "Version 3 content migration" "$app_dir/lib/bootstrap.php"; then
 fi
 grep -q "ignoreSearch:true" "$app_dir/sw.js" || fail "Offline cache does not normalize versioned asset requests"
 grep -q "kcmc-connect-v3.0.3-public-only" "$app_dir/sw.js" || fail "Service worker cache was not bumped for 3.0.3"
-grep -q "app.js?v=3.0.2" "$app_dir/sw.js" || fail "3.0.2 service worker does not precache the resilient client"
+grep -Fq "app.js?v=visitor-welcome-20261008" "$app_dir/sw.js" || fail "Service worker does not precache the reviewed visitor client"
+grep -Fq "app.js?v=visitor-welcome-20261008" "$app_dir/index.php" || fail "Homepage and worker client versions differ"
 grep -q "key.startsWith('kcmc-connect-')" "$app_dir/sw.js" || fail "Service worker cache cleanup is not isolated to KCMC Connect"
 node --check "$app_dir/app.js"
 node --check "$app_dir/sw.js"

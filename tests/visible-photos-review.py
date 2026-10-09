@@ -109,7 +109,7 @@ with tempfile.TemporaryDirectory(prefix='kcmc-photos-review-') as td:
                         page.route('**/' + url.removeprefix('./'), lambda route, request, body=blob: route.fulfill(status=200, content_type='image/jpeg', body=body))
                     page.goto(base, wait_until='networkidle')
                     check(page.locator('.hero-church-photo, .hero-church-window, .hero-card-with-photo').count() == 0, f'{width}px no nested picture-on-picture hero')
-                    check(page.locator('[data-hero-photo]').count() == 9, f'{width}px nine approved local hero frames')
+                    check(page.locator('[data-hero-photo]').count() == 8, f'{width}px eight retained local hero frames; rejected stage removed')
                     check('kcmc-building-2024.webp' in page.locator('[data-hero-photo]').first.get_attribute('src'), f'{width}px local church exterior remains first hero frame')
                     check(page.locator('[data-hero-toggle]').inner_text() == 'Play photos', f'{width}px reduced-motion setting retained')
                     check(page.locator('[data-hero-caption]').count() == 0, f'{width}px no hero source caption element')
@@ -117,7 +117,6 @@ with tempfile.TemporaryDirectory(prefix='kcmc-photos-review-') as td:
                     check('kcmc-worship-2017.webp' in page.locator('[data-hero-photo]:visible').get_attribute('src'), f'{width}px existing gallery still works')
                     check('2017' in page.locator('[data-hero-photo]:visible').get_attribute('alt'), f'{width}px historical photo description retained')
                     check(page.locator('[data-hero-caption]').count() == 0, f'{width}px manual photo selection does not restore a source caption')
-                    page.locator('[data-hero-next]').click()
                     page.locator('[data-hero-next]').click()
                     check('kcmc-ministry-group.jpg' in page.locator('[data-hero-photo]:visible').get_attribute('src'), f'{width}px church-family frame participates in gallery')
                     for filename in ['kcmc-congregation-gathering.jpg', 'kcmc-family-outdoor-event.jpg', 'kcmc-bridge-logo.jpg', 'kcmc-bridge-wordmark.png', 'kcmc-bridge-logo-composite.png']:
@@ -129,7 +128,6 @@ with tempfile.TemporaryDirectory(prefix='kcmc-photos-review-') as td:
                     for _ in range(5):
                         page.locator('[data-hero-previous]').click()
                     check(page.locator('[data-kcmc-photo-gallery] img').count() == 3, 'three supplied family activity photos in public gallery')
-                    page.locator('[data-hero-previous]').click()
                     page.locator('[data-hero-previous]').click()
                     page.locator('[data-hero-previous]').click()
                     family = page.locator('[data-family-welcome]')

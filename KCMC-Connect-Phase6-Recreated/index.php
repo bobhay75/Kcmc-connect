@@ -47,7 +47,7 @@ usort($kcmcAnnouncements, fn($a,$b)=>(int)($b['priority']??0)<=>(int)($a['priori
 <link rel="manifest" href="manifest.webmanifest?v=3.0.1">
 <link rel="preload" as="image" href="assets/visuals/kcmc-building-2024.webp" type="image/webp" fetchpriority="high">
 <link rel="stylesheet" href="styles.css?v=3.0.3">
-<link rel="stylesheet" href="public-presentation.css?v=contemporary-bright-20261007">
+<link rel="stylesheet" href="public-presentation.css?v=visitor-welcome-20261008">
 <link rel="icon" href="assets/icons/icon-192.png?v=3.0.1">
 <link rel="apple-touch-icon" href="assets/icons/icon-192.png?v=3.0.1">
 </head>
@@ -91,7 +91,6 @@ usort($kcmcAnnouncements, fn($a,$b)=>(int)($b['priority']??0)<=>(int)($a['priori
   <section class="hero hero-imagery" data-hero-gallery aria-label="Welcome to KCMC">
     <img class="hero-photo is-current" data-hero-photo src="./assets/visuals/kcmc-building-2024.webp" alt="Kimberling City Methodist Church exterior, photographed in 2024" loading="eager" decoding="async" fetchpriority="high" width="640" height="513">
     <img class="hero-photo" data-hero-photo src="./assets/visuals/kcmc-worship-2017.webp" alt="People gathered for worship at KCMC, photographed in 2017" loading="lazy" decoding="async" width="640" height="344" hidden>
-    <img class="hero-photo" data-hero-photo src="./assets/visuals/kcmc-stage-2014.webp" alt="KCMC worship stage, photographed in 2014" loading="lazy" decoding="async" width="640" height="480" hidden>
     <img class="hero-photo" data-hero-photo src="./assets/visuals/kcmc-ministry-group.jpg" alt="KCMC church family and ministry group" loading="lazy" decoding="async" width="640" height="480" hidden>
     <img class="hero-photo" data-hero-photo src="./assets/visuals/kcmc-congregation-gathering.jpg" alt="People seated around tables facing the KCMC worship stage" loading="lazy" decoding="async" width="2048" height="1105" hidden>
     <img class="hero-photo" data-hero-photo src="./assets/visuals/kcmc-family-outdoor-event.jpg" alt="Children and adults enjoying balloons and an inflatable slide at a Kimberling City outdoor event" loading="lazy" decoding="async" width="2048" height="1536" hidden>
@@ -126,7 +125,7 @@ usort($kcmcAnnouncements, fn($a,$b)=>(int)($b['priority']??0)<=>(int)($a['priori
         <div class="service-time">8:00 • 9:15 • 10:30</div>
         <h2>Three expressions. One church.</h2>
         <p>Front Porch Gospel, Traditional Worship, and Contemporary Worship each offer a distinct style with a common mission.</p>
-        <div class="btns"><a class="btn gold" href="#watch" data-route="watch">Watch worship</a><a class="btn secondary" href="https://maps.app.goo.gl/W6kRCHvbaVJ7mwte7" target="_blank" rel="noopener">Directions</a></div>
+        <div class="btns"><a class="btn gold" href="#visit" data-route="visit">Plan your visit</a><a class="btn secondary" href="https://maps.app.goo.gl/W6kRCHvbaVJ7mwte7" target="_blank" rel="noopener">Directions</a></div>
       </aside>
     </div>
   </section>
@@ -136,6 +135,14 @@ usort($kcmcAnnouncements, fn($a,$b)=>(int)($b['priority']??0)<=>(int)($a['priori
       <div><img style="display:block;width:100%;height:auto;border-radius:18px" src="./assets/visuals/kcmc-family-outdoor-event.jpg" alt="Children and adults enjoying balloons and an inflatable slide at a Kimberling City outdoor event" loading="lazy" decoding="async" width="2048" height="1536"></div>
       <div><img style="display:block;width:100%;height:auto;border-radius:18px" src="./assets/visuals/kcmc-kids-safari.jpg" alt="Children seated in a decorated safari cart inside KCMC" loading="lazy" decoding="async" width="2048" height="1536"></div>
       <div><img style="display:block;width:100%;height:auto;border-radius:18px" src="./assets/visuals/kcmc-kids-game-room.jpg" alt="Children playing foosball and other table games in the KCMC game room" loading="lazy" decoding="async" width="2048" height="1289"></div>
+    </div>
+  </section>
+
+  <section class="section invite-neighbor" aria-labelledby="invite-neighbor-title">
+    <div class="wrap invite-neighbor-card">
+      <div><div class="eyebrow">Make room for someone new</div><h2 id="invite-neighbor-title">A familiar face can make the first visit easier.</h2><p>Invite a friend, neighbor or family member to join you. Share the visit page, choose a service together, and offer to meet them when they arrive.</p></div>
+      <div class="btns"><button class="btn gold" type="button" data-share-app data-share-visit>Invite someone this Sunday</button><a class="btn secondary" href="#events" data-route="events">Find a community event</a></div>
+      <p class="fine">You choose who receives your invitation. KCMC Connect does not contact your friends or add them to a mailing list.</p>
     </div>
   </section>
 
@@ -206,13 +213,13 @@ usort($kcmcAnnouncements, fn($a,$b)=>(int)($b['priority']??0)<=>(int)($a['priori
       <div class="btns"><a class="btn gold" href="https://maps.app.goo.gl/W6kRCHvbaVJ7mwte7" target="_blank" rel="noopener">Get directions</a><a class="btn secondary" href="tel:+14177394395">Call the office</a></div>
     </div>
     <form class="form-card" data-kcmc-form="visit" data-subject="I’m Coming This Sunday" novalidate>
-      <div class="eyebrow">Plan a visit</div><h2>I’m coming this Sunday</h2><p class="muted">Send the welcome team your details. Nothing here creates a member account.</p>
+      <div class="eyebrow">Plan a visit</div><h2>I’m coming this Sunday</h2><p class="muted">Share your plans with our welcome team and request a one-time welcome email with next steps. This does not create an account or subscribe you to ongoing messages.</p>
       <div class="field-row"><label>First name<input name="firstName" autocomplete="given-name" required></label><label>Last name<input name="lastName" autocomplete="family-name" required></label></div>
       <label>Email<input type="email" name="email" autocomplete="email" required></label>
       <label>Phone<input type="tel" name="phone" autocomplete="tel"></label>
       <label>Service<select name="service" required><option value="">Choose a service</option><option>8:00 AM — Front Porch Gospel</option><option>9:15 AM — Traditional Worship</option><option>10:30 AM — Contemporary Worship</option></select></label>
       <label>Anything we can help with?<textarea name="message" rows="4" placeholder="Kids, accessibility, where to meet, or anything else"></textarea></label>
-      <button class="btn gold" type="submit">Tell the welcome team</button><p class="form-status" role="status" aria-live="polite"></p>
+      <button class="btn gold" type="submit">Tell the welcome team</button><p class="form-status" role="status" aria-live="polite"></p><div class="visit-next-steps" data-visit-next-steps hidden><h3>You have a place here. Take your next step.</h3><p>Come as you are. Explore what is happening, ask about a Bible study or group, or find a way to serve.</p><div class="btns"><a class="btn" href="#events" data-route="events">Upcoming events</a><a class="btn" href="#partner" data-route="partner">Find a group</a><a class="btn" href="#serve" data-route="serve">Explore serving</a><a class="btn secondary" href="https://maps.app.goo.gl/W6kRCHvbaVJ7mwte7" target="_blank" rel="noopener">Directions</a></div><p>Bringing children? Launch Kids meets during the 10:30 AM Contemporary service. Contact the church office with arrival or accessibility questions.</p><button class="btn gold" type="button" data-share-app data-share-visit>Invite someone to join you</button></div>
     </form>
   </div></section>
   <section class="section alt"><div class="wrap"><div class="section-head"><div><div class="eyebrow">Choose your service</div><h2>Same church. Different expression.</h2></div></div><div class="grid3"><article class="card"><div class="time">8:00</div><h3>Front Porch Gospel</h3><p>Old-time country and bluegrass Gospel with an uplifting Bible-based message.</p></article><article class="card"><div class="time">9:15</div><h3>Traditional</h3><p>Hymns, piano, organ and choir with teaching based on the Bible.</p></article><article class="card"><div class="time">10:30</div><h3>Contemporary</h3><p>A laid-back coffee-shop setting with fellowship, refreshments and Launch Kids.</p></article></div></div></section>
@@ -305,7 +312,7 @@ usort($kcmcAnnouncements, fn($a,$b)=>(int)($b['priority']??0)<=>(int)($a['priori
     <p class="install-sheet-note">After it is saved, KCMC Connect opens from your screen like an app.</p>
   </div>
 </div>
-<script src="app.js?v=3.0.2" defer></script>
+<script src="app.js?v=visitor-welcome-20261008" defer></script>
 <script src="public-presentation.js?v=tony-bright-photos-offline-20261008" defer></script>
 <a class="phase6-bulletin-fab" href="bulletin.php">Latest Bulletin</a>
 </body></html>

@@ -95,7 +95,7 @@ test('precache fetches anonymously and reloads from network',async()=>{
   await h.lifecycle('install');
   assert.ok(h.calls.fetch.length>0);
   assert.ok(h.calls.fetch.every(request=>request.credentials==='omit'&&request.cache==='reload'));
-  assert.ok(h.calls.fetch.some(request=>request.url.endsWith('/app.js?v=3.0.2')));
+  assert.ok(h.calls.fetch.some(request=>request.url.endsWith('/app.js?v=visitor-welcome-20261008')));
 });
 
 for(const policy of ['no-store','private, max-age=0','no-cache']){
