@@ -352,8 +352,9 @@ boldBtn.onclick=()=>{if(selected){recordHistory();selected.style.fontWeight=getC
 document.querySelectorAll('[data-align]').forEach(b=>b.onclick=()=>{if(selected){recordHistory();selected.style.textAlign=b.dataset.align}});
 textColor.oninput=()=>{if(selected){recordHistory();selected.style.color=textColor.value}};fillColor.oninput=()=>{if(selected){recordHistory();selected.style.background=fillColor.value}};borderColor.oninput=()=>{if(selected){recordHistory();selected.style.borderColor=borderColor.value}};borderWidth.oninput=()=>{if(selected){recordHistory();selected.style.borderStyle='solid';selected.style.borderWidth=borderWidth.value+'px'}};opacity.oninput=()=>{if(selected){recordHistory();selected.style.opacity=opacity.value/100}};
 document.addEventListener('keydown',e=>{
- const editing=document.activeElement instanceof Element&&document.activeElement.closest('.item.editing');
- if(editing)return;
+ const active=document.activeElement;
+ const typing=active instanceof Element&&(active.closest('.item.editing')||active.matches('input,textarea,select')||active.isContentEditable);
+ if(typing)return;
  const mod=e.ctrlKey||e.metaKey;
  if(mod&&!e.shiftKey&&e.key.toLowerCase()==='z'){e.preventDefault();undo()}
  else if((mod&&e.shiftKey&&e.key.toLowerCase()==='z')||(e.ctrlKey&&!e.shiftKey&&e.key.toLowerCase()==='y')){e.preventDefault();redo()}
