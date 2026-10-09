@@ -1,0 +1,17 @@
+{
+  "source_commit": "87e2936559e79a860f2d07f6012c2a8cbb26cb59",
+  "source_git_blob": "f10c23cc65ab096c5ca2f812d898e1a44585dce5",
+  "target_git_blob": "4e3a50454036061dffefc607e9d1885585c16ec3",
+  "scope": [
+    "admin/publication-designer.php"
+  ],
+  "features": [
+    "undo-redo",
+    "duplicate-object",
+    "bring-to-front",
+    "bring-forward",
+    "send-backward",
+    "send-to-back",
+    "keyboard-shortcuts"
+  ]
+}

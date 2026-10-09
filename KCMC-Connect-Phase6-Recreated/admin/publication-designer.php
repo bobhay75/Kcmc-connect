@@ -35,6 +35,8 @@ button,input,select,textarea{font:inherit}.shell{min-height:100vh;display:grid;g
   <div class="actions">
     <label class="field" style="margin:0;min-width:220px"><span class="small">Project name</span><input id="projectName" maxlength="80" value="Untitled publication" aria-label="Project name"></label>
     <button class="btn" id="newBtn">New</button>
+    <button class="btn" id="undoBtn" type="button" disabled title="Undo (Ctrl/Cmd+Z)">Undo</button>
+    <button class="btn" id="redoBtn" type="button" disabled title="Redo (Ctrl/Cmd+Shift+Z or Ctrl+Y)">Redo</button>
     <button class="btn" id="duplicateBtn">Duplicate</button>
     <button class="btn" id="saveBtn">Save</button>
     <button class="btn primary" id="printBtn">Print / Save PDF</button>
@@ -112,6 +114,14 @@ button,input,select,textarea{font:inherit}.shell{min-height:100vh;display:grid;g
     <div class="field"><label>Border color<input id="borderColor" type="color" value="#17324c"></label></div>
     <div class="field"><label>Border width<input id="borderWidth" type="number" min="0" max="12" value="0"></label></div>
     <div class="field"><label>Opacity<input id="opacity" type="range" min="10" max="100" value="100"></label></div>
+    <h3 style="margin:14px 0 8px">Arrange</h3>
+    <div class="toolbar">
+      <button class="btn" id="duplicateItemBtn" type="button">Duplicate object</button>
+      <button class="btn" id="bringFrontBtn" type="button">Bring to front</button>
+      <button class="btn" id="bringForwardBtn" type="button">Bring forward</button>
+      <button class="btn" id="sendBackwardBtn" type="button">Send backward</button>
+      <button class="btn" id="sendBackBtn" type="button">Send to back</button>
+    </div>
   </div>
   <hr>
   <h2>Saved projects</h2>
@@ -122,19 +132,60 @@ button,input,select,textarea{font:inherit}.shell{min-height:100vh;display:grid;g
 </div>
 <script>
 (()=>{
-const page=document.getElementById('page'),status=document.getElementById('status'),saveButton=document.getElementById('saveBtn');
+const page=document.getElementById('page'),status=document.getElementById('status'),saveButton=document.getElementById('saveBtn'),undoButton=document.getElementById('undoBtn'),redoButton=document.getElementById('redoBtn');
 const projectEndpoint=<?=json_encode(kcmc_url('admin/publication-projects.php'), JSON_UNESCAPED_SLASHES)?>;
 const mediaEndpoint=<?=json_encode(kcmc_url('admin/publication-media.php'), JSON_UNESCAPED_SLASHES)?>;
 const csrf=<?=json_encode(kcmc_csrf(), JSON_UNESCAPED_SLASHES)?>;
 const pageSize=document.getElementById('pageSize'),orientation=document.getElementById('orientation');
 const imagePicker=document.getElementById('imagePicker'),sharedMediaLibrary=document.getElementById('sharedMediaLibrary');
 const props=document.getElementById('properties'),noSel=document.getElementById('noSelection');
-let selected=null,drag=null,projectId=null,currentPageIndex=0,pageState=[],projectGeneration=0,canvasGeneration=0,saveInFlight=false;
+let selected=null,drag=null,projectId=null,currentPageIndex=0,pageState=[],projectGeneration=0,canvasGeneration=0,saveInFlight=false,undoStack=[],redoStack=[],historyRestoring=false;
 const inch=96,sizes={letter:[8.5,11],half:[5.5,8.5],postcard:[4,6]};
 function setStatus(t){status.textContent=t}
+function updateHistoryButtons(){undoButton.disabled=undoStack.length===0;redoButton.disabled=redoStack.length===0}
+function updateArrangeButtons(){
+ const disabled=!selected;
+ for(const id of ['duplicateItemBtn','bringFrontBtn','bringForwardBtn','sendBackwardBtn','sendBackBtn']) document.getElementById(id).disabled=disabled;
+}
+function snapshotDocument(){
+ commitCurrentPage();
+ return JSON.stringify({projectName:currentProjectName(),currentPageIndex,pageState});
+}
+function recordHistory(){
+ if(historyRestoring)return;
+ const snapshot=snapshotDocument();
+ if(undoStack[undoStack.length-1]!==snapshot)undoStack.push(snapshot);
+ if(undoStack.length>60)undoStack.shift();
+ redoStack=[];
+ updateHistoryButtons();
+}
+function restoreHistory(snapshot,label){
+ const state=JSON.parse(snapshot);
+ historyRestoring=true;
+ document.getElementById('projectName').value=String(state.projectName||'Untitled publication').slice(0,80);
+ pageState=Array.isArray(state.pageState)&&state.pageState.length?state.pageState:[{pageSize:'letter',orientation:'portrait',items:[]}];
+ currentPageIndex=Math.max(0,Math.min(Number(state.currentPageIndex)||0,pageState.length-1));
+ renderPageData(pageState[currentPageIndex]);
+ historyRestoring=false;
+ updateHistoryButtons();
+ setStatus(label);
+}
+function undo(){
+ if(!undoStack.length)return;
+ const current=snapshotDocument(),previous=undoStack.pop();
+ redoStack.push(current);
+ restoreHistory(previous,'Undo');
+}
+function redo(){
+ if(!redoStack.length)return;
+ const current=snapshotDocument(),next=redoStack.pop();
+ undoStack.push(current);
+ restoreHistory(next,'Redo');
+}
+function resetHistory(){undoStack=[];redoStack=[];updateHistoryButtons()}
 function applyPage(target=page,sizeValue=pageSize.value,orientationValue=orientation.value){let [w,h]=sizes[sizeValue]||sizes.letter;if(orientationValue==='landscape')[w,h]=[h,w];target.style.width=(w*inch)+'px';target.style.height=(h*inch)+'px'}
 function finishTextEdit(el){if(el?.dataset.type==='text'){el.classList.remove('editing');el.contentEditable='false';ensureItemHandle(el)}}
-function clearSelection(){if(selected){finishTextEdit(selected);selected.classList.remove('selected')}selected=null;drag=null;props.classList.add('hidden');noSel.classList.remove('hidden')}
+function clearSelection(){if(selected){finishTextEdit(selected);selected.classList.remove('selected')}selected=null;drag=null;props.classList.add('hidden');noSel.classList.remove('hidden');updateArrangeButtons()}
 // A template or Select All can replace text children, including the old handle.
 // Recreate it on selection/input; delegated events never retain a detached handle.
 function ensureItemHandle(el){
@@ -142,10 +193,10 @@ function ensureItemHandle(el){
  if(!handle){handle=document.createElement('span');handle.className='handle';el.appendChild(handle)}
  handle.contentEditable='false';handle.setAttribute('aria-hidden','true');return handle;
 }
-function select(el){if(selected!==el)clearSelection();selected=el;if(!el.classList.contains('editing'))ensureItemHandle(el);el.classList.add('selected');props.classList.remove('hidden');noSel.classList.add('hidden');syncProps()}
+function select(el){if(selected!==el)clearSelection();selected=el;if(!el.classList.contains('editing'))ensureItemHandle(el);el.classList.add('selected');props.classList.remove('hidden');noSel.classList.add('hidden');syncProps();updateArrangeButtons()}
 function beginTextEdit(el){
  if(el.dataset.type!=='text')return;
- select(el);drag=null;el.querySelectorAll('.handle').forEach(handle=>handle.remove());el.contentEditable='true';el.classList.add('editing');el.focus({preventScroll:true});
+ recordHistory();select(el);drag=null;el.querySelectorAll('.handle').forEach(handle=>handle.remove());el.contentEditable='true';el.classList.add('editing');el.focus({preventScroll:true});
  const range=document.createRange();range.selectNodeContents(el);range.collapse(false);
  const selection=window.getSelection();selection.removeAllRanges();selection.addRange(range);
  setStatus('Editing text — press Escape when finished.');
@@ -161,7 +212,7 @@ function wire(el){
   // Native mouse selection/caret placement must remain available while typing.
   if(!resizing&&el.classList.contains('editing'))return;
   const r=el.getBoundingClientRect(),pr=page.getBoundingClientRect();
-  drag=resizing?{mode:'resize',el,sx:e.clientX,sy:e.clientY,sw:r.width,sh:r.height}:{mode:'move',el,dx:e.clientX-r.left,dy:e.clientY-r.top,pr};
+  drag=resizing?{mode:'resize',el,sx:e.clientX,sy:e.clientY,sw:r.width,sh:r.height,history:false}:{mode:'move',el,dx:e.clientX-r.left,dy:e.clientY-r.top,pr,history:false};
   e.preventDefault();el.focus({preventScroll:true});
  });
  el.addEventListener('dblclick',e=>{if(!(e.target instanceof Element&&e.target.closest('.handle'))&&el.dataset.type==='text'){e.preventDefault();beginTextEdit(el)}});
@@ -169,7 +220,7 @@ function wire(el){
   if(e.key==='Escape'){e.preventDefault();finishTextEdit(el);drag=null;setStatus('Text finished — drag the box to move it.');return}
   if(!el.classList.contains('editing')&&(e.key==='Enter'||e.key==='F2')&&el.dataset.type==='text'){e.preventDefault();beginTextEdit(el);return}
   if(!el.classList.contains('editing')&&['ArrowLeft','ArrowRight','ArrowUp','ArrowDown'].includes(e.key)){
-   e.preventDefault();const step=e.shiftKey?10:1,axis=['ArrowLeft','ArrowRight'].includes(e.key)?'left':'top';
+   e.preventDefault();recordHistory();const step=e.shiftKey?10:1,axis=['ArrowLeft','ArrowRight'].includes(e.key)?'left':'top';
    el.style[axis]=Math.max(0,(parseFloat(el.style[axis])||0)+(['ArrowLeft','ArrowUp'].includes(e.key)?-step:step))+'px';
   }
  });
@@ -185,7 +236,7 @@ function wire(el){
  });
  el.addEventListener('drop',e=>{if(el.dataset.type==='text')e.preventDefault()});
 }
-document.addEventListener('mousemove',e=>{if(!drag)return;if(drag.mode==='move'){const x=Math.max(0,e.clientX-drag.pr.left-drag.dx),y=Math.max(0,e.clientY-drag.pr.top-drag.dy);drag.el.style.left=x+'px';drag.el.style.top=y+'px'}else{drag.el.style.width=Math.max(40,drag.sw+e.clientX-drag.sx)+'px';drag.el.style.height=Math.max(28,drag.sh+e.clientY-drag.sy)+'px'}});
+document.addEventListener('mousemove',e=>{if(!drag)return;if(!drag.history){recordHistory();drag.history=true}if(drag.mode==='move'){const x=Math.max(0,e.clientX-drag.pr.left-drag.dx),y=Math.max(0,e.clientY-drag.pr.top-drag.dy);drag.el.style.left=x+'px';drag.el.style.top=y+'px'}else{drag.el.style.width=Math.max(40,drag.sw+e.clientX-drag.sx)+'px';drag.el.style.height=Math.max(28,drag.sh+e.clientY-drag.sy)+'px'}});
 document.addEventListener('mouseup',()=>drag=null);page.addEventListener('mousedown',e=>{if(e.target===page)clearSelection()});
 function syncProps(){if(!selected)return;const cs=getComputedStyle(selected);fontFamily.value=cs.fontFamily.replaceAll('"','').split(',')[0];fontSize.value=parseInt(cs.fontSize)||24;textColor.value=rgbToHex(cs.color);fillColor.value=publicationFill(cs.backgroundColor);borderColor.value=rgbToHex(cs.borderColor);borderWidth.value=parseInt(cs.borderWidth)||0;opacity.value=Math.round((parseFloat(cs.opacity)||1)*100)}
 function rgbToHex(v){const m=v.match(/\d+/g);if(!m||m.length<3)return '#17324c';return '#'+m.slice(0,3).map(n=>(+n).toString(16).padStart(2,'0')).join('')}
@@ -252,32 +303,64 @@ async function save(){
  }catch(err){if(generation===projectGeneration)setStatus(err.message||'Save failed')}
  finally{saveInFlight=false;saveButton.disabled=false}
 }
-function loadProject(p){projectGeneration++;projectId=p.id;document.getElementById('projectName').value=String(p.name||'Untitled publication').slice(0,80);const legacy={pageSize:p.pageSize||'letter',orientation:p.orientation||'portrait',items:Array.isArray(p.items)?p.items:[]};pageState=(Array.isArray(p.pages)&&p.pages.length?p.pages:[legacy]).slice(0,12).map(pg=>({pageSize:pg.pageSize||'letter',orientation:pg.orientation||'portrait',items:Array.isArray(pg.items)?pg.items:[]}));currentPageIndex=0;renderPageData(pageState[0]);setStatus('Loaded '+p.name+' • '+pageState.length+' page'+(pageState.length===1?'':'s'))}
+function loadProject(p){projectGeneration++;projectId=p.id;document.getElementById('projectName').value=String(p.name||'Untitled publication').slice(0,80);const legacy={pageSize:p.pageSize||'letter',orientation:p.orientation||'portrait',items:Array.isArray(p.items)?p.items:[]};pageState=(Array.isArray(p.pages)&&p.pages.length?p.pages:[legacy]).slice(0,12).map(pg=>({pageSize:pg.pageSize||'letter',orientation:pg.orientation||'portrait',items:Array.isArray(pg.items)?pg.items:[]}));currentPageIndex=0;renderPageData(pageState[0]);resetHistory();setStatus('Loaded '+p.name+' • '+pageState.length+' page'+(pageState.length===1?'':'s'))}
 async function renderSaved(){const box=document.getElementById('savedList');box.innerHTML='<span class="small">Loading…</span>';try{const r=await fetch(projectEndpoint,{credentials:'same-origin'}),j=await r.json();if(!r.ok||!j.ok)throw new Error(j.error||'Could not load projects');box.innerHTML='';(j.projects||[]).forEach(p=>{const b=document.createElement('button');b.className='template';b.innerHTML='<strong>'+escapeHtml(p.name)+'</strong><br><span class="small">'+new Date(p.updated).toLocaleString()+'</span>';b.onclick=()=>loadProject(p);box.appendChild(b)});if(!(j.projects||[]).length)box.innerHTML='<span class="small">No shared projects yet.</span>'}catch(err){box.innerHTML='<span class="small">'+escapeHtml(err.message||'Could not load projects')+'</span>'}}
 function escapeHtml(s){return s.replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[c]))}
-document.getElementById('templates').addEventListener('click',e=>{const b=e.target.closest('[data-template]');if(b)template(b.dataset.template)});
-document.getElementById('addText').onclick=()=>makeItem('text');document.getElementById('addShape').onclick=()=>makeItem('shape');
-function addSharedMediaToCanvas(media){const el=makeItem('image',80,80,320,220);el.dataset.mediaId=media.id;const img=document.createElement('img');img.src=media.url||mediaEndpoint+'?id='+encodeURIComponent(media.id);img.alt=media.label||'KCMC shared photo';el.insertBefore(img,el.firstChild);setStatus('Shared photo added')}
+document.getElementById('templates').addEventListener('click',e=>{const b=e.target.closest('[data-template]');if(b){recordHistory();template(b.dataset.template)}});
+document.getElementById('addText').onclick=()=>{recordHistory();makeItem('text')};document.getElementById('addShape').onclick=()=>{recordHistory();makeItem('shape')};
+function addSharedMediaToCanvas(media){recordHistory();const el=makeItem('image',80,80,320,220);el.dataset.mediaId=media.id;const img=document.createElement('img');img.src=media.url||mediaEndpoint+'?id='+encodeURIComponent(media.id);img.alt=media.label||'KCMC shared photo';el.insertBefore(img,el.firstChild);setStatus('Shared photo added')}
 async function renderSharedMedia(){sharedMediaLibrary.innerHTML='<span class="small">Loading shared photos…</span>';try{const r=await fetch(mediaEndpoint,{credentials:'same-origin'}),j=await r.json();if(!r.ok||!j.ok)throw new Error(j.error||'Could not load shared photos');sharedMediaLibrary.innerHTML='';for(const media of (j.media||[])){const b=document.createElement('button');b.type='button';b.className='template media-card';const img=document.createElement('img');img.src=media.url;img.alt='';const copy=document.createElement('span');const strong=document.createElement('strong');strong.textContent=media.label||'Church photo';const small=document.createElement('span');small.className='small';small.textContent=(media.width||0)+'×'+(media.height||0)+' • '+Math.max(1,Math.round((media.bytes||0)/1024))+' KB';copy.append(strong,document.createElement('br'),small);b.append(img,copy);b.onclick=()=>addSharedMediaToCanvas(media);sharedMediaLibrary.appendChild(b)}if(!(j.media||[]).length)sharedMediaLibrary.innerHTML='<span class="small">No shared uploads yet.</span>'}catch(err){sharedMediaLibrary.innerHTML='<span class="small">'+escapeHtml(err.message||'Could not load shared photos')+'</span>'}}
 document.getElementById('addImage').onclick=()=>imagePicker.click();
 imagePicker.onchange=async e=>{const file=e.target.files[0];if(!file)return;const generation=projectGeneration,canvas=canvasGeneration,isCurrent=()=>generation===projectGeneration&&canvas===canvasGeneration;setStatus('Uploading photo…');const form=new FormData();form.append('csrf',csrf);form.append('photo',file);try{const r=await fetch(mediaEndpoint,{method:'POST',credentials:'same-origin',body:form}),j=await r.json();if(!r.ok||!j.ok)throw new Error(j.error||'Upload failed');if(isCurrent())addSharedMediaToCanvas(j.media);await renderSharedMedia();if(isCurrent())setStatus('Photo uploaded and added')}catch(err){if(isCurrent())setStatus(err.message||'Upload failed')}finally{imagePicker.value=''}};
-document.getElementById('assetLibrary').addEventListener('click',e=>{const b=e.target.closest('[data-asset]');if(!b)return;const el=makeItem('image',80,80,320,220);const img=document.createElement('img');img.src=b.dataset.asset;img.alt=b.dataset.alt||b.querySelector('strong')?.textContent||'KCMC photo';el.insertBefore(img,el.firstChild);setStatus('KCMC photo added')});
-document.getElementById('deleteItem').onclick=()=>{if(selected){selected.remove();clearSelection()}};
-document.getElementById('newBtn').onclick=()=>{projectGeneration++;projectId=null;document.getElementById('projectName').value='Untitled publication';page.innerHTML='';clearSelection();template('flyer');setStatus('New publication')};
+document.getElementById('assetLibrary').addEventListener('click',e=>{const b=e.target.closest('[data-asset]');if(!b)return;recordHistory();const el=makeItem('image',80,80,320,220);const img=document.createElement('img');img.src=b.dataset.asset;img.alt=b.dataset.alt||b.querySelector('strong')?.textContent||'KCMC photo';el.insertBefore(img,el.firstChild);setStatus('KCMC photo added')});
+document.getElementById('deleteItem').onclick=()=>{if(selected){recordHistory();selected.remove();clearSelection();setStatus('Object deleted')}};
+document.getElementById('newBtn').onclick=()=>{projectGeneration++;projectId=null;document.getElementById('projectName').value='Untitled publication';page.innerHTML='';clearSelection();template('flyer');resetHistory();setStatus('New publication')};
 document.getElementById('duplicateBtn').onclick=()=>{commitCurrentPage();const name=currentProjectName();projectGeneration++;projectId=null;document.getElementById('projectName').value=name.slice(0,73)+' - Copy';setStatus('Independent copy ready — click Save')};
 prevPage.onclick=()=>showPage(currentPageIndex-1);nextPage.onclick=()=>showPage(currentPageIndex+1);
-addPage.onclick=()=>{commitCurrentPage();if(pageState.length>=12)return;pageState.push({pageSize:pageSize.value,orientation:orientation.value,items:[]});currentPageIndex=pageState.length-1;renderPageData(pageState[currentPageIndex]);setStatus('Blank page added')};
-duplicatePage.onclick=()=>{commitCurrentPage();if(pageState.length>=12)return;const copy=JSON.parse(JSON.stringify(pageState[currentPageIndex]));pageState.splice(currentPageIndex+1,0,copy);currentPageIndex++;renderPageData(copy);setStatus('Page duplicated')};
-deletePage.onclick=()=>{commitCurrentPage();if(pageState.length<=1)return;pageState.splice(currentPageIndex,1);currentPageIndex=Math.min(currentPageIndex,pageState.length-1);renderPageData(pageState[currentPageIndex]);setStatus('Page deleted')};
+addPage.onclick=()=>{commitCurrentPage();if(pageState.length>=12)return;recordHistory();pageState.push({pageSize:pageSize.value,orientation:orientation.value,items:[]});currentPageIndex=pageState.length-1;renderPageData(pageState[currentPageIndex]);setStatus('Blank page added')};
+duplicatePage.onclick=()=>{commitCurrentPage();if(pageState.length>=12)return;recordHistory();const copy=JSON.parse(JSON.stringify(pageState[currentPageIndex]));pageState.splice(currentPageIndex+1,0,copy);currentPageIndex++;renderPageData(copy);setStatus('Page duplicated')};
+deletePage.onclick=()=>{commitCurrentPage();if(pageState.length<=1)return;recordHistory();pageState.splice(currentPageIndex,1);currentPageIndex=Math.min(currentPageIndex,pageState.length-1);renderPageData(pageState[currentPageIndex]);setStatus('Page deleted')};
+function duplicateSelectedItem(){
+ if(!selected)return;
+ recordHistory();
+ const data=itemData(selected);
+ data.x=Math.max(0,(Number(data.x)||0)+12);data.y=Math.max(0,(Number(data.y)||0)+12);
+ const copy=restoreItem(data);select(copy);setStatus('Object duplicated');
+}
+function arrangeSelected(action){
+ if(!selected)return;
+ const item=selected,previous=item.previousElementSibling,next=item.nextElementSibling;
+ if(action==='front'&&next){recordHistory();page.appendChild(item);setStatus('Brought to front')}
+ else if(action==='forward'&&next){recordHistory();page.insertBefore(next,item);setStatus('Brought forward')}
+ else if(action==='backward'&&previous){recordHistory();page.insertBefore(item,previous);setStatus('Sent backward')}
+ else if(action==='back'&&previous){recordHistory();page.insertBefore(item,page.firstElementChild);setStatus('Sent to back')}
+ item.focus({preventScroll:true});
+}
 function buildPrintPage(p){const out=document.createElement('div');out.className='page';applyPage(out,p.pageSize,p.orientation);for(const item of (p.items||[])){const el=document.createElement('div');el.className='item';el.dataset.type=item.type;Object.assign(el.style,{left:item.x+'px',top:item.y+'px',width:item.w+'px',height:item.h+'px',fontFamily:item.fontFamily||'Arial',fontSize:(item.fontSize||24)+'px',fontWeight:item.fontWeight||'400',fontStyle:item.fontStyle||'normal',textAlign:item.textAlign||'left',color:item.color||'#17324c',background:item.fill||'#ffffff',borderColor:item.borderColor||'#17324c',borderStyle:(item.borderWidth||0)>0?'solid':'none',borderWidth:(item.borderWidth||0)+'px',opacity:item.opacity??1});if(item.type==='text')el.textContent=item.text||'';else if(item.type==='image'){const img=document.createElement('img');img.src=item.mediaId?mediaEndpoint+'?id='+encodeURIComponent(item.mediaId):(item.src||'');img.alt=item.alt||'KCMC photo';el.appendChild(img)}out.appendChild(el)}return out}
 async function renderPrintPages(){commitCurrentPage();const box=document.getElementById('printPages');box.innerHTML='';pageState.forEach(p=>box.appendChild(buildPrintPage(p)));const images=[...box.querySelectorAll('img')];await Promise.all(images.map(img=>img.complete?Promise.resolve():new Promise(resolve=>{img.onload=resolve;img.onerror=resolve})))}
+undoButton.onclick=undo;redoButton.onclick=redo;
+document.getElementById('duplicateItemBtn').onclick=duplicateSelectedItem;
+document.getElementById('bringFrontBtn').onclick=()=>arrangeSelected('front');
+document.getElementById('bringForwardBtn').onclick=()=>arrangeSelected('forward');
+document.getElementById('sendBackwardBtn').onclick=()=>arrangeSelected('backward');
+document.getElementById('sendBackBtn').onclick=()=>arrangeSelected('back');
 document.getElementById('saveBtn').onclick=save;document.getElementById('printBtn').onclick=async()=>{setStatus('Preparing all pages…');await renderPrintPages();setStatus('Print dialog ready');window.print()};
+pageSize.onfocus=recordHistory;orientation.onfocus=recordHistory;
 pageSize.onchange=()=>{applyPage();commitCurrentPage()};orientation.onchange=()=>{applyPage();commitCurrentPage()};
-fontFamily.onchange=()=>selected&&(selected.style.fontFamily=fontFamily.value);fontSize.oninput=()=>selected&&(selected.style.fontSize=fontSize.value+'px');
-boldBtn.onclick=()=>selected&&(selected.style.fontWeight=getComputedStyle(selected).fontWeight==='700'?'400':'700');italicBtn.onclick=()=>selected&&(selected.style.fontStyle=getComputedStyle(selected).fontStyle==='italic'?'normal':'italic');
-document.querySelectorAll('[data-align]').forEach(b=>b.onclick=()=>selected&&(selected.style.textAlign=b.dataset.align));
-textColor.oninput=()=>selected&&(selected.style.color=textColor.value);fillColor.oninput=()=>selected&&(selected.style.background=fillColor.value);borderColor.oninput=()=>selected&&(selected.style.borderColor=borderColor.value);borderWidth.oninput=()=>selected&&(selected.style.borderStyle='solid',selected.style.borderWidth=borderWidth.value+'px');opacity.oninput=()=>selected&&(selected.style.opacity=opacity.value/100);
-applyPage();template('flyer');updatePageControls();renderSaved();renderSharedMedia();
+fontFamily.onchange=()=>{if(selected){recordHistory();selected.style.fontFamily=fontFamily.value}};fontSize.oninput=()=>{if(selected){recordHistory();selected.style.fontSize=fontSize.value+'px'}};
+boldBtn.onclick=()=>{if(selected){recordHistory();selected.style.fontWeight=getComputedStyle(selected).fontWeight==='700'?'400':'700'}};italicBtn.onclick=()=>{if(selected){recordHistory();selected.style.fontStyle=getComputedStyle(selected).fontStyle==='italic'?'normal':'italic'}};
+document.querySelectorAll('[data-align]').forEach(b=>b.onclick=()=>{if(selected){recordHistory();selected.style.textAlign=b.dataset.align}});
+textColor.oninput=()=>{if(selected){recordHistory();selected.style.color=textColor.value}};fillColor.oninput=()=>{if(selected){recordHistory();selected.style.background=fillColor.value}};borderColor.oninput=()=>{if(selected){recordHistory();selected.style.borderColor=borderColor.value}};borderWidth.oninput=()=>{if(selected){recordHistory();selected.style.borderStyle='solid';selected.style.borderWidth=borderWidth.value+'px'}};opacity.oninput=()=>{if(selected){recordHistory();selected.style.opacity=opacity.value/100}};
+document.addEventListener('keydown',e=>{
+ const active=document.activeElement;
+ const typing=active instanceof Element&&(active.closest('.item.editing')||active.matches('input,textarea,select')||active.isContentEditable);
+ if(typing)return;
+ const mod=e.ctrlKey||e.metaKey;
+ if(mod&&!e.shiftKey&&e.key.toLowerCase()==='z'){e.preventDefault();undo()}
+ else if((mod&&e.shiftKey&&e.key.toLowerCase()==='z')||(e.ctrlKey&&!e.shiftKey&&e.key.toLowerCase()==='y')){e.preventDefault();redo()}
+ else if(mod&&!e.shiftKey&&e.key.toLowerCase()==='d'&&selected){e.preventDefault();duplicateSelectedItem()}
+});
+applyPage();template('flyer');updatePageControls();updateArrangeButtons();resetHistory();renderSaved();renderSharedMedia();
 })();
 </script>
 </body></html>

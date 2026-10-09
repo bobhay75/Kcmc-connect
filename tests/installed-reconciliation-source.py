@@ -249,7 +249,18 @@ for name, blob in publication.items():
         for old, new in interaction['replacements']:
             check(content.count(old.encode()) == 1, 'Publisher interaction replacement anchor is unique')
             content = content.replace(old.encode(), new.encode(), 1)
-    check((ROOT / PREFIX / name).read_bytes() == content, name + ': exact reviewed save/fidelity/interaction deltas only')
+        arrange_bytes = (ROOT / 'tests/fixtures/publication-arrange-reviewed.json').read_bytes()
+        check(hashlib.sha256(arrange_bytes).hexdigest() == 'ed79995f2e022f8852442a46a9d4311458ce17478f0563c0ed1f14075e80b63e', 'reviewed Publisher arrange/history fixture remains exact')
+        arrange = json.loads(arrange_bytes)
+        check(set(arrange) == {'source_commit', 'source_git_blob', 'target_git_blob', 'scope', 'features'}, 'arrange/history fixture has only reviewed fields')
+        check(arrange['source_commit'] == '87e2936559e79a860f2d07f6012c2a8cbb26cb59', 'arrange/history baseline remains audited main')
+        check(arrange['scope'] == ['admin/publication-designer.php'], 'arrange/history runtime scope is exactly the Publication Designer')
+        check(set(arrange['features']) == {'undo-redo','duplicate-object','bring-to-front','bring-forward','send-backward','send-to-back','keyboard-shortcuts'}, 'arrange/history feature scope remains exact')
+        check(git_blob(content) == arrange['source_git_blob'], 'prior Publisher proofs exactly reconstruct arrange/history baseline')
+        actual_arrange = (ROOT / PREFIX / name).read_bytes()
+        check(git_blob(actual_arrange) == arrange['target_git_blob'], 'Publisher arrange/history target blob matches reviewed build')
+        content = actual_arrange
+    check((ROOT / PREFIX / name).read_bytes() == content, name + ': exact reviewed save/fidelity/interaction/arrange deltas only')
 
 image_inventory = json.loads((ROOT / 'docs/supplied-images-2026-10-06.json').read_text())
 check(len(image_inventory) == 9, 'exactly nine supplied assets inventoried')
