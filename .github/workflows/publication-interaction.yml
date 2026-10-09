@@ -1,0 +1,69 @@
+name: KCMC Publisher mouse and keyboard acceptance
+on:
+  pull_request:
+    paths:
+      - 'KCMC-Connect-Phase6-Recreated/admin/publication-*.php'
+      - 'tests/**'
+      - '.github/workflows/publication-interaction.yml'
+permissions:
+  contents: read
+jobs:
+  interaction:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+          persist-credentials: false
+      - name: Install isolated browser dependencies
+        run: |
+          python3 -m pip install --disable-pip-version-check playwright
+          python3 -m playwright install --with-deps chromium
+      - name: Verify actual editing and preserve existing Publisher behavior
+        run: |
+          set -euo pipefail
+          mkdir -p interaction-artifacts
+          php -l KCMC-Connect-Phase6-Recreated/admin/publication-designer.php
+          php tests/publication-designer-contract.php
+          python3 tests/publication-interaction-browser.py --screenshot interaction-artifacts/publisher.png | tee interaction-artifacts/interaction.txt
+          python3 tests/publication-fidelity-browser.py | tee interaction-artifacts/fidelity.txt
+          python3 tests/publication-text-roundtrip-browser.py | tee interaction-artifacts/text.txt
+          python3 tests/publication-save-race-browser.py | tee interaction-artifacts/races.txt
+      - name: Reproduce both bugs on the pinned previous source
+        run: |
+          set -euo pipefail
+          git fetch --no-tags origin b6093050dafe9a8d5b2ad4d958fdae742bc06624
+          python3 <<'PYTHON'
+          import hashlib
+          import subprocess
+          import tempfile
+          from pathlib import Path
+          base = 'b6093050dafe9a8d5b2ad4d958fdae742bc06624'
+          with tempfile.TemporaryDirectory(prefix='publisher-interaction-before-') as td:
+              app = Path(td)
+              (app / 'admin').mkdir()
+              for filename in ['publication-designer.php', 'publication-projects.php']:
+                  raw = subprocess.check_output(['git', 'show', base + ':KCMC-Connect-Phase6-Recreated/admin/' + filename])
+                  if filename == 'publication-designer.php':
+                      assert hashlib.sha256(raw).hexdigest() == '1b2ae59a2f5b04df5030e3fbad23479d7199b336a5ca2e350293a3bc4d640da7'
+                  (app / 'admin' / filename).write_bytes(raw)
+              for case, marker in [('typing', 'double-click must focus an editable text box'), ('handles', 'selected template text must retain one resize handle: flyer')]:
+                  result = subprocess.run(['python3', 'tests/publication-interaction-browser.py', '--app', str(app), '--case', case], capture_output=True, text=True)
+                  output = result.stdout + result.stderr
+                  Path('interaction-artifacts/negative-' + case + '.txt').write_text(output)
+                  assert result.returncode != 0 and marker in output, case + ': original defect was not reproduced'
+                  print('PASS: pinned previous source reproduces ' + case)
+          PYTHON
+      - name: Scope and evidence
+        if: always()
+        run: |
+          mkdir -p interaction-artifacts
+          git rev-parse HEAD > interaction-artifacts/SOURCE-COMMIT.txt
+          git diff --check
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: kcmc-publisher-interaction
+          path: interaction-artifacts/
+          retention-days: 7
