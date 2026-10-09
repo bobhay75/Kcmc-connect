@@ -1,0 +1,258 @@
+{
+  "source_commit": "268bebca444bd4970bb4ecaa0d6eceb6a11988fd",
+  "baseline_git_blob": {
+    "index.php": "80a2bcee344a5d6b3843b6365fc1c572eb9c85e2",
+    "public-presentation.css": "ca123a7c941958a93994e594325d51016b2dd18f",
+    "public-presentation.js": "1621a4f27871ad8a9dafc61d92b26b4eb776bd12",
+    "sw.js": "4cb02fc6a23a97483c6ceecad15812af9f53e313"
+  },
+  "replacements": {
+    "index.php": [
+      [
+        "<header class=\"topbar\">\n  <div class=\"wrap inner\">\n    <a class=\"brand\" href=\"#home\" data-route=\"home\" aria-label=\"KCMC Connect home\"><span class=\"mark\">K</span><span><strong>KCMC CONNECT</strong><small>Kimberling City Methodist Church</small></span></a>\n    <nav class=\"desktop-nav\" aria-label=\"Primary\">\n      <a href=\"#visit\" data-route=\"visit\">I’m New</a><a href=\"#watch\" data-route=\"watch\">Watch</a><a href=\"#news\" data-route=\"news\">Updates</a><a href=\"#events\" data-route=\"events\">Events</a><a href=\"#serve\" data-route=\"serve\">Serve</a><a href=\"#partner\" data-route=\"partner\">Connect</a>\n    </nav>\n    <a class=\"header-give\" href=\"https://www.simplechurchgiving.net/app/giving/umckc\" target=\"_blank\" rel=\"noopener\">Give</a>\n    <details class=\"site-menu\" id=\"siteMenu\">\n      <summary aria-controls=\"siteMenuLinks\">Menu</summary>\n      <nav id=\"siteMenuLinks\" aria-label=\"More navigation\">\n        <a href=\"#visit\" data-route=\"visit\">Plan a visit</a>\n        <a href=\"#watch\" data-route=\"watch\">Watch messages</a>\n        <a href=\"#news\" data-route=\"news\">Church updates</a>\n        <a href=\"#events\" data-route=\"events\">Events</a>\n        <a href=\"bulletin.php\">Latest bulletin</a>\n        <a href=\"care.php\">Prayer &amp; care</a>\n        <a href=\"#serve\" data-route=\"serve\">Serving</a>\n        <a href=\"https://www.simplechurchgiving.net/app/giving/umckc\" target=\"_blank\" rel=\"noopener\">Give online</a>\n        <button type=\"button\" data-share-app>Share KCMC Connect</button>\n        <a class=\"menu-account\" href=\"<?=kcmc_h(kcmc_url($member ? 'member/' : 'admin/login.php'))?>\"><?=$member ? 'My account' : 'Staff Sign In'?></a>\n        <?php if($member && kcmc_has_role(['pastor_admin', 'recovery_admin'], $member)): ?><a href=\"<?=kcmc_h(kcmc_url('admin/'))?>\">Administration</a><?php endif; ?>\n      </nav>\n    </details>\n    <button class=\"install\" type=\"button\" data-install-app>Save app</button>\n    <button class=\"install\" type=\"button\" data-share-app aria-label=\"Share KCMC Connect\">Share</button>\n  </div>\n</header>",
+        "<header class=\"topbar\">\n  <div class=\"wrap inner\">\n    <details class=\"site-menu fish-menu\" id=\"siteMenu\">\n      <summary aria-controls=\"siteMenuLinks\" aria-label=\"KCMC Connect menu\">\n        <img src=\"./assets/icons/icon-192.png\" alt=\"\" aria-hidden=\"true\" width=\"56\" height=\"56\">\n      </summary>\n      <nav id=\"siteMenuLinks\" aria-label=\"KCMC Connect navigation\">\n        <a class=\"menu-home\" href=\"#home\" data-route=\"home\"><strong>KCMC CONNECT</strong><small>Kimberling City Methodist Church</small></a>\n        <a href=\"#visit\" data-route=\"visit\">Plan a visit</a>\n        <a href=\"#watch\" data-route=\"watch\">Watch messages</a>\n        <a href=\"#news\" data-route=\"news\">Church updates</a>\n        <a href=\"#events\" data-route=\"events\">Events</a>\n        <a href=\"bulletin.php\">Latest bulletin</a>\n        <a href=\"care.php\">Prayer &amp; care</a>\n        <a href=\"#serve\" data-route=\"serve\">Serving</a>\n        <a href=\"#partner\" data-route=\"partner\">Get connected</a>\n        <a class=\"header-give\" href=\"https://www.simplechurchgiving.net/app/giving/umckc\" target=\"_blank\" rel=\"noopener\">Give online</a>\n        <button type=\"button\" data-install-app>Save app</button>\n        <button type=\"button\" data-share-app>Share KCMC Connect</button>\n        <a class=\"menu-account\" href=\"<?=kcmc_h(kcmc_url($member ? 'member/' : 'admin/login.php'))?>\"><?=$member ? 'My account' : 'Staff Sign In'?></a>\n        <?php if($member && kcmc_has_role(['pastor_admin', 'recovery_admin'], $member)): ?><a href=\"<?=kcmc_h(kcmc_url('admin/'))?>\">Administration</a><?php endif; ?>\n      </nav>\n    </details>\n  </div>\n</header>"
+      ],
+      [
+        "<meta property=\"og:image\" content=\"assets/visuals/kcmc-building-2024.webp\">",
+        "<meta property=\"og:image\" content=\"assets/visuals/kcmc-building-retouched-20261009.jpg\">"
+      ],
+      [
+        "<link rel=\"preload\" as=\"image\" href=\"assets/visuals/kcmc-building-2024.webp\" type=\"image/webp\" fetchpriority=\"high\">",
+        "<link rel=\"preload\" as=\"image\" href=\"assets/visuals/kcmc-building-retouched-20261009.jpg\" type=\"image/jpeg\" fetchpriority=\"high\">"
+      ],
+      [
+        "    <img class=\"hero-photo is-current\" data-hero-photo src=\"./assets/visuals/kcmc-building-2024.webp\" alt=\"Kimberling City Methodist Church exterior, photographed in 2024\" loading=\"eager\" decoding=\"async\" fetchpriority=\"high\" width=\"640\" height=\"513\">",
+        "    <img class=\"hero-photo is-current\" data-hero-photo src=\"./assets/visuals/kcmc-building-retouched-20261009.jpg\" alt=\"Kimberling City Methodist Church exterior; foreground weeds retouched\" loading=\"eager\" decoding=\"async\" fetchpriority=\"high\" width=\"1402\" height=\"1122\">"
+      ],
+      [
+        "    <img class=\"hero-photo\" data-hero-photo src=\"./assets/visuals/kcmc-ministry-group.jpg\" alt=\"KCMC church family and ministry group\" loading=\"lazy\" decoding=\"async\" width=\"640\" height=\"480\" hidden>\n",
+        ""
+      ],
+      [
+        "    <img class=\"hero-photo\" data-hero-photo style=\"object-fit:contain\" src=\"./assets/visuals/kcmc-bridge-logo.jpg\" alt=\"Kimberling City Methodist Church logo with a blue bridge and black cross\" loading=\"lazy\" decoding=\"async\" width=\"1156\" height=\"1156\" hidden>\n",
+        ""
+      ],
+      [
+        "    <img class=\"hero-photo\" data-hero-photo style=\"object-fit:contain\" src=\"./assets/visuals/kcmc-bridge-wordmark.png\" alt=\"Kimberling City Methodist Church bridge and cross logo over a sunset bridge photograph\" loading=\"lazy\" decoding=\"async\" width=\"2048\" height=\"706\" hidden>\n",
+        ""
+      ],
+      [
+        "    <img class=\"hero-photo\" data-hero-photo style=\"object-fit:contain\" src=\"./assets/visuals/kcmc-bridge-logo-composite.png\" alt=\"Sunset bridge photograph with the Kimberling City Methodist Church logo inset at lower right\" loading=\"lazy\" decoding=\"async\" width=\"2048\" height=\"1144\" hidden>\n",
+        ""
+      ],
+      [
+        "public-presentation.css?v=visitor-welcome-20261008",
+        "public-presentation.css?v=blue-fish-menu-20261009"
+      ],
+      [
+        "public-presentation.js?v=tony-bright-photos-offline-20261008",
+        "public-presentation.js?v=blue-fish-menu-20261009"
+      ]
+    ],
+    "public-presentation.css": [
+      [
+        ".hero-imagery:after{background:linear-gradient(90deg,#f7f1e7 0%,#f7f1e7 38%,rgba(247,241,231,.25) 58%,transparent 72%)}",
+        ".hero-imagery:after{background:linear-gradient(90deg,#0d2235 0%,#0d2235 38%,rgba(13,34,53,.25) 58%,transparent 72%)}"
+      ],
+      [
+        "/* Warm, light public feature. Original photograph, private pages and welcome hero stay separate. */",
+        "/* Blue public feature, retaining the original worship photograph. */"
+      ],
+      [
+        ".cw-section{padding:54px 0 64px;background:#f7f1e7;color:#243d50;color-scheme:light;border-top:1px solid #e5d8c3;border-bottom:1px solid #e5d8c3}",
+        ".cw-section{padding:54px 0 64px;background:#0d2235;color:#eef5f8;color-scheme:dark;border-top:1px solid #49677c;border-bottom:1px solid #49677c}"
+      ],
+      [
+        ".cw-feature{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.12fr);background:#fffdf9;border:1px solid #daccb4;border-radius:28px;overflow:hidden;box-shadow:0 16px 42px rgba(102,77,36,.10)}",
+        ".cw-feature{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.12fr);background:#14334b;border:1px solid #49677c;border-radius:28px;overflow:hidden;box-shadow:0 16px 42px rgba(102,77,36,.10)}"
+      ],
+      [
+        ".cw-kicker{display:flex;align-items:center;gap:10px;flex-wrap:wrap;font-size:.75rem;font-weight:800;line-height:1.5;text-transform:uppercase;letter-spacing:.14em;margin:0 0 20px;color:#77521c}",
+        ".cw-kicker{display:flex;align-items:center;gap:10px;flex-wrap:wrap;font-size:.75rem;font-weight:800;line-height:1.5;text-transform:uppercase;letter-spacing:.14em;margin:0 0 20px;color:#b9dce9}"
+      ],
+      [
+        ".cw-kicker span{display:inline-block;background:#f7ead0;border:1px solid #ab864d;border-radius:99px;padding:5px 11px;letter-spacing:.04em;color:#604315}",
+        ".cw-kicker span{display:inline-block;background:#214057;border:1px solid #628397;border-radius:99px;padding:5px 11px;letter-spacing:.04em;color:#d6eaf3}"
+      ],
+      [
+        ".cw-copy h2{font-family:Inter,ui-sans-serif,system-ui,sans-serif;font-size:clamp(2.2rem,4.2vw,3.65rem);font-weight:800;line-height:1.06;letter-spacing:-.045em;margin:0 0 22px;color:#243d50;overflow-wrap:normal}",
+        ".cw-copy h2{font-family:Inter,ui-sans-serif,system-ui,sans-serif;font-size:clamp(2.2rem,4.2vw,3.65rem);font-weight:800;line-height:1.06;letter-spacing:-.045em;margin:0 0 22px;color:#eef5f8;overflow-wrap:normal}"
+      ],
+      [
+        ".cw-copy h2 span{color:#925919}",
+        ".cw-copy h2 span{color:#a3d6ea}"
+      ],
+      [
+        ".cw-intro{font-size:clamp(1.08rem,1.8vw,1.25rem);font-weight:650;color:#243d50;line-height:1.5;margin:0 0 12px}",
+        ".cw-intro{font-size:clamp(1.08rem,1.8vw,1.25rem);font-weight:650;color:#eef5f8;line-height:1.5;margin:0 0 12px}"
+      ],
+      [
+        ".cw-description{font-size:1rem;line-height:1.75;color:#425767;margin:0 0 15px}",
+        ".cw-description{font-size:1rem;line-height:1.75;color:#c7d5dd;margin:0 0 15px}"
+      ],
+      [
+        ".cw-family{font-size:.94rem;line-height:1.65;color:#425767;margin:0 0 8px;padding-left:14px;border-left:2px solid #ae7a30}",
+        ".cw-family{font-size:.94rem;line-height:1.65;color:#c7d5dd;margin:0 0 8px;padding-left:14px;border-left:2px solid #628397}"
+      ],
+      [
+        ".cw-primary{background:#edc77f;color:#1d3547;border-color:#ae7a30}",
+        ".cw-primary{background:#214f6a;color:#eef5f8;border-color:#628397}"
+      ],
+      [
+        ".cw-secondary{background:#fffdf9;color:#243d50}",
+        ".cw-secondary{background:#14334b;color:#eef5f8}"
+      ],
+      [
+        ".cw-button:hover{background:#f8e3bc;color:#243d50;filter:none}",
+        ".cw-button:hover{background:#214f6a;color:#eef5f8;filter:none}"
+      ],
+      [
+        ".cw-button:focus-visible{outline:3px solid #205b79;outline-offset:4px}",
+        ".cw-button:focus-visible{outline:3px solid #a3d6ea;outline-offset:4px}"
+      ],
+      [
+        ".cw-online-note{font-size:.78rem;line-height:1.6;color:#536574;margin:0;max-width:40em}",
+        ".cw-online-note{font-size:.78rem;line-height:1.6;color:#b8ccd8;margin:0;max-width:40em}"
+      ],
+      [
+        ".cw-media{background:#fffdf9;min-width:0;position:relative;overflow:hidden;display:flex;align-items:center;padding:26px 26px 26px 0}",
+        ".cw-media{background:#14334b;min-width:0;position:relative;overflow:hidden;display:flex;align-items:center;padding:26px 26px 26px 0}"
+      ],
+      [
+        ".hero.hero-imagery{background:#f7f1e7;color:#243d50;padding:44px 0 32px;border-bottom:1px solid #daccb4;color-scheme:light}",
+        ".hero.hero-imagery{background:#0d2235;color:#eef5f8;padding:44px 0 32px;border-bottom:1px solid #49677c;color-scheme:dark}"
+      ],
+      [
+        ".hero-grid>div:first-child{background:#f7f1e7;border-radius:22px;padding:20px}",
+        ".hero-grid>div:first-child{background:#0d2235;border-radius:22px;padding:20px}"
+      ],
+      [
+        ".hero h1{color:#243d50;font-size:clamp(2.7rem,5.8vw,5.2rem)}",
+        ".hero h1{color:#eef5f8;font-size:clamp(2.7rem,5.8vw,5.2rem)}"
+      ],
+      [
+        ".hero p.lead,.hero .hero-card p{color:#425767}",
+        ".hero p.lead,.hero .hero-card p{color:#c7d5dd}"
+      ],
+      [
+        ".hero .eyebrow{color:#77521c}",
+        ".hero .eyebrow{color:#b9dce9}"
+      ],
+      [
+        ".hero .hero-card{background:#fffdf9;color:#243d50;border:1px solid #daccb4;margin-top:210px;box-shadow:0 10px 30px rgba(36,61,80,.12)}",
+        ".hero .hero-card{background:#14334b;color:#eef5f8;border:1px solid #49677c;margin-top:210px;box-shadow:0 10px 30px rgba(36,61,80,.12)}"
+      ],
+      [
+        ".hero .hero-card .pill{background:#e5eef2;color:#243d50}",
+        ".hero .hero-card .pill{background:#214057;color:#eef5f8}"
+      ],
+      [
+        ".hero .action{background:#fffdf9;border:1px solid #c8d2d8;color:#243d50}",
+        ".hero .action{background:#14334b;border:1px solid #49677c;color:#eef5f8}"
+      ],
+      [
+        ".hero .action span{color:#425767}",
+        ".hero .action span{color:#c7d5dd}"
+      ],
+      [
+        ".hero .btn.secondary{background:#fffdf9;color:#243d50;border:1px solid #526d7f}",
+        ".hero .btn.secondary{background:#14334b;color:#eef5f8;border:1px solid #526d7f}"
+      ],
+      [
+        ".hero .install-callout{background:#e5eef2;color:#243d50;border-color:#b2c6d0}",
+        ".hero .install-callout{background:#214057;color:#eef5f8;border-color:#628397}"
+      ],
+      [
+        ".hero .install-callout-copy span{color:#425767}",
+        ".hero .install-callout-copy span{color:#c7d5dd}"
+      ],
+      [
+        ".hero :is(a,button):focus-visible,.invite-neighbor :is(a,button):focus-visible{outline:3px solid #205b79;outline-offset:4px}",
+        ".hero :is(a,button):focus-visible,.invite-neighbor :is(a,button):focus-visible{outline:3px solid #a3d6ea;outline-offset:4px}"
+      ],
+      [
+        ".invite-neighbor{background:#f7f1e7;color:#243d50;color-scheme:light}",
+        ".invite-neighbor{background:#0d2235;color:#eef5f8;color-scheme:dark}"
+      ],
+      [
+        ".invite-neighbor-card{background:#fffdf9;border:1px solid #daccb4;border-radius:24px;padding:clamp(22px,4vw,38px)}",
+        ".invite-neighbor-card{background:#14334b;border:1px solid #49677c;border-radius:24px;padding:clamp(22px,4vw,38px)}"
+      ],
+      [
+        ".invite-neighbor p{color:#425767;max-width:70ch}",
+        ".invite-neighbor p{color:#c7d5dd;max-width:70ch}"
+      ],
+      [
+        ".invite-neighbor .eyebrow{color:#77521c}",
+        ".invite-neighbor .eyebrow{color:#b9dce9}"
+      ],
+      [
+        ".invite-neighbor .btn.secondary{color:#243d50;background:#fffdf9;border:1px solid #526d7f}",
+        ".invite-neighbor .btn.secondary{color:#eef5f8;background:#14334b;border:1px solid #526d7f}"
+      ],
+      [
+        "url(\"assets/visuals/kcmc-building-2024.webp\")",
+        "url(\"assets/visuals/kcmc-building-retouched-20261009.jpg\")"
+      ],
+      [
+        "/* KCMC_VISITOR_WELCOME_20261008 END */\n",
+        "/* KCMC_VISITOR_WELCOME_20261008 END */\n\n/* KCMC_BLUE_FISH_MENU_20261009: owner-requested public presentation. */\nbody[data-office-email]{background:#0d2235}\n.topbar{background:rgba(13,34,53,.96)}\n.topbar .inner{justify-content:flex-start}\n.topbar .fish-menu summary{width:76px;min-height:56px;padding:0 7px 0 0;gap:0;background:#0d2235;border-color:#49677c;border-radius:14px}\n.fish-menu summary img{display:block;width:56px;height:56px;border-radius:12px}\n.fish-menu summary:after{margin-left:0;font-size:.75rem;color:#b9dce9}\n.fish-menu nav{top:100%;left:0;right:auto;width:300px;max-width:calc(100vw - 30px);max-height:calc(100dvh - 92px);border-color:#49677c}\n.fish-menu .menu-home{padding:14px 12px;margin-bottom:6px;border-bottom:1px solid #49677c;border-radius:9px 9px 0 0}\n.menu-home strong,.menu-home small{display:block}\n.menu-home strong{font-size:.95rem;letter-spacing:.04em}\n.menu-home small{font-size:.72rem;color:#b8ccd8;white-space:normal}\n.fish-menu nav [data-install-app]{display:block;white-space:normal}\n.family-welcome{background:#0d2235}\n.news-feature{background:#14334b;color:#eef5f8;border:1px solid #49677c}\n.news-feature .eyebrow{color:#b9dce9}\n.news-feature p{color:#c7d5dd}\n/* KCMC_BLUE_FISH_MENU_20261009 END */\n"
+      ]
+    ],
+    "public-presentation.js": [
+      [
+        "  if (menu) {\n    const summary = menu.querySelector('summary');\n    menu.addEventListener('click', event => {\n      if (event.target.closest('nav a,nav button')) menu.open = false;\n    });\n    document.addEventListener('click', event => {\n      if (menu.open && !menu.contains(event.target)) menu.open = false;\n    });\n    document.addEventListener('keydown', event => {\n      if (event.key === 'Escape' && menu.open) {\n        menu.open = false;\n        summary.focus();\n      }\n    });\n    window.addEventListener('hashchange', () => { menu.open = false; });\n  }",
+        "  if (menu) {\n    const summary = menu.querySelector('summary');\n    const hoverPointer = window.matchMedia('(hover: hover) and (pointer: fine)');\n    let openedByHover = false;\n    let leaveTimer = null;\n    function closeMenu() {\n      clearTimeout(leaveTimer);\n      openedByHover = false;\n      menu.open = false;\n    }\n    menu.addEventListener('pointerenter', event => {\n      clearTimeout(leaveTimer);\n      if (event.pointerType !== 'mouse' || !hoverPointer.matches || menu.open) return;\n      openedByHover = true;\n      menu.open = true;\n    });\n    menu.addEventListener('pointerleave', () => {\n      if (openedByHover && !menu.contains(document.activeElement)) {\n        leaveTimer = setTimeout(closeMenu, 200);\n      }\n    });\n    // A click pins a menu that hover just opened; a second click closes it natively.\n    summary.addEventListener('click', event => {\n      clearTimeout(leaveTimer);\n      if (openedByHover) {\n        event.preventDefault();\n        openedByHover = false;\n        menu.open = true;\n      }\n    });\n    menu.addEventListener('focusout', event => {\n      if (event.relatedTarget && !menu.contains(event.relatedTarget)) closeMenu();\n    });\n    menu.addEventListener('click', event => {\n      if (event.target.closest('nav a,nav button')) closeMenu();\n    });\n    document.addEventListener('click', event => {\n      if (menu.open && !menu.contains(event.target)) closeMenu();\n    });\n    document.addEventListener('keydown', event => {\n      if (event.key === 'Escape' && menu.open) {\n        closeMenu();\n        summary.focus();\n      }\n    });\n    window.addEventListener('hashchange', closeMenu);\n  }"
+      ]
+    ],
+    "sw.js": [
+      [
+        "kcmc-connect-v3.0.3-public-only-visitor-welcome-20261008",
+        "kcmc-connect-v3.0.3-blue-fish-menu-20261009"
+      ],
+      [
+        "public-presentation.css?v=visitor-welcome-20261008",
+        "public-presentation.css?v=blue-fish-menu-20261009"
+      ],
+      [
+        "public-presentation.js?v=tony-bright-photos-offline-20261008",
+        "public-presentation.js?v=blue-fish-menu-20261009"
+      ],
+      [
+        "./assets/visuals/kcmc-building-2024.webp",
+        "./assets/visuals/kcmc-building-retouched-20261009.jpg"
+      ],
+      [
+        "  './assets/visuals/kcmc-ministry-group.jpg',\n",
+        ""
+      ],
+      [
+        "  './assets/visuals/kcmc-bridge-logo.jpg',\n",
+        ""
+      ],
+      [
+        "  './assets/visuals/kcmc-bridge-wordmark.png',\n",
+        ""
+      ],
+      [
+        "  './assets/visuals/kcmc-bridge-logo-composite.png'\n",
+        ""
+      ]
+    ]
+  },
+  "new_assets": {
+    "assets/visuals/kcmc-building-retouched-20261009.jpg": {
+      "git_blob": "3c4d4bb1de598968936fc426e3bef8edc6821030",
+      "bytes": 260696,
+      "width": 1402,
+      "height": 1122
+    }
+  },
+  "preserved_assets": {
+    "assets/visuals/kcmc-building-2024.webp": "e85a92ee4bc51a6c8804a86ed042d61b33d5cae9",
+    "assets/visuals/kcmc-ministry-group.jpg": "c69a28f2700e3684567701f8ca70c7f4cbc2d4f1",
+    "assets/visuals/kcmc-bridge-logo.jpg": "c9879869137c1ff45363266268b584973bd0c246",
+    "assets/visuals/kcmc-bridge-wordmark.png": "1c49662e0f31b7beca2932887879a286073b308d",
+    "assets/visuals/kcmc-bridge-logo-composite.png": "b789dd80629facf4877bdbc738952cc7434828ac"
+  }
+}

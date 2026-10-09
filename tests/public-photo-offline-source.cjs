@@ -116,18 +116,22 @@ async function worker(source) {
   fixed.offline();
   const index = fs.readFileSync(path.join(APP, 'index.php'), 'utf8');
   const heroPaths = [...index.matchAll(/data-hero-photo[^>]*src="([^"]+)"/g)].map(match => match[1]);
-  assert.equal(heroPaths.length, 8);
-  assert.ok(heroPaths.every(path => !path.includes('stage-2014')));
+  assert.equal(heroPaths.length, 4);
+  assert.ok(heroPaths.every(path => !/stage-2014|ministry-group|bridge-/.test(path)));
   for (const asset of heroPaths) assert.equal((await fixed.request(asset)).status, 200, asset + ' is available offline');
-  console.log('PASS: all eight retained hero paths are anonymously cached and available offline');
-  for (const relative of ['./member/login.php', './admin/publication-designer.php', './api/public-content.php', './data/content.json', './backups/test.json', './?token=synthetic', './assets/visuals/kcmc-ministry-group.jpg?token=synthetic']) {
+  console.log('PASS: all four retained hero paths are anonymously cached and available offline');
+  for (const name of ['kcmc-ministry-group.jpg', 'kcmc-bridge-logo.jpg', 'kcmc-bridge-wordmark.png', 'kcmc-bridge-logo-composite.png']) {
+    assert(!fixed.rows.has(new URL('./assets/visuals/' + name, 'https://public.example.invalid/app/sw.js').href));
+  }
+  console.log('PASS: removed poster and layered artwork are absent from the refreshed public cache');
+  for (const relative of ['./member/login.php', './admin/publication-designer.php', './api/public-content.php', './data/content.json', './backups/test.json', './?token=synthetic', './assets/visuals/kcmc-congregation-gathering.jpg?token=synthetic']) {
     await assert.rejects(fixed.request(relative), /Synthetic offline/);
     assert(!fixed.rows.has(new URL(relative, 'https://public.example.invalid/app/sw.js').href));
   }
   console.log('PASS: private, API, data, backup and token-bearing paths remain network only');
   for (const headers of [{'Cache-Control': 'private'}, {'Cache-Control': 'no-store'}, {'Set-Cookie': 'synthetic=1'}]) {
     const guarded = await worker(fs.readFileSync(path.join(APP, 'sw.js'), 'utf8')); guarded.rows.clear(); guarded.setPolicy(headers);
-    await guarded.request('./assets/visuals/kcmc-ministry-group.jpg'); assert.equal(guarded.rows.size, 0);
+    await guarded.request('./assets/visuals/kcmc-congregation-gathering.jpg'); assert.equal(guarded.rows.size, 0);
   }
   console.log('PASS: private/no-store/cookie response policy remains fail closed');
 })().catch(error => { console.error(error); process.exitCode = 1; });

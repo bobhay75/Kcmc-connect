@@ -3,19 +3,50 @@
   const menu = document.getElementById('siteMenu');
   if (menu) {
     const summary = menu.querySelector('summary');
+    const hoverPointer = window.matchMedia('(hover: hover) and (pointer: fine)');
+    let openedByHover = false;
+    let leaveTimer = null;
+    function closeMenu() {
+      clearTimeout(leaveTimer);
+      openedByHover = false;
+      menu.open = false;
+    }
+    menu.addEventListener('pointerenter', event => {
+      clearTimeout(leaveTimer);
+      if (event.pointerType !== 'mouse' || !hoverPointer.matches || menu.open) return;
+      openedByHover = true;
+      menu.open = true;
+    });
+    menu.addEventListener('pointerleave', () => {
+      if (openedByHover && !menu.contains(document.activeElement)) {
+        leaveTimer = setTimeout(closeMenu, 200);
+      }
+    });
+    // A click pins a menu that hover just opened; a second click closes it natively.
+    summary.addEventListener('click', event => {
+      clearTimeout(leaveTimer);
+      if (openedByHover) {
+        event.preventDefault();
+        openedByHover = false;
+        menu.open = true;
+      }
+    });
+    menu.addEventListener('focusout', event => {
+      if (event.relatedTarget && !menu.contains(event.relatedTarget)) closeMenu();
+    });
     menu.addEventListener('click', event => {
-      if (event.target.closest('nav a,nav button')) menu.open = false;
+      if (event.target.closest('nav a,nav button')) closeMenu();
     });
     document.addEventListener('click', event => {
-      if (menu.open && !menu.contains(event.target)) menu.open = false;
+      if (menu.open && !menu.contains(event.target)) closeMenu();
     });
     document.addEventListener('keydown', event => {
       if (event.key === 'Escape' && menu.open) {
-        menu.open = false;
+        closeMenu();
         summary.focus();
       }
     });
-    window.addEventListener('hashchange', () => { menu.open = false; });
+    window.addEventListener('hashchange', closeMenu);
   }
 
   const gallery = document.querySelector('[data-hero-gallery]');

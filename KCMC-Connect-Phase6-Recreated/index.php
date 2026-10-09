@@ -40,14 +40,14 @@ usort($kcmcAnnouncements, fn($a,$b)=>(int)($b['priority']??0)<=>(int)($a['priori
 <meta property="og:title" content="KCMC Connect | Kimberling City Methodist Church">
 <meta property="og:description" content="Plan a visit, watch worship, find events, request prayer and connect with KCMC.">
 <meta property="og:type" content="website">
-<meta property="og:image" content="assets/visuals/kcmc-building-2024.webp">
+<meta property="og:image" content="assets/visuals/kcmc-building-retouched-20261009.jpg">
 <meta name="twitter:card" content="summary_large_image">
 <script type="application/ld+json"><?=$kcmcSchema?></script>
 <title>KCMC Connect</title>
 <link rel="manifest" href="manifest.webmanifest?v=3.0.1">
-<link rel="preload" as="image" href="assets/visuals/kcmc-building-2024.webp" type="image/webp" fetchpriority="high">
+<link rel="preload" as="image" href="assets/visuals/kcmc-building-retouched-20261009.jpg" type="image/jpeg" fetchpriority="high">
 <link rel="stylesheet" href="styles.css?v=3.0.3">
-<link rel="stylesheet" href="public-presentation.css?v=visitor-welcome-20261008">
+<link rel="stylesheet" href="public-presentation.css?v=blue-fish-menu-20261009">
 <link rel="icon" href="assets/icons/icon-192.png?v=3.0.1">
 <link rel="apple-touch-icon" href="assets/icons/icon-192.png?v=3.0.1">
 </head>
@@ -60,14 +60,12 @@ usort($kcmcAnnouncements, fn($a,$b)=>(int)($b['priority']??0)<=>(int)($a['priori
 <p class="sr-only" data-share-status role="status" aria-live="polite" aria-atomic="true"></p>
 <header class="topbar">
   <div class="wrap inner">
-    <a class="brand" href="#home" data-route="home" aria-label="KCMC Connect home"><span class="mark">K</span><span><strong>KCMC CONNECT</strong><small>Kimberling City Methodist Church</small></span></a>
-    <nav class="desktop-nav" aria-label="Primary">
-      <a href="#visit" data-route="visit">I’m New</a><a href="#watch" data-route="watch">Watch</a><a href="#news" data-route="news">Updates</a><a href="#events" data-route="events">Events</a><a href="#serve" data-route="serve">Serve</a><a href="#partner" data-route="partner">Connect</a>
-    </nav>
-    <a class="header-give" href="https://www.simplechurchgiving.net/app/giving/umckc" target="_blank" rel="noopener">Give</a>
-    <details class="site-menu" id="siteMenu">
-      <summary aria-controls="siteMenuLinks">Menu</summary>
-      <nav id="siteMenuLinks" aria-label="More navigation">
+    <details class="site-menu fish-menu" id="siteMenu">
+      <summary aria-controls="siteMenuLinks" aria-label="KCMC Connect menu">
+        <img src="./assets/icons/icon-192.png" alt="" aria-hidden="true" width="56" height="56">
+      </summary>
+      <nav id="siteMenuLinks" aria-label="KCMC Connect navigation">
+        <a class="menu-home" href="#home" data-route="home"><strong>KCMC CONNECT</strong><small>Kimberling City Methodist Church</small></a>
         <a href="#visit" data-route="visit">Plan a visit</a>
         <a href="#watch" data-route="watch">Watch messages</a>
         <a href="#news" data-route="news">Church updates</a>
@@ -75,28 +73,24 @@ usort($kcmcAnnouncements, fn($a,$b)=>(int)($b['priority']??0)<=>(int)($a['priori
         <a href="bulletin.php">Latest bulletin</a>
         <a href="care.php">Prayer &amp; care</a>
         <a href="#serve" data-route="serve">Serving</a>
-        <a href="https://www.simplechurchgiving.net/app/giving/umckc" target="_blank" rel="noopener">Give online</a>
+        <a href="#partner" data-route="partner">Get connected</a>
+        <a class="header-give" href="https://www.simplechurchgiving.net/app/giving/umckc" target="_blank" rel="noopener">Give online</a>
+        <button type="button" data-install-app>Save app</button>
         <button type="button" data-share-app>Share KCMC Connect</button>
         <a class="menu-account" href="<?=kcmc_h(kcmc_url($member ? 'member/' : 'admin/login.php'))?>"><?=$member ? 'My account' : 'Staff Sign In'?></a>
         <?php if($member && kcmc_has_role(['pastor_admin', 'recovery_admin'], $member)): ?><a href="<?=kcmc_h(kcmc_url('admin/'))?>">Administration</a><?php endif; ?>
       </nav>
     </details>
-    <button class="install" type="button" data-install-app>Save app</button>
-    <button class="install" type="button" data-share-app aria-label="Share KCMC Connect">Share</button>
   </div>
 </header>
 
 <main id="mainContent">
 <section class="view active" data-view="home">
   <section class="hero hero-imagery" data-hero-gallery aria-label="Welcome to KCMC">
-    <img class="hero-photo is-current" data-hero-photo src="./assets/visuals/kcmc-building-2024.webp" alt="Kimberling City Methodist Church exterior, photographed in 2024" loading="eager" decoding="async" fetchpriority="high" width="640" height="513">
+    <img class="hero-photo is-current" data-hero-photo src="./assets/visuals/kcmc-building-retouched-20261009.jpg" alt="Kimberling City Methodist Church exterior; foreground weeds retouched" loading="eager" decoding="async" fetchpriority="high" width="1402" height="1122">
     <img class="hero-photo" data-hero-photo src="./assets/visuals/kcmc-worship-2017.webp" alt="People gathered for worship at KCMC, photographed in 2017" loading="lazy" decoding="async" width="640" height="344" hidden>
-    <img class="hero-photo" data-hero-photo src="./assets/visuals/kcmc-ministry-group.jpg" alt="KCMC church family and ministry group" loading="lazy" decoding="async" width="640" height="480" hidden>
     <img class="hero-photo" data-hero-photo src="./assets/visuals/kcmc-congregation-gathering.jpg" alt="People seated around tables facing the KCMC worship stage" loading="lazy" decoding="async" width="2048" height="1105" hidden>
     <img class="hero-photo" data-hero-photo src="./assets/visuals/kcmc-family-outdoor-event.jpg" alt="Children and adults enjoying balloons and an inflatable slide at a Kimberling City outdoor event" loading="lazy" decoding="async" width="2048" height="1536" hidden>
-    <img class="hero-photo" data-hero-photo style="object-fit:contain" src="./assets/visuals/kcmc-bridge-logo.jpg" alt="Kimberling City Methodist Church logo with a blue bridge and black cross" loading="lazy" decoding="async" width="1156" height="1156" hidden>
-    <img class="hero-photo" data-hero-photo style="object-fit:contain" src="./assets/visuals/kcmc-bridge-wordmark.png" alt="Kimberling City Methodist Church bridge and cross logo over a sunset bridge photograph" loading="lazy" decoding="async" width="2048" height="706" hidden>
-    <img class="hero-photo" data-hero-photo style="object-fit:contain" src="./assets/visuals/kcmc-bridge-logo-composite.png" alt="Sunset bridge photograph with the Kimberling City Methodist Church logo inset at lower right" loading="lazy" decoding="async" width="2048" height="1144" hidden>
     <div class="wrap hero-grid">
       <div>
         <div class="eyebrow">Welcome to Kimberling City Methodist Church</div>
@@ -313,6 +307,6 @@ usort($kcmcAnnouncements, fn($a,$b)=>(int)($b['priority']??0)<=>(int)($a['priori
   </div>
 </div>
 <script src="app.js?v=visitor-welcome-20261008" defer></script>
-<script src="public-presentation.js?v=tony-bright-photos-offline-20261008" defer></script>
+<script src="public-presentation.js?v=blue-fish-menu-20261009" defer></script>
 <a class="phase6-bulletin-fab" href="bulletin.php">Latest Bulletin</a>
 </body></html>
