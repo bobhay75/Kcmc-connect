@@ -51,7 +51,7 @@ jq -e '.contact.office_hours == "Tue–Thu • 9:00 AM–4:00 PM"' "$app_dir/dat
 jq empty "$app_dir/data/releases/3.0.0.json"
 jq -e '[.events[] | select(.id == "trunk-or-treat-2026" and .date == "2026-10-31" and .time == "4:30 PM" and .end_time == "6:30 PM" and .status == "published")] | length == 1' "$app_dir/data/content.json" >/dev/null || fail "Trunk or Treat event is missing or incomplete"
 jq -e '[.events[] | select(.id == "trunk-or-treat-2026")] | length == 1' "$app_dir/data/releases/3.0.0.json" >/dev/null || fail "Trunk or Treat release seed is missing"
-test -s "$app_dir/assets/visuals/trunk-or-treat-2026.webp" || fail "Trunk or Treat flyer asset is missing"
+test -s "$app_dir/assets/visuals/trunk-or-treat-2026.svg" || fail "Fresh Trunk or Treat event artwork is missing"
 grep -q "kcmc_apply_required_public_content" "$app_dir/lib/bootstrap.php" || fail "Preserved production content migration is missing"
 grep -Fq "Tue–Thu • 9:00 AM–4:00 PM" "$app_dir/lib/bootstrap.php" || fail "Missing-office-hours fallback is missing"
 grep -q "kcmc_featured_announcement_index" "$app_dir/admin/index.php" || fail "Publishing Desk does not select the current announcement"
@@ -94,3 +94,4 @@ find "$app_dir" -type f -name '*.php' -print0 | xargs -0 -n1 php -l >/dev/null
 php "$repo_dir/tests/php-behavior.php"
 
 echo "KCMC Version 3 security contract passed."
+
