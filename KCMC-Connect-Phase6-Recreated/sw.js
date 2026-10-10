@@ -5,7 +5,7 @@ const CORE=[
   './bulletin.php','./news.php','./events.php','./care.php','./connect.php',
   './assets/icons/icon-192.png','./assets/icons/icon-512.png',
   './assets/visuals/kcmc-building-retouched-20261009.jpg','./assets/visuals/kcmc-worship-2017.webp',
-  './assets/visuals/trunk-or-treat-2026.webp',
+  './assets/visuals/trunk-or-treat-2026.svg',
   './assets/visuals/kcmc-congregation-gathering.jpg',
   './assets/visuals/kcmc-family-outdoor-event.jpg',
   './assets/visuals/kcmc-kids-safari.jpg',
