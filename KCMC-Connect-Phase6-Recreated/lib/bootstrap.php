@@ -203,8 +203,8 @@ function kcmc_apply_required_public_content(array &$data): bool {
             'address' => '57 Kimberling City Center Lane, Kimberling City, MO 65686',
             'label' => 'Free community event',
             'description' => 'Free candy, hot dogs, chips and drinks, plus music and family fun. All are welcome.',
-            'image' => 'assets/visuals/trunk-or-treat-2026.webp',
-            'image_alt' => 'Autumn Trunk or Treat graphic with friendly ghosts, pumpkins and an open car trunk filled with candy beside a lake.',
+            'image' => 'assets/visuals/trunk-or-treat-2026.svg',
+            'image_alt' => 'Bright autumn Trunk or Treat scene with decorated car trunks, pumpkins, children collecting candy and the church in the background.',
             'rsvp' => false,
             'priority' => 100,
             'status' => 'published',
@@ -233,6 +233,23 @@ function kcmc_apply_required_public_content(array &$data): bool {
     foreach ($data['events'] as $event) {
         if (is_array($event) && isset($event['id'])) $existingIds[(string)$event['id']] = true;
     }
+
+    // Keep the approved Trunk or Treat visual current even when production
+    // preserves an older event record in data/content.json across deploys.
+    foreach ($data['events'] as &$existingEvent) {
+        if (!is_array($existingEvent) || ($existingEvent['id'] ?? '') !== 'trunk-or-treat-2026') continue;
+        $freshImage = 'assets/visuals/trunk-or-treat-2026.svg';
+        $freshAlt = 'Bright autumn Trunk or Treat scene with decorated car trunks, pumpkins, children collecting candy and the church in the background.';
+        if (($existingEvent['image'] ?? '') !== $freshImage) {
+            $existingEvent['image'] = $freshImage;
+            $changed = true;
+        }
+        if (($existingEvent['image_alt'] ?? '') !== $freshAlt) {
+            $existingEvent['image_alt'] = $freshAlt;
+            $changed = true;
+        }
+    }
+    unset($existingEvent);
 
     foreach ($requiredEvents as $event) {
         if (isset($existingIds[$event['id']])) continue;
