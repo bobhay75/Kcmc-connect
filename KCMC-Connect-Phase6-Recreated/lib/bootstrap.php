@@ -204,7 +204,7 @@ function kcmc_apply_required_public_content(array &$data): bool {
             'label' => 'Free community event',
             'description' => 'Free candy, hot dogs, chips and drinks, plus music and family fun. All are welcome.',
             'image' => 'assets/visuals/trunk-or-treat-2026.svg',
-            'image_alt' => 'Bright autumn Trunk or Treat scene with decorated car trunks, pumpkins, children collecting candy and the church in the background.',
+            'image_alt' => 'Bright autumn Trunk or Treat illustration with decorated car trunks, pumpkins, wrapped candy, lollipops and festive bunting.',
             'rsvp' => false,
             'priority' => 100,
             'status' => 'published',
@@ -239,7 +239,7 @@ function kcmc_apply_required_public_content(array &$data): bool {
     foreach ($data['events'] as &$existingEvent) {
         if (!is_array($existingEvent) || ($existingEvent['id'] ?? '') !== 'trunk-or-treat-2026') continue;
         $freshImage = 'assets/visuals/trunk-or-treat-2026.svg';
-        $freshAlt = 'Bright autumn Trunk or Treat scene with decorated car trunks, pumpkins, children collecting candy and the church in the background.';
+        $freshAlt = 'Bright autumn Trunk or Treat illustration with decorated car trunks, pumpkins, wrapped candy, lollipops and festive bunting.';
         if (($existingEvent['image'] ?? '') !== $freshImage) {
             $existingEvent['image'] = $freshImage;
             $changed = true;

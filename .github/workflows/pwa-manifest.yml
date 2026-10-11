@@ -6,6 +6,7 @@ on:
       - 'KCMC-Connect-Phase6-Recreated/manifest.webmanifest'
       - 'KCMC-Connect-Phase6-Recreated/assets/icons/**'
       - 'tests/pwa-manifest-contract.php'
+      - 'tests/pwa-icons-integrity.py'
       - '.github/workflows/pwa-manifest.yml'
   push:
     branches: [main]
@@ -13,6 +14,7 @@ on:
       - 'KCMC-Connect-Phase6-Recreated/manifest.webmanifest'
       - 'KCMC-Connect-Phase6-Recreated/assets/icons/**'
       - 'tests/pwa-manifest-contract.php'
+      - 'tests/pwa-icons-integrity.py'
       - '.github/workflows/pwa-manifest.yml'
 
 permissions:
@@ -30,4 +32,5 @@ jobs:
         run: |
           php -l tests/pwa-manifest-contract.php
           php tests/pwa-manifest-contract.php
+          python3 tests/pwa-icons-integrity.py
           git diff --check

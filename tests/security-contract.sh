@@ -92,6 +92,6 @@ bash -n "$repo_dir/tests/live-smoke.sh"
 command -v php >/dev/null || fail "PHP is required for syntax verification"
 find "$app_dir" -type f -name '*.php' -print0 | xargs -0 -n1 php -l >/dev/null
 php "$repo_dir/tests/php-behavior.php"
+php "$repo_dir/tests/trunk-or-treat-art-contract.php"
 
 echo "KCMC Version 3 security contract passed."
-

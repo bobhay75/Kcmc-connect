@@ -1,4 +1,4 @@
-const CACHE='kcmc-connect-v3.0.3-public-only-blue-fish-menu-20261009';
+const CACHE='kcmc-connect-v3.0.3-public-only-trunk-art-20261011';
 // Connection-intake client refresh: worker install reruns cache:'reload' and overwrites cached app.js.
 const CORE=[
   './','./styles.css?v=3.0.3','./public-presentation.css?v=blue-fish-menu-20261009','./public-presentation.js?v=blue-fish-menu-20261009','./app.js?v=visitor-welcome-20261008','./manifest.webmanifest?v=3.0.1',
@@ -14,7 +14,7 @@ const CORE=[
 ];
 const PUBLIC_PATHS=new Set(CORE.map(path=>new URL(path,self.location.href).pathname));
 PUBLIC_PATHS.add(new URL('./index.php',self.location.href).pathname);
-const isAsset=url=>/\.(?:css|js|webmanifest|png|jpe?g|webp)$/i.test(url.pathname);
+const isAsset=url=>/\.(?:css|js|webmanifest|png|jpe?g|webp|svg)$/i.test(url.pathname);
 
 function cacheableRequest(url){
   if(url.origin!==self.location.origin||!PUBLIC_PATHS.has(url.pathname)) return false;
@@ -89,22 +89,29 @@ self.addEventListener('notificationclick',event=>{
 
 self.addEventListener('fetch',event=>{
   if(event.request.method!=='GET') return;
-  const url=new URL(event.request.url);
+  let request=event.request;
+  let url=new URL(request.url);
   if(url.origin!==self.location.origin) return;
+  // Older rendered pages may still request the photographed flyer. Serve the
+  // illustration instead, online or offline, without caching the old image.
+  if(url.pathname===new URL('./assets/visuals/trunk-or-treat-2026.webp',self.location.href).pathname&&!url.search){
+    url=new URL('./assets/visuals/trunk-or-treat-2026.svg',self.location.href);
+    request=new Request(url,{credentials:'omit'});
+  }
   const privateRoute=/\/(?:member|admin)(?:\/|$)/.test(url.pathname);
 
   // Private, unknown, API/data/backup, and token-bearing URLs stay network-only.
   if(privateRoute||!cacheableRequest(url)){
-    event.respondWith(fetch(event.request));
+    event.respondWith(fetch(request));
     return;
   }
 
   event.respondWith(
-    fetch(event.request)
+    fetch(request)
       .then(response=>{
         if(cacheableResponse(response)){
           const copy=response.clone();
-          event.waitUntil(caches.open(CACHE).then(cache=>cache.put(event.request,copy)).catch(()=>{}));
+          event.waitUntil(caches.open(CACHE).then(cache=>cache.put(request,copy)).catch(()=>{}));
         }
         return response;
       })
@@ -112,7 +119,7 @@ self.addEventListener('fetch',event=>{
         try{
           const cache=await caches.open(CACHE);
           // Versioned static assets may ignore only their version query; pages never ignore query strings.
-          const cached=await cache.match(event.request,isAsset(url)?{ignoreSearch:true}:{});
+          const cached=await cache.match(request,isAsset(url)?{ignoreSearch:true}:{});
           if(cached) return cached;
           if(event.request.mode==='navigate'){
             return (await cache.match(new URL('./',self.location.href).href))||Response.error();

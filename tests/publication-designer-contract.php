@@ -42,7 +42,7 @@ $designerChecks = [
 foreach ($designerChecks as $label => $needle) {
     if (strpos($src, $needle) === false) { fwrite(STDERR, "FAIL: $label\n"); exit(1); }
 }
-foreach (['kimberling-city-missouri-bridge-2024.jpg', 'data/content.json', 'localStorage.setItem', 'prompt(', 'FileReader', 'readAsDataURL'] as $forbidden) {
+foreach (['kimberling-city-missouri-bridge-2024.jpg', 'kcmc-ministry-group.jpg', 'kcmc-stage-2014.webp', 'trunk-or-treat-2026.webp', 'kcmc-church-wordmark.jpg', 'kcmc-bridge-wordmark.png', 'kcmc-bridge-logo-composite.png', 'data/content.json', 'localStorage.setItem', 'prompt(', 'FileReader', 'readAsDataURL'] as $forbidden) {
     if (strpos($src, $forbidden) !== false) { fwrite(STDERR, "FAIL: forbidden designer content $forbidden\n"); exit(1); }
 }
 

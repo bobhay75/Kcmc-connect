@@ -1,0 +1,53 @@
+{
+  "source_commit": "54383f8b3436c8232d876a799a0f6c649e91f397",
+  "replacements": {
+    "admin/publication-designer.php": [
+      [
+        "    <button class=\"template\" data-asset=\"<?=kcmc_h(kcmc_url('assets/visuals/kcmc-church-wordmark.jpg'))?>\" data-alt=\"Kimberling City United Methodist Church wordmark over a church exterior photo, with Loving God Loving Others\"><strong>Church photo wordmark</strong><br><span class=\"small\">Publication / branding only</span></button>\n",
+        ""
+      ],
+      [
+        "    <button class=\"template\" data-asset=\"<?=kcmc_h(kcmc_url('assets/visuals/kcmc-bridge-wordmark.png'))?>\" data-alt=\"Kimberling City Methodist Church bridge and cross logo over a sunset bridge photograph\"><strong>Bridge photo wordmark</strong><br><span class=\"small\">Bridge artwork</span></button>\n",
+        ""
+      ],
+      [
+        "    <button class=\"template\" data-asset=\"<?=kcmc_h(kcmc_url('assets/visuals/kcmc-bridge-logo-composite.png'))?>\" data-alt=\"Sunset bridge photograph with the Kimberling City Methodist Church logo inset at lower right\"><strong>Bridge photo with inset logo</strong><br><span class=\"small\">Bridge artwork</span></button>\n",
+        ""
+      ],
+      [
+        "    <button class=\"template\" data-asset=\"<?=kcmc_h(kcmc_url('assets/visuals/kcmc-ministry-group.jpg'))?>\"><strong>Church Family</strong><br><span class=\"small\">Ministry group photo</span></button>\n",
+        ""
+      ],
+      [
+        "    <button class=\"template\" data-asset=\"<?=kcmc_h(kcmc_url('assets/visuals/kcmc-stage-2014.webp'))?>\"><strong>Sanctuary Stage</strong><br><span class=\"small\">KCMC stage photo</span></button>\n",
+        ""
+      ],
+      [
+        "    <button class=\"template\" data-asset=\"<?=kcmc_h(kcmc_url('assets/visuals/trunk-or-treat-2026.webp'))?>\"><strong>Trunk or Treat</strong><br><span class=\"small\">Approved event graphic</span></button>\n",
+        ""
+      ]
+    ],
+    "manifest.webmanifest": [
+      [
+        "?v=3.0.2",
+        "?v=3.0.3"
+      ]
+    ]
+  },
+  "removed_gallery_assets": [
+    "kcmc-church-wordmark.jpg",
+    "kcmc-bridge-wordmark.png",
+    "kcmc-bridge-logo-composite.png",
+    "kcmc-ministry-group.jpg",
+    "kcmc-stage-2014.webp",
+    "trunk-or-treat-2026.webp"
+  ],
+  "icon": {
+    "path": "assets/icons/icon-512.png",
+    "source_icon": "assets/icons/icon-192.png",
+    "source_icon_sha256": "9e5665d22a9906778e604ffd0a439e78de10ba3f15691f6f1a16b3cd0e956deb",
+    "baseline_sha256": "e14220ab44f5061853e0fcb8db711e2d08acb8ab91a880bd3ee0a5c01ff11aac",
+    "sha256": "074bebf3a765ae96147b38bcced3ae7e1b05e48498dde1ab8a0dadfa37c1f5e5",
+    "bytes": 49783
+  }
+}
