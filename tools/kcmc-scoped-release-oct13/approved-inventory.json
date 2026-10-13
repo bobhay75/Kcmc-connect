@@ -1,7 +1,24 @@
 {
   "app": "/home/bobsome1/public_html/kcmc-connect",
   "baseline_commit": "268bebca444bd4970bb4ecaa0d6eceb6a11988fd",
-  "commit": "4225fce8968747ad4f828a9a36087b04fd020484",
+  "baseline_commits": [
+    "268bebca444bd4970bb4ecaa0d6eceb6a11988fd",
+    "4225fce8968747ad4f828a9a36087b04fd020484"
+  ],
+  "commit": "154b779a0ea3d27a11300bfe0454f8a7c4aca355",
+  "excluded_owner_paths": [
+    "admin/audit-export.php",
+    "admin/audit.php",
+    "admin/backup.php",
+    "admin/health.php",
+    "admin/operations.php",
+    "admin/push.php",
+    "admin/restore.php",
+    "admin/timecards-export.php",
+    "admin/timecards-print.php",
+    "admin/timecards.php",
+    "lib/operations-owner.php"
+  ],
   "files": {
     "admin/publication-designer.php": {
       "baseline_bytes": 36010,
@@ -10,7 +27,7 @@
       "bytes": 39622,
       "git_sha": "9a4dc7b1d84858af9fa284620aa5f0ffc57cc5f9",
       "sha256": "0a5507d65e570b7ff6983adda3464edd8cd53bb8d4cd9636f91fc37d3e929268",
-      "url": "https://raw.githubusercontent.com/bobhay75/Kcmc-connect/4225fce8968747ad4f828a9a36087b04fd020484/KCMC-Connect-Phase6-Recreated/admin/publication-designer.php"
+      "url": "https://raw.githubusercontent.com/bobhay75/Kcmc-connect/154b779a0ea3d27a11300bfe0454f8a7c4aca355/KCMC-Connect-Phase6-Recreated/admin/publication-designer.php"
     },
     "assets/icons/icon-512.png": {
       "baseline_bytes": 4769,
@@ -19,7 +36,7 @@
       "bytes": 49783,
       "git_sha": "ed024ce0547e75741202ac7a50514c52db21477e",
       "sha256": "074bebf3a765ae96147b38bcced3ae7e1b05e48498dde1ab8a0dadfa37c1f5e5",
-      "url": "https://raw.githubusercontent.com/bobhay75/Kcmc-connect/4225fce8968747ad4f828a9a36087b04fd020484/KCMC-Connect-Phase6-Recreated/assets/icons/icon-512.png"
+      "url": "https://raw.githubusercontent.com/bobhay75/Kcmc-connect/154b779a0ea3d27a11300bfe0454f8a7c4aca355/KCMC-Connect-Phase6-Recreated/assets/icons/icon-512.png"
     },
     "assets/visuals/kcmc-building-retouched-20261009.jpg": {
       "baseline_bytes": null,
@@ -28,7 +45,7 @@
       "bytes": 260696,
       "git_sha": "3c4d4bb1de598968936fc426e3bef8edc6821030",
       "sha256": "57310f0bdb44d4521951d1840a3591272765ea0d854909d332bce5db87f5d6de",
-      "url": "https://raw.githubusercontent.com/bobhay75/Kcmc-connect/4225fce8968747ad4f828a9a36087b04fd020484/KCMC-Connect-Phase6-Recreated/assets/visuals/kcmc-building-retouched-20261009.jpg"
+      "url": "https://raw.githubusercontent.com/bobhay75/Kcmc-connect/154b779a0ea3d27a11300bfe0454f8a7c4aca355/KCMC-Connect-Phase6-Recreated/assets/visuals/kcmc-building-retouched-20261009.jpg"
     },
     "assets/visuals/trunk-or-treat-2026.svg": {
       "baseline_bytes": null,
@@ -37,16 +54,16 @@
       "bytes": 5851,
       "git_sha": "0da5d8a1b7d0734eb4734374f17e26e2658c943a",
       "sha256": "655428d44e4f5c1a43ab62a047c4050cb57d4581c30e5de67e0b0527b7c1ede8",
-      "url": "https://raw.githubusercontent.com/bobhay75/Kcmc-connect/4225fce8968747ad4f828a9a36087b04fd020484/KCMC-Connect-Phase6-Recreated/assets/visuals/trunk-or-treat-2026.svg"
+      "url": "https://raw.githubusercontent.com/bobhay75/Kcmc-connect/154b779a0ea3d27a11300bfe0454f8a7c4aca355/KCMC-Connect-Phase6-Recreated/assets/visuals/trunk-or-treat-2026.svg"
     },
     "index.php": {
       "baseline_bytes": 34495,
       "baseline_mode": 420,
       "baseline_sha256": "6051d3ac749818e2cd3487224febe7f5df2e267e8fbd470dd0f24ad21bb14830",
-      "bytes": 33077,
-      "git_sha": "d2b85d6b9f802d2920729a9a522460ae0f08e30b",
-      "sha256": "3d692cbd995000c8ebf9013431136e0069530b002f18a162f0a6fad21f9ba4d6",
-      "url": "https://raw.githubusercontent.com/bobhay75/Kcmc-connect/4225fce8968747ad4f828a9a36087b04fd020484/KCMC-Connect-Phase6-Recreated/index.php"
+      "bytes": 32695,
+      "git_sha": "d4986630c5a8d1157a5617345a9eb6213f08860b",
+      "sha256": "fa828f80c7f3c3b5ec47d815933f7df247f6ba4e542f9e5261182fb006b83723",
+      "url": "https://raw.githubusercontent.com/bobhay75/Kcmc-connect/154b779a0ea3d27a11300bfe0454f8a7c4aca355/KCMC-Connect-Phase6-Recreated/index.php"
     },
     "lib/bootstrap.php": {
       "baseline_bytes": 21742,
@@ -55,7 +72,7 @@
       "bytes": 22616,
       "git_sha": "1626fc5f43a9fefce17faa5b5a6b8ca1c35665b6",
       "sha256": "8c21edc4b25eecade0f792cf20038c73b71270934d0932e4e72432dc8b57d903",
-      "url": "https://raw.githubusercontent.com/bobhay75/Kcmc-connect/4225fce8968747ad4f828a9a36087b04fd020484/KCMC-Connect-Phase6-Recreated/lib/bootstrap.php"
+      "url": "https://raw.githubusercontent.com/bobhay75/Kcmc-connect/154b779a0ea3d27a11300bfe0454f8a7c4aca355/KCMC-Connect-Phase6-Recreated/lib/bootstrap.php"
     },
     "manifest.webmanifest": {
       "baseline_bytes": 773,
@@ -64,16 +81,16 @@
       "bytes": 773,
       "git_sha": "e69d1a4cc464e739a2ae68f615b4c56eccb1d892",
       "sha256": "811afe8914a44b8f5ada3affc27e71714acfa8adfc79e16348189016342d49da",
-      "url": "https://raw.githubusercontent.com/bobhay75/Kcmc-connect/4225fce8968747ad4f828a9a36087b04fd020484/KCMC-Connect-Phase6-Recreated/manifest.webmanifest"
+      "url": "https://raw.githubusercontent.com/bobhay75/Kcmc-connect/154b779a0ea3d27a11300bfe0454f8a7c4aca355/KCMC-Connect-Phase6-Recreated/manifest.webmanifest"
     },
     "public-presentation.css": {
       "baseline_bytes": 11532,
       "baseline_mode": 420,
       "baseline_sha256": "11f54646d626418dca4672593df42286609527b9ba154cc5cf83401707afebe0",
-      "bytes": 12710,
-      "git_sha": "cd1116ea218d7317c446cd3a0292733ceec2e59e",
-      "sha256": "74234242dc8a47c37ed7b4a433d9b9deccbc416737b546bc977408f3f82e4c54",
-      "url": "https://raw.githubusercontent.com/bobhay75/Kcmc-connect/4225fce8968747ad4f828a9a36087b04fd020484/KCMC-Connect-Phase6-Recreated/public-presentation.css"
+      "bytes": 16638,
+      "git_sha": "2c30da18867451f6364880eadd5a7ead8d93f4b5",
+      "sha256": "05f0b5527d2df49c77a96162362e732397706469c97733fa859c93e89b3f601f",
+      "url": "https://raw.githubusercontent.com/bobhay75/Kcmc-connect/154b779a0ea3d27a11300bfe0454f8a7c4aca355/KCMC-Connect-Phase6-Recreated/public-presentation.css"
     },
     "public-presentation.js": {
       "baseline_bytes": 6173,
@@ -82,102 +99,168 @@
       "bytes": 7250,
       "git_sha": "3cfac1f1406f9434f65ae1f33136be46e3051afe",
       "sha256": "bfc4e7a6ab3cb11bae76a74be5d1cdc0912ae00e32f1d66bedf128ec7aabfcc9",
-      "url": "https://raw.githubusercontent.com/bobhay75/Kcmc-connect/4225fce8968747ad4f828a9a36087b04fd020484/KCMC-Connect-Phase6-Recreated/public-presentation.js"
+      "url": "https://raw.githubusercontent.com/bobhay75/Kcmc-connect/154b779a0ea3d27a11300bfe0454f8a7c4aca355/KCMC-Connect-Phase6-Recreated/public-presentation.js"
     },
     "sw.js": {
       "baseline_bytes": 5705,
       "baseline_mode": 420,
       "baseline_sha256": "dee7ee1f397f78bee54b82de08762debbe0b574c1748ae2ab1da84be2393493f",
-      "bytes": 5917,
-      "git_sha": "51b268fcbbececd0e17575b7e8989e07c0b9ceed",
-      "sha256": "d4f328cc16048ee8f0ce23e7d4d5b70d414d282df74d50a9421acc058b68cdc5",
-      "url": "https://raw.githubusercontent.com/bobhay75/Kcmc-connect/4225fce8968747ad4f828a9a36087b04fd020484/KCMC-Connect-Phase6-Recreated/sw.js"
+      "bytes": 5914,
+      "git_sha": "b8722b2a3e66db37127c479b7aec8ce2e708ebdf",
+      "sha256": "cc8fefeec21f97d279e80472a76edfd0023392c2ad65e74c4bf56b192e657faf",
+      "url": "https://raw.githubusercontent.com/bobhay75/Kcmc-connect/154b779a0ea3d27a11300bfe0454f8a7c4aca355/KCMC-Connect-Phase6-Recreated/sw.js"
     }
   },
+  "preserve_absent_guards": [
+    "lib/operations-owner.php"
+  ],
   "preserve_guards": {
     ".htaccess": {
       "bytes": 1272,
       "git_sha": "086b697fb970b3c86fdd3342c0ce2af94e29f752",
       "mode": 420,
-      "sha256": "993e7a8936737dbf9ba852e60604141de15e24d7399e644393282ed99b7ff690"
+      "sha256": "993e7a8936737dbf9ba852e60604141de15e24d7399e644393282ed99b7ff690",
+      "source_commit": "268bebca444bd4970bb4ecaa0d6eceb6a11988fd"
+    },
+    "admin/audit-export.php": {
+      "bytes": 1061,
+      "git_sha": "b12187b26785789e12c5ceda8f9ebc6ec096bb4f",
+      "mode": 420,
+      "sha256": "2c328dc679741ca125d67d26d694b5d2ba9a511fd3b8eee06e4647ff818636e2",
+      "source_commit": "268bebca444bd4970bb4ecaa0d6eceb6a11988fd"
     },
     "admin/audit.php": {
       "bytes": 5283,
       "git_sha": "3125e5ae1fa6681dab13e9e4e5e6a5e4b34e7d93",
       "mode": 420,
-      "sha256": "07fd9e1806925faa64e65bc9b916dfc61f8dfd96e8498941ff9628885706d867"
+      "sha256": "07fd9e1806925faa64e65bc9b916dfc61f8dfd96e8498941ff9628885706d867",
+      "source_commit": "268bebca444bd4970bb4ecaa0d6eceb6a11988fd"
+    },
+    "admin/backup.php": {
+      "bytes": 382,
+      "git_sha": "330b83dcdfb0b0a186e8a6d5d9c776cf789767a1",
+      "mode": 420,
+      "sha256": "b0beb08b0a475394c0c6d6a50e3e46643ae8602c5892742ddd593cab5c2610ec",
+      "source_commit": "268bebca444bd4970bb4ecaa0d6eceb6a11988fd"
     },
     "admin/health.php": {
       "bytes": 8319,
       "git_sha": "f1d1317ad493659ecf64f61919276336ecd9f0de",
       "mode": 420,
-      "sha256": "8f89221fdabaaad204fc7005136c8fb559f6ca9f7ad9238a764dc86b8d1eb409"
+      "sha256": "8f89221fdabaaad204fc7005136c8fb559f6ca9f7ad9238a764dc86b8d1eb409",
+      "source_commit": "268bebca444bd4970bb4ecaa0d6eceb6a11988fd"
     },
     "admin/index.php": {
       "bytes": 10312,
       "git_sha": "c130b7523b8a59fdde1101fee61a065402108674",
       "mode": 420,
-      "sha256": "9233559775bdcd1a95bce16c4a06d80d085a0e51e52aadc214985bcba750b5a0"
+      "sha256": "9233559775bdcd1a95bce16c4a06d80d085a0e51e52aadc214985bcba750b5a0",
+      "source_commit": "268bebca444bd4970bb4ecaa0d6eceb6a11988fd"
+    },
+    "admin/operations.php": {
+      "bytes": 4142,
+      "git_sha": "912692f25ac7261951bb540d88d28ae4c9e6aee0",
+      "mode": 420,
+      "sha256": "036400973e8f5f3367087602b9a4c94fae06a508b57c479cb7f25334dea9a236",
+      "source_commit": "268bebca444bd4970bb4ecaa0d6eceb6a11988fd"
     },
     "admin/publication-media.php": {
       "bytes": 7994,
       "git_sha": "8610de8eef17ee596150e5ae81b06fb52a864ba5",
       "mode": 420,
-      "sha256": "1ce8b5d44756593a6bd678c8a81232248177f5e6c158e90ab52843b2cdd29488"
+      "sha256": "1ce8b5d44756593a6bd678c8a81232248177f5e6c158e90ab52843b2cdd29488",
+      "source_commit": "268bebca444bd4970bb4ecaa0d6eceb6a11988fd"
     },
     "admin/publication-projects.php": {
       "bytes": 9170,
       "git_sha": "f31404ee86d18e08be2de47d9b94682450d17c7c",
       "mode": 420,
-      "sha256": "df4065f13e757f9d9310a8ce01cb1174df94e8dd52f32246c84a010697650312"
+      "sha256": "df4065f13e757f9d9310a8ce01cb1174df94e8dd52f32246c84a010697650312",
+      "source_commit": "268bebca444bd4970bb4ecaa0d6eceb6a11988fd"
+    },
+    "admin/push.php": {
+      "bytes": 7222,
+      "git_sha": "67cbd8c0fe34c76efee0520541f4b2f69e6de0f1",
+      "mode": 420,
+      "sha256": "4b1ac6b56c2d2ae3e80d5880ba1019b8936c701a16c63b0b06b1260a2a173b67",
+      "source_commit": "268bebca444bd4970bb4ecaa0d6eceb6a11988fd"
+    },
+    "admin/restore.php": {
+      "bytes": 4350,
+      "git_sha": "e8ab50fd6258525d0af6ae21b9f167000dd7ed33",
+      "mode": 420,
+      "sha256": "3d06f27e5b6fc8885c278736fbde63dca0fc7fe4e18697a6709b70ba03136b6d",
+      "source_commit": "268bebca444bd4970bb4ecaa0d6eceb6a11988fd"
+    },
+    "admin/timecards-export.php": {
+      "bytes": 1951,
+      "git_sha": "d155f0266f98e3b592d21c693e75e6278beca7ae",
+      "mode": 420,
+      "sha256": "0e8889e16261e2f321e18a69272b442b09f12a7f374113bbec13f900143c08dd",
+      "source_commit": "268bebca444bd4970bb4ecaa0d6eceb6a11988fd"
+    },
+    "admin/timecards-print.php": {
+      "bytes": 4050,
+      "git_sha": "9c839569804d942d38cdf2eda5323b0c78b81c8f",
+      "mode": 420,
+      "sha256": "17c4d58cebf787448a8a1ec4a3ed9305f6079d26ae13ac45a8b76c14149a8cc8",
+      "source_commit": "268bebca444bd4970bb4ecaa0d6eceb6a11988fd"
     },
     "admin/timecards.php": {
       "bytes": 18308,
       "git_sha": "46485cd6b2ba57706def587e05b15b956e0d14e4",
       "mode": 420,
-      "sha256": "6950397e9f8d8c88bba1bd5696f62e84419f795d79922877898d89c71d9b6d47"
+      "sha256": "6950397e9f8d8c88bba1bd5696f62e84419f795d79922877898d89c71d9b6d47",
+      "source_commit": "268bebca444bd4970bb4ecaa0d6eceb6a11988fd"
     },
     "assets/visuals/kcmc-building-2024.webp": {
       "bytes": 13348,
       "git_sha": "e85a92ee4bc51a6c8804a86ed042d61b33d5cae9",
       "mode": 420,
-      "sha256": "cd2a12a3211b89ee523bef80a4fee5c3ed7429f6404b2d23530bae61f600e0fb"
+      "sha256": "cd2a12a3211b89ee523bef80a4fee5c3ed7429f6404b2d23530bae61f600e0fb",
+      "source_commit": "268bebca444bd4970bb4ecaa0d6eceb6a11988fd"
     },
     "assets/visuals/kcmc-ministry-group.jpg": {
       "bytes": 58554,
       "git_sha": "c69a28f2700e3684567701f8ca70c7f4cbc2d4f1",
       "mode": 420,
-      "sha256": "94fdec9c87cafdb00ca59c2f977145007debbe633b8036c4f5db0cd2670e6e4a"
+      "sha256": "94fdec9c87cafdb00ca59c2f977145007debbe633b8036c4f5db0cd2670e6e4a",
+      "source_commit": "268bebca444bd4970bb4ecaa0d6eceb6a11988fd"
     },
     "assets/visuals/kcmc-stage-2014.webp": {
       "bytes": 9316,
       "git_sha": "a69d747ca71160c29849a5e5386c87c12d11bc54",
       "mode": 420,
-      "sha256": "904827c79e9332706b8c19c73d4cb211c116629a0f974f4d6df211596df6c994"
+      "sha256": "904827c79e9332706b8c19c73d4cb211c116629a0f974f4d6df211596df6c994",
+      "source_commit": "268bebca444bd4970bb4ecaa0d6eceb6a11988fd"
     },
     "assets/visuals/kcmc-worship-2017.webp": {
       "bytes": 14098,
       "git_sha": "6b405dc9a7e8f21fac96c8513c6fad756b112e62",
       "mode": 420,
-      "sha256": "4593491d1f8f2d8592bc6382928eb51a41170b910ed2bd2271c491a7866315a8"
+      "sha256": "4593491d1f8f2d8592bc6382928eb51a41170b910ed2bd2271c491a7866315a8",
+      "source_commit": "268bebca444bd4970bb4ecaa0d6eceb6a11988fd"
     },
     "care.php": {
       "bytes": 2095,
       "git_sha": "dfdb59882a87438d300c41146930f3af4506eeb9",
       "mode": 420,
-      "sha256": "0c48c6d5dab7c18329158c68152c441d7194aa334daf074ac663a294e6b3855e"
+      "sha256": "0c48c6d5dab7c18329158c68152c441d7194aa334daf074ac663a294e6b3855e",
+      "source_commit": "268bebca444bd4970bb4ecaa0d6eceb6a11988fd"
     },
     "member/login.php": {
       "bytes": 3973,
       "git_sha": "6544b73a4c2912d8443f9f00bc87719e186837ba",
       "mode": 420,
-      "sha256": "2db61ebc38cbb126a6f67d858bdb60e2553ea015d36cfdced869828887ddc4de"
+      "sha256": "2db61ebc38cbb126a6f67d858bdb60e2553ea015d36cfdced869828887ddc4de",
+      "source_commit": "268bebca444bd4970bb4ecaa0d6eceb6a11988fd"
     },
     "member/timeclock.php": {
       "bytes": 13589,
       "git_sha": "59c62e8f8f9c487277779ecf503a9c924d21708e",
       "mode": 420,
-      "sha256": "7864fdee399f90ae5a5bea97fa4c0bf9b5a6a23255f4de31051d21c03bf1663d"
+      "sha256": "7864fdee399f90ae5a5bea97fa4c0bf9b5a6a23255f4de31051d21c03bf1663d",
+      "source_commit": "268bebca444bd4970bb4ecaa0d6eceb6a11988fd"
     }
   }
 }

@@ -24,7 +24,12 @@ import zlib
 
 INSTALLER = Path(__file__).resolve().with_name('installer.py')
 BASELINE_COMMIT = '268bebca444bd4970bb4ecaa0d6eceb6a11988fd'
-TARGET_COMMIT = '4225fce8968747ad4f828a9a36087b04fd020484'
+PREVIOUS_COMMIT = '4225fce8968747ad4f828a9a36087b04fd020484'
+TARGET_COMMIT = '154b779a0ea3d27a11300bfe0454f8a7c4aca355'
+EXCLUDED_HELPER = 'lib/operations-owner.php'
+OPS_PATHS = set('admin/' + name for name in ['operations.php', 'health.php', 'audit.php',
+                 'audit-export.php', 'push.php', 'backup.php', 'restore.php',
+                 'timecards.php', 'timecards-export.php', 'timecards-print.php'])
 NEW_IMAGE = 'assets/visuals/kcmc-building-retouched-20261009.jpg'
 NEW_SVG = 'assets/visuals/trunk-or-treat-2026.svg'
 ICON = 'assets/icons/icon-512.png'
@@ -72,7 +77,9 @@ class InstallerTests(unittest.TestCase):
                            'files': set(self.installer.FILES),
                            'allowed': set(self.installer.ALLOWED),
                            'blobs': set(self.installer.GIT_SHAS),
-                           'guards': set(self.installer.GUARDS)}
+                           'guards': set(self.installer.GUARDS),
+                           'absent_guards': set(self.installer.ABSENT_GUARDS),
+                           'owner_guard_paths': set(self.installer.OWNER_GUARD_PATHS)}
         self.before = {
             'index.php': b'<?php echo "Original page"; ?>\n',
             'public-presentation.css': b'/* original presentation */\n',
@@ -91,7 +98,7 @@ class InstallerTests(unittest.TestCase):
             'index.php': b'<?php echo "Reviewed page"; ?>\n',
             'public-presentation.css': b'/* reviewed presentation */\n',
             'public-presentation.js': b'window.fixture = "reviewed";\n',
-            'sw.js': b'// kcmc-connect-v3.0.3-public-only-trunk-art-20261011\n',
+            'sw.js': b'// kcmc-connect-v3.0.3-public-only-home-audit-20261013\n',
             'admin/publication-designer.php': b'<?php /* reviewed designer */ ?>\n',
             'lib/bootstrap.php': b'<?php /* reviewed bootstrap */ ?>\n',
             'manifest.webmanifest': b'{"icons":[{"src":"assets/icons/icon-512.png?v=3.0.3","sizes":"512x512","type":"image/png"}]}\n',
@@ -116,6 +123,8 @@ class InstallerTests(unittest.TestCase):
             'admin/publication-media.php': b'<?php /* unchanged shared media endpoint */ ?>\n',
             'assets/visuals/kcmc-building-2024.webp': b'UNCHANGED ORIGINAL CHURCH PHOTOGRAPH',
         }
+        for path in OPS_PATHS:
+            self.guards[path] = ('<?php /* approved older Operations route ' + path + ' */ ?>\n').encode('ascii')
         # Editorial/accounts are preserved sentinels, not frozen source guards.
         # Production captures current content dynamically; it never compares it
         # to a repository content hash or touches these other private stores.
@@ -148,6 +157,7 @@ class InstallerTests(unittest.TestCase):
             for path, data in self.after.items()
         }
         self.installer.GUARDS = {path: digest(data) for path, data in self.guards.items()}
+        self.installer.ABSENT_GUARDS = set([EXCLUDED_HELPER])
         self.installer.BASELINE_EXPECTATIONS = {
             path: {'bytes': len(data), 'mode': self.original_modes[path]}
             for path, data in self.before.items() if data is not None
@@ -156,10 +166,14 @@ class InstallerTests(unittest.TestCase):
             path: hashlib.sha1(('blob ' + str(len(data)) + '\0').encode('ascii') + data).hexdigest()
             for path, data in self.after.items()
         }
-        baseline_id, = self.installer.BASELINE_IDS
+        self.previous = dict(self.after)
+        for path in ['index.php', 'public-presentation.css', 'sw.js']:
+            self.previous[path] = self.after[path] + b'/* synthetic complete previously deployed version */\n'
         self.installer.BASELINES = {
-            baseline_id: {path: None if data is None else {'sha256': digest(data), 'bytes': len(data),
+            BASELINE_COMMIT: {path: None if data is None else {'sha256': digest(data), 'bytes': len(data),
                      'mode': self.original_modes[path]} for path, data in self.before.items()},
+            PREVIOUS_COMMIT: {path: {'sha256': digest(data), 'bytes': len(data), 'mode': 0o644}
+                             for path, data in self.previous.items()},
         }
         self.fetches, self.lints, self.http_calls = [], [], []
 
@@ -202,7 +216,7 @@ class InstallerTests(unittest.TestCase):
         seen = []
         module = self.installer
         markers = ['data-hero-photo', NEW_IMAGE.rsplit('/', 1)[1],
-                   'public-presentation.css?v=blue-fish-menu-20261009',
+                   'public-presentation.css?v=home-audit-20261013',
                    'public-presentation.js?v=blue-fish-menu-20261009',
                    'manifest.webmanifest?v=3.0.1']
         if omit_home:
@@ -251,6 +265,13 @@ class InstallerTests(unittest.TestCase):
             (self.live / path).write_bytes(data)
             (self.live / path).chmod(0o644)
 
+    def activate_previous_bundle(self):
+        self.before = dict(self.previous)
+        self.original_modes = {path: 0o644 for path in self.before}
+        for path, data in self.before.items():
+            (self.live / path).write_bytes(data)
+            (self.live / path).chmod(0o644)
+
     def live_snapshot(self):
         snapshot = {}
         for target in sorted(self.live.rglob('*')):
@@ -276,6 +297,7 @@ class InstallerTests(unittest.TestCase):
                 self.assertEqual(mode(target), self.original_modes[path], path)
         for path, data in list(self.guards.items()) + list(self.sentinels.items()):
             self.assertEqual((self.live / path).read_bytes(), data, path)
+        self.assertFalse((self.live / EXCLUDED_HELPER).exists())
 
     def prepare(self):
         return Path(self.installer.prepare())
@@ -700,7 +722,8 @@ class InstallerTests(unittest.TestCase):
             with self.subTest(path=path):
                 item = {'sha256': digest(b'escape'), 'bytes': 6, 'baseline_sha256': None}
                 self.installer.FILES[path] = item
-                self.installer.BASELINES[BASELINE_COMMIT][path] = None
+                for bundle in self.installer.BASELINES.values():
+                    bundle[path] = None
                 self.installer.GIT_SHAS[path] = hashlib.sha1(b'blob 6\0escape').hexdigest()
                 before = self.live_snapshot()
                 with self.assertRaisesRegex(self.installer.Refusal, 'out-of-scope inventory'):
@@ -709,7 +732,8 @@ class InstallerTests(unittest.TestCase):
                 self.assertFalse(self.fetches)
                 self.assertFalse(self.writes)
                 del self.installer.FILES[path]
-                del self.installer.BASELINES[BASELINE_COMMIT][path]
+                for bundle in self.installer.BASELINES.values():
+                    del bundle[path]
                 del self.installer.GIT_SHAS[path]
 
     def test_dependency_files_are_installed_before_their_consumers(self):
@@ -1063,7 +1087,7 @@ class InstallerTests(unittest.TestCase):
     def test_real_http_refuses_missing_current_home_markers(self):
         for marker in ['data-hero-photo', NEW_IMAGE.rsplit('/', 1)[1],
                        'public-presentation.css', 'public-presentation.js',
-                       'blue-fish-menu-20261009', 'manifest.webmanifest?v=3.0.1']:
+                       'blue-fish-menu-20261009', 'home-audit-20261013', 'manifest.webmanifest?v=3.0.1']:
             with self.subTest(marker=marker):
                 opened, _ = self.http_fixture(omit_home=marker)
                 with mock.patch.object(self.installer.urllib.request, 'urlopen', side_effect=opened):
@@ -1082,14 +1106,18 @@ class InstallerTests(unittest.TestCase):
 
     def test_production_pins_and_exact_ten_file_scope(self):
         self.assertEqual(self.production['commit'], TARGET_COMMIT)
-        self.assertEqual(self.production['baselines'], (BASELINE_COMMIT,))
+        self.assertEqual(self.production['baselines'], (BASELINE_COMMIT, PREVIOUS_COMMIT))
         self.assertEqual(self.production['files'], RELEASE_PATHS)
         self.assertEqual(self.production['allowed'], RELEASE_PATHS)
         self.assertEqual(self.production['blobs'], RELEASE_PATHS)
         self.assertTrue(set(['admin/publication-projects.php', 'admin/publication-media.php',
                              'assets/visuals/kcmc-building-2024.webp', 'admin/index.php']).issubset(self.production['guards']))
         self.assertNotIn('lib/bootstrap.php', self.production['guards'])
-        self.assertEqual(len(self.production['guards']), 14)
+        self.assertEqual(len(self.production['guards']), 21)
+        self.assertTrue(OPS_PATHS.issubset(self.production['guards']))
+        self.assertEqual(self.production['owner_guard_paths'], OPS_PATHS)
+        self.assertEqual(self.production['absent_guards'], set([EXCLUDED_HELPER]))
+        self.assertTrue(RELEASE_PATHS.isdisjoint(OPS_PATHS | set([EXCLUDED_HELPER])))
         self.assertEqual(sum(value is None for value in self.before.values()), 2)
 
     def test_complete_268beb_records_the_only_selected_bundle(self):
@@ -1175,7 +1203,8 @@ class InstallerTests(unittest.TestCase):
     def test_omitted_approved_file_refuses_even_with_consistent_remaining_metadata(self):
         del self.installer.FILES[NEW_IMAGE]
         del self.installer.GIT_SHAS[NEW_IMAGE]
-        del self.installer.BASELINES[BASELINE_COMMIT][NEW_IMAGE]
+        for bundle in self.installer.BASELINES.values():
+            del bundle[NEW_IMAGE]
         before = self.live_snapshot()
         with self.assertRaisesRegex(self.installer.Refusal, 'out-of-scope inventory'):
             self.prepare()
@@ -1583,6 +1612,349 @@ class InstallerTests(unittest.TestCase):
         self.assertTrue(any('No backup session' in message for message in messages))
         self.assertFalse(any('Private session:' in message for message in messages))
         self.assert_no_generated_backup_session()
+
+    def test_all_old_operations_files_are_preserved_and_excluded_from_stage(self):
+        before = {path: (self.live / path).read_bytes() for path in OPS_PATHS}
+        session = self.prepare()
+        self.assertIsNone(self.installer.read_session(session)['protected'][EXCLUDED_HELPER])
+        self.assertFalse((session / 'stage' / EXCLUDED_HELPER).exists())
+        for path in OPS_PATHS:
+            self.assertFalse((session / 'stage' / path).exists())
+            self.assertFalse((session / 'originals' / path).exists())
+        self.installer.apply(session=str(session))
+        self.installer.rollback(str(session))
+        for path, data in before.items():
+            self.assertEqual((self.live / path).read_bytes(), data)
+        self.assertTrue(OPS_PATHS.isdisjoint(self.fetches))
+        self.assertTrue(OPS_PATHS.isdisjoint(self.writes))
+        self.assertFalse((self.live / EXCLUDED_HELPER).exists())
+
+    def test_any_owner_operations_route_change_refuses_before_stage(self):
+        for path in sorted(OPS_PATHS):
+            with self.subTest(path=path):
+                target = self.live / path
+                target.write_bytes(self.guards[path] + b'<?php kcmc_require_operations_owner(); ?>')
+                before = self.live_snapshot()
+                with self.assertRaisesRegex(self.installer.Refusal, 'Protected baseline drift'):
+                    self.prepare()
+                self.assertEqual(self.live_snapshot(), before)
+                self.assertFalse(self.fetches)
+                self.assertFalse(self.writes)
+                target.write_bytes(self.guards[path])
+
+    def test_owner_helper_presence_refuses_before_stage(self):
+        helper = self.live / EXCLUDED_HELPER
+        helper.write_bytes(b'<?php /* separately configured owner helper */ ?>')
+        before = self.live_snapshot()
+        with self.assertRaisesRegex(self.installer.Refusal, 'Excluded owner helper'):
+            self.prepare()
+        self.assertEqual(self.live_snapshot(), before)
+        self.assertFalse(self.fetches)
+        self.assertFalse(self.writes)
+
+    def test_owner_helper_appearing_during_stage_refuses_without_live_replacement(self):
+        helper = self.live / EXCLUDED_HELPER
+        value = b'<?php /* concurrent owner-helper deployment */ ?>'
+        original_fetch = self.installer.fetch_bytes
+        def concurrent(path):
+            if not helper.exists():
+                helper.write_bytes(value)
+            return original_fetch(path)
+        self.installer.fetch_bytes = concurrent
+        with self.assertRaisesRegex(self.installer.Refusal, 'Expected missing target appeared'):
+            self.prepare()
+        self.assertEqual(helper.read_bytes(), value)
+        self.assertFalse(self.writes)
+        for path, old in self.before.items():
+            if old is None:
+                self.assertFalse((self.live / path).exists())
+            else:
+                self.assertEqual((self.live / path).read_bytes(), old)
+
+    def test_owner_helper_appearing_after_prepare_refuses_apply_without_repair(self):
+        session = self.prepare()
+        helper = self.live / EXCLUDED_HELPER
+        helper.write_bytes(b'<?php /* helper added after preflight */ ?>')
+        before = self.live_snapshot()
+        with mock.patch.object(self.installer, 'rollback_unlocked') as rolled_back:
+            with self.assertRaisesRegex(self.installer.Refusal, 'Expected missing target appeared'):
+                self.installer.apply(session=str(session))
+            rolled_back.assert_not_called()
+        self.assertEqual(self.live_snapshot(), before)
+        self.assertFalse(self.writes)
+
+    def test_owner_helper_appearing_in_intent_window_blocks_first_live_replacement(self):
+        session = self.prepare()
+        helper = self.live / EXCLUDED_HELPER
+        fresh = b'<?php /* concurrent owner helper in installation intent window */ ?>'
+        real_journal = self.installer.journal
+        observed = []
+        def concurrent(path, value):
+            result = real_journal(path, value)
+            if value['phase'] == 'applying' and value['intent'] is not None and not observed:
+                helper.write_bytes(fresh)
+                observed.append(value['intent'])
+            return result
+        self.installer.journal = concurrent
+        with self.assertRaises(self.installer.Refusal):
+            self.installer.apply(session=str(session))
+        self.assertTrue(observed, 'fault injection must reach the durable installation intent')
+        self.assertEqual(helper.read_bytes(), fresh)
+        self.assertFalse(self.writes, 'protected absence must be rechecked after intent journaling, before a live replacement')
+
+    def test_protected_absence_journal_metadata_cannot_be_replaced_with_present_record(self):
+        session = self.prepare()
+        value = self.installer.read_session(session)
+        value['protected'][EXCLUDED_HELPER] = dict(value['protected']['admin/index.php'])
+        self.installer.journal(session, value)
+        with self.assertRaisesRegex(self.installer.Refusal, 'protected absence changed'):
+            self.installer.apply(session=str(session))
+        self.assertFalse(self.writes)
+        self.assert_baseline()
+
+    def test_protected_absence_journal_entry_cannot_be_omitted(self):
+        session = self.prepare()
+        value = self.installer.read_session(session)
+        del value['protected'][EXCLUDED_HELPER]
+        self.installer.journal(session, value)
+        with self.assertRaisesRegex(self.installer.Refusal, 'protected scope changed'):
+            self.installer.apply(session=str(session))
+        self.assertFalse(self.writes)
+        self.assert_baseline()
+
+    def test_complete_4225_bundle_upgrades_and_rolls_back_to_existing_artwork(self):
+        self.activate_previous_bundle()
+        before = self.live_snapshot()
+        session = self.prepare()
+        self.assertEqual(self.installer.read_session(session)['baseline_id'], PREVIOUS_COMMIT)
+        self.installer.apply(session=str(session))
+        self.assert_release_bytes()
+        self.installer.rollback(str(session))
+        self.assertEqual(self.live_snapshot(), before)
+        self.assert_baseline()
+        self.assertTrue((self.live / NEW_IMAGE).exists())
+        self.assertTrue((self.live / NEW_SVG).exists())
+
+    def test_complete_4225_bundle_automatic_rollback_preserves_existing_artwork(self):
+        self.activate_previous_bundle()
+        before = self.live_snapshot()
+        session = self.prepare()
+        self.installer.verify_http = mock.Mock(side_effect=self.installer.Refusal('Synthetic current release HTTP failure'))
+        with self.assertRaises(self.installer.Refusal):
+            self.installer.apply(session=str(session))
+        self.assertEqual(self.live_snapshot(), before)
+        self.assert_baseline()
+
+    def test_previous_bundle_label_cannot_relabel_268_original_records(self):
+        session = self.prepare()
+        value = self.installer.read_session(session)
+        value['baseline_id'] = PREVIOUS_COMMIT
+        self.installer.journal(session, value)
+        with self.assertRaisesRegex(self.installer.Refusal, 'selected baseline preimage changed'):
+            self.installer.apply(session=str(session))
+        self.assertFalse(self.writes)
+        self.assert_baseline()
+
+    def test_excluded_owner_routes_and_helper_cannot_be_added_to_complete_release_inventory(self):
+        for path in sorted(OPS_PATHS | set([EXCLUDED_HELPER])):
+            with self.subTest(path=path):
+                data = b'<?php /* staged owner scope must remain excluded */ ?>'
+                self.installer.FILES[path] = {'sha256': digest(data), 'bytes': len(data), 'baseline_sha256': None}
+                self.installer.GIT_SHAS[path] = hashlib.sha1(('blob ' + str(len(data)) + '\0').encode('ascii') + data).hexdigest()
+                for bundle in self.installer.BASELINES.values():
+                    bundle[path] = None
+                with self.assertRaisesRegex(self.installer.Refusal, 'out-of-scope inventory'):
+                    self.prepare()
+                self.assertFalse(self.fetches)
+                self.assertFalse(self.writes)
+                del self.installer.FILES[path]
+                del self.installer.GIT_SHAS[path]
+                for bundle in self.installer.BASELINES.values():
+                    del bundle[path]
+
+    def test_absent_guard_cannot_overlap_target_or_present_guard(self):
+        for path in ['index.php', 'admin/operations.php']:
+            with self.subTest(path=path):
+                self.installer.ABSENT_GUARDS.add(path)
+                with self.assertRaises(self.installer.Refusal):
+                    self.prepare()
+                self.assertFalse(self.fetches)
+                self.assertFalse(self.writes)
+                self.installer.ABSENT_GUARDS.remove(path)
+
+    def test_absent_owner_helper_symlink_is_refused_without_following_link(self):
+        external = self.root / 'external-owner-helper.php'
+        data = b'<?php /* outside helper must remain untouched */ ?>'
+        external.write_bytes(data)
+        os.symlink(str(external), str(self.live / EXCLUDED_HELPER))
+        before = self.live_snapshot()
+        with self.assertRaises(Exception):
+            self.prepare()
+        self.assertEqual(self.live_snapshot(), before)
+        self.assertEqual(external.read_bytes(), data)
+        self.assertFalse(self.fetches)
+        self.assertFalse(self.writes)
+
+    def test_mixed_268_and_4225_bundle_refuses_before_stage(self):
+        target = self.live / 'index.php'
+        target.write_bytes(self.previous['index.php'])
+        target.chmod(0o644)
+        before = self.live_snapshot()
+        with self.assertRaisesRegex(self.installer.Refusal, 'complete approved baseline'):
+            self.prepare()
+        self.assertEqual(self.live_snapshot(), before)
+        self.assertFalse(self.fetches)
+        self.assertFalse(self.writes)
+
+    def test_missing_one_4225_artwork_cannot_be_reclassified_as_268(self):
+        self.activate_previous_bundle()
+        (self.live / NEW_SVG).unlink()
+        before = self.live_snapshot()
+        with self.assertRaisesRegex(self.installer.Refusal, 'complete approved baseline'):
+            self.prepare()
+        self.assertEqual(self.live_snapshot(), before)
+        self.assertFalse(self.fetches)
+        self.assertFalse(self.writes)
+
+    def test_current_runtime_with_excluded_helper_refuses_without_repair(self):
+        self.install_target_fixture()
+        (self.live / EXCLUDED_HELPER).write_bytes(b'<?php /* full public target plus excluded owner helper */ ?>')
+        before = self.live_snapshot()
+        self.assert_current_failure_has_no_repair_or_rollback()
+        self.assertEqual(self.live_snapshot(), before)
+
+    def test_current_runtime_owner_helper_creation_during_http_refuses_without_repair(self):
+        self.install_target_fixture()
+        helper = self.live / EXCLUDED_HELPER
+        fresh = b'<?php /* helper appeared during read-only HTTP proof */ ?>'
+        self.installer.verify_http = lambda: helper.write_bytes(fresh)
+        self.assert_current_failure_has_no_repair_or_rollback()
+        self.assertEqual(helper.read_bytes(), fresh)
+        self.assert_release_bytes()
+
+    def test_current_runtime_new_owner_operations_route_refuses_without_repair(self):
+        self.install_target_fixture()
+        target = self.live / 'admin/timecards-export.php'
+        target.write_bytes(self.guards['admin/timecards-export.php'] + b'<?php kcmc_require_operations_owner(); ?>')
+        before = self.live_snapshot()
+        self.assert_current_failure_has_no_repair_or_rollback()
+        self.assertEqual(self.live_snapshot(), before)
+
+    def test_http_owner_drift_automatically_restores_public_files_and_preserves_new_owner_bytes(self):
+        session = self.prepare()
+        helper = self.live / EXCLUDED_HELPER
+        operations = self.live / 'admin/operations.php'
+        new_helper = b'<?php /* concurrent owner helper, must remain present */ ?>'
+        new_operations = b'<?php /* concurrent guarded Operations hub, must remain intact */ ?>'
+        def external_owner_deployment():
+            self.assert_release_bytes()
+            helper.write_bytes(new_helper)
+            operations.write_bytes(new_operations)
+        self.installer.verify_http = external_owner_deployment
+        with self.assertRaisesRegex(self.installer.Refusal, 'affected code was rolled back'):
+            self.installer.apply(session=str(session))
+        self.assertEqual(helper.read_bytes(), new_helper)
+        self.assertEqual(operations.read_bytes(), new_operations)
+        for path, data in self.before.items():
+            target = self.live / path
+            if data is None:
+                self.assertFalse(target.exists())
+            else:
+                self.assertEqual(target.read_bytes(), data)
+                self.assertEqual(mode(target), self.original_modes[path])
+        self.assertTrue(set(self.writes).isdisjoint(OPS_PATHS | set([EXCLUDED_HELPER])))
+        for path, data in self.sentinels.items():
+            self.assertEqual((self.live / path).read_bytes(), data)
+
+    def test_manual_rollback_owner_route_drift_refuses_before_any_restore(self):
+        session = self.prepare()
+        self.installer.apply(session=str(session))
+        route = self.live / 'admin/restore.php'
+        changed = b'<?php /* newer owner-only restore route */ ?>'
+        route.write_bytes(changed)
+        self.assert_rollback_refused_without_live_mutation(session)
+        self.assertEqual(route.read_bytes(), changed)
+        self.assert_release_bytes()
+
+    def test_manual_rollback_new_owner_helper_refuses_before_any_restore(self):
+        session = self.prepare()
+        self.installer.apply(session=str(session))
+        helper = self.live / EXCLUDED_HELPER
+        changed = b'<?php /* new owner helper prevents manual downgrade */ ?>'
+        helper.write_bytes(changed)
+        self.assert_rollback_refused_without_live_mutation(session)
+        self.assertEqual(helper.read_bytes(), changed)
+        self.assert_release_bytes()
+
+    def test_manual_rollback_same_owner_bytes_new_inode_refuses_before_any_restore(self):
+        session = self.prepare()
+        self.installer.apply(session=str(session))
+        route = self.live / 'admin/audit-export.php'
+        old = route.stat()
+        replacement = self.root / 'newer-audit-export.php'
+        replacement.write_bytes(route.read_bytes())
+        replacement.chmod(stat.S_IMODE(old.st_mode))
+        os.utime(str(replacement), ns=(old.st_atime_ns, old.st_mtime_ns))
+        os.replace(str(replacement), str(route))
+        self.assertNotEqual(route.stat().st_ino, old.st_ino)
+        self.assert_rollback_refused_without_live_mutation(session)
+        self.assert_release_bytes()
+
+    def test_resumed_manual_rollback_refuses_owner_drift_without_more_restores(self):
+        session = self.prepare()
+        self.installer.apply(session=str(session))
+        real_replace = self.installer.atomic_replace
+        restores = []
+        def interrupted(src, dst, **kwargs):
+            target = self.replace_target(dst, kwargs)
+            result = real_replace(src, dst, **kwargs)
+            if self.live in target.parents:
+                restores.append(str(target.relative_to(self.live)))
+                if len(restores) == 2:
+                    raise OSError('Synthetic interrupted manual rollback')
+            return result
+        self.installer.atomic_replace = interrupted
+        with self.assertRaises(OSError):
+            self.installer.rollback(str(session))
+        self.assertEqual(self.installer.read_session(session)['phase'], 'rolling_back')
+        self.installer.atomic_replace = real_replace
+        helper = self.live / EXCLUDED_HELPER
+        helper.write_bytes(b'<?php /* owner helper arrived before resumed restore */ ?>')
+        self.assert_rollback_refused_without_live_mutation(session)
+
+    def test_manual_rollback_rechecks_owner_absence_before_each_restore(self):
+        session = self.prepare()
+        self.installer.apply(session=str(session))
+        helper = self.live / EXCLUDED_HELPER
+        fresh = b'<?php /* owner helper arrived after first public restore */ ?>'
+        real_replace = self.installer.atomic_replace
+        restored = []
+        initial_writes = list(self.writes)
+        def concurrent(src, dst, **kwargs):
+            target = self.replace_target(dst, kwargs)
+            result = real_replace(src, dst, **kwargs)
+            if self.live in target.parents:
+                restored.append(str(target.relative_to(self.live)))
+                if len(restored) == 1:
+                    helper.write_bytes(fresh)
+            return result
+        self.installer.atomic_replace = concurrent
+        with self.assertRaisesRegex(self.installer.Refusal, 'Expected missing target appeared'):
+            self.installer.rollback(str(session))
+        self.assertEqual(len(restored), 1, 'manual restore must stop before its next write when owner scope appears')
+        self.assertEqual(len(self.writes), len(initial_writes) + 1)
+        self.assertEqual(helper.read_bytes(), fresh)
+        self.assertEqual(self.installer.read_session(session)['phase'], 'rolling_back')
+
+    def test_owner_guard_subset_cannot_omit_one_operations_route(self):
+        path = 'admin/push.php'
+        del self.installer.GUARDS[path]
+        before = self.live_snapshot()
+        with self.assertRaises(self.installer.Refusal):
+            self.prepare()
+        self.assertEqual(self.live_snapshot(), before)
+        self.assertFalse(self.fetches)
+        self.assertFalse(self.writes)
 
 
 if __name__ == '__main__':

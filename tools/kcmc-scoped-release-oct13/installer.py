@@ -24,20 +24,24 @@ import xml.etree.ElementTree as ET
 
 APP_ROOT = Path('/home/bobsome1/public_html/kcmc-connect')
 BACKUP_ROOT = Path('/home/bobsome1/kcmc-release-backups')
-COMMIT = '4225fce8968747ad4f828a9a36087b04fd020484'
+COMMIT = '154b779a0ea3d27a11300bfe0454f8a7c4aca355'
 SOURCE_ROOT = 'https://raw.githubusercontent.com/bobhay75/Kcmc-connect/' + COMMIT + '/KCMC-Connect-Phase6-Recreated/'
 PUBLIC_ROOT = 'https://bobsome1.com/kcmc-connect/'
 MAX_BYTES = 16 * 1024 * 1024
 CONTENT_PATH = 'data/content.json'
 PUBLISHER_STORES = ('publications.json', 'publication-media.json')
-BASELINE_IDS = ('268bebca444bd4970bb4ecaa0d6eceb6a11988fd',)
-# One complete allowlisted preimage bundle; no mixed or already-updated state is accepted.
-BASELINES = json.loads('{"268bebca444bd4970bb4ecaa0d6eceb6a11988fd": {"admin/publication-designer.php": {"bytes": 36010, "mode": 420, "sha256": "b9e05cd22cbb5b98f04031f548ca7237661827c367d6608669adf8df4e612758"}, "assets/icons/icon-512.png": {"bytes": 4769, "mode": 420, "sha256": "e14220ab44f5061853e0fcb8db711e2d08acb8ab91a880bd3ee0a5c01ff11aac"}, "assets/visuals/kcmc-building-retouched-20261009.jpg": null, "assets/visuals/trunk-or-treat-2026.svg": null, "index.php": {"bytes": 34495, "mode": 420, "sha256": "6051d3ac749818e2cd3487224febe7f5df2e267e8fbd470dd0f24ad21bb14830"}, "lib/bootstrap.php": {"bytes": 21742, "mode": 420, "sha256": "32cff7ba681a9c5163be880af62a358b331b6dbfe91b0fce9621497ef9413b31"}, "manifest.webmanifest": {"bytes": 773, "mode": 420, "sha256": "1b14edb76bcdf80ed633d74c7a8e93140c27eb59f654bfee49d3b154a126a29a"}, "public-presentation.css": {"bytes": 11532, "mode": 420, "sha256": "11f54646d626418dca4672593df42286609527b9ba154cc5cf83401707afebe0"}, "public-presentation.js": {"bytes": 6173, "mode": 420, "sha256": "eb1b70aa00615b2acd75b3173612d56da66d7a03ddff73271ce84c85f432e354"}, "sw.js": {"bytes": 5705, "mode": 420, "sha256": "dee7ee1f397f78bee54b82de08762debbe0b574c1748ae2ab1da84be2393493f"}}}')
-# Filled only from the reviewed immutable baseline and target source trees; live drift refuses.
-FILES = json.loads('{"admin/publication-designer.php": {"baseline_sha256": "b9e05cd22cbb5b98f04031f548ca7237661827c367d6608669adf8df4e612758", "bytes": 39622, "sha256": "0a5507d65e570b7ff6983adda3464edd8cd53bb8d4cd9636f91fc37d3e929268"}, "assets/icons/icon-512.png": {"baseline_sha256": "e14220ab44f5061853e0fcb8db711e2d08acb8ab91a880bd3ee0a5c01ff11aac", "bytes": 49783, "sha256": "074bebf3a765ae96147b38bcced3ae7e1b05e48498dde1ab8a0dadfa37c1f5e5"}, "assets/visuals/kcmc-building-retouched-20261009.jpg": {"baseline_sha256": null, "bytes": 260696, "sha256": "57310f0bdb44d4521951d1840a3591272765ea0d854909d332bce5db87f5d6de"}, "assets/visuals/trunk-or-treat-2026.svg": {"baseline_sha256": null, "bytes": 5851, "sha256": "655428d44e4f5c1a43ab62a047c4050cb57d4581c30e5de67e0b0527b7c1ede8"}, "index.php": {"baseline_sha256": "6051d3ac749818e2cd3487224febe7f5df2e267e8fbd470dd0f24ad21bb14830", "bytes": 33077, "sha256": "3d692cbd995000c8ebf9013431136e0069530b002f18a162f0a6fad21f9ba4d6"}, "lib/bootstrap.php": {"baseline_sha256": "32cff7ba681a9c5163be880af62a358b331b6dbfe91b0fce9621497ef9413b31", "bytes": 22616, "sha256": "8c21edc4b25eecade0f792cf20038c73b71270934d0932e4e72432dc8b57d903"}, "manifest.webmanifest": {"baseline_sha256": "1b14edb76bcdf80ed633d74c7a8e93140c27eb59f654bfee49d3b154a126a29a", "bytes": 773, "sha256": "811afe8914a44b8f5ada3affc27e71714acfa8adfc79e16348189016342d49da"}, "public-presentation.css": {"baseline_sha256": "11f54646d626418dca4672593df42286609527b9ba154cc5cf83401707afebe0", "bytes": 12710, "sha256": "74234242dc8a47c37ed7b4a433d9b9deccbc416737b546bc977408f3f82e4c54"}, "public-presentation.js": {"baseline_sha256": "eb1b70aa00615b2acd75b3173612d56da66d7a03ddff73271ce84c85f432e354", "bytes": 7250, "sha256": "bfc4e7a6ab3cb11bae76a74be5d1cdc0912ae00e32f1d66bedf128ec7aabfcc9"}, "sw.js": {"baseline_sha256": "dee7ee1f397f78bee54b82de08762debbe0b574c1748ae2ab1da84be2393493f", "bytes": 5917, "sha256": "d4f328cc16048ee8f0ce23e7d4d5b70d414d282df74d50a9421acc058b68cdc5"}}')
-GUARDS = json.loads('{".htaccess": "993e7a8936737dbf9ba852e60604141de15e24d7399e644393282ed99b7ff690", "admin/audit.php": "07fd9e1806925faa64e65bc9b916dfc61f8dfd96e8498941ff9628885706d867", "admin/health.php": "8f89221fdabaaad204fc7005136c8fb559f6ca9f7ad9238a764dc86b8d1eb409", "admin/index.php": "9233559775bdcd1a95bce16c4a06d80d085a0e51e52aadc214985bcba750b5a0", "admin/publication-media.php": "1ce8b5d44756593a6bd678c8a81232248177f5e6c158e90ab52843b2cdd29488", "admin/publication-projects.php": "df4065f13e757f9d9310a8ce01cb1174df94e8dd52f32246c84a010697650312", "admin/timecards.php": "6950397e9f8d8c88bba1bd5696f62e84419f795d79922877898d89c71d9b6d47", "assets/visuals/kcmc-building-2024.webp": "cd2a12a3211b89ee523bef80a4fee5c3ed7429f6404b2d23530bae61f600e0fb", "assets/visuals/kcmc-ministry-group.jpg": "94fdec9c87cafdb00ca59c2f977145007debbe633b8036c4f5db0cd2670e6e4a", "assets/visuals/kcmc-stage-2014.webp": "904827c79e9332706b8c19c73d4cb211c116629a0f974f4d6df211596df6c994", "assets/visuals/kcmc-worship-2017.webp": "4593491d1f8f2d8592bc6382928eb51a41170b910ed2bd2271c491a7866315a8", "care.php": "0c48c6d5dab7c18329158c68152c441d7194aa334daf074ac663a294e6b3855e", "member/login.php": "2db61ebc38cbb126a6f67d858bdb60e2553ea015d36cfdced869828887ddc4de", "member/timeclock.php": "7864fdee399f90ae5a5bea97fa4c0bf9b5a6a23255f4de31051d21c03bf1663d"}')
+BASELINE_IDS = ('268bebca444bd4970bb4ecaa0d6eceb6a11988fd', '4225fce8968747ad4f828a9a36087b04fd020484')
+# Two complete allowlisted preimage bundles; no mixtures of their bytes are accepted.
+BASELINES = json.loads('{"268bebca444bd4970bb4ecaa0d6eceb6a11988fd": {"admin/publication-designer.php": {"bytes": 36010, "mode": 420, "sha256": "b9e05cd22cbb5b98f04031f548ca7237661827c367d6608669adf8df4e612758"}, "assets/icons/icon-512.png": {"bytes": 4769, "mode": 420, "sha256": "e14220ab44f5061853e0fcb8db711e2d08acb8ab91a880bd3ee0a5c01ff11aac"}, "assets/visuals/kcmc-building-retouched-20261009.jpg": null, "assets/visuals/trunk-or-treat-2026.svg": null, "index.php": {"bytes": 34495, "mode": 420, "sha256": "6051d3ac749818e2cd3487224febe7f5df2e267e8fbd470dd0f24ad21bb14830"}, "lib/bootstrap.php": {"bytes": 21742, "mode": 420, "sha256": "32cff7ba681a9c5163be880af62a358b331b6dbfe91b0fce9621497ef9413b31"}, "manifest.webmanifest": {"bytes": 773, "mode": 420, "sha256": "1b14edb76bcdf80ed633d74c7a8e93140c27eb59f654bfee49d3b154a126a29a"}, "public-presentation.css": {"bytes": 11532, "mode": 420, "sha256": "11f54646d626418dca4672593df42286609527b9ba154cc5cf83401707afebe0"}, "public-presentation.js": {"bytes": 6173, "mode": 420, "sha256": "eb1b70aa00615b2acd75b3173612d56da66d7a03ddff73271ce84c85f432e354"}, "sw.js": {"bytes": 5705, "mode": 420, "sha256": "dee7ee1f397f78bee54b82de08762debbe0b574c1748ae2ab1da84be2393493f"}}, "4225fce8968747ad4f828a9a36087b04fd020484": {"admin/publication-designer.php": {"bytes": 39622, "mode": 420, "sha256": "0a5507d65e570b7ff6983adda3464edd8cd53bb8d4cd9636f91fc37d3e929268"}, "assets/icons/icon-512.png": {"bytes": 49783, "mode": 420, "sha256": "074bebf3a765ae96147b38bcced3ae7e1b05e48498dde1ab8a0dadfa37c1f5e5"}, "assets/visuals/kcmc-building-retouched-20261009.jpg": {"bytes": 260696, "mode": 420, "sha256": "57310f0bdb44d4521951d1840a3591272765ea0d854909d332bce5db87f5d6de"}, "assets/visuals/trunk-or-treat-2026.svg": {"bytes": 5851, "mode": 420, "sha256": "655428d44e4f5c1a43ab62a047c4050cb57d4581c30e5de67e0b0527b7c1ede8"}, "index.php": {"bytes": 33077, "mode": 420, "sha256": "3d692cbd995000c8ebf9013431136e0069530b002f18a162f0a6fad21f9ba4d6"}, "lib/bootstrap.php": {"bytes": 22616, "mode": 420, "sha256": "8c21edc4b25eecade0f792cf20038c73b71270934d0932e4e72432dc8b57d903"}, "manifest.webmanifest": {"bytes": 773, "mode": 420, "sha256": "811afe8914a44b8f5ada3affc27e71714acfa8adfc79e16348189016342d49da"}, "public-presentation.css": {"bytes": 12710, "mode": 420, "sha256": "74234242dc8a47c37ed7b4a433d9b9deccbc416737b546bc977408f3f82e4c54"}, "public-presentation.js": {"bytes": 7250, "mode": 420, "sha256": "bfc4e7a6ab3cb11bae76a74be5d1cdc0912ae00e32f1d66bedf128ec7aabfcc9"}, "sw.js": {"bytes": 5917, "mode": 420, "sha256": "d4f328cc16048ee8f0ce23e7d4d5b70d414d282df74d50a9421acc058b68cdc5"}}}')
+# Public targets use latest source; preserved Operations code uses the older approved baseline.
+FILES = json.loads('{"admin/publication-designer.php": {"baseline_sha256": "b9e05cd22cbb5b98f04031f548ca7237661827c367d6608669adf8df4e612758", "bytes": 39622, "sha256": "0a5507d65e570b7ff6983adda3464edd8cd53bb8d4cd9636f91fc37d3e929268"}, "assets/icons/icon-512.png": {"baseline_sha256": "e14220ab44f5061853e0fcb8db711e2d08acb8ab91a880bd3ee0a5c01ff11aac", "bytes": 49783, "sha256": "074bebf3a765ae96147b38bcced3ae7e1b05e48498dde1ab8a0dadfa37c1f5e5"}, "assets/visuals/kcmc-building-retouched-20261009.jpg": {"baseline_sha256": null, "bytes": 260696, "sha256": "57310f0bdb44d4521951d1840a3591272765ea0d854909d332bce5db87f5d6de"}, "assets/visuals/trunk-or-treat-2026.svg": {"baseline_sha256": null, "bytes": 5851, "sha256": "655428d44e4f5c1a43ab62a047c4050cb57d4581c30e5de67e0b0527b7c1ede8"}, "index.php": {"baseline_sha256": "6051d3ac749818e2cd3487224febe7f5df2e267e8fbd470dd0f24ad21bb14830", "bytes": 32695, "sha256": "fa828f80c7f3c3b5ec47d815933f7df247f6ba4e542f9e5261182fb006b83723"}, "lib/bootstrap.php": {"baseline_sha256": "32cff7ba681a9c5163be880af62a358b331b6dbfe91b0fce9621497ef9413b31", "bytes": 22616, "sha256": "8c21edc4b25eecade0f792cf20038c73b71270934d0932e4e72432dc8b57d903"}, "manifest.webmanifest": {"baseline_sha256": "1b14edb76bcdf80ed633d74c7a8e93140c27eb59f654bfee49d3b154a126a29a", "bytes": 773, "sha256": "811afe8914a44b8f5ada3affc27e71714acfa8adfc79e16348189016342d49da"}, "public-presentation.css": {"baseline_sha256": "11f54646d626418dca4672593df42286609527b9ba154cc5cf83401707afebe0", "bytes": 16638, "sha256": "05f0b5527d2df49c77a96162362e732397706469c97733fa859c93e89b3f601f"}, "public-presentation.js": {"baseline_sha256": "eb1b70aa00615b2acd75b3173612d56da66d7a03ddff73271ce84c85f432e354", "bytes": 7250, "sha256": "bfc4e7a6ab3cb11bae76a74be5d1cdc0912ae00e32f1d66bedf128ec7aabfcc9"}, "sw.js": {"baseline_sha256": "dee7ee1f397f78bee54b82de08762debbe0b574c1748ae2ab1da84be2393493f", "bytes": 5914, "sha256": "cc8fefeec21f97d279e80472a76edfd0023392c2ad65e74c4bf56b192e657faf"}}')
+GUARDS = json.loads('{".htaccess": "993e7a8936737dbf9ba852e60604141de15e24d7399e644393282ed99b7ff690", "admin/audit-export.php": "2c328dc679741ca125d67d26d694b5d2ba9a511fd3b8eee06e4647ff818636e2", "admin/audit.php": "07fd9e1806925faa64e65bc9b916dfc61f8dfd96e8498941ff9628885706d867", "admin/backup.php": "b0beb08b0a475394c0c6d6a50e3e46643ae8602c5892742ddd593cab5c2610ec", "admin/health.php": "8f89221fdabaaad204fc7005136c8fb559f6ca9f7ad9238a764dc86b8d1eb409", "admin/index.php": "9233559775bdcd1a95bce16c4a06d80d085a0e51e52aadc214985bcba750b5a0", "admin/operations.php": "036400973e8f5f3367087602b9a4c94fae06a508b57c479cb7f25334dea9a236", "admin/publication-media.php": "1ce8b5d44756593a6bd678c8a81232248177f5e6c158e90ab52843b2cdd29488", "admin/publication-projects.php": "df4065f13e757f9d9310a8ce01cb1174df94e8dd52f32246c84a010697650312", "admin/push.php": "4b1ac6b56c2d2ae3e80d5880ba1019b8936c701a16c63b0b06b1260a2a173b67", "admin/restore.php": "3d06f27e5b6fc8885c278736fbde63dca0fc7fe4e18697a6709b70ba03136b6d", "admin/timecards-export.php": "0e8889e16261e2f321e18a69272b442b09f12a7f374113bbec13f900143c08dd", "admin/timecards-print.php": "17c4d58cebf787448a8a1ec4a3ed9305f6079d26ae13ac45a8b76c14149a8cc8", "admin/timecards.php": "6950397e9f8d8c88bba1bd5696f62e84419f795d79922877898d89c71d9b6d47", "assets/visuals/kcmc-building-2024.webp": "cd2a12a3211b89ee523bef80a4fee5c3ed7429f6404b2d23530bae61f600e0fb", "assets/visuals/kcmc-ministry-group.jpg": "94fdec9c87cafdb00ca59c2f977145007debbe633b8036c4f5db0cd2670e6e4a", "assets/visuals/kcmc-stage-2014.webp": "904827c79e9332706b8c19c73d4cb211c116629a0f974f4d6df211596df6c994", "assets/visuals/kcmc-worship-2017.webp": "4593491d1f8f2d8592bc6382928eb51a41170b910ed2bd2271c491a7866315a8", "care.php": "0c48c6d5dab7c18329158c68152c441d7194aa334daf074ac663a294e6b3855e", "member/login.php": "2db61ebc38cbb126a6f67d858bdb60e2553ea015d36cfdced869828887ddc4de", "member/timeclock.php": "7864fdee399f90ae5a5bea97fa4c0bf9b5a6a23255f4de31051d21c03bf1663d"}')
 BASELINE_EXPECTATIONS = json.loads('{"admin/publication-designer.php": {"bytes": 36010, "mode": 420}, "assets/icons/icon-512.png": {"bytes": 4769, "mode": 420}, "index.php": {"bytes": 34495, "mode": 420}, "lib/bootstrap.php": {"bytes": 21742, "mode": 420}, "manifest.webmanifest": {"bytes": 773, "mode": 420}, "public-presentation.css": {"bytes": 11532, "mode": 420}, "public-presentation.js": {"bytes": 6173, "mode": 420}, "sw.js": {"bytes": 5705, "mode": 420}}')
-GIT_SHAS = json.loads('{"admin/publication-designer.php": "9a4dc7b1d84858af9fa284620aa5f0ffc57cc5f9", "assets/icons/icon-512.png": "ed024ce0547e75741202ac7a50514c52db21477e", "assets/visuals/kcmc-building-retouched-20261009.jpg": "3c4d4bb1de598968936fc426e3bef8edc6821030", "assets/visuals/trunk-or-treat-2026.svg": "0da5d8a1b7d0734eb4734374f17e26e2658c943a", "index.php": "d2b85d6b9f802d2920729a9a522460ae0f08e30b", "lib/bootstrap.php": "1626fc5f43a9fefce17faa5b5a6b8ca1c35665b6", "manifest.webmanifest": "e69d1a4cc464e739a2ae68f615b4c56eccb1d892", "public-presentation.css": "cd1116ea218d7317c446cd3a0292733ceec2e59e", "public-presentation.js": "3cfac1f1406f9434f65ae1f33136be46e3051afe", "sw.js": "51b268fcbbececd0e17575b7e8989e07c0b9ceed"}')
+GIT_SHAS = json.loads('{"admin/publication-designer.php": "9a4dc7b1d84858af9fa284620aa5f0ffc57cc5f9", "assets/icons/icon-512.png": "ed024ce0547e75741202ac7a50514c52db21477e", "assets/visuals/kcmc-building-retouched-20261009.jpg": "3c4d4bb1de598968936fc426e3bef8edc6821030", "assets/visuals/trunk-or-treat-2026.svg": "0da5d8a1b7d0734eb4734374f17e26e2658c943a", "index.php": "d4986630c5a8d1157a5617345a9eb6213f08860b", "lib/bootstrap.php": "1626fc5f43a9fefce17faa5b5a6b8ca1c35665b6", "manifest.webmanifest": "e69d1a4cc464e739a2ae68f615b4c56eccb1d892", "public-presentation.css": "2c30da18867451f6364880eadd5a7ead8d93f4b5", "public-presentation.js": "3cfac1f1406f9434f65ae1f33136be46e3051afe", "sw.js": "b8722b2a3e66db37127c479b7aec8ce2e708ebdf"}')
+ABSENT_GUARDS = set(['lib/operations-owner.php'])
+OWNER_GUARD_PATHS = set('admin/' + name for name in
+                        ['audit-export.php', 'audit.php', 'backup.php', 'health.php', 'operations.php',
+                         'push.php', 'restore.php', 'timecards-export.php', 'timecards-print.php', 'timecards.php'])
 ALLOWED = set(['admin/publication-designer.php', 'assets/icons/icon-512.png', 'assets/visuals/kcmc-building-retouched-20261009.jpg', 'assets/visuals/trunk-or-treat-2026.svg', 'index.php', 'lib/bootstrap.php', 'manifest.webmanifest', 'public-presentation.css', 'public-presentation.js', 'sw.js'])
 
 
@@ -264,6 +268,10 @@ def inventory():
     for path, expected in GUARDS.items():
         relative(path)
         require(path not in FILES and re.match(r'\A[0-9a-f]{64}\Z', expected) is not None, 'Invalid protected guard')
+    for path in ABSENT_GUARDS:
+        relative(path)
+        require(path not in FILES and path not in GUARDS, 'Invalid protected absence guard')
+    require(OWNER_GUARD_PATHS.issubset(set(GUARDS)), 'Incomplete deferred owner guard scope')
 
 
 def fetch_bytes(path):
@@ -361,7 +369,7 @@ def lint_staged(records):
 
 def verify_http():
     checks = [('', ['data-hero-photo', 'kcmc-building-retouched-20261009.jpg',
-                    'public-presentation.css?v=blue-fish-menu-20261009',
+                    'public-presentation.css?v=home-audit-20261013',
                     'public-presentation.js?v=blue-fish-menu-20261009', 'manifest.webmanifest?v=3.0.1']),
               ('member/login.php', ['Staff Sign In']),
               ('admin/publication-designer.php', ['Staff Sign In']),
@@ -391,7 +399,7 @@ def verify_http():
             body = response.read(approved['bytes'] + 1)
         require(len(body) == approved['bytes'] and digest(body) == approved['sha256'], 'Public static hash mismatch: ' + path)
         if path == 'sw.js':
-            require(b'kcmc-connect-v3.0.3-public-only-trunk-art-20261011' in body, 'Service worker release marker refused')
+            require(b'kcmc-connect-v3.0.3-public-only-home-audit-20261013' in body, 'Service worker release marker refused')
         elif path == 'manifest.webmanifest':
             manifest = json.loads(body.decode('utf-8'))
             require(isinstance(manifest, dict) and isinstance(manifest.get('icons'), list) and
@@ -418,6 +426,10 @@ def protected_capture():
         _, info = read_file(APP_ROOT / path)
         require(info['sha256'] == expected, 'Protected baseline drift: ' + path)
         records[path] = info
+    for path in ABSENT_GUARDS:
+        _, info = read_file(APP_ROOT / path, missing=True)
+        require(info is None, 'Excluded owner helper is already present; deployment requires review: ' + path)
+        records[path] = None
     _, content = read_file(APP_ROOT / CONTENT_PATH)
     records[CONTENT_PATH] = content
     return records
@@ -490,6 +502,11 @@ def check_protected(records):
         check_expected(path, expected, exact=True)
 
 
+def check_owner_protected(records):
+    for path in OWNER_GUARD_PATHS | ABSENT_GUARDS:
+        check_expected(path, records[path], exact=True)
+
+
 def read_session(session):
     session = Path(session)
     require(session.parent == BACKUP_ROOT and session.name.startswith('release-'), 'Unknown backup session')
@@ -527,9 +544,12 @@ def read_session(session):
                 valid_metadata(record[kind])
                 require(record[kind]['sha256'] == FILES[path]['sha256'] and record[kind]['bytes'] == FILES[path]['bytes'],
                         'Session installation source changed')
-    require(set(value['protected']) == set(GUARDS) | set([CONTENT_PATH]), 'Session protected scope changed')
-    for record in value['protected'].values():
-        valid_metadata(record)
+    require(set(value['protected']) == set(GUARDS) | ABSENT_GUARDS | set([CONTENT_PATH]), 'Session protected scope changed')
+    for path, record in value['protected'].items():
+        if path in ABSENT_GUARDS:
+            require(record is None, 'Session protected absence changed')
+        else:
+            valid_metadata(record)
     for path, expected in GUARDS.items():
         require(value['protected'][path]['sha256'] == expected, 'Session protected hash changed')
     publisher = value['publisher']
@@ -671,6 +691,7 @@ def install_one(session, path, record):
             os.close(fd)
         dest.check(); source.check()
         check_expected(path, original, exact=True)
+        check_protected(read_session(session)['protected'])
         atomic_replace(staged.name, target.name, src_dir_fd=source.fd, dst_dir_fd=dest.fd)
         os.fsync(dest.fd)
         dest.check()
@@ -690,6 +711,8 @@ def check_transaction(value):
 def rollback_unlocked(session, automatic=False):
     value = read_session(session)
     require(value['phase'] in ('applying', 'applied', 'failed', 'rolling_back', 'rolled_back'), 'Session has no applied code to roll back')
+    if not automatic:
+        check_owner_protected(value['protected'])
     check_stores(value['publisher'])
     # Aggregate source/live validation precedes every rollback mutation.
     current = {}
@@ -726,6 +749,8 @@ def rollback_unlocked(session, automatic=False):
         with Parent(target.parent) as dest:
             check_stores(value['publisher'])
             check_expected(path, expected, exact=True)
+            if not automatic:
+                check_owner_protected(value['protected'])
             old = record['original']
             if old is None:
                 os.unlink(target.name, dir_fd=dest.fd)
@@ -745,6 +770,8 @@ def rollback_unlocked(session, automatic=False):
                     dest.check(); source.check()
                     check_stores(value['publisher'])
                     check_expected(path, expected, exact=True)
+                    if not automatic:
+                        check_owner_protected(value['protected'])
                     atomic_replace(staged.name, target.name, src_dir_fd=source.fd, dst_dir_fd=dest.fd)
             os.fsync(dest.fd)
             dest.check()
@@ -851,10 +878,11 @@ def main():
         elif args.action == 'apply':
             session = apply(args.session)
             if isinstance(session, AlreadyCurrent):
-                print('Pinned runtime already present; read-only checks verified; no application file replaced.')
+                print('Pinned public runtime already present; read-only checks verified; no application file replaced.')
                 print('No backup session or editorial/private JSON copy was created; coordination lock files may be created.')
             else:
-                print('Pinned code applied and read-only public markers verified. Private session: ' + str(session))
+                print('Pinned public code applied and read-only public markers verified. Private session: ' + str(session))
+            print('Operations owner files were preserved; owner configuration requires separate verification.')
             print('Editorial/private records were not replaced; staff and physical-device acceptance remain separate.')
         else:
             require(args.session is not None, 'Rollback requires its exact protected session')

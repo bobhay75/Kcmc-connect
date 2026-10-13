@@ -48,7 +48,7 @@ def baseline(name):
 def build_site(site, sources):
     site.mkdir()
     index = sources['index.php'].decode()
-    hero = re.search(r'<section class="hero hero-imagery" data-hero-gallery.*?</section>', index, re.S).group()
+    hero = re.search(r'<section class="hero hero-imagery[^"]*" data-hero-gallery.*?</section>', index, re.S).group()
     paths = re.findall(r'data-hero-photo[^>]*src="\./([^"]+)"', hero)
     expected_count = 9 if site.name == 'stale' else 4
     missing_path = STALE_MISSING if site.name == 'stale' else MISSING
@@ -56,8 +56,9 @@ def build_site(site, sources):
     if site.name != 'stale':
         check(not any(re.search(r'stage-2014|ministry-group|bridge-', path) for path in paths), 'current fixture excludes rejected stage, kids poster and logo composites')
     script = re.search(r'<script src="(public-presentation\.js\?v=[^"]+)" defer>', index).group(1)
+    stylesheet = re.search(r'<link rel="stylesheet" href="(public-presentation\.css\?v=[^"]+)">', index).group(1)
     html = ('<!doctype html><html><head><meta name="viewport" content="width=device-width, initial-scale=1">'
-            '<link rel="stylesheet" href="styles.css?v=3.0.3"><link rel="stylesheet" href="public-presentation.css?v=blue-fish-menu-20261009"></head>'
+            '<link rel="stylesheet" href="styles.css?v=3.0.3"><link rel="stylesheet" href="' + stylesheet + '"></head>'
             '<body><header style="height:100px">Synthetic offline review</header><main><section class="view active" data-view="home">'
             + hero + '<div data-family-welcome></div></section></main>'
             + '<script src="' + script + '" defer></script>'

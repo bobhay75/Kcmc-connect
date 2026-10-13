@@ -16,7 +16,7 @@ jobs:
           ref: ${{ github.event.pull_request.head.sha }}
           persist-credentials: false
       - name: Fetch immutable source commits
-        run: git fetch --no-tags origin 268bebca444bd4970bb4ecaa0d6eceb6a11988fd 4225fce8968747ad4f828a9a36087b04fd020484
+        run: git fetch --no-tags origin 268bebca444bd4970bb4ecaa0d6eceb6a11988fd 4225fce8968747ad4f828a9a36087b04fd020484 154b779a0ea3d27a11300bfe0454f8a7c4aca355
       - name: Verify exact source scope and transaction fixtures
         env:
           PYTHONDONTWRITEBYTECODE: '1'

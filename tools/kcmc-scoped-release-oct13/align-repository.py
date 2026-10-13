@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Align the cPanel checkout only after the scoped runtime installation succeeds.
 
-Python 3.6+. The target is the approved PR115 runtime; PR117 is excluded.
+Python 3.6+. The target is approved main through PR119; this does not deploy app files.
 Origin HTTPS/SSH forms identify the repository; fetch uses public HTTPS only.
 No stash, reset, discard, push, cPanel deployment, or config edits are used.
 """
@@ -16,8 +16,9 @@ import subprocess
 import sys
 
 REPO = Path('/home/bobsome1/repositories/Kcmc-connect-live')
-BASE = '268bebca444bd4970bb4ecaa0d6eceb6a11988fd'
-TARGET = '4225fce8968747ad4f828a9a36087b04fd020484'
+BASELINE_IDS = ('268bebca444bd4970bb4ecaa0d6eceb6a11988fd',
+                '4225fce8968747ad4f828a9a36087b04fd020484')
+TARGET = '154b779a0ea3d27a11300bfe0454f8a7c4aca355'
 URL = 'https://github.com/bobhay75/Kcmc-connect.git'
 ORIGINS = set([URL, URL[:-4], 'git@github.com:bobhay75/Kcmc-connect.git',
                'git@github.com:bobhay75/Kcmc-connect',
@@ -234,8 +235,9 @@ def main():
                     'HEAD changed; no update authorized for this checkout')
             print('Repository main already aligned to approved commit. No fetch, checkout update, or live app deployment was invoked.')
             return 0
-        require(current == BASE, 'HEAD changed; no update authorized for this checkout')
-        clean(BASE)
+        require(current in BASELINE_IDS, 'HEAD changed; no update authorized for this checkout')
+        baseline = current
+        clean(baseline)
         if args.action == 'check':
             print('Repository baseline is clean and ordinary. No files or refs changed.')
             return 0
@@ -244,10 +246,10 @@ def main():
         git(['fetch', '--no-tags', '--no-recurse-submodules', '--no-write-fetch-head',
              '--no-auto-maintenance', URL, TARGET])
         require(git(['cat-file', '-t', TARGET]).strip() == b'commit', 'Pinned target is not a commit')
-        git(['merge-base', '--is-ancestor', BASE, TARGET])
+        git(['merge-base', '--is-ancestor', baseline, TARGET])
         source_tree(TARGET)
         require(physical(REPO) == identity and settings() == config, 'Checkout/settings changed during fetch')
-        clean(BASE)
+        clean(baseline)
         caller_umask = os.umask(0o022)
         try:
             update_started = True

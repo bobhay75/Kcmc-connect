@@ -69,11 +69,15 @@ def main() -> int:
         env = os.environ.copy()
         env["KCMC_PRIVATE_DATA_DIR"] = str(private)
         env["KCMC_SETUP_KEY"] = ""
+        env["KCMC_OPERATIONS_OWNER_USER_ID"] = "test_admin"
+        # A pipe can fill with asset access logs while the browser is active,
+        # blocking the single PHP server before the sign-in redirect completes.
+        server_log = (pathlib.Path(tmp) / 'php.log').open('w+', encoding='utf-8')
         server = subprocess.Popen(
             ["php", "-S", "127.0.0.1:8766", "-t", str(ROOT.parent)],
             cwd=str(ROOT.parent),
             env=env,
-            stdout=subprocess.PIPE,
+            stdout=server_log,
             stderr=subprocess.STDOUT,
             text=True,
         )
@@ -86,7 +90,8 @@ def main() -> int:
                 except Exception:
                     time.sleep(0.25)
             else:
-                output = server.stdout.read(4000) if server.stdout else ""
+                server_log.seek(0)
+                output = server_log.read(4000)
                 die(f"PHP server did not start: {output}")
 
             with sync_playwright() as p:
@@ -163,6 +168,8 @@ def main() -> int:
                 server.wait(timeout=5)
             except subprocess.TimeoutExpired:
                 server.kill()
+                server.wait(timeout=5)
+            server_log.close()
     return 0
 
 

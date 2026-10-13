@@ -15,8 +15,9 @@ import tempfile
 import unittest
 
 HERE = Path(__file__).resolve().parent
-APPROVED_BASE = '268bebca444bd4970bb4ecaa0d6eceb6a11988fd'
-APPROVED_TARGET = '4225fce8968747ad4f828a9a36087b04fd020484'
+APPROVED_BASELINES = ('268bebca444bd4970bb4ecaa0d6eceb6a11988fd',
+                      '4225fce8968747ad4f828a9a36087b04fd020484')
+APPROVED_TARGET = '154b779a0ea3d27a11300bfe0454f8a7c4aca355'
 DEFAULT_SOURCE = HERE / 'align-repository.py'
 if not DEFAULT_SOURCE.exists():
     DEFAULT_SOURCE = HERE / 'kcmc-repo-align-draft.py'
@@ -67,7 +68,7 @@ def metadata_snapshot(directory):
 class AlignmentTests(unittest.TestCase):
     def test_production_pins_match_approved_runtime(self):
         module = load_helper()
-        self.assertEqual(module.BASE, APPROVED_BASE)
+        self.assertEqual(module.BASELINE_IDS, APPROVED_BASELINES)
         self.assertEqual(module.TARGET, APPROVED_TARGET)
 
     def setUp(self):
@@ -91,14 +92,19 @@ class AlignmentTests(unittest.TestCase):
         run_git(self.work, 'clone', '--no-hardlinks', str(self.source), str(self.repo))
         self.module = load_helper()
         run_git(self.repo, 'remote', 'set-url', 'origin', self.module.URL)
-        # The target does not exist in the checkout until the intercepted fetch.
+        # The second approved baseline and target do not exist in the checkout yet.
+        (self.source / 'tracked.txt').write_text('Synthetic intermediate baseline\n')
+        (self.source / 'intermediate.txt').write_text('Synthetic intermediate addition\n')
+        run_git(self.source, 'add', '.')
+        run_git(self.source, 'commit', '-m', 'Synthetic second approved baseline')
+        self.base2 = run_git(self.source, 'rev-parse', 'HEAD').decode().strip()
         (self.source / 'tracked.txt').write_text('Synthetic repaired target\n')
         (self.source / 'new').mkdir()
         (self.source / 'new/repaired.txt').write_text('Synthetic added repair\n')
         run_git(self.source, 'add', '.')
         run_git(self.source, 'commit', '-m', 'Synthetic target')
         self.target = run_git(self.source, 'rev-parse', 'HEAD').decode().strip()
-        self.module.REPO, self.module.BASE, self.module.TARGET = self.repo, self.base, self.target
+        self.module.REPO, self.module.BASELINE_IDS, self.module.TARGET = self.repo, (self.base, self.base2), self.target
         self.original_git = self.module.git
         self.fetch_calls = []
         self.fetch_failure = False
@@ -232,7 +238,7 @@ class AlignmentTests(unittest.TestCase):
         run_git(self.repo, 'add', 'tracked.txt')
         run_git(self.repo, 'commit', '-m', 'Synthetic unrelated checkout head')
         unrelated = self.head()
-        self.assertNotIn(unrelated, (self.base, self.target))
+        self.assertNotIn(unrelated, (self.base, self.base2, self.target))
         text = self.refuses_without_checkout_changes('unrelated clean HEAD')
         self.assertIn('Reason: HEAD changed; no update authorized for this checkout', text)
         self.assertEqual(self.head(), unrelated)
@@ -368,7 +374,7 @@ class AlignmentTests(unittest.TestCase):
 
 
     def test_changed_head_reports_fixed_reason_before_fetch(self):
-        self.module.BASE = '0' * 40
+        self.module.BASELINE_IDS = ('0' * 40,)
         text = self.refuses_without_checkout_changes('unexpected HEAD')
         self.assertIn('Reason: HEAD changed; no update authorized for this checkout', text)
         self.assertEqual(self.fetch_calls, [])
@@ -438,6 +444,59 @@ class AlignmentTests(unittest.TestCase):
         self.assertEqual(len(self.fetch_calls), 1)
         self.assertEqual(self.fetch_calls[0][-2], self.module.URL)
         self.assertEqual((self.repo / '.git/config').read_bytes(), config)
+
+
+    def prepare_second_baseline(self):
+        run_git(self.repo, 'fetch', '--no-tags', '--no-write-fetch-head', str(self.source), self.base2)
+        run_git(self.repo, 'merge', '--ff-only', self.base2)
+
+    def test_second_approved_baseline_fast_forwards_to_pinned_target(self):
+        self.prepare_second_baseline()
+        config = (self.repo / '.git/config').read_bytes()
+        observed = []
+        original = self.module.git
+        def observe_ancestry(args, raw=False):
+            if args and args[0] == 'merge-base':
+                observed.append(list(args))
+            return original(args, raw=raw)
+        self.module.git = observe_ancestry
+        status, out, err = self.invoke('align')
+        self.assertEqual((status, err), (0, ''), out + err)
+        self.assertEqual(observed, [['merge-base', '--is-ancestor', self.base2, self.target]])
+        self.assertEqual(len(self.fetch_calls), 1)
+        self.assertEqual(self.head(), self.target)
+        self.assertEqual((self.repo / 'tracked.txt').read_text(), 'Synthetic repaired target\n')
+        self.assertEqual((self.repo / '.git/config').read_bytes(), config)
+        self.assertIn('No live app deployment was invoked', out)
+
+    def test_second_approved_baseline_check_is_read_only(self):
+        self.prepare_second_baseline()
+        before = checked_out_snapshot(self.repo)
+        metadata = metadata_snapshot(self.repo)
+        status, out, err = self.invoke('check')
+        self.assertEqual((status, err), (0, ''), out + err)
+        self.assertEqual(self.head(), self.base2)
+        self.assertEqual(self.fetch_calls, [])
+        self.assertEqual(checked_out_snapshot(self.repo), before)
+        self.assertEqual(metadata_snapshot(self.repo), metadata)
+
+    def test_dirty_second_approved_baseline_is_preserved_and_refused(self):
+        self.prepare_second_baseline()
+        (self.repo / 'tracked.txt').write_text('Synthetic local edit at second baseline\n')
+        text = self.refuses_without_checkout_changes('dirty second baseline')
+        self.assertIn('Reason: Tracked edits require review; nothing will be discarded', text)
+        self.assertEqual(self.head(), self.base2)
+        self.assertEqual(self.fetch_calls, [])
+
+    def test_second_baseline_edit_during_fetch_is_preserved(self):
+        self.prepare_second_baseline()
+        self.after_fetch = lambda: (self.repo / 'tracked.txt').write_text('Synthetic second-baseline edit during fetch\n')
+        status, out, err = self.invoke('align')
+        self.assertEqual(status, 1, out + err)
+        self.assertIn('REFUSED:', err)
+        self.assertEqual(self.head(), self.base2)
+        self.assertEqual((self.repo / 'tracked.txt').read_text(), 'Synthetic second-baseline edit during fetch\n')
+        self.assertFalse((self.repo / 'new/repaired.txt').exists())
 
 
 if __name__ == '__main__':
