@@ -1,0 +1,47 @@
+{
+  "source_commit": "54383f8b3436c8232d876a799a0f6c649e91f397",
+  "baseline_git_blob": {
+    "lib/bootstrap.php": "6ffc3bb49abfd29116caf4e96dc331ca2fd8c998",
+    "sw.js": "9b9d92486953f007160c9a3a85a7728038378105"
+  },
+  "replacements": {
+    "lib/bootstrap.php": [
+      [
+        "            'label' => 'Free community event',\n            'description' => 'Free candy, hot dogs, chips and drinks, plus music and family fun. All are welcome.',\n            'image' => 'assets/visuals/trunk-or-treat-2026.webp',\n            'image_alt' => 'Autumn Trunk or Treat graphic with friendly ghosts, pumpkins and an open car trunk filled with candy beside a lake.',\n            'rsvp' => false,\n            'priority' => 100,\n",
+        "            'label' => 'Free community event',\n            'description' => 'Free candy, hot dogs, chips and drinks, plus music and family fun. All are welcome.',\n            'image' => 'assets/visuals/trunk-or-treat-2026.svg',\n            'image_alt' => 'Bright autumn Trunk or Treat illustration with decorated car trunks, pumpkins, wrapped candy, lollipops and festive bunting.',\n            'rsvp' => false,\n            'priority' => 100,\n"
+      ],
+      [
+        "        if (is_array($event) && isset($event['id'])) $existingIds[(string)$event['id']] = true;\n    }\n\n    foreach ($requiredEvents as $event) {\n",
+        "        if (is_array($event) && isset($event['id'])) $existingIds[(string)$event['id']] = true;\n    }\n\n    // Keep the approved Trunk or Treat visual current even when production\n    // preserves an older event record in data/content.json across deploys.\n    foreach ($data['events'] as &$existingEvent) {\n        if (!is_array($existingEvent) || ($existingEvent['id'] ?? '') !== 'trunk-or-treat-2026') continue;\n        $freshImage = 'assets/visuals/trunk-or-treat-2026.svg';\n        $freshAlt = 'Bright autumn Trunk or Treat illustration with decorated car trunks, pumpkins, wrapped candy, lollipops and festive bunting.';\n        if (($existingEvent['image'] ?? '') !== $freshImage) {\n            $existingEvent['image'] = $freshImage;\n            $changed = true;\n        }\n        if (($existingEvent['image_alt'] ?? '') !== $freshAlt) {\n            $existingEvent['image_alt'] = $freshAlt;\n            $changed = true;\n        }\n    }\n    unset($existingEvent);\n\n    foreach ($requiredEvents as $event) {\n"
+      ]
+    ],
+    "sw.js": [
+      [
+        "const CACHE='kcmc-connect-v3.0.3-public-only-blue-fish-menu-20261009';\n// Connection-intake client refresh: worker install reruns cache:'reload' and overwrites cached app.js.\nconst CORE=[\n",
+        "const CACHE='kcmc-connect-v3.0.3-public-only-trunk-art-20261011';\n// Connection-intake client refresh: worker install reruns cache:'reload' and overwrites cached app.js.\nconst CORE=[\n"
+      ],
+      [
+        "  './assets/icons/icon-192.png','./assets/icons/icon-512.png',\n  './assets/visuals/kcmc-building-retouched-20261009.jpg','./assets/visuals/kcmc-worship-2017.webp',\n  './assets/visuals/trunk-or-treat-2026.webp',\n  './assets/visuals/kcmc-congregation-gathering.jpg',\n  './assets/visuals/kcmc-family-outdoor-event.jpg',\n",
+        "  './assets/icons/icon-192.png','./assets/icons/icon-512.png',\n  './assets/visuals/kcmc-building-retouched-20261009.jpg','./assets/visuals/kcmc-worship-2017.webp',\n  './assets/visuals/trunk-or-treat-2026.svg',\n  './assets/visuals/kcmc-congregation-gathering.jpg',\n  './assets/visuals/kcmc-family-outdoor-event.jpg',\n"
+      ],
+      [
+        "const PUBLIC_PATHS=new Set(CORE.map(path=>new URL(path,self.location.href).pathname));\nPUBLIC_PATHS.add(new URL('./index.php',self.location.href).pathname);\nconst isAsset=url=>/\\.(?:css|js|webmanifest|png|jpe?g|webp)$/i.test(url.pathname);\n\nfunction cacheableRequest(url){\n",
+        "const PUBLIC_PATHS=new Set(CORE.map(path=>new URL(path,self.location.href).pathname));\nPUBLIC_PATHS.add(new URL('./index.php',self.location.href).pathname);\nconst isAsset=url=>/\\.(?:css|js|webmanifest|png|jpe?g|webp|svg)$/i.test(url.pathname);\n\nfunction cacheableRequest(url){\n"
+      ],
+      [
+        "self.addEventListener('fetch',event=>{\n  if(event.request.method!=='GET') return;\n  const url=new URL(event.request.url);\n  if(url.origin!==self.location.origin) return;\n  const privateRoute=/\\/(?:member|admin)(?:\\/|$)/.test(url.pathname);\n\n  // Private, unknown, API/data/backup, and token-bearing URLs stay network-only.\n  if(privateRoute||!cacheableRequest(url)){\n    event.respondWith(fetch(event.request));\n    return;\n  }\n\n  event.respondWith(\n    fetch(event.request)\n      .then(response=>{\n        if(cacheableResponse(response)){\n          const copy=response.clone();\n          event.waitUntil(caches.open(CACHE).then(cache=>cache.put(event.request,copy)).catch(()=>{}));\n        }\n        return response;\n",
+        "self.addEventListener('fetch',event=>{\n  if(event.request.method!=='GET') return;\n  let request=event.request;\n  let url=new URL(request.url);\n  if(url.origin!==self.location.origin) return;\n  // Older rendered pages may still request the photographed flyer. Serve the\n  // illustration instead, online or offline, without caching the old image.\n  if(url.pathname===new URL('./assets/visuals/trunk-or-treat-2026.webp',self.location.href).pathname&&!url.search){\n    url=new URL('./assets/visuals/trunk-or-treat-2026.svg',self.location.href);\n    request=new Request(url,{credentials:'omit'});\n  }\n  const privateRoute=/\\/(?:member|admin)(?:\\/|$)/.test(url.pathname);\n\n  // Private, unknown, API/data/backup, and token-bearing URLs stay network-only.\n  if(privateRoute||!cacheableRequest(url)){\n    event.respondWith(fetch(request));\n    return;\n  }\n\n  event.respondWith(\n    fetch(request)\n      .then(response=>{\n        if(cacheableResponse(response)){\n          const copy=response.clone();\n          event.waitUntil(caches.open(CACHE).then(cache=>cache.put(request,copy)).catch(()=>{}));\n        }\n        return response;\n"
+      ],
+      [
+        "          const cache=await caches.open(CACHE);\n          // Versioned static assets may ignore only their version query; pages never ignore query strings.\n          const cached=await cache.match(event.request,isAsset(url)?{ignoreSearch:true}:{});\n          if(cached) return cached;\n          if(event.request.mode==='navigate'){\n",
+        "          const cache=await caches.open(CACHE);\n          // Versioned static assets may ignore only their version query; pages never ignore query strings.\n          const cached=await cache.match(request,isAsset(url)?{ignoreSearch:true}:{});\n          if(cached) return cached;\n          if(event.request.mode==='navigate'){\n"
+      ]
+    ]
+  },
+  "new_assets": {
+    "assets/visuals/trunk-or-treat-2026.svg": {
+      "git_blob": "0da5d8a1b7d0734eb4734374f17e26e2658c943a",
+      "bytes": 5851
+    }
+  }
+}

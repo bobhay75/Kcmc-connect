@@ -175,3 +175,47 @@ test('activation removes only old KCMC caches',async()=>{
   assert.ok(h.stores.has(h.cacheName));
   assert.equal(h.calls.claim,1);
 });
+
+test('event artwork upgrade precaches the SVG and never the photographed flyer',async()=>{
+  const h=harness();
+  await h.lifecycle('install');
+  assert.match(h.cacheName,/trunk-art-20261011$/);
+  assert.ok(h.calls.fetch.some(request=>request.url.endsWith('/trunk-or-treat-2026.svg')));
+  assert.ok(h.calls.fetch.every(request=>!request.url.endsWith('/trunk-or-treat-2026.webp')));
+});
+
+test('older event markup requests the illustration instead of the flyer online',async()=>{
+  const h=harness({response:request=>new Response(request.url)});
+  const result=await h.dispatch('assets/visuals/trunk-or-treat-2026.webp');
+  assert.equal(await result.response.text(),PUBLIC_URL+'assets/visuals/trunk-or-treat-2026.svg');
+  assert.equal(h.calls.fetch.length,1);
+  assert.equal(h.calls.fetch[0].credentials,'omit');
+  assert.ok(h.calls.put.every(call=>call.url.endsWith('/trunk-or-treat-2026.svg')));
+});
+
+test('current and older event markup share the same approved artwork offline',async()=>{
+  const h=harness({offline:true});
+  await h.seed(h.cacheName,'assets/visuals/trunk-or-treat-2026.svg','ILLUSTRATION');
+  await h.seed('kcmc-connect-old','assets/visuals/trunk-or-treat-2026.webp','PHOTOGRAPHED FLYER');
+  for(const name of ['trunk-or-treat-2026.svg','trunk-or-treat-2026.svg?v=20261011','trunk-or-treat-2026.webp']){
+    const result=await h.dispatch('assets/visuals/'+name);
+    assert.equal(await result.response.text(),'ILLUSTRATION');
+  }
+  assert.ok(h.calls.match.every(call=>call.name===h.cacheName&&!call.url.endsWith('.webp')));
+});
+
+for(const name of ['trunk-or-treat-2026.svg?token=TEST_SECRET','trunk-or-treat-2026.webp?token=TEST_SECRET','unrelated.svg']){
+  test(`artwork changes do not permit ${name} into the public cache`,async()=>{
+    const h=harness({offline:true});
+    await h.seed(h.cacheName,'assets/visuals/trunk-or-treat-2026.svg','ILLUSTRATION');
+    await assert.rejects(h.dispatch('assets/visuals/'+name),/offline/);
+    assert.equal(h.calls.match.length,0);
+  });
+}
+
+test('legacy artwork rewriting never touches another origin',async()=>{
+  const h=harness();
+  const result=await h.dispatch('https://example.org/kcmc-connect/assets/visuals/trunk-or-treat-2026.webp');
+  assert.equal(result.handled,false);
+  assert.equal(h.calls.fetch.length,0);
+});

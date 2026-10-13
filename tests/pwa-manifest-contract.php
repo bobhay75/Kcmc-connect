@@ -35,8 +35,8 @@ foreach ($icons as $icon) {
         fwrite(STDERR, "Manifest icon entry is incomplete\n");
         exit(1);
     }
-    if (!str_contains($src, '?v=3.0.2')) {
-        fwrite(STDERR, "Manifest icon cache key must be v=3.0.2\n");
+    if (!str_contains($src, '?v=3.0.3')) {
+        fwrite(STDERR, "Manifest icon cache key must be v=3.0.3\n");
         exit(1);
     }
     $path = $app . '/' . explode('?', $src, 2)[0];

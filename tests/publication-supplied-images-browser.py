@@ -13,7 +13,8 @@ from playwright.sync_api import sync_playwright, expect
 
 ROOT = Path(__file__).resolve().parents[1]
 APP = ROOT / 'KCMC-Connect-Phase6-Recreated'
-ASSETS = json.loads((ROOT / 'docs/supplied-images-2026-10-06.json').read_text())
+RETIRED = {'kcmc-church-wordmark.jpg', 'kcmc-bridge-wordmark.png', 'kcmc-bridge-logo-composite.png'}
+ASSETS = [a for a in json.loads((ROOT / 'docs/supplied-images-2026-10-06.json').read_text()) if a['file'] not in RETIRED]
 
 with tempfile.TemporaryDirectory(prefix='kcmc-publication-images-') as td:
     work = Path(td)
@@ -59,6 +60,8 @@ with tempfile.TemporaryDirectory(prefix='kcmc-publication-images-') as td:
                     target.wait_for_url('**/member/**')
                     target.goto(base + '/admin/publication-designer.php')
                 login(page)
+                for name in RETIRED | {'kcmc-ministry-group.jpg', 'kcmc-stage-2014.webp', 'trunk-or-treat-2026.webp'}:
+                    assert page.locator(f'[data-asset$="/{name}"]').count() == 0
                 page.locator('#projectName').fill('All supplied KCMC images')
                 page.locator('#addPage').click()
                 for asset in ASSETS:
@@ -73,23 +76,23 @@ with tempfile.TemporaryDirectory(prefix='kcmc-publication-images-') as td:
                 project = response.json()['project']
                 assert len(project['pages']) == 2
                 assert {Path(i['src']).name for i in project['pages'][1]['items']} == {a['file'] for a in ASSETS}
-                print('PASS: all nine approved assets and alt text survive shared project validation')
+                print('PASS: all six clean supplied assets and alt text survive shared project validation')
                 # A fresh browser context proves the project is not browser-local.
                 second = browser.new_context()
                 other = second.new_page()
                 login(other)
                 other.locator('#savedList button').filter(has_text='All supplied KCMC images').click()
                 other.locator('#nextPage').click()
-                expect(other.locator('#page .item img')).to_have_count(9)
+                expect(other.locator('#page .item img')).to_have_count(len(ASSETS))
                 for asset in ASSETS:
                     img = other.locator(f'#page img[src$="/{asset["file"]}"]')
                     expect(img).to_have_attribute('alt', asset['alt'])
                     img.evaluate('(img) => img.decode()')
-                print('PASS: all nine images reload and decode in an independent admin session')
+                print('PASS: all six clean supplied images reload and decode in an independent admin session')
                 other.evaluate('window.print = () => { window.imageReviewPrinted = true; }')
                 other.locator('#printBtn').click()
                 other.wait_for_function('window.imageReviewPrinted === true')
-                assert other.locator('#printPages img').count() >= 9
+                assert other.locator('#printPages img').count() >= len(ASSETS)
                 assert other.locator('#printPages img').evaluate_all('(imgs) => imgs.every(i => i.complete && i.naturalWidth > 0)')
                 print('PASS: complete-document print renderer loads the supplied images')
                 assert not errors, errors

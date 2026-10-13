@@ -1,0 +1,99 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 720" role="img" aria-labelledby="title desc">
+<title id="title">Trunk or Treat community event illustration</title>
+<desc id="desc">Bright autumn illustration of decorated car trunks, pumpkins, wrapped candy, lollipops and festive bunting.</desc>
+<defs>
+  <linearGradient id="sky" x1="0" y1="0" x2="0" y2="1">
+    <stop offset="0" stop-color="#fff5d9"/>
+    <stop offset="1" stop-color="#ffd08e"/>
+  </linearGradient>
+  <linearGradient id="ground" x1="0" y1="0" x2="0" y2="1">
+    <stop offset="0" stop-color="#f7d298"/>
+    <stop offset="1" stop-color="#ffedc9"/>
+  </linearGradient>
+  <g id="pumpkin">
+    <path d="M-2-22q-3-14 7-17" fill="none" stroke="#526548" stroke-width="7" stroke-linecap="round"/>
+    <ellipse rx="32" ry="26" fill="#ed8d28"/>
+    <ellipse rx="19" ry="26" fill="#f9a33c"/>
+    <path d="M0-23v46" fill="none" stroke="#d46b24" stroke-width="3" opacity=".55"/>
+  </g>
+  <g id="candy">
+    <path d="M-18-8-35-18v36L-18 8M18-8 35-18v36L18 8" fill="#ef8a70"/>
+    <rect x="-20" y="-13" width="40" height="26" rx="10" fill="#b65d79"/>
+    <path d="M-6-12 5 12M6-12 17 10" stroke="#ffe9cc" stroke-width="7"/>
+  </g>
+</defs>
+<rect width="1200" height="720" fill="url(#sky)"/>
+<circle cx="1050" cy="155" r="72" fill="#ffe39a"/>
+<path d="M0 70Q600 220 1200 70" fill="none" stroke="#547180" stroke-width="4"/>
+<g>
+  <path d="m90 90 57 11-39 59Z" fill="#de724a"/>
+  <path d="m265 122 59 8-37 62Z" fill="#507e90"/>
+  <path d="m445 140 59 4-33 63Z" fill="#eab441"/>
+  <path d="m635 144 59-4-26 67Z" fill="#b65d79"/>
+  <path d="m820 130 59-8-21 69Z" fill="#507e90"/>
+  <path d="m1000 104 57-11-17 69Z" fill="#de724a"/>
+</g>
+<text x="600" y="292" text-anchor="middle" font-family="Arial, sans-serif" font-weight="800" font-size="76" letter-spacing="2" fill="#24495a">TRUNK OR TREAT!</text>
+<path d="M0 412q220-54 425-1t420 0 355 10v299H0Z" fill="url(#ground)"/>
+<g fill="#b77b48" opacity=".18">
+  <ellipse cx="313" cy="615" rx="192" ry="28"/>
+  <ellipse cx="670" cy="609" rx="159" ry="24"/>
+  <ellipse cx="1010" cy="639" rx="115" ry="22"/>
+</g>
+<g transform="translate(135 325) scale(1.1)">
+  <rect x="0" y="116" width="300" height="122" rx="24" fill="#dc7246"/>
+  <path d="M22 116c24-108 80-132 135-132 62 0 109 25 128 132Z" fill="#b54d36"/>
+  <path d="M28 104C45 20 88 0 155 0s107 28 120 104Z" fill="#24495a"/>
+  <rect x="39" y="44" width="240" height="15" rx="7" fill="#efa743"/>
+  <circle cx="55" cy="246" r="36" fill="#24495a"/><circle cx="246" cy="246" r="36" fill="#24495a"/>
+  <circle cx="55" cy="246" r="17" fill="#d9e2df"/><circle cx="246" cy="246" r="17" fill="#d9e2df"/>
+  <use href="#pumpkin" transform="translate(86 91) scale(.8)"/>
+  <use href="#pumpkin" transform="translate(151 88)"/>
+  <use href="#pumpkin" transform="translate(218 91) scale(.8)"/>
+  <path d="M18 111q133 55 262 0" fill="none" stroke="#fff0af" stroke-width="7" stroke-linecap="round" stroke-dasharray="2 16"/>
+  <rect x="14" y="168" width="26" height="29" rx="7" fill="#ffdc99"/>
+  <rect x="260" y="168" width="26" height="29" rx="7" fill="#ffdc99"/>
+  <rect x="106" y="198" width="88" height="21" rx="8" fill="#fff2ce"/>
+  <path d="M37 222h226" stroke="#ac4e39" stroke-width="7" stroke-linecap="round"/>
+</g>
+<g transform="translate(525 375) scale(.88)">
+  <rect x="0" y="106" width="290" height="112" rx="24" fill="#5b8c9c"/>
+  <path d="M20 106c26-98 78-122 131-122 59 0 107 26 124 122Z" fill="#376879"/>
+  <path d="M27 96C46 18 88 2 148 2c61 0 100 26 116 94Z" fill="#24495a"/>
+  <circle cx="52" cy="226" r="34" fill="#24495a"/><circle cx="238" cy="226" r="34" fill="#24495a"/>
+  <circle cx="52" cy="226" r="15" fill="#d9e2df"/><circle cx="238" cy="226" r="15" fill="#d9e2df"/>
+  <use href="#pumpkin" transform="translate(75 80) scale(.75)"/>
+  <use href="#candy" transform="translate(143 72) rotate(-12)"/>
+  <use href="#pumpkin" transform="translate(210 80) scale(.75)"/>
+  <path d="M22 105q123 52 246 0" fill="none" stroke="#fff0af" stroke-width="7" stroke-linecap="round" stroke-dasharray="2 16"/>
+  <rect x="16" y="155" width="24" height="26" rx="6" fill="#ffdc99"/>
+  <rect x="250" y="155" width="24" height="26" rx="6" fill="#ffdc99"/>
+  <rect x="103" y="181" width="84" height="20" rx="8" fill="#fff2ce"/>
+</g>
+<g transform="translate(973 524)">
+  <path d="M-33 2-44-117M33 1 60-101" fill="none" stroke="#fff7e5" stroke-width="12" stroke-linecap="round"/>
+  <circle cx="-44" cy="-117" r="38" fill="#b65d79"/>
+  <path d="M-56-116c0-18 27-20 27-2 0 28-47 28-46-2" fill="none" stroke="#ffe6c2" stroke-width="9" stroke-linecap="round"/>
+  <circle cx="60" cy="-101" r="34" fill="#e9ab3b"/>
+  <path d="M49-102c0-15 24-17 24-1 0 25-41 25-41-2" fill="none" stroke="#fff0c9" stroke-width="8" stroke-linecap="round"/>
+  <path d="M-64 13c-10-103 143-103 128 0" fill="none" stroke="#56764f" stroke-width="12"/>
+  <use href="#candy" transform="translate(-27 -7) rotate(-20)"/>
+  <use href="#candy" transform="translate(32 -4) rotate(19)"/>
+  <path d="M-83 6h166l-17 100q-67 32-132 0Z" fill="#df8c38"/>
+  <path d="M-82 6q83 31 164 0" fill="none" stroke="#fbb85c" stroke-width="17" stroke-linecap="round"/>
+  <path d="M-42 40v63M0 45v65M42 40v63" stroke="#fbb85c" stroke-width="10" stroke-linecap="round"/>
+</g>
+<use href="#pumpkin" transform="translate(88 614) scale(1.25)"/>
+<use href="#pumpkin" transform="translate(842 625) scale(1.35)"/>
+<use href="#pumpkin" transform="translate(1111 626) scale(.85)"/>
+<use href="#candy" transform="translate(530 656) rotate(-17) scale(.75)"/>
+<use href="#candy" transform="translate(114 391) rotate(20) scale(.55)"/>
+<g fill="#ce7743">
+  <path d="M36 272q51-38 56 16-34 26-56-16Z"/>
+  <path d="M1101 343q54-26 49 25-39 23-49-25Z"/>
+</g>
+<g fill="#789265">
+  <path d="M49 221q42 2 28 36-39-3-28-36Z"/>
+  <path d="M1100 685q-47 10-43-27 34-21 43 27Z"/>
+</g>
+</svg>

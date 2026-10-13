@@ -164,6 +164,32 @@ for name, blob in appearance['preserved_assets'].items():
     check(git_blob((ROOT / PREFIX / name).read_bytes()) == blob, name + ': original archive bytes are unchanged')
 appearance_paths = {PREFIX + p for p in appearance['replacements']} | {PREFIX + p for p in appearance['new_assets']}
 
+# The fresh event illustration is a narrowly enumerated public-artwork change.
+# Preserve the historical evidence and reconstruct only these two runtime files.
+art_bytes = (ROOT / 'tests/fixtures/trunk-or-treat-art-reviewed.json').read_bytes()
+check(git_blob(art_bytes) == '9b588070a37225c62041af1b245240a1722fbc72', 'event artwork delta fixture remains exact')
+art = json.loads(art_bytes)
+check(set(art) == {'source_commit', 'baseline_git_blob', 'replacements', 'new_assets'}, 'event artwork fixture fields are bounded')
+check(art['source_commit'] == '54383f8b3436c8232d876a799a0f6c649e91f397', 'event artwork baseline is reviewed main')
+check(set(art['replacements']) == {'lib/bootstrap.php', 'sw.js'} and set(art['baseline_git_blob']) == set(art['replacements']), 'event artwork changes exactly bootstrap and the public worker')
+check(set(art['new_assets']) == {'assets/visuals/trunk-or-treat-2026.svg'}, 'event artwork adds exactly one standalone SVG')
+
+def apply_event_art(name, content):
+    if name not in art['replacements']:
+        return content
+    check(git_blob(content) == art['baseline_git_blob'][name], name + ': event artwork baseline matches exactly')
+    for old, new in art['replacements'][name]:
+        check(content.count(old.encode()) == 1, name + ': event artwork replacement anchor is unique')
+        content = content.replace(old.encode(), new.encode(), 1)
+    return content
+
+for name, info in art['new_assets'].items():
+    content = (ROOT / PREFIX / name).read_bytes()
+    check(git_blob(content) == info['git_blob'] and len(content) == info['bytes'], name + ': exact event illustration bytes')
+    check(len(content) < 20_000, name + ': mobile artwork budget')
+check((ROOT / PREFIX / 'lib/bootstrap.php').read_bytes() == apply_event_art('lib/bootstrap.php', source(art['source_commit'], PREFIX + 'lib/bootstrap.php')), 'bootstrap changes only the reviewed event artwork fields')
+artwork_paths = {PREFIX + p for p in art['replacements']} | {PREFIX + p for p in art['new_assets']}
+
 for name, content in expected.items():
     for old, new in approved.get(name, []):
         old, new = old.encode(), new.encode()
@@ -194,7 +220,7 @@ for name, content in expected.items():
     for old, new in offline['replacements'].get(name, []):
         check(content.count(old.encode()) == 1, name + ': offline repair anchor is unique')
         content = content.replace(old.encode(), new.encode(), 1)
-    content = apply_appearance(name, apply_visitor(name, content))
+    content = apply_event_art(name, apply_appearance(name, apply_visitor(name, content)))
     check(actual == content, name + ': exact reviewed runtime plus enumerated visitor and appearance differences only')
 
 for name in set(visitor['replacements']) - set(expected):
@@ -203,6 +229,33 @@ for name in set(visitor['replacements']) - set(expected):
 for name, sha in visitor['new_files'].items():
     check(hashlib.sha256((ROOT / PREFIX / name).read_bytes()).hexdigest() == sha, name + ': exact separately tested visitor module')
 visitor_paths = {PREFIX + p for p in visitor['replacements']} | {PREFIX + p for p in visitor['new_files']}
+
+# The visual audit removes six built-in picture-of-picture choices, while
+# retaining archived bytes and the existing project-store allowlist.
+gallery_bytes = (ROOT / 'tests/fixtures/publication-gallery-reviewed.json').read_bytes()
+check(hashlib.sha256(gallery_bytes).hexdigest() == '6c8a3322f419ff894167f9fcdeaa8e26ad5301d9a230b44271fde765fa8e986a', 'gallery and icon repair fixture remains exact')
+gallery = json.loads(gallery_bytes)
+check(gallery['source_commit'] == '54383f8b3436c8232d876a799a0f6c649e91f397', 'gallery baseline remains audited main')
+check(set(gallery) == {'source_commit', 'replacements', 'removed_gallery_assets', 'icon'}, 'gallery fixture has only reviewed fields')
+check(set(gallery['replacements']) == {'admin/publication-designer.php', 'manifest.webmanifest'}, 'gallery text scope is exactly editor choices and icon version')
+check(set(gallery['removed_gallery_assets']) == {'kcmc-church-wordmark.jpg', 'kcmc-bridge-wordmark.png', 'kcmc-bridge-logo-composite.png', 'kcmc-ministry-group.jpg', 'kcmc-stage-2014.webp', 'trunk-or-treat-2026.webp'}, 'removed gallery choices match the six visually reviewed assets')
+def apply_gallery(name, content):
+    for old, new in gallery['replacements'].get(name, []):
+        count = 4 if name == 'manifest.webmanifest' else 1
+        check(content.count(old.encode()) == count, name + ': gallery repair anchor has exact occurrence count')
+        content = content.replace(old.encode(), new.encode())
+    return content
+for name in gallery['removed_gallery_assets']:
+    check((ROOT / PREFIX / 'assets/visuals' / name).read_bytes() == source(gallery['source_commit'], PREFIX + 'assets/visuals/' + name), name + ': archived original remains unchanged for saved projects')
+icon = gallery['icon']
+check(icon['path'] == 'assets/icons/icon-512.png' and icon['source_icon'] == 'assets/icons/icon-192.png', 'only the broken 512px icon is repaired')
+check(hashlib.sha256(source(gallery['source_commit'], PREFIX + icon['path'])).hexdigest() == icon['baseline_sha256'], 'broken icon baseline remains exact')
+check(hashlib.sha256((ROOT / PREFIX / icon['source_icon']).read_bytes()).hexdigest() == icon['source_icon_sha256'], 'approved 192px fish artwork is unchanged')
+icon_bytes = (ROOT / PREFIX / icon['path']).read_bytes()
+check(len(icon_bytes) == icon['bytes'] and hashlib.sha256(icon_bytes).hexdigest() == icon['sha256'], 'repaired 512px icon bytes match reviewed build')
+manifest = apply_gallery('manifest.webmanifest', source(gallery['source_commit'], PREFIX + 'manifest.webmanifest'))
+check((ROOT / PREFIX / 'manifest.webmanifest').read_bytes() == manifest, 'manifest has only reviewed icon cache version change')
+gallery_repair_paths = {PREFIX + p for p in gallery['replacements']} | {PREFIX + icon['path']}
 
 # Publication Designer changes remain constrained to the same three reviewed
 # admin files. Pin their exact Git blobs so older runtime provenance checks stay
@@ -257,9 +310,9 @@ for name, blob in publication.items():
         check(arrange['scope'] == ['admin/publication-designer.php'], 'arrange/history runtime scope is exactly the Publication Designer')
         check(set(arrange['features']) == {'undo-redo','duplicate-object','bring-to-front','bring-forward','send-backward','send-to-back','keyboard-shortcuts'}, 'arrange/history feature scope remains exact')
         check(git_blob(content) == arrange['source_git_blob'], 'prior Publisher proofs exactly reconstruct arrange/history baseline')
-        actual_arrange = (ROOT / PREFIX / name).read_bytes()
-        check(git_blob(actual_arrange) == arrange['target_git_blob'], 'Publisher arrange/history target blob matches reviewed build')
-        content = actual_arrange
+        reviewed_arrange = source(gallery['source_commit'], PREFIX + name)
+        check(git_blob(reviewed_arrange) == arrange['target_git_blob'], 'Publisher arrange/history target blob matches reviewed build')
+        content = apply_gallery(name, reviewed_arrange)
     check((ROOT / PREFIX / name).read_bytes() == content, name + ': exact reviewed save/fidelity/interaction/arrange deltas only')
 
 image_inventory = json.loads((ROOT / 'docs/supplied-images-2026-10-06.json').read_text())
@@ -284,9 +337,9 @@ for old, new in guide['replacements'][guide_path]:
 check((ROOT / guide_path).read_bytes() == guide_content, 'deployment guide matches the exact reviewed documentation delta')
 documentation_paths = {guide_path}
 changed = set(git('diff', '--name-only', BASE, '--', PREFIX).decode().splitlines())
-check(changed == ({PREFIX + p for p in expected} | {PREFIX + p for p in publication} | image_paths | documentation_paths | visitor_paths | appearance_paths), 'application diff is exact runtime, Publisher, documentation and enumerated visitor/appearance scope')
+check(changed == ({PREFIX + p for p in expected} | {PREFIX + p for p in publication} | image_paths | documentation_paths | visitor_paths | appearance_paths | artwork_paths | gallery_repair_paths), 'application diff is exact runtime, Publisher, documentation and enumerated visitor/appearance scope')
 changed_since_reconciled = set(git('diff', '--name-only', RECONCILED, '--', PREFIX).decode().splitlines())
-check(changed_since_reconciled == ({PREFIX + p for p in approved} | {PREFIX + 'sw.js'} | {PREFIX + p for p in publication} | image_paths | documentation_paths | visitor_paths | appearance_paths), 'post-reconciliation diff is exact reviewed source plus enumerated visitor/appearance scope')
+check(changed_since_reconciled == ({PREFIX + p for p in approved} | {PREFIX + 'sw.js'} | {PREFIX + p for p in publication} | image_paths | documentation_paths | visitor_paths | appearance_paths | artwork_paths | gallery_repair_paths), 'post-reconciliation diff is exact reviewed source plus enumerated visitor/appearance scope')
 for path in ['.cpanel.yml', 'KCMC-Connect-Phase6-Recreated/data/content.json', 'KCMC-Connect-Phase6-Recreated/config.example.php']:
     check((ROOT / path).read_bytes() == source(BASE, path), path + ': unchanged')
 login = (ROOT / PREFIX / 'member/login.php').read_bytes()

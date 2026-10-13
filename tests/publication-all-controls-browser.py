@@ -82,7 +82,9 @@ def run():
             # Built-in asset buttons: every visible KCMC asset must add one image.
             asset_buttons = page.locator('#assetLibrary [data-asset]')
             asset_count = asset_buttons.count()
-            check(asset_count >= 14, 'KCMC asset library exposes all expected built-in image buttons')
+            check(asset_count == 8, 'KCMC asset library exposes exactly eight clean built-in image buttons')
+            for name in ['kcmc-ministry-group.jpg', 'kcmc-stage-2014.webp', 'trunk-or-treat-2026.webp', 'kcmc-church-wordmark.jpg', 'kcmc-bridge-wordmark.png', 'kcmc-bridge-logo-composite.png']:
+                check(page.locator(f'[data-asset$="/{name}"]').count() == 0, name + ': pictured poster/composite is absent from gallery')
             for i in range(asset_count):
                 prior = page.locator('#page .item[data-type="image"]').count()
                 asset_buttons.nth(i).click()
