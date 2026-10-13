@@ -1,0 +1,49 @@
+{
+  "app": "/home/bobsome1/public_html/kcmc-connect",
+  "baselines": {
+    "268bebca444bd4970bb4ecaa0d6eceb6a11988fd": {
+      "admin/publication-designer.php": {
+        "bytes": 36010,
+        "mode": 420,
+        "sha256": "b9e05cd22cbb5b98f04031f548ca7237661827c367d6608669adf8df4e612758"
+      },
+      "assets/icons/icon-512.png": {
+        "bytes": 4769,
+        "mode": 420,
+        "sha256": "e14220ab44f5061853e0fcb8db711e2d08acb8ab91a880bd3ee0a5c01ff11aac"
+      },
+      "assets/visuals/kcmc-building-retouched-20261009.jpg": null,
+      "assets/visuals/trunk-or-treat-2026.svg": null,
+      "index.php": {
+        "bytes": 34495,
+        "mode": 420,
+        "sha256": "6051d3ac749818e2cd3487224febe7f5df2e267e8fbd470dd0f24ad21bb14830"
+      },
+      "lib/bootstrap.php": {
+        "bytes": 21742,
+        "mode": 420,
+        "sha256": "32cff7ba681a9c5163be880af62a358b331b6dbfe91b0fce9621497ef9413b31"
+      },
+      "manifest.webmanifest": {
+        "bytes": 773,
+        "mode": 420,
+        "sha256": "1b14edb76bcdf80ed633d74c7a8e93140c27eb59f654bfee49d3b154a126a29a"
+      },
+      "public-presentation.css": {
+        "bytes": 11532,
+        "mode": 420,
+        "sha256": "11f54646d626418dca4672593df42286609527b9ba154cc5cf83401707afebe0"
+      },
+      "public-presentation.js": {
+        "bytes": 6173,
+        "mode": 420,
+        "sha256": "eb1b70aa00615b2acd75b3173612d56da66d7a03ddff73271ce84c85f432e354"
+      },
+      "sw.js": {
+        "bytes": 5705,
+        "mode": 420,
+        "sha256": "dee7ee1f397f78bee54b82de08762debbe0b574c1748ae2ab1da84be2393493f"
+      }
+    }
+  }
+}

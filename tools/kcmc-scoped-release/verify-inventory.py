@@ -5,6 +5,7 @@ import importlib.util
 import json
 from pathlib import Path
 import subprocess
+import tempfile
 
 HERE = Path(__file__).resolve().parent
 ROOT = HERE.parents[1]
@@ -14,6 +15,10 @@ SPEC.loader.exec_module(INSTALLER)
 INV = json.loads((HERE / 'approved-inventory.json').read_text())
 assert INSTALLER.COMMIT == INV['commit']
 assert str(INSTALLER.APP_ROOT) == INV['app']
+assert INV['commit'] == 'f4442fc4cce2121828544b79b8ba3591c5fe0dab'
+assert subprocess.check_output(['git', 'cat-file', '-t', INV['commit']], cwd=str(ROOT)).strip() == b'commit'
+def reviewed_source(path):
+    return subprocess.check_output(['git', 'show', INV['commit'] + ':' + path], cwd=str(ROOT))
 assert set(INSTALLER.FILES) == set(item['path'] for item in INV['files'])
 assert len(INSTALLER.FILES) == 16
 assert INSTALLER.GUARDS == {item['path']: item['sha256'] for item in INV['preserve_guards']}
@@ -45,7 +50,7 @@ for item in INV['files']:
     name = item['path']
     assert INSTALLER.FILES[name] == {key:item[key] for key in ('sha256','bytes','baseline_sha256')}
     assert INSTALLER.GIT_SHAS[name] == item['git_sha']
-    raw = (ROOT / 'KCMC-Connect-Phase6-Recreated' / name).read_bytes()
+    raw = reviewed_source('KCMC-Connect-Phase6-Recreated/' + name)
     assert len(raw) == item['bytes']
     assert hashlib.sha256(raw).hexdigest() == item['sha256']
     assert hashlib.sha1(('blob ' + str(len(raw)) + '\0').encode() + raw).hexdigest() == item['git_sha']
@@ -55,14 +60,14 @@ for item in INV['files']:
         assert hashlib.sha256(old).hexdigest() == item['baseline_sha256']
         assert len(old) == item['baseline_bytes']
 for item in INV['preserve_guards']:
-    raw = (ROOT / 'KCMC-Connect-Phase6-Recreated' / item['path']).read_bytes()
+    raw = reviewed_source('KCMC-Connect-Phase6-Recreated/' + item['path'])
     assert len(raw) == item['bytes']
     assert hashlib.sha256(raw).hexdigest() == item['sha256']
 SPEC = importlib.util.spec_from_file_location('content_review', str(HERE / 'content-review.py'))
 REVIEW = importlib.util.module_from_spec(SPEC)
 SPEC.loader.exec_module(REVIEW)
 assert REVIEW.SOURCE_COMMIT == INV['commit']
-raw = (ROOT / REVIEW.SOURCE_PATH).read_bytes()
+raw = reviewed_source(REVIEW.SOURCE_PATH)
 assert hashlib.sha1(('blob ' + str(len(raw)) + '\0').encode() + raw).hexdigest() == REVIEW.SOURCE_BLOB_SHA1
 assert [event for event in json.loads(raw.decode('utf-8'))['events'] if event['id'] == REVIEW.CANDIDATE['id']] == [REVIEW.CANDIDATE]
 SPEC = importlib.util.spec_from_file_location('content_insert', str(HERE / 'insert-hope-keepers.py'))
@@ -72,5 +77,8 @@ assert INSERT.CANDIDATE == REVIEW.CANDIDATE
 assert INSERT.SOURCE_BLOB_SHA1 == REVIEW.SOURCE_BLOB_SHA1
 assert INSERT.EXPECTED_HOST_SHA256 == 'dc3e671177f2d92096da7c0f5e174883492513261649508921a5ce9875ebe5a6'
 assert INSERT.HOST_FILE == '/home/bobsome1/public_html/kcmc-connect/data/content.json'
-assert INSERT.verify_source(str(ROOT / INSERT.SOURCE_PATH))['verified']
-print('PASS: 16 release files, two complete baseline bundles, 13 preserved guards, and the read-only event candidate match reviewed source pins.')
+with tempfile.TemporaryDirectory(prefix='kcmc-reviewed-content-') as source_dir:
+    canonical = Path(source_dir) / 'content.json'
+    canonical.write_bytes(raw)
+    assert INSERT.verify_source(str(canonical))['verified']
+print('PASS: historical Oct8 immutable source retains 16 release files, two baseline bundles, 13 guards and the exact approved event; current runtime is checked by its separate release inventory.')

@@ -1,0 +1,57 @@
+name: KCMC October 13 scoped host release
+on:
+  pull_request:
+    paths:
+      - 'tools/kcmc-scoped-release-oct13/**'
+      - '.github/workflows/scoped-cpanel-oct13.yml'
+permissions:
+  contents: read
+jobs:
+  source-and-fixtures:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+          persist-credentials: false
+      - name: Fetch immutable source commits
+        run: git fetch --no-tags origin 268bebca444bd4970bb4ecaa0d6eceb6a11988fd 4225fce8968747ad4f828a9a36087b04fd020484
+      - name: Verify exact source scope and transaction fixtures
+        env:
+          PYTHONDONTWRITEBYTECODE: '1'
+        run: |
+          set -euo pipefail
+          python3 tools/kcmc-scoped-release-oct13/verify-inventory.py
+          python3 tools/kcmc-scoped-release-oct13/test_installer.py
+          python3 tools/kcmc-scoped-release-oct13/test_align_repository.py
+      - name: Validate actual PHP 8.2 and staged image metadata
+        env:
+          PYTHONDONTWRITEBYTECODE: '1'
+        run: |
+          set -euo pipefail
+          docker pull php:8.2-cli
+          export KCMC_CI_STAGE_ROOT="$(mktemp -d)"
+          export KCMC_CI_REPO_ROOT="$PWD"
+          trap 'rm -rf -- "$KCMC_CI_STAGE_ROOT"' EXIT
+          mkdir -p "$KCMC_CI_STAGE_ROOT/bin"
+          cat > "$KCMC_CI_STAGE_ROOT/bin/php8.2" <<'SH'
+          #!/bin/sh
+          exec docker run --rm --network none -v "$KCMC_CI_REPO_ROOT:$KCMC_CI_REPO_ROOT:ro" -v "$KCMC_CI_STAGE_ROOT:$KCMC_CI_STAGE_ROOT" -w "$KCMC_CI_REPO_ROOT" php:8.2-cli "$@"
+          SH
+          chmod 700 "$KCMC_CI_STAGE_ROOT/bin/php8.2"
+          PATH="$KCMC_CI_STAGE_ROOT/bin:$PATH" python3 tools/kcmc-scoped-release-oct13/verify-stage.py
+  host-python-compatibility:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+          persist-credentials: false
+      - name: Exercise fixtures on the host Python generation
+        run: |
+          set -euo pipefail
+          docker pull python:3.6.15-slim-buster
+          docker run --rm --network none -e PYTHONDONTWRITEBYTECODE=1 -v "$PWD:/review:ro" -w /review python:3.6.15-slim-buster python tools/kcmc-scoped-release-oct13/test_installer.py
+          docker run --rm --network none -e PYTHONDONTWRITEBYTECODE=1 -v "$PWD:/review:ro" -w /review python:3.6.15-slim-buster python -c "import importlib.util; p='tools/kcmc-scoped-release-oct13/align-repository.py'; s=importlib.util.spec_from_file_location('alignment',p); m=importlib.util.module_from_spec(s); s.loader.exec_module(m); compile(open('tools/kcmc-scoped-release-oct13/test_align_repository.py').read(), 'alignment-fixtures', 'exec'); compile(open('tools/kcmc-scoped-release-oct13/verify-stage.py').read(), 'stage-check', 'exec'); print('PASS: Python 3.6 alignment import and fixture/stage syntax; real Git cases run in source job.')"

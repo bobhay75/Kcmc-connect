@@ -325,7 +325,7 @@ for asset in image_inventory:
 # pinned independently. This permits one named document without exempting any
 # application path from the exact runtime checks above.
 guide_bytes = (ROOT / 'tests/fixtures/deployment-guide-reviewed.json').read_bytes()
-check(hashlib.sha256(guide_bytes).hexdigest() == '4bb31d71293977e1d05cb9e3a2f935d87150c92a897ec9a14330b6de93d9e94b', 'reviewed deployment guide delta remains exact')
+check(hashlib.sha256(guide_bytes).hexdigest() == 'f973f79dbe8f6cb600332c5703a655300cee4894f89032e8a5c0481855e14e56', 'reviewed deployment guide delta remains exact')
 guide = json.loads(guide_bytes)
 check(set(guide) == {'source_commit', 'replacements'} and guide['source_commit'] == 'f4442fc4cce2121828544b79b8ba3591c5fe0dab', 'deployment guide source remains pinned')
 guide_path = PREFIX + 'DEPLOY.md'

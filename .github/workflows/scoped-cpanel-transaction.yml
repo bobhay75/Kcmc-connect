@@ -16,7 +16,7 @@ jobs:
           ref: ${{ github.event.pull_request.head.sha }}
           persist-credentials: false
       - name: Fetch known host source object (read only)
-        run: git fetch --no-tags origin ae004a659a7c2fb334296fa41f54dd5263f4d5c0 61c70f590735522adbfd6be02dab6888924a54fd
+        run: git fetch --no-tags origin ae004a659a7c2fb334296fa41f54dd5263f4d5c0 61c70f590735522adbfd6be02dab6888924a54fd f4442fc4cce2121828544b79b8ba3591c5fe0dab
       - name: Verify immutable source pins and transaction fixtures
         env:
           PYTHONDONTWRITEBYTECODE: '1'
