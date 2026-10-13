@@ -221,7 +221,7 @@ def main() -> None:
         base = origin + "/app"
         # Do not inherit installation-specific KCMC configuration.
         env = {key: value for key, value in os.environ.items() if not key.startswith("KCMC_")}
-        env.update({"KCMC_PRIVATE_DATA_DIR": str(private), "KCMC_SETUP_KEY": ""})
+        env.update({"KCMC_PRIVATE_DATA_DIR": str(private), "KCMC_SETUP_KEY": "", "KCMC_OPERATIONS_OWNER_USER_ID": "synthetic_admin"})
         with (work / "php.log").open("w+") as log:
             server = subprocess.Popen(
                 ["php", "-d", f"session.save_path={sessions}", "-S", f"127.0.0.1:{port}", "-t", str(work)],

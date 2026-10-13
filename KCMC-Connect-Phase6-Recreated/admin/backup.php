@@ -1,5 +1,7 @@
 <?php
 require_once __DIR__ . '/../lib/bootstrap.php';
+require_once __DIR__ . '/../lib/operations-owner.php';
+kcmc_require_operations_owner();
 $user = kcmc_require_role(['pastor_admin', 'recovery_admin']);
 kcmc_private_headers();
 if (!is_file(KCMC_DATA)) { http_response_code(404); exit('No content'); }
