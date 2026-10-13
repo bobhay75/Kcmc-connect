@@ -3,6 +3,15 @@ declare(strict_types=1);
 require_once __DIR__ . '/../lib/bootstrap.php';
 
 $user = kcmc_require_role(['pastor_admin', 'recovery_admin']);
+// This is a separate, fail-closed owner allowlist. Role alone is insufficient.
+// Set KCMC_OPERATIONS_OWNER_USER_ID privately in the hosting environment;
+// never commit a user ID, password, or secret to this public repository.
+$ownerId = trim((string)(getenv('KCMC_OPERATIONS_OWNER_USER_ID') ?: ''));
+if ($ownerId === '' || !hash_equals($ownerId, (string)($user['id'] ?? ''))) {
+    kcmc_private_headers();
+    http_response_code(403);
+    exit('Operations access is restricted to the designated owner.');
+}
 kcmc_private_headers();
 
 $tools = [
