@@ -179,7 +179,7 @@ test('activation removes only old KCMC caches',async()=>{
 test('event artwork upgrade precaches the SVG and never the photographed flyer',async()=>{
   const h=harness();
   await h.lifecycle('install');
-  assert.match(h.cacheName,/trunk-art-20261011$/);
+  assert.match(h.cacheName,/option-b-20261013$/);
   assert.ok(h.calls.fetch.some(request=>request.url.endsWith('/trunk-or-treat-2026.svg')));
   assert.ok(h.calls.fetch.every(request=>!request.url.endsWith('/trunk-or-treat-2026.webp')));
 });
