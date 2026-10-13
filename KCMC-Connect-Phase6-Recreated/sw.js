@@ -1,7 +1,7 @@
-const CACHE='kcmc-connect-v3.0.3-public-only-trunk-art-20261011';
+const CACHE='kcmc-connect-v3.0.3-public-only-option-b-20261013';
 // Connection-intake client refresh: worker install reruns cache:'reload' and overwrites cached app.js.
 const CORE=[
-  './','./styles.css?v=3.0.3','./public-presentation.css?v=blue-fish-menu-20261009','./public-presentation.js?v=blue-fish-menu-20261009','./app.js?v=visitor-welcome-20261008','./manifest.webmanifest?v=3.0.1',
+  './','./styles.css?v=3.0.3','./public-presentation.css?v=home-option-b-20261013','./public-presentation.js?v=blue-fish-menu-20261009','./app.js?v=visitor-welcome-20261008','./manifest.webmanifest?v=3.0.1',
   './bulletin.php','./news.php','./events.php','./care.php','./connect.php',
   './assets/icons/icon-192.png','./assets/icons/icon-512.png',
   './assets/visuals/kcmc-building-retouched-20261009.jpg','./assets/visuals/kcmc-worship-2017.webp',
