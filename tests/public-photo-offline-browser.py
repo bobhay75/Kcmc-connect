@@ -48,7 +48,10 @@ def baseline(name):
 def build_site(site, sources):
     site.mkdir()
     index = sources['index.php'].decode()
-    hero = re.search(r'<section class="hero hero-imagery" data-hero-gallery.*?</section>', index, re.S).group()
+    # Accept only the historical hero and the approved Option B class variant.
+    match = re.search(r'<section class="hero hero-imagery(?: home-cover)?" data-hero-gallery.*?</section>', index, re.S)
+    check(match is not None, 'fixture contains exactly the supported real hero gallery markup')
+    hero = match.group()
     paths = re.findall(r'data-hero-photo[^>]*src="\./([^"]+)"', hero)
     expected_count = 9 if site.name == 'stale' else 4
     missing_path = STALE_MISSING if site.name == 'stale' else MISSING
