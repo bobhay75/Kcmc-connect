@@ -86,8 +86,11 @@ usort($kcmcAnnouncements, fn($a,$b)=>(int)($b['priority']??0)<=>(int)($a['priori
 
 <main id="mainContent">
 <section class="view active" data-view="home">
-  <section class="hero hero-imagery home-cover" aria-label="Welcome to KCMC">
-    <img class="hero-photo is-current home-cover-photo" src="./assets/visuals/kcmc-building-retouched-20261009.jpg" alt="Kimberling City Methodist Church exterior" loading="eager" decoding="async" fetchpriority="high" width="1402" height="1122">
+  <section class="hero hero-imagery home-cover" data-hero-gallery aria-label="Welcome to KCMC">
+    <img class="home-cover-photo hero-photo is-current" data-hero-photo src="./assets/visuals/kcmc-building-retouched-20261009.jpg" alt="Kimberling City Methodist Church exterior; foreground weeds retouched" loading="eager" decoding="async" fetchpriority="high" width="1402" height="1122">
+    <img class="home-cover-photo hero-photo" data-hero-photo src="./assets/visuals/kcmc-worship-2017.webp" alt="People gathered for worship at KCMC, photographed in 2017" loading="lazy" decoding="async" width="640" height="344" hidden>
+    <img class="home-cover-photo hero-photo" data-hero-photo src="./assets/visuals/kcmc-congregation-gathering.jpg" alt="People seated around tables facing the KCMC worship stage" loading="lazy" decoding="async" width="2048" height="1105" hidden>
+    <img class="home-cover-photo hero-photo" data-hero-photo src="./assets/visuals/kcmc-family-outdoor-event.jpg" alt="Children and adults enjoying balloons and an inflatable slide at a Kimberling City outdoor event" loading="lazy" decoding="async" width="2048" height="1536" hidden>
     <div class="wrap home-cover-layout">
       <div class="home-cover-card">
         <div class="eyebrow">Welcome to Kimberling City Methodist Church</div>
@@ -98,6 +101,12 @@ usort($kcmcAnnouncements, fn($a,$b)=>(int)($b['priority']??0)<=>(int)($a['priori
           <a class="action" href="https://www.simplechurchgiving.net/app/giving/umckc" target="_blank" rel="noopener"><b>Give</b><span>Secure online giving</span></a>
           <a class="action" href="#visit" data-route="visit"><b>Visit</b><span>Plan your first Sunday</span></a>
         </div>
+        <div class="hero-photo-controls" data-hero-controls hidden>
+          <button type="button" data-hero-previous aria-label="Previous church photo">←</button>
+          <button type="button" data-hero-toggle>Pause photos</button>
+          <button type="button" data-hero-next aria-label="Next church photo">→</button>
+        </div>
+        <p class="sr-only" data-hero-status role="status" aria-live="polite"></p>
       </div>
     </div>
   </section>

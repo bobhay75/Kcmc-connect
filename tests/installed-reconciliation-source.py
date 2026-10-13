@@ -190,6 +190,23 @@ for name, info in art['new_assets'].items():
 check((ROOT / PREFIX / 'lib/bootstrap.php').read_bytes() == apply_event_art('lib/bootstrap.php', source(art['source_commit'], PREFIX + 'lib/bootstrap.php')), 'bootstrap changes only the reviewed event artwork fields')
 artwork_paths = {PREFIX + p for p in art['replacements']} | {PREFIX + p for p in art['new_assets']}
 
+# Owner-approved Option B: exactly the homepage markup and appended public CSS.
+# Historical provenance, private PHP and archived assets remain authoritative.
+home_bytes = (ROOT / 'tests/fixtures/home-option-b-reviewed.json').read_bytes()
+check(git_blob(home_bytes) == 'ae17877ffb8fe8e8e3082cb9e6627b6289ac4bb7', 'Option B delta fixture remains exact')
+home = json.loads(home_bytes)
+check(set(home) == {'source_commit', 'baseline_git_blob', 'replacements'} and home['source_commit'] == '4225fce8968747ad4f828a9a36087b04fd020484', 'Option B baseline remains reviewed PR115 main')
+check(set(home['replacements']) == {'index.php', 'public-presentation.css'} and set(home['baseline_git_blob']) == set(home['replacements']), 'Option B scope is exactly two public presentation files')
+
+def apply_home(name, content):
+    if name not in home['replacements']:
+        return content
+    check(git_blob(content) == home['baseline_git_blob'][name], name + ': historical reconstruction exactly reaches Option B baseline')
+    for old, new in home['replacements'][name]:
+        check(content.count(old.encode()) == 1, name + ': Option B anchor is unique')
+        content = content.replace(old.encode(), new.encode(), 1)
+    return content
+
 for name, content in expected.items():
     for old, new in approved.get(name, []):
         old, new = old.encode(), new.encode()
@@ -220,7 +237,7 @@ for name, content in expected.items():
     for old, new in offline['replacements'].get(name, []):
         check(content.count(old.encode()) == 1, name + ': offline repair anchor is unique')
         content = content.replace(old.encode(), new.encode(), 1)
-    content = apply_event_art(name, apply_appearance(name, apply_visitor(name, content)))
+    content = apply_home(name, apply_event_art(name, apply_appearance(name, apply_visitor(name, content))))
     check(actual == content, name + ': exact reviewed runtime plus enumerated visitor and appearance differences only')
 
 for name in set(visitor['replacements']) - set(expected):
