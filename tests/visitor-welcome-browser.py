@@ -54,8 +54,11 @@ with tempfile.TemporaryDirectory(prefix='kcmc-visitor-review-') as td:
                 check(page.locator('[data-hero-toggle]').inner_text()=='Play photos','reduced-motion preference preserved')
                 for selector in ('.hero', '.invite-neighbor', '.cw-section', '.family-welcome'):
                     check(page.locator(selector).evaluate("el=>getComputedStyle(el).backgroundColor")=='rgb(13, 34, 53)', selector+' uses the same blue background')
-                for selector in ('.hero-card', '.invite-neighbor-card', '.cw-feature'):
+                for selector in ('.invite-neighbor-card', '.cw-feature'):
                     check(page.locator(selector).evaluate("el=>getComputedStyle(el).backgroundColor")=='rgb(20, 51, 75)', selector+' uses a blue card surface')
+                check(page.locator('.home-cover-card').count()==1 and page.locator('.hero-card').count()==0,'single approved welcome card replaces the old service card')
+                expected_card='rgb(249, 246, 239)' if width<=900 else 'rgba(250, 247, 239, 0.96)'
+                check(page.locator('.home-cover-card').evaluate("el=>getComputedStyle(el).backgroundColor")==expected_card,'welcome card uses the approved cream surface')
                 check(page.locator('[data-hero-photo][src*="ministry-group"],[data-hero-photo][src*="bridge-"]').count()==0,'photographed poster and layered logo artwork are absent')
                 check(page.locator('.hero-photo').first.evaluate("el=>getComputedStyle(el).filter")=='none','hero photo is not darkened by a filter')
                 check(page.evaluate('document.documentElement.scrollWidth<=innerWidth'),f'{width}px no horizontal overflow')
