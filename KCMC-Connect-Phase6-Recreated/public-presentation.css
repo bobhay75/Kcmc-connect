@@ -137,3 +137,190 @@ body[data-office-email]{background:#0d2235}
 .news-feature .eyebrow{color:#b9dce9}
 .news-feature p{color:#c7d5dd}
 /* KCMC_BLUE_FISH_MENU_20261009 END */
+
+
+/* KCMC_HOME_OPTION_B_20261013: one-card cover using the real KCMC building photo. */
+.home-cover.hero.hero-imagery{
+  position:relative;
+  min-height:clamp(560px,68vw,760px);
+  padding:0;
+  display:flex;
+  align-items:stretch;
+  overflow:hidden;
+  background:#0d2235;
+  color:#0d2235;
+  border-bottom:0;
+  color-scheme:light;
+}
+.home-cover.hero-imagery:after{
+  content:'';
+  position:absolute;
+  inset:0;
+  background:linear-gradient(90deg,rgba(13,34,53,.18) 0%,rgba(13,34,53,.04) 43%,rgba(13,34,53,0) 68%);
+  pointer-events:none;
+}
+.home-cover .home-cover-photo{
+  position:absolute;
+  inset:0;
+  width:100%;
+  height:100%;
+  object-fit:cover;
+  object-position:center 48%;
+  opacity:1;
+  filter:none;
+}
+.home-cover-layout{
+  position:relative;
+  z-index:2;
+  width:100%;
+  display:flex;
+  align-items:center;
+  padding-top:clamp(36px,6vw,72px);
+  padding-bottom:clamp(36px,6vw,72px);
+}
+.home-cover-card{
+  width:min(640px,54vw);
+  padding:clamp(28px,4vw,48px);
+  border-radius:26px;
+  background:rgba(250,247,239,.96);
+  box-shadow:0 24px 60px rgba(7,18,28,.24);
+  backdrop-filter:blur(2px);
+}
+.home-cover .eyebrow{
+  color:#9a6a20;
+}
+.home-cover h1{
+  color:#17324c;
+  font-size:clamp(3rem,5.8vw,5.6rem);
+  line-height:.98;
+  margin:.25em 0 .28em;
+}
+.home-cover p.lead{
+  color:#486172;
+  max-width:36rem;
+}
+.home-cover-actions{
+  display:grid;
+  grid-template-columns:repeat(3,minmax(0,1fr));
+  gap:12px;
+  margin-top:24px;
+}
+.home-cover .home-cover-actions .action{
+  min-height:96px;
+  padding:16px;
+  border:1px solid #cad4da;
+  border-radius:18px;
+  background:rgba(255,255,255,.92);
+  color:#17324c;
+  box-shadow:none;
+}
+.home-cover .home-cover-actions .action:first-child{
+  background:#17324c;
+  color:#fff;
+  border-color:#17324c;
+}
+.home-cover .home-cover-actions .action span{
+  color:#5c7180;
+}
+.home-cover .home-cover-actions .action:first-child span{
+  color:#d7e2e8;
+}
+.home-worship-strip{
+  background:#f7f3eb;
+  color:#17324c;
+  border-top:1px solid #e0d8c9;
+  border-bottom:1px solid #e0d8c9;
+}
+.home-worship-strip-inner{
+  display:grid;
+  grid-template-columns:minmax(250px,.9fr) minmax(320px,1.3fr) auto;
+  gap:28px;
+  align-items:center;
+  padding-top:26px;
+  padding-bottom:26px;
+}
+.home-worship-times{
+  display:grid;
+  gap:5px;
+}
+.home-worship-times .eyebrow{
+  color:#526b7c;
+}
+.home-worship-times strong{
+  font-size:clamp(2rem,4vw,3.4rem);
+  line-height:1;
+  white-space:nowrap;
+}
+.home-worship-copy{
+  display:grid;
+  gap:5px;
+  padding-left:28px;
+  border-left:1px solid #cfc6b7;
+}
+.home-worship-copy b{
+  font-size:1.05rem;
+}
+.home-worship-copy span{
+  color:#5c7180;
+  line-height:1.55;
+}
+.home-bulletin-link{
+  white-space:nowrap;
+  background:#fff;
+  color:#17324c;
+  border-color:#b9c5cc;
+}
+@media(max-width:900px){
+  .home-cover.hero.hero-imagery{
+    min-height:auto;
+    display:block;
+    padding:0;
+  }
+  .home-cover .home-cover-photo{
+    position:relative;
+    width:100%;
+    height:auto;
+    aspect-ratio:16/10;
+    object-fit:cover;
+    object-position:center;
+  }
+  .home-cover.hero-imagery:after{
+    display:none;
+  }
+  .home-cover-layout{
+    margin-top:-34px;
+    padding:0 0 26px;
+  }
+  .home-cover-card{
+    width:100%;
+    border-radius:22px;
+    padding:24px;
+    background:#f9f6ef;
+  }
+  .home-cover h1{
+    font-size:clamp(2.6rem,9vw,4.5rem);
+  }
+  .home-worship-strip-inner{
+    grid-template-columns:1fr;
+    gap:18px;
+  }
+  .home-worship-copy{
+    padding-left:0;
+    border-left:0;
+  }
+  .home-bulletin-link{
+    width:max-content;
+  }
+}
+@media(max-width:560px){
+  .home-cover-actions{
+    grid-template-columns:1fr;
+  }
+  .home-cover .home-cover-actions .action{
+    min-height:72px;
+  }
+  .home-worship-times strong{
+    white-space:normal;
+  }
+}
+/* KCMC_HOME_OPTION_B_20261013 END */
