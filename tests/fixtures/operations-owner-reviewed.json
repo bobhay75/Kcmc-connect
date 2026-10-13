@@ -1,0 +1,12 @@
+{
+  "source_commit": "54383f8b3436c8232d876a799a0f6c649e91f397",
+  "baseline_git_blob": "912692f25ac7261951bb540d88d28ae4c9e6aee0",
+  "replacements": {
+    "admin/operations.php": [
+      [
+        "$user = kcmc_require_role(['pastor_admin', 'recovery_admin']);\nkcmc_private_headers();",
+        "$user = kcmc_require_role(['pastor_admin', 'recovery_admin']);\n// This is a separate, fail-closed owner allowlist. Role alone is insufficient.\n// Set KCMC_OPERATIONS_OWNER_USER_ID privately in the hosting environment;\n// never commit a user ID, password, or secret to this public repository.\n$ownerId = trim((string)(getenv('KCMC_OPERATIONS_OWNER_USER_ID') ?: ''));\nif ($ownerId === '' || !hash_equals($ownerId, (string)($user['id'] ?? ''))) {\n    kcmc_private_headers();\n    http_response_code(403);\n    exit('Operations access is restricted to the designated owner.');\n}\nkcmc_private_headers();"
+      ]
+    ]
+  }
+}

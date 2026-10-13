@@ -283,10 +283,26 @@ for old, new in guide['replacements'][guide_path]:
     guide_content = guide_content.replace(old.encode(), new.encode(), 1)
 check((ROOT / guide_path).read_bytes() == guide_content, 'deployment guide matches the exact reviewed documentation delta')
 documentation_paths = {guide_path}
+
+# Owner-approved Operations hub scope is limited to one exact fail-closed guard.
+operations_bytes = (ROOT / 'tests/fixtures/operations-owner-reviewed.json').read_bytes()
+check(hashlib.sha256(operations_bytes).hexdigest() == '0773949175edbd3062703a0212d5d5ba6b661a0a9f0d81b52bb1e925b23c10d1', 'reviewed Operations owner guard fixture remains exact')
+operations = json.loads(operations_bytes)
+check(set(operations) == {'source_commit', 'baseline_git_blob', 'replacements'}, 'Operations fixture has only reviewed fields')
+check(operations['source_commit'] == '54383f8b3436c8232d876a799a0f6c649e91f397', 'Operations owner baseline commit remains pinned')
+check(set(operations['replacements']) == {'admin/operations.php'}, 'Operations owner scope is exactly operations hub')
+operations_path = 'admin/operations.php'
+operations_content = source(operations['source_commit'], PREFIX + operations_path)
+check(git_blob(operations_content) == operations['baseline_git_blob'], 'Operations owner baseline blob remains exact')
+for old, new in operations['replacements'][operations_path]:
+    check(operations_content.count(old.encode()) == 1, 'operations hub owner replacement anchor is unique')
+    operations_content = operations_content.replace(old.encode(), new.encode(), 1)
+check((ROOT / PREFIX / operations_path).read_bytes() == operations_content, 'operations hub is exact reviewed owner guard delta only')
+operations_paths = {PREFIX + operations_path}
 changed = set(git('diff', '--name-only', BASE, '--', PREFIX).decode().splitlines())
-check(changed == ({PREFIX + p for p in expected} | {PREFIX + p for p in publication} | image_paths | documentation_paths | visitor_paths | appearance_paths), 'application diff is exact runtime, Publisher, documentation and enumerated visitor/appearance scope')
+check(changed == ({PREFIX + p for p in expected} | {PREFIX + p for p in publication} | image_paths | documentation_paths | visitor_paths | appearance_paths | operations_paths), 'application diff is exact runtime, Publisher, documentation and enumerated visitor/appearance/operations scope')
 changed_since_reconciled = set(git('diff', '--name-only', RECONCILED, '--', PREFIX).decode().splitlines())
-check(changed_since_reconciled == ({PREFIX + p for p in approved} | {PREFIX + 'sw.js'} | {PREFIX + p for p in publication} | image_paths | documentation_paths | visitor_paths | appearance_paths), 'post-reconciliation diff is exact reviewed source plus enumerated visitor/appearance scope')
+check(changed_since_reconciled == ({PREFIX + p for p in approved} | {PREFIX + 'sw.js'} | {PREFIX + p for p in publication} | image_paths | documentation_paths | visitor_paths | appearance_paths | operations_paths), 'post-reconciliation diff is exact reviewed source plus enumerated visitor/appearance/operations scope')
 for path in ['.cpanel.yml', 'KCMC-Connect-Phase6-Recreated/data/content.json', 'KCMC-Connect-Phase6-Recreated/config.example.php']:
     check((ROOT / path).read_bytes() == source(BASE, path), path + ': unchanged')
 login = (ROOT / PREFIX / 'member/login.php').read_bytes()
