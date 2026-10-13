@@ -24,7 +24,7 @@ with tempfile.TemporaryDirectory(prefix='kcmc-reviewed-stage-', dir=stage_parent
         assert len(raw) == approved['bytes'] and INSTALLER.digest(raw) == approved['sha256']
         INSTALLER.source_hash(path, raw)
         destination = stage / path
-        INSTALLER.private_dir(destination.parent)
+        INSTALLER.nested_private(destination.parent, INSTALLER.BACKUP_ROOT)
         INSTALLER.write_private(destination, raw)
         records.append({'path':path, 'staged':str(destination)})
     INSTALLER.lint_staged(records)
