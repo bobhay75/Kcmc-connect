@@ -233,7 +233,7 @@ body[data-office-email]{background:#0d2235}
 }
 .home-worship-strip-inner{
   display:grid;
-  grid-template-columns:minmax(250px,.9fr) minmax(320px,1.3fr) auto;
+  grid-template-columns:auto minmax(0,1fr) auto;
   gap:28px;
   align-items:center;
   padding-top:26px;
@@ -264,6 +264,7 @@ body[data-office-email]{background:#0d2235}
   color:#5c7180;
   line-height:1.55;
 }
+body:has([data-view="home"].active) .phase6-bulletin-fab{display:none}
 .home-bulletin-link{
   white-space:nowrap;
   background:#fff;
