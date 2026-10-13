@@ -1,6 +1,8 @@
 <?php
 declare(strict_types=1);
 require_once __DIR__ . '/../lib/bootstrap.php';
+require_once __DIR__ . '/../lib/operations-owner.php';
+kcmc_require_operations_owner();
 require_once __DIR__ . '/../lib/invitation-mailer.php';
 require_once __DIR__ . '/../lib/push-subscriptions.php';
 require_once __DIR__ . '/../lib/connection-intake.php';

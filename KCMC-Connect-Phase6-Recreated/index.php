@@ -47,7 +47,7 @@ usort($kcmcAnnouncements, fn($a,$b)=>(int)($b['priority']??0)<=>(int)($a['priori
 <link rel="manifest" href="manifest.webmanifest?v=3.0.1">
 <link rel="preload" as="image" href="assets/visuals/kcmc-building-retouched-20261009.jpg" type="image/jpeg" fetchpriority="high">
 <link rel="stylesheet" href="styles.css?v=3.0.3">
-<link rel="stylesheet" href="public-presentation.css?v=blue-fish-menu-20261009">
+<link rel="stylesheet" href="public-presentation.css?v=home-audit-20261013">
 <link rel="icon" href="assets/icons/icon-192.png?v=3.0.1">
 <link rel="apple-touch-icon" href="assets/icons/icon-192.png?v=3.0.1">
 </head>
@@ -86,25 +86,19 @@ usort($kcmcAnnouncements, fn($a,$b)=>(int)($b['priority']??0)<=>(int)($a['priori
 
 <main id="mainContent">
 <section class="view active" data-view="home">
-  <section class="hero hero-imagery" data-hero-gallery aria-label="Welcome to KCMC">
-    <img class="hero-photo is-current" data-hero-photo src="./assets/visuals/kcmc-building-retouched-20261009.jpg" alt="Kimberling City Methodist Church exterior; foreground weeds retouched" loading="eager" decoding="async" fetchpriority="high" width="1402" height="1122">
-    <img class="hero-photo" data-hero-photo src="./assets/visuals/kcmc-worship-2017.webp" alt="People gathered for worship at KCMC, photographed in 2017" loading="lazy" decoding="async" width="640" height="344" hidden>
-    <img class="hero-photo" data-hero-photo src="./assets/visuals/kcmc-congregation-gathering.jpg" alt="People seated around tables facing the KCMC worship stage" loading="lazy" decoding="async" width="2048" height="1105" hidden>
-    <img class="hero-photo" data-hero-photo src="./assets/visuals/kcmc-family-outdoor-event.jpg" alt="Children and adults enjoying balloons and an inflatable slide at a Kimberling City outdoor event" loading="lazy" decoding="async" width="2048" height="1536" hidden>
-    <div class="wrap hero-grid">
-      <div>
+  <section class="hero hero-imagery home-cover" data-hero-gallery aria-label="Welcome to KCMC">
+    <img class="hero-photo is-current home-cover-photo" data-hero-photo src="./assets/visuals/kcmc-building-retouched-20261009.jpg" alt="Kimberling City Methodist Church exterior; foreground weeds retouched" loading="eager" decoding="async" fetchpriority="high" width="1402" height="1122">
+    <img class="hero-photo home-cover-photo" data-hero-photo src="./assets/visuals/kcmc-worship-2017.webp" alt="People gathered for worship at KCMC, photographed in 2017" loading="lazy" decoding="async" width="640" height="344" hidden>
+    <img class="hero-photo home-cover-photo" data-hero-photo src="./assets/visuals/kcmc-congregation-gathering.jpg" alt="People seated around tables facing the KCMC worship stage" loading="lazy" decoding="async" width="2048" height="1105" hidden>
+    <img class="hero-photo home-cover-photo" data-hero-photo src="./assets/visuals/kcmc-family-outdoor-event.jpg" alt="Children and adults enjoying balloons and an inflatable slide at a Kimberling City outdoor event" loading="lazy" decoding="async" width="2048" height="1536" hidden>
+    <div class="wrap home-cover-layout">
+      <div class="home-cover-card">
         <div class="eyebrow">Welcome to Kimberling City Methodist Church</div>
         <h1>Come as you are.<br>Find your people.</h1>
         <p class="lead">Join us for worship, get to know our church, and find your next step. There’s a place for you at KCMC.</p>
-        <div class="install-callout" data-install-callout>
-          <span class="install-callout-icon" aria-hidden="true">↓</span>
-          <span class="install-callout-copy"><strong>Keep KCMC one touch away</strong><span data-install-message>Save KCMC Connect to this device for quick access.</span></span>
-          <button class="btn gold install-callout-button" type="button" data-install-app>Save to Home Screen</button>
-        </div>
-        <div class="actions">
-          <a class="action" href="#watch" data-route="watch"><b>Watch</b><span>Live & recent worship</span></a>
+        <div class="actions home-cover-actions">
+          <a class="action" href="#watch" data-route="watch"><b>Watch</b><span>Live &amp; recent worship</span></a>
           <a class="action" href="https://www.simplechurchgiving.net/app/giving/umckc" target="_blank" rel="noopener"><b>Give</b><span>Secure online giving</span></a>
-          <a class="action" href="care.php"><b>Care</b><span>Talk with our church team</span></a>
           <a class="action" href="#visit" data-route="visit"><b>Visit</b><span>Plan your first Sunday</span></a>
         </div>
         <div class="hero-photo-controls" data-hero-controls hidden>
@@ -114,13 +108,20 @@ usort($kcmcAnnouncements, fn($a,$b)=>(int)($b['priority']??0)<=>(int)($a['priori
         </div>
         <p class="sr-only" data-hero-status role="status" aria-live="polite"></p>
       </div>
-      <aside class="hero-card" aria-label="Next worship services">
-        <span class="pill">Sunday worship</span>
-        <div class="service-time">8:00 • 9:15 • 10:30</div>
-        <h2>Three expressions. One church.</h2>
-        <p>Front Porch Gospel, Traditional Worship, and Contemporary Worship each offer a distinct style with a common mission.</p>
-        <div class="btns"><a class="btn gold" href="#visit" data-route="visit">Plan your visit</a><a class="btn secondary" href="https://maps.app.goo.gl/W6kRCHvbaVJ7mwte7" target="_blank" rel="noopener">Directions</a></div>
-      </aside>
+    </div>
+  </section>
+
+  <section class="home-worship-strip" aria-label="Sunday worship at KCMC">
+    <div class="wrap home-worship-strip-inner">
+      <div class="home-worship-times">
+        <span class="eyebrow">Sunday worship</span>
+        <strong>8:00 • 9:15 • 10:30</strong>
+      </div>
+      <div class="home-worship-copy">
+        <b>Three expressions. One church.</b>
+        <span>Front Porch Gospel, Traditional Worship, and Contemporary Worship each offer a distinct style with a common mission.</span>
+      </div>
+      <a class="btn secondary home-bulletin-link" href="bulletin.php">Latest Bulletin →</a>
     </div>
   </section>
 

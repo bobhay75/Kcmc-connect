@@ -30,10 +30,10 @@ with tempfile.TemporaryDirectory(prefix='kcmc-public-review-') as td:
     local = work / 'app'
     shutil.copytree(APP, local, ignore=shutil.ignore_patterns('config.php', 'private', 'backups'))
     data_file = local / 'data/content.json'
-    data = json.loads(data_file.read_text())
+    data = json.loads(data_file.read_text(encoding='utf-8'))
     data['announcements'].append({'id': 'front-pew-friday', 'title': 'Mary Lou’s Friday update', 'body': 'Confirmed newsletter schedule', 'status': 'published', 'priority': 50})
     data['bulletin']['notes'] = [NOTES]
-    data_file.write_text(json.dumps(data, ensure_ascii=False))
+    data_file.write_text(json.dumps(data, ensure_ascii=False), encoding='utf-8')
     before = hashlib.sha256(data_file.read_bytes()).hexdigest()
     # Mirror a configured installation using a synthetic, inaccessible account.
     # An empty account store routes to setup rather than normal member sign-in.
@@ -54,7 +54,7 @@ with tempfile.TemporaryDirectory(prefix='kcmc-public-review-') as td:
         sock.bind(('127.0.0.1', 0))
         port = sock.getsockname()[1]
     base = f'http://127.0.0.1:{port}/app'
-    env = {**os.environ, 'KCMC_PRIVATE_DATA_DIR': str(private), 'KCMC_SETUP_KEY': ''}
+    env = {**os.environ, 'KCMC_PRIVATE_DATA_DIR': str(private), 'KCMC_SETUP_KEY': '', 'KCMC_OPERATIONS_OWNER_USER_ID': 'synthetic_admin'}
     with open(work / 'php.log', 'w+') as log:
         server = subprocess.Popen(['php', '-S', f'127.0.0.1:{port}', '-t', str(work)], stdout=log, stderr=log, env=env)
         try:
@@ -90,6 +90,9 @@ with tempfile.TemporaryDirectory(prefix='kcmc-public-review-') as td:
                     page.set_viewport_size({'width':width, 'height':900})
                     page.goto(base + '/', wait_until='networkidle')
                     check(page.evaluate('document.documentElement.scrollWidth <= innerWidth'), f'no horizontal overflow at {width}px')
+                    check(page.locator('.home-cover-card').count() == 1, 'one welcome card is rendered')
+                    check(page.locator('.home-worship-strip').is_visible(), 'service information is visible below the welcome card')
+                    check(all(t in page.locator('.home-worship-strip').inner_text() for t in ['8:00', '9:15', '10:30']), 'all three service times are retained')
                     check(page.locator('.hero h1').inner_text().startswith('Come as you are.'), 'welcome headline renders')
                     check(page.locator('.header-give').get_attribute('href') == 'https://www.simplechurchgiving.net/app/giving/umckc', 'giving uses the retained church destination')
                     check(page.locator('[data-hero-toggle]').inner_text() == 'Play photos', 'reduced motion starts with rotation stopped')
@@ -126,6 +129,12 @@ with tempfile.TemporaryDirectory(prefix='kcmc-public-review-') as td:
                         check(page.locator(f'[data-view="{route}"]').is_visible(), f'{route} route works at {width}px')
                         check(page.evaluate('document.documentElement.scrollWidth <= innerWidth'), f'{route} fits {width}px')
                     page.goto(base + '/', wait_until='networkidle')
+                    for photo in page.locator('[data-kcmc-photo-gallery] img, .family-photo').all():
+                        photo.scroll_into_view_if_needed()
+                        expect(photo).to_have_js_property('complete', True)
+                        check(photo.evaluate('(img) => img.naturalWidth > 0'), 'supplied gallery and family photos load')
+                    page.evaluate('window.scrollTo(0, 0)')
+                    page.screenshot(path=str(OUT / f'home-viewport-{width}.png'))
                     page.screenshot(path=str(OUT / f'home-{width}.png'), full_page=True)
                 page.goto(base + '/bulletin.php')
                 check(page.locator('.bulletin-notes li').text_content() == NOTES, 'rendered notes preserve blanks, double spaces and literal markup')
