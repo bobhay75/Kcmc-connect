@@ -193,10 +193,10 @@ artwork_paths = {PREFIX + p for p in art['replacements']} | {PREFIX + p for p in
 # Owner-approved Option B: exactly the homepage markup and appended public CSS.
 # Historical provenance, private PHP and archived assets remain authoritative.
 home_bytes = (ROOT / 'tests/fixtures/home-option-b-reviewed.json').read_bytes()
-check(git_blob(home_bytes) == '32cec0dad8db587bba142beb91ccf43d98760742', 'Option B delta fixture remains exact')
+check(git_blob(home_bytes) == 'a065cdd5e34769cc13d7f55c4af9feefdc668bff', 'Option B delta fixture remains exact')
 home = json.loads(home_bytes)
 check(set(home) == {'source_commit', 'baseline_git_blob', 'replacements'} and home['source_commit'] == '4225fce8968747ad4f828a9a36087b04fd020484', 'Option B baseline remains reviewed PR115 main')
-check(set(home['replacements']) == {'index.php', 'public-presentation.css'} and set(home['baseline_git_blob']) == set(home['replacements']), 'Option B scope is exactly two public presentation files')
+check(set(home['replacements']) == {'index.php', 'public-presentation.css', 'sw.js'} and set(home['baseline_git_blob']) == set(home['replacements']), 'Option B scope is exactly the public cover, stylesheet and versioned public cache')
 
 def apply_home(name, content):
     if name not in home['replacements']:
