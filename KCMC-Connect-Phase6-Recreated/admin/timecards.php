@@ -7,6 +7,7 @@ require_once __DIR__ . '/../lib/timeclock.php';
 
 kcmc_private_headers();
 $reviewer = kcmc_require_role(['pastor_admin', 'recovery_admin']);
+$selfApprovalEnabled = (string)(getenv('KCMC_TIMECARD_SELF_APPROVAL_ENABLED') ?: '') === '1';
 $error = '';
 $message = '';
 
@@ -36,10 +37,11 @@ if (($_SERVER['REQUEST_METHOD'] ?? 'GET') === 'POST') {
                 $userId = trim((string)($_POST['user_id'] ?? ''));
                 $start = trim((string)($_POST['start'] ?? ''));
                 $end = trim((string)($_POST['end'] ?? ''));
-                if ($userId === (string)$reviewer['id']) throw new RuntimeException('A reviewer cannot approve or return their own time card.');
+                $isSelfReview = $userId === (string)$reviewer['id'];
+                if ($isSelfReview && ($action !== 'approve' || !$selfApprovalEnabled)) throw new RuntimeException('Owner self-approval is disabled until the payroll policy is explicitly enabled.');
                 if (!kcmc_find_user_by_id($userId)) throw new RuntimeException('Employee account not found.');
-                $record = kcmc_timeclock_review_period($userId, $start, $end, (string)$reviewer['id'], $action, (string)($_POST['reason'] ?? ''));
-                kcmc_audit('timeclock.period_reviewed', ['action' => $action, 'status' => (string)$record['status'], 'count' => 1]);
+                $record = kcmc_timeclock_review_period($userId, $start, $end, (string)$reviewer['id'], $action, (string)($_POST['reason'] ?? ''), $isSelfReview && $selfApprovalEnabled);
+                kcmc_audit('timeclock.period_reviewed', ['action' => $action, 'status' => (string)$record['status'], 'self_approved' => !empty($record['self_approved']), 'count' => 1]);
                 $message = $action === 'approve' ? 'Time card approved.' : 'Time card returned to the employee.';
             }
         } catch (Throwable $e) { $error = $e->getMessage(); }
@@ -77,6 +79,7 @@ body.portal-body .audit-toolbar .audit-time {color:#c5d4dc}
 /* KCMC_READABILITY_FIX_V1_20261001 END */
 </style></head><body class="portal-body"><main class="tc-admin">
 <a class="portal-back" href="<?=kcmc_h(kcmc_url('admin/operations.php'))?>">← Operations</a><p class="eyebrow">PAYROLL TURN-IN</p><h1>Employee Time Cards</h1><p class="portal-lead">Review submitted time cards, supervisor adjustments, and employee correction requests. Original correction evidence is preserved privately.</p>
+<?php if ($selfApprovalEnabled): ?><p class="portal-alert warning">Owner self-approval is enabled by server policy. Self-approved periods retain the owner actor, timestamp, and review history.</p><?php endif; ?>
 <?php if ($error): ?><p class="portal-alert error" role="alert"><?=kcmc_h($error)?></p><?php endif; ?><?php if ($message): ?><p class="portal-alert success" role="status"><?=kcmc_h($message)?></p><?php endif; ?>
 
 <?php if($pendingCorrections): ?><section class="tc-card"><p class="eyebrow">CORRECTION REQUESTS</p><h2>Pending employee corrections</h2><div class="correction-list"><?php foreach($pendingCorrections as $request): $entry=tca_entry($store,(string)($request['entry_id']??'')); if(!$entry)continue; $uid=(string)($request['user_id']??''); ?>
@@ -95,6 +98,6 @@ body.portal-body .audit-toolbar .audit-time {color:#c5d4dc}
 <?php if ($history): ?><ul class="adjustment-history"><?php foreach($history as $adjustment): ?><li><?=kcmc_h(tca_hours((int)($adjustment['previous_net_minutes']??0)))?> → <?=kcmc_h(tca_hours((int)($adjustment['new_net_minutes']??0)))?> h · <?=kcmc_h((string)($adjustment['reason']??''))?> · <?=kcmc_h($names[(string)($adjustment['adjusted_by']??'')]??'Administrator')?> · <?=kcmc_h((string)($adjustment['adjusted_at']??''))?></li><?php endforeach; ?></ul><?php endif; ?>
 <?php if ($status!=='approved' && $uid !== (string)$reviewer['id'] && $entryId!==''): ?><form class="adjust-form" method="post"><input type="hidden" name="csrf" value="<?=kcmc_h(kcmc_csrf())?>"><input type="hidden" name="action" value="adjust_entry"><input type="hidden" name="entry_id" value="<?=kcmc_h($entryId)?>"><label>Adjusted hours<input type="number" name="adjusted_hours" min="0" max="24" step="0.01" value="<?=kcmc_h(tca_hours((int)($entry['net_minutes']??0)))?>" required></label><label>Reason<input name="reason" maxlength="500" placeholder="Missed punch, corrected duration…" required></label><button class="btn secondary" type="submit">Save adjustment</button></form><?php endif; ?>
 </section><?php endforeach; ?></div>
-<div class="tc-actions"><?php if ($status==='submitted'): ?><form method="post"><input type="hidden" name="csrf" value="<?=kcmc_h(kcmc_csrf())?>"><input type="hidden" name="user_id" value="<?=kcmc_h($uid)?>"><input type="hidden" name="start" value="<?=kcmc_h($start)?>"><input type="hidden" name="end" value="<?=kcmc_h($end)?>"><input type="hidden" name="action" value="approve"><button class="btn gold" type="submit">Approve</button></form><form method="post"><input type="hidden" name="csrf" value="<?=kcmc_h(kcmc_csrf())?>"><input type="hidden" name="user_id" value="<?=kcmc_h($uid)?>"><input type="hidden" name="start" value="<?=kcmc_h($start)?>"><input type="hidden" name="end" value="<?=kcmc_h($end)?>"><input type="hidden" name="action" value="return"><label>Return reason<input name="reason" maxlength="500" required></label><button class="btn secondary" type="submit">Return</button></form><?php endif; ?><?php if ($status==='approved'): ?><a class="btn secondary" href="<?=kcmc_h(kcmc_url('admin/timecards-export.php?user='.rawurlencode($uid).'&start='.rawurlencode($start).'&end='.rawurlencode($end)))?>">Download CSV</a><a class="btn secondary" href="<?=kcmc_h(kcmc_url('admin/timecards-print.php?user='.rawurlencode($uid).'&start='.rawurlencode($start).'&end='.rawurlencode($end)))?>">Print time card</a><?php endif; ?></div>
+<div class="tc-actions"><?php if ($status==='submitted'): $isOwnPeriod=$uid===(string)$reviewer['id']; ?><?php if (!$isOwnPeriod || $selfApprovalEnabled): ?><form method="post"><input type="hidden" name="csrf" value="<?=kcmc_h(kcmc_csrf())?>"><input type="hidden" name="user_id" value="<?=kcmc_h($uid)?>"><input type="hidden" name="start" value="<?=kcmc_h($start)?>"><input type="hidden" name="end" value="<?=kcmc_h($end)?>"><input type="hidden" name="action" value="approve"><button class="btn gold" type="submit"><?= $isOwnPeriod ? 'Self-approve' : 'Approve' ?></button></form><?php elseif ($isOwnPeriod): ?><span class="portal-fine">Self-approval is disabled by payroll policy.</span><?php endif; ?><?php if (!$isOwnPeriod): ?><form method="post"><input type="hidden" name="csrf" value="<?=kcmc_h(kcmc_csrf())?>"><input type="hidden" name="user_id" value="<?=kcmc_h($uid)?>"><input type="hidden" name="start" value="<?=kcmc_h($start)?>"><input type="hidden" name="end" value="<?=kcmc_h($end)?>"><input type="hidden" name="action" value="return"><label>Return reason<input name="reason" maxlength="500" required></label><button class="btn secondary" type="submit">Return</button></form><?php endif; ?><?php endif; ?><?php if ($status==='approved'): ?><a class="btn secondary" href="<?=kcmc_h(kcmc_url('admin/timecards-export.php?user='.rawurlencode($uid).'&start='.rawurlencode($start).'&end='.rawurlencode($end)))?>">Download CSV</a><a class="btn secondary" href="<?=kcmc_h(kcmc_url('admin/timecards-print.php?user='.rawurlencode($uid).'&start='.rawurlencode($start).'&end='.rawurlencode($end)))?>">Print time card</a><?php endif; ?></div>
 </article><?php endforeach; ?></section><?php endif; ?>
 </main></body></html>
