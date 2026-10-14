@@ -374,7 +374,7 @@ check((ROOT / guide_path).read_bytes() == guide_content, 'deployment guide match
 documentation_paths = {guide_path}
 # Preserve the historical content pin; permit only the separately verified editorial delta.
 editorial_path = PREFIX + 'data/content.json'
-check(source('6ed4a87bd1e0a410bcf89c93357727ee59ec3e81', editorial_path) == source(BASE, editorial_path), 'pre-editorial content preserves the historical baseline exactly')
+check(git_blob(source(BASE, editorial_path)) == 'e7eb008c163a524f036d52b5e8e6203f3c1a60d9', 'pre-editorial content preserves the historical baseline exactly')
 subprocess.check_call([sys.executable, str(ROOT / 'tests/editorial-content-source.py')], cwd=ROOT)
 editorial_paths = {editorial_path}
 changed = set(git('diff', '--name-only', BASE, '--', PREFIX).decode().splitlines())

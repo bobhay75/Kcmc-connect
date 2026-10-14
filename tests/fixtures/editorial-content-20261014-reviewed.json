@@ -1,6 +1,6 @@
 {
   "baseline_commit": "2146af219d2fd23136eae1685f91a2a2caec030e",
-  "target_git_blob": "55daccd542b1f5abfe7f267bd833de7384f8c90a",
+  "target_git_blob": "141cff3397171c08e79e7e11c1b18e47633f1e4f",
   "office_hours": "Tue–Thu • 8:00 AM–4:00 PM",
   "bulletin": {
     "title": "KCMC Community Updates — October 14, 2026",
@@ -159,6 +159,18 @@
       "status": "published",
       "rsvp": false,
       "expires_at": "2026-11-14T23:59:59-06:00"
+    },
+    {
+      "id": "pll-bottle-return-20261025",
+      "title": "Pregnancy Life Line baby bottle return deadline",
+      "date": "2026-10-25",
+      "time": "",
+      "location": "KCMC",
+      "description": "Please return your baby bottle by Sunday, October 25, the last Sunday in October. Fill it with change or a check to support Pregnancy Life Line/Southern Missouri. Contact the church office with questions.",
+      "label": "Return deadline",
+      "status": "published",
+      "rsvp": false,
+      "expires_at": "2026-10-25T23:59:59-05:00"
     }
   ],
   "append_announcements": [

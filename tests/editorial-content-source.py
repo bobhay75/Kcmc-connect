@@ -8,14 +8,14 @@ import subprocess
 
 ROOT = Path(__file__).resolve().parents[1]
 PATH = 'KCMC-Connect-Phase6-Recreated/data/content.json'
-FIXTURE_SHA256 = 'ab181b0e8e28b1f661a89422c4347ebe5f7c8366c9caeff2e25dd81fa13cfb84'
+FIXTURE_SHA256 = 'a80566cab457676c2309434ce077e3ed64174e12cd440f84ff7f7e88e4563000'
 EVENT_IDS = {
     'griefshare-20261014', 'salt-light-bible-study-20261014',
     'launchpad-kids-20261014', 'rooted-youth-20261014', 'chancel-choir-20261014',
     'quest-preschool-20261015', 'coffee-bible-study-20261015',
     'gathering-place-20261015', 'methodist-women-20261015',
     'beginners-line-dancing-20261015', 'intermediate-line-dancing-20261015',
-    'friday-night-freedom-20261016', 'richard-french-lasagna-20261114',
+    'friday-night-freedom-20261016', 'richard-french-lasagna-20261114', 'pll-bottle-return-20261025',
 }
 ANNOUNCEMENT_IDS = {'trunk-volunteers-20261014', 'pll-bottles-20261025'}
 
@@ -26,10 +26,10 @@ def require(ok, message):
 def expected_content(baseline, fixture):
     require(set(fixture) == {'baseline_commit', 'target_git_blob', 'office_hours', 'bulletin', 'append_events', 'append_announcements'}, 'editorial fixture scope')
     require(fixture['baseline_commit'] == '2146af219d2fd23136eae1685f91a2a2caec030e', 'historical baseline retained')
-    require(fixture['target_git_blob'] == '55daccd542b1f5abfe7f267bd833de7384f8c90a', 'reviewed public content blob retained')
+    require(fixture['target_git_blob'] == '141cff3397171c08e79e7e11c1b18e47633f1e4f', 'reviewed public content blob retained')
     require(fixture['office_hours'] == 'Tue–Thu • 8:00 AM–4:00 PM', 'reviewed office hours')
     require(set(fixture['bulletin']) == {'title', 'date', 'welcome', 'notes'}, 'only four bulletin fields')
-    require(len(fixture['append_events']) == 13 and {e['id'] for e in fixture['append_events']} == EVENT_IDS, 'exact dated event additions')
+    require(len(fixture['append_events']) == 14 and {e['id'] for e in fixture['append_events']} == EVENT_IDS, 'exact dated event additions')
     require(len(fixture['append_announcements']) == 2 and {e['id'] for e in fixture['append_announcements']} == ANNOUNCEMENT_IDS, 'exact announcement additions')
     expected = copy.deepcopy(baseline)
     expected['contact']['office_hours'] = fixture['office_hours']
