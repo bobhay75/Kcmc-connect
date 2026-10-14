@@ -4,8 +4,16 @@ on:
     paths:
       - 'KCMC-Connect-Phase6-Recreated/**'
       - 'tests/operations-owner-http.py'
+      - 'tests/operations-owner-release.py'
+      - 'tools/release-operations-owner.py'
       - '.github/workflows/operations-owner.yml'
   workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - 'tools/release-operations-owner.py'
+      - 'tests/operations-owner*.py'
+      - '.github/workflows/operations-owner.yml'
 permissions:
   contents: read
 jobs:
@@ -16,4 +24,5 @@ jobs:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
         with:
           persist-credentials: false
+      - run: python3 tests/operations-owner-release.py
       - run: python3 tests/operations-owner-http.py
