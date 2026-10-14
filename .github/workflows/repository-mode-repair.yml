@@ -1,0 +1,40 @@
+name: KCMC measured repository mode repair
+on:
+  pull_request:
+    paths:
+      - 'tools/kcmc-repository-mode-repair/**'
+      - '.github/workflows/repository-mode-repair.yml'
+permissions:
+  contents: read
+jobs:
+  actual-git-fixtures:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+          persist-credentials: false
+      - name: Verify frozen source and run real Git fixtures
+        env:
+          PYTHONDONTWRITEBYTECODE: '1'
+        run: |
+          set -euo pipefail
+          printf '%s  %s\n' \
+            'adb8cf52e4d32957ee45fd116174ac00b8a022df2d5f8ad78fc1eafe3a30c845' tools/kcmc-repository-mode-repair/repair.py \
+            '1ed8ce0980638f8ff1488a6fda785f6aa6a12c8db03bfe8e75cc13c81955e0a6' tools/kcmc-repository-mode-repair/align-repository.py | sha256sum -c -
+          python3 tools/kcmc-repository-mode-repair/test_repair.py
+          python3 tools/kcmc-repository-mode-repair/tests.py
+  host-python-runtime:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+          persist-credentials: false
+      - name: Exercise Python 3.6 metadata APIs on synthetic files
+        run: |
+          set -euo pipefail
+          docker pull python:3.6.15-slim-buster
+          docker run --rm --network none -e PYTHONDONTWRITEBYTECODE=1 -v "$PWD:/review:ro" -w /review python:3.6.15-slim-buster python tools/kcmc-repository-mode-repair/python36-check.py
