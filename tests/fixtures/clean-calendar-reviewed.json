@@ -1,0 +1,29 @@
+{
+  "source_commit": "c48ad2b04be366208b49d2a9cfd17677ecdbe1e8",
+  "modified": {
+    "index.php": {
+      "before_sha256": "a8c37ed43cce13f3e5b9fdad27023975e781255e8fadafe649cc75fb60958eac",
+      "after_sha256": "18595863d2b5d815cc440a588fb6047a5254056bd64c2f1778f3ed370a54bf37",
+      "replacements": [
+        [
+          "<link rel=\"apple-touch-icon\" href=\"assets/icons/icon-192.png?v=3.0.1\">\n</head>\n<body data-office-email=\"<?=kcmc_h($kcmcEmail)?>\">\n<?php if (!empty($kcmcAnnouncements)): $top=$kcmcAnnouncements[0]; ?>\n<div class=\"phase6-announcement\" role=\"status\"><div class=\"shell\"><strong><?=kcmc_h((string)($top['title']??''))?></strong><span><?=kcmc_h((string)($top['body']??''))?></span></div></div>\n<?php endif; ?>\n<a class=\"skip-link\" href=\"#mainContent\">Skip to content</a>\n<div class=\"offline-banner\" id=\"offlineBanner\" role=\"status\">You’re offline. Saved KCMC Connect pages are still available.</div>\n<p class=\"sr-only\" data-share-status role=\"status\" aria-live=\"polite\" aria-atomic=\"true\"></p>\n",
+          "<link rel=\"apple-touch-icon\" href=\"assets/icons/icon-192.png?v=3.0.1\">\n</head>\n<body data-office-email=\"<?=kcmc_h($kcmcEmail)?>\">\n<a class=\"skip-link\" href=\"#mainContent\">Skip to content</a>\n<div class=\"offline-banner\" id=\"offlineBanner\" role=\"status\">You’re offline. Saved KCMC Connect pages are still available.</div>\n<p class=\"sr-only\" data-share-status role=\"status\" aria-live=\"polite\" aria-atomic=\"true\"></p>\n"
+        ],
+        [
+          "</div>\n<script src=\"app.js?v=visitor-welcome-20261008\" defer></script>\n<script src=\"public-presentation.js?v=blue-fish-menu-20261009\" defer></script>\n<a class=\"phase6-bulletin-fab\" href=\"bulletin.php\">Latest Bulletin</a>\n</body></html>",
+          "</div>\n<script src=\"app.js?v=visitor-welcome-20261008\" defer></script>\n<script src=\"public-presentation.js?v=blue-fish-menu-20261009\" defer></script>\n</body></html>"
+        ]
+      ]
+    },
+    "lib/event-calendar.php": {
+      "before_sha256": "b5241014bdbf16939568a7a5bdb0b30ac852fa8b7af94508377612b777e2bbf5",
+      "after_sha256": "73313422afd8284f2e31c9254f20d7e1cda94511f46494c75fde683caca36ab0",
+      "replacements": [
+        [
+          "            $events[] = $event;\n        }\n    }\n    usort($events, 'kcmc_compare_event_start');\n    return ['view' => $view, 'events' => $events, 'range' => $start->format('M j') . '–' . $end->modify('-1 day')->format('M j, Y')];\n}\n",
+          "            $events[] = $event;\n        }\n    }\n    $events = kcmc_calendar_without_legacy_griefshare_duplicate($events);\n    usort($events, 'kcmc_compare_event_start');\n    return ['view' => $view, 'events' => $events, 'range' => $start->format('M j') . '–' . $end->modify('-1 day')->format('M j, Y')];\n}\n\n/** Suppress only the known legacy weekly duplicate in the public calendar.\n * Both records must already be visible and describe the same occurrence.\n * Stored content, one-time events and unrelated series are never changed.\n */\nfunction kcmc_calendar_without_legacy_griefshare_duplicate(array $events): array {\n    $current = null;\n    foreach ($events as $event) {\n        if (($event['id'] ?? '') === 'griefshare-20261014' && ($event['repeat'] ?? '') === 'weekly') {\n            $current = $event;\n            break;\n        }\n    }\n    if ($current === null) return $events;\n    return array_values(array_filter($events, static function (array $event) use ($current): bool {\n        if (($event['id'] ?? '') !== 'griefshare-0902' || ($event['repeat'] ?? '') !== 'weekly') return true;\n        foreach (['date', 'time', 'end_time', 'location'] as $field) {\n            if (trim((string)($event[$field] ?? '')) !== trim((string)($current[$field] ?? ''))) return true;\n        }\n        return false;\n    }));\n}\n"
+        ]
+      ]
+    }
+  }
+}

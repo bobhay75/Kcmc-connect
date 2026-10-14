@@ -14,11 +14,13 @@ with tempfile.TemporaryDirectory(prefix='kcmc-calendar-') as tmp:
     data=json.loads((app/'data/content.json').read_text(encoding='utf-8'))
     data['meta']['content_release']='3.0.0'
     data['events']=[
-      {'id':'test-weekly','title':'Weekly fixture','date':str(wed-timedelta(days=7)),'time':'5:17 PM','repeat':'weekly','status':'published','rsvp':False},
+      {'id':'griefshare-20261014','title':'GriefShare','date':str(wed-timedelta(days=7)),'time':'9:30 AM','repeat':'weekly','status':'published','rsvp':False},
       {'id':'test-once','title':'One-time fixture','date':str(wed),'time':'6:00 PM','status':'published','rsvp':False},
       {'id':'test-hidden','title':'PRIVATE HIDDEN FIXTURE','date':str(wed),'time':'7:00 PM','repeat':'weekly','status':'hidden'},
       {'id':'test-outside','title':'Outside-week fixture','date':str(start+timedelta(days=9)),'time':'4:30 PM','rsvp':False},
     ]
+    data['events'].append({**data['events'][0],'id':'griefshare-0902','title':'GriefShare begins'})
+    data['announcements']=[{'id':'test-story','title':'Community update','body':'Full announcement details stay in Church updates.','status':'published','priority':100}]
     (app/'data/content.json').write_text(json.dumps(data),encoding='utf-8')
     before=hashlib.sha256((app/'data/content.json').read_bytes()).hexdigest()
     with socket.socket() as s:s.bind(('127.0.0.1',0));port=s.getsockname()[1]
@@ -34,31 +36,46 @@ with tempfile.TemporaryDirectory(prefix='kcmc-calendar-') as tmp:
             page=browser.new_page();errors=[];writes=[]
             page.on('pageerror',lambda e:errors.append(str(e)))
             page.on('request',lambda r:writes.append(r.url) if r.method!='GET' else None)
-            for width in [1280,375]:
+            for width in [1280,375,320]:
                 page.set_viewport_size({'width':width,'height':850})
+                page.goto(f'http://127.0.0.1:{port}/#home')
+                assert page.locator('.phase6-announcement').count()==0
+                assert page.locator('.phase6-bulletin-fab').count()==0
+                assert page.locator('.home-bulletin-link').is_visible()
+                assert page.locator('.home-cover-photo.is-current').is_visible()
+                page.goto(f'http://127.0.0.1:{port}/#news')
+                assert page.get_by_text('Full announcement details stay in Church updates.',exact=True).is_visible()
                 page.goto(f'http://127.0.0.1:{port}/#events')
+                assert page.get_by_role('heading',name='GriefShare begins',exact=True).count()==0
                 nav=page.get_by_role('navigation',name='Event calendar view')
                 nav.get_by_role('link',name='Next week',exact=True).focus()
                 page.keyboard.press('Enter')
                 page.wait_for_url('**/?event_view=next-week#events')
                 assert nav.get_by_role('link',name='Next week',exact=True).get_attribute('aria-current')=='page'
-                card=page.locator('.event-card').filter(has=page.get_by_role('heading',name='Weekly fixture',exact=True))
+                card=page.locator('.event-card').filter(has=page.get_by_role('heading',name='GriefShare',exact=True))
                 assert card.get_attribute('data-date')==str(wed)
+                assert page.get_by_role('heading',name='GriefShare begins',exact=True).count()==0
+                button=card.get_by_role('button',name='Add GriefShare to calendar')
+                button.click(trial=True)  # Wait for animations, scrolling and pointer hit testing.
+                assert button.evaluate('(el)=>{const r=el.getBoundingClientRect(); return el.contains(document.elementFromPoint(r.x+r.width/2,r.y+r.height/2));}')
                 assert page.get_by_role('heading',name='One-time fixture',exact=True).is_visible()
                 assert page.get_by_role('heading',name='PRIVATE HIDDEN FIXTURE',exact=True).count()==0
                 assert page.get_by_role('heading',name='Outside-week fixture',exact=True).count()==0
-                with page.expect_download() as dl:card.get_by_role('button',name='Add Weekly fixture to calendar').click()
+                with page.expect_download() as dl:card.get_by_role('button',name='Add GriefShare to calendar').click()
                 text=Path(dl.value.path()).read_text()
-                assert f'DTSTART;TZID=America/Chicago:{wed:%Y%m%d}T171700' in text
+                assert f'DTSTART;TZID=America/Chicago:{wed:%Y%m%d}T093000' in text
                 assert page.evaluate('document.documentElement.scrollWidth <= window.innerWidth')
                 if width==375:
                     out=os.environ.get('KCMC_CALENDAR_SCREENSHOT')
-                    if out:page.screenshot(path=out,full_page=True)
+                    if out:
+                        nav.scroll_into_view_if_needed()
+                        page.screenshot(path=out,full_page=False)
                 nav.get_by_role('link',name='Upcoming',exact=True).click()
                 assert page.get_by_role('heading',name='Outside-week fixture',exact=True).is_visible()
             page.goto(f'http://127.0.0.1:{port}/events.php?event_view=next-week#events')
-            assert page.get_by_role('heading',name='Weekly fixture',exact=True).is_visible()
+            assert page.get_by_role('heading',name='GriefShare',exact=True).is_visible()
             assert page.get_by_role('heading',name='Outside-week fixture',exact=True).count()==0
+            assert page.get_by_role('heading',name='GriefShare begins',exact=True).count()==0
             assert not errors,errors
             assert not writes,writes
             browser.close()

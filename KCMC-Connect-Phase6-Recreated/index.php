@@ -53,9 +53,6 @@ usort($kcmcAnnouncements, fn($a,$b)=>(int)($b['priority']??0)<=>(int)($a['priori
 <link rel="apple-touch-icon" href="assets/icons/icon-192.png?v=3.0.1">
 </head>
 <body data-office-email="<?=kcmc_h($kcmcEmail)?>">
-<?php if (!empty($kcmcAnnouncements)): $top=$kcmcAnnouncements[0]; ?>
-<div class="phase6-announcement" role="status"><div class="shell"><strong><?=kcmc_h((string)($top['title']??''))?></strong><span><?=kcmc_h((string)($top['body']??''))?></span></div></div>
-<?php endif; ?>
 <a class="skip-link" href="#mainContent">Skip to content</a>
 <div class="offline-banner" id="offlineBanner" role="status">You’re offline. Saved KCMC Connect pages are still available.</div>
 <p class="sr-only" data-share-status role="status" aria-live="polite" aria-atomic="true"></p>
@@ -315,5 +312,4 @@ usort($kcmcAnnouncements, fn($a,$b)=>(int)($b['priority']??0)<=>(int)($a['priori
 </div>
 <script src="app.js?v=visitor-welcome-20261008" defer></script>
 <script src="public-presentation.js?v=blue-fish-menu-20261009" defer></script>
-<a class="phase6-bulletin-fab" href="bulletin.php">Latest Bulletin</a>
 </body></html>

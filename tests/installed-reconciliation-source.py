@@ -32,6 +32,25 @@ def check(ok, message):
     print('PASS:', message, flush=True)
 
 
+# Reverse only the bounded calendar cleanup before checking historical provenance.
+cleanup_bytes = (ROOT / 'tests/fixtures/clean-calendar-reviewed.json').read_bytes()
+check(hashlib.sha256(cleanup_bytes).hexdigest() == '4350de2656a9e55d36219673700fcd5e53f1dd89de26c0c0c3c8b91e06cca25d', 'calendar cleanup fixture is exact')
+cleanup = json.loads(cleanup_bytes)
+check(cleanup['source_commit'] == 'c48ad2b04be366208b49d2a9cfd17677ecdbe1e8', 'cleanup baseline is pinned')
+check(set(cleanup['modified']) == {'index.php', 'lib/event-calendar.php'}, 'cleanup runtime scope is exact')
+cleanup_preimages = {}
+for name, record in cleanup['modified'].items():
+    content = (ROOT / PREFIX / name).read_bytes()
+    check(hashlib.sha256(content).hexdigest() == record['after_sha256'], name + ': exact cleanup target')
+    for old, new in reversed(record['replacements']):
+        check(content.count(new.encode()) == 1, name + ': unique cleanup reverse anchor')
+        content = content.replace(new.encode(), old.encode(), 1)
+    check(hashlib.sha256(content).hexdigest() == record['before_sha256'], name + ': exact cleanup preimage')
+    check(content == source(cleanup['source_commit'], PREFIX + name), name + ': canonical cleanup preimage')
+    cleanup_preimages[name] = content
+def before_cleanup(name):
+    return cleanup_preimages[name] if name in cleanup_preimages else (ROOT / PREFIX / name).read_bytes()
+
 # Preserve the full historical proof beneath the explicit public calendar delta.
 calendar_bytes = (ROOT / 'tests/fixtures/event-calendar-reviewed.json').read_bytes()
 check(hashlib.sha256(calendar_bytes).hexdigest() == 'a26b9938efc2e4edcabb4d33ad902b33e1b34bf46809715d04b94c0d1c1f1f92', 'calendar fixture is exact')
@@ -40,7 +59,7 @@ check(calendar['source_commit'] == '636dfa89e2d1cd0346741af732e385c950c54513', '
 check(set(calendar['modified']) == {'index.php', 'events.php'} and set(calendar['new_files']) == {'lib/event-calendar.php'}, 'calendar runtime scope is exact')
 calendar_preimages = {}
 for name, record in calendar['modified'].items():
-    content = (ROOT / PREFIX / name).read_bytes()
+    content = before_cleanup(name)
     check(hashlib.sha256(content).hexdigest() == record['after_sha256'], name + ': exact calendar target')
     for old, new in reversed(record['replacements']):
         check(content.count(new.encode()) == 1, name + ': unique reverse calendar anchor')
@@ -49,10 +68,10 @@ for name, record in calendar['modified'].items():
     check(content == source(calendar['source_commit'], PREFIX + name), name + ': canonical calendar baseline')
     calendar_preimages[name] = content
 for name, digest in calendar['new_files'].items():
-    check(hashlib.sha256((ROOT / PREFIX / name).read_bytes()).hexdigest() == digest, name + ': exact read-only calendar helper')
+    check(hashlib.sha256(before_cleanup(name)).hexdigest() == digest, name + ': exact read-only calendar helper')
 calendar_paths = {PREFIX + name for name in calendar['modified']} | {PREFIX + name for name in calendar['new_files']}
 def before_calendar(name):
-    return calendar_preimages[name] if name in calendar_preimages else (ROOT / PREFIX / name).read_bytes()
+    return calendar_preimages[name] if name in calendar_preimages else before_cleanup(name)
 
 # Recover the single reviewed skip-link insertion before the historical chain.
 skip_bytes = (ROOT / 'tests/fixtures/skip-link-reviewed.json').read_bytes()
