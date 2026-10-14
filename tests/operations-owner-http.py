@@ -35,6 +35,15 @@ def check(condition, label):
     assert condition, label
     print('PASS:', label, flush=True)
 
+def denied_timecard_action(client, base, private, payload, message, expected_status=200):
+    before = (private / 'timeclock.json').read_bytes()
+    audit_path = private / 'audit.ndjson'
+    audit_before = audit_path.read_bytes() if audit_path.exists() else b''
+    status, _, html = request(client, base + '/admin/timecards.php', payload)
+    check(status == expected_status and message in html, 'denied timecard action: ' + payload['action'])
+    check((private / 'timeclock.json').read_bytes() == before, 'denied action preserves complete payroll bytes')
+    check((audit_path.read_bytes() if audit_path.exists() else b'') == audit_before, 'denied action emits no successful review audit')
+
 def run():
     password = 'Synthetic-Owner-Audit-2031!'
     hashed = subprocess.check_output(['php', '-r', 'echo password_hash($argv[1], PASSWORD_DEFAULT);', password], text=True).strip()
@@ -48,13 +57,16 @@ def run():
                  for uid, role in [('owner','pastor_admin'),('other_admin','pastor_admin'),
                                    ('recovery','recovery_admin'),('staff','member')]]
         (private / 'users.json').write_text(json.dumps({'version':1,'users':users}), encoding='utf-8')
+        period_start='2026-09-23'; period_end='2026-10-22'
+        seeded_timeclock={'version':1,'entries':[{'id':'time_owner_1','user_id':'owner','work_date':'2026-10-13','clock_in_at':'2026-10-13T15:00:00+00:00','clock_out_at':'2026-10-13T16:00:00+00:00','breaks':[],'category':'KCMC Connect / IT','description':'Synthetic owner work','status':'submitted','created_at':'2026-10-13T15:00:00+00:00','updated_at':'2026-10-13T16:00:00+00:00','net_minutes':60,'corrections':[]}], 'periods':[{'user_id':'owner','start':period_start,'end':period_end,'status':'submitted','submitted_at':'2026-10-13T16:05:00+00:00','approved_at':None,'approved_by':None,'returned_at':None,'return_reason':None}], 'adjustments':[], 'correction_requests':[]}
+        (private / 'timeclock.json').write_text(json.dumps(seeded_timeclock), encoding='utf-8')
         # Repeat with missing configuration and with a non-administrator ID.
-        for configured in ['owner', '', 'staff']:
+        for configured, policy in [('owner', ''), ('owner', '0'), ('owner', 'true'), ('owner', '01'), ('', '1'), ('staff', '1')]:
             with socket.socket() as sock:
                 sock.bind(('127.0.0.1', 0)); port=sock.getsockname()[1]
             base=f'http://127.0.0.1:{port}/app'
             env={k:v for k,v in os.environ.items() if not k.startswith('KCMC_')}
-            env.update(KCMC_PRIVATE_DATA_DIR=str(private), KCMC_SETUP_KEY='', KCMC_OPERATIONS_OWNER_USER_ID=configured)
+            env.update(KCMC_PRIVATE_DATA_DIR=str(private), KCMC_SETUP_KEY='', KCMC_OPERATIONS_OWNER_USER_ID=configured, KCMC_TIMECARD_SELF_APPROVAL_ENABLED=policy)
             with (work / 'server.log').open('w') as log:
                 server=subprocess.Popen(['php','-S',f'127.0.0.1:{port}','-t',str(work)], env=env, stdout=log, stderr=log)
                 try:
@@ -86,8 +98,65 @@ def run():
                             check(request(client,base+'/admin/')[0]==200,'non-owner administrator retains Publishing Desk')
                             check(request(client,base+'/admin/publication-designer.php')[0]==200,'non-owner administrator retains Publisher')
                         check(request(client,base+'/member/timeclock.php')[0]==200,'member retains own Time Clock')
+                        if uid=='owner' and configured=='owner':
+                            status,_,html=request(client,base+'/member/timeclock.php')
+                            csrf=re.search(r'name="csrf" value="([^"]+)"',html).group(1)
+                            denied_timecard_action(client,base,private,dict(csrf=csrf,action='approve',user_id='owner',start=period_start,end=period_end),'Owner self-approval is disabled')
+                            check('Self-approve' not in request(client,base+'/admin/timecards.php')[2], 'unset or non-exact policy cannot expose self-approval control')
                 finally:
                     server.terminate();server.wait(timeout=10)
+        # Explicit policy activation permits only the configured owner to self-approve and records immutable review metadata.
+        previous_review = dict(action='return',actor_id='other_admin',at='2026-10-12T16:00:00+00:00',self_approved=False)
+        seeded_timeclock['periods'][0]['review_history'] = [previous_review]
+        seeded_timeclock['correction_requests'] = [dict(id='owner_correction',user_id='owner',entry_id='time_owner_1',status='pending',requested_at='2026-10-13T16:00:00+00:00',reason='Synthetic correction')]
+        (private / 'timeclock.json').write_text(json.dumps(seeded_timeclock), encoding='utf-8')
+        with socket.socket() as sock:
+            sock.bind(('127.0.0.1', 0)); port=sock.getsockname()[1]
+        base=f'http://127.0.0.1:{port}/app'
+        env={k:v for k,v in os.environ.items() if not k.startswith('KCMC_')}
+        env.update(KCMC_PRIVATE_DATA_DIR=str(private), KCMC_SETUP_KEY='', KCMC_OPERATIONS_OWNER_USER_ID='owner', KCMC_TIMECARD_SELF_APPROVAL_ENABLED='1')
+        with (work / 'server-self-approval.log').open('w') as log:
+            server=subprocess.Popen(['php','-S',f'127.0.0.1:{port}','-t',str(work)], env=env, stdout=log, stderr=log)
+            try:
+                for _ in range(60):
+                    try:
+                        urllib.request.urlopen(base+'/',timeout=1).close(); break
+                    except Exception: time.sleep(.1)
+                else: raise AssertionError('Policy-enabled PHP server did not start')
+                # A policy flag must not grant access to a non-owner administrator,
+                # recovery administrator or employee, even with a valid session/CSRF.
+                for uid in ['other_admin', 'recovery', 'staff']:
+                    nonowner=urllib.request.build_opener(urllib.request.HTTPCookieProcessor(http.cookiejar.CookieJar()),NoRedirect())
+                    _,_,html=request(nonowner,base+'/member/login.php'); token=re.search(r'name="csrf" value="([^"]+)"',html).group(1)
+                    check(request(nonowner,base+'/member/login.php',dict(csrf=token,email=uid+'@example.invalid',password=password))[0]==302, 'policy-enabled non-owner sign-in: '+uid)
+                    _,_,html=request(nonowner,base+'/member/timeclock.php'); token=re.search(r'name="csrf" value="([^"]+)"',html).group(1)
+                    denied_timecard_action(nonowner,base,private,dict(csrf=token,action='approve',user_id=uid,start=period_start,end=period_end),'',403)
+                jar=http.cookiejar.CookieJar(); client=urllib.request.build_opener(urllib.request.HTTPCookieProcessor(jar),NoRedirect())
+                _,_,html=request(client,base+'/member/login.php'); csrf=re.search(r'name="csrf" value="([^"]+)"',html).group(1)
+                check(request(client,base+'/member/login.php',dict(csrf=csrf,email='owner@example.invalid',password=password))[0]==302,'owner sign-in for enabled self-approval')
+                status,_,html=request(client,base+'/admin/timecards.php')
+                token_match=re.search(r'name="csrf" value="([^"]+)"',html)
+                check(status==200 and token_match is not None,'owner Time Cards exposes a CSRF-protected action form')
+                csrf=token_match.group(1)
+                own_period=dict(csrf=csrf,user_id='owner',start=period_start,end=period_end,reason='Synthetic reason')
+                denied_timecard_action(client,base,private,dict(own_period,action='approve',csrf='invalid'),'Your session expired',403)
+                denied_timecard_action(client,base,private,dict(own_period,action='return'),'Owner self-approval is disabled')
+                denied_timecard_action(client,base,private,dict(own_period,action='unexpected'),'Owner self-approval is disabled')
+                denied_timecard_action(client,base,private,dict(csrf=csrf,action='adjust_entry',entry_id='time_owner_1',adjusted_hours='2',reason='Synthetic reason'),'cannot adjust their own time entry')
+                denied_timecard_action(client,base,private,dict(csrf=csrf,action='apply_correction',request_id='owner_correction'),'cannot correct their own time entry')
+                denied_timecard_action(client,base,private,dict(csrf=csrf,action='reject_correction',request_id='owner_correction',reason='Synthetic reason'),'cannot reject their own time correction request')
+                status,_,html=request(client,base+'/admin/timecards.php',dict(csrf=csrf,action='approve',user_id='owner',start=period_start,end=period_end))
+                check(status==200 and 'Time card approved.' in html,'explicit policy enables owner self-approval')
+                stored=json.loads((private/'timeclock.json').read_text(encoding='utf-8')); period=stored['periods'][0]
+                check(period['status']=='approved' and period['approved_by']=='owner' and period.get('self_approved') is True,'self-approved period stores actor and explicit flag')
+                history=period.get('review_history',[])
+                check(len(history)==2 and history[0]==previous_review and history[1]['actor_id']=='owner' and history[1]['self_approved'] is True and history[1]['at']==period['approved_at'],'self-approval appends timestamped review history without replacing prior evidence')
+                audit=[json.loads(line) for line in (private/'audit.ndjson').read_text(encoding='utf-8').splitlines()]
+                reviews=[row for row in audit if row.get('action')=='timeclock.period_reviewed']
+                check(len(reviews)==1 and reviews[0]['context'].get('self_approved') is True,'successful self-approval emits exactly one flagged private audit event')
+                denied_timecard_action(client,base,private,dict(own_period,action='approve'),'not awaiting review')
+            finally:
+                server.terminate();server.wait(timeout=10)
         print('Operations owner HTTP acceptance passed; no production traffic or records.')
 
 if __name__=='__main__': run()

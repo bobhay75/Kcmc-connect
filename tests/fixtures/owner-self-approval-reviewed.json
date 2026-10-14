@@ -1,0 +1,19 @@
+{
+  "source_commit": "4e7ddeb82c498aab0183a9e500ffa4289091e5aa",
+  "reviewed_commit": "a693e8ff4c550b57d9de335bb7ef4fbb3b4d0c65",
+  "files": {
+    "admin/timecards.php": {
+      "source_sha256": "7c3a0cf6c6558090d85245fc4126a631399cb1ef53faa950e646c1381522ea4e",
+      "target_sha256": "23067707a6bf8ebfe33f2c230faddbe6aee87f5b42b86666e44899fadb1251e8"
+    },
+    "lib/timeclock.php": {
+      "source_sha256": "ae4ab252bb060a4c34bdb845c445b206c70d675e74c7ebc8503353716eacc810",
+      "target_sha256": "5100a51750a9a6c2a2d256fd0f2db51b363b72ba327e124e353bef55c7480687"
+    },
+    "lib/audit-history.php": {
+      "source_sha256": "e92b5a5dc383bd39951eaf117c10a58752fafc0947f0b907b720f311b018fcaa",
+      "target_sha256": "298da6bff75cac2136c751da5f55b6965b1e763cfc013a46f5cee853b4490f4e"
+    }
+  },
+  "scope": "Explicit owner self-approval policy only; disabled by default; self-return/adjustment/correction remain denied; append-only audit metadata."
+}
