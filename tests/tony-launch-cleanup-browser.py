@@ -141,6 +141,18 @@ with tempfile.TemporaryDirectory(prefix='kcmc-public-review-') as td:
                     page.evaluate('window.scrollTo(0, 0)')
                     page.screenshot(path=str(OUT / f'home-viewport-{width}.png'))
                     page.screenshot(path=str(OUT / f'home-{width}.png'), full_page=True)
+                with urllib.request.urlopen(base + '/our-story.php') as story_response:
+                    check(not story_response.headers.get('Set-Cookie'), 'anonymous story page does not create a session')
+                for story_width in [320, 390, 1440]:
+                    page.set_viewport_size({'width': story_width, 'height': 900})
+                    page.goto(base + '/')
+                    page.locator('a[href="our-story.php"]').click()
+                    check(page.locator('h1').inner_text() == 'Our Story', 'homepage story link opens the readable page')
+                    check('Fern Sherer' in page.locator('.story-source').inner_text(), 'history credits the supplied account')
+                    check(page.evaluate('document.documentElement.scrollWidth <= innerWidth'), f'story fits {story_width}px')
+                    check(page.locator('.story-actions a[href="./#visit"]').is_visible(), 'history offers a visitor next step')
+                    page.locator('.story-back').click()
+                    check(page.locator('[data-view="home"]').is_visible(), 'story returns to Home')
                 page.goto(base + '/bulletin.php')
                 check(page.locator('.bulletin-notes li').text_content() == NOTES, 'rendered notes preserve blanks, double spaces and literal markup')
                 page.goto(base + '/news.php')

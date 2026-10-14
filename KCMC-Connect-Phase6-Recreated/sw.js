@@ -1,8 +1,8 @@
-const CACHE='kcmc-connect-v3.0.3-public-only-visitor-member-20261014';
+const CACHE='kcmc-connect-v3.0.3-public-only-visitor-member-history-20261014';
 // Connection-intake client refresh: worker install reruns cache:'reload' and overwrites cached app.js.
 const CORE=[
-  './','./styles.css?v=3.0.3','./public-presentation.css?v=visitor-member-20261014','./public-presentation.js?v=blue-fish-menu-20261009','./app.js?v=visitor-welcome-20261008','./manifest.webmanifest?v=3.0.1',
-  './bulletin.php','./news.php','./events.php','./care.php','./connect.php',
+  './','./styles.css?v=3.0.3','./public-presentation.css?v=visitor-member-history-20261014','./public-presentation.js?v=blue-fish-menu-20261009','./app.js?v=visitor-welcome-20261008','./manifest.webmanifest?v=3.0.1',
+  './bulletin.php','./our-story.php','./news.php','./events.php','./care.php','./connect.php',
   './assets/icons/icon-192.png','./assets/icons/icon-512.png',
   './assets/visuals/kcmc-building-retouched-20261009.jpg','./assets/visuals/kcmc-worship-2017.webp',
   './assets/visuals/trunk-or-treat-2026.svg',

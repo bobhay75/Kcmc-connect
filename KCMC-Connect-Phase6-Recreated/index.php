@@ -47,7 +47,7 @@ usort($kcmcAnnouncements, fn($a,$b)=>(int)($b['priority']??0)<=>(int)($a['priori
 <link rel="manifest" href="manifest.webmanifest?v=3.0.1">
 <link rel="preload" as="image" href="assets/visuals/kcmc-building-retouched-20261009.jpg" type="image/jpeg" fetchpriority="high">
 <link rel="stylesheet" href="styles.css?v=3.0.3">
-<link rel="stylesheet" href="public-presentation.css?v=visitor-member-20261014">
+<link rel="stylesheet" href="public-presentation.css?v=visitor-member-history-20261014">
 <link rel="icon" href="assets/icons/icon-192.png?v=3.0.1">
 <link rel="apple-touch-icon" href="assets/icons/icon-192.png?v=3.0.1">
 </head>
@@ -167,6 +167,10 @@ usort($kcmcAnnouncements, fn($a,$b)=>(int)($b['priority']??0)<=>(int)($a['priori
     </div>
   </section>
 
+
+  <section class="section" aria-labelledby="home-story-title">
+    <div class="wrap"><article class="card"><h2 id="home-story-title">A church built around people</h2><p>Our congregation began gathering in a bowling alley in 1962. The story that followed is one of worship, welcome and neighbors serving neighbors.</p><div class="btns"><a class="btn secondary" href="our-story.php">Read our story</a></div></article></div>
+  </section>
 
   <section class="section alt">
     <div class="wrap">

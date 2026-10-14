@@ -44,7 +44,7 @@ for name in OWNER_ROUTES:
 
 # Exact visitor/member navigation delta, layered over the preserved homepage review.
 next_bytes = (ROOT / 'tests/fixtures/visitor-member-reviewed.json').read_bytes()
-check(hashlib.sha256(next_bytes).hexdigest() == 'e588eba2312cc642cad15e4231d45972b7933e7d6dd50457d09e756ac3d4103d', 'visitor/member fixture remains exact')
+check(hashlib.sha256(next_bytes).hexdigest() == 'a333651c498e2d0c6fe4039dc8947221b526d352966addda5aa9e66fb57d6ddc', 'visitor/member fixture remains exact')
 next_review = json.loads(next_bytes)
 check(next_review['source_commit'] == '4e7ddeb82c498aab0183a9e500ffa4289091e5aa' and set(next_review['replacements']) == {'index.php', 'public-presentation.css', 'sw.js'}, 'visitor/member change has three explicit runtime paths')
 for name, pairs in next_review['replacements'].items():
@@ -62,6 +62,9 @@ def before_next_steps(name):
         content = content.replace(new.encode(), old.encode(), 1)
     return content
 
+
+story_paths = {PREFIX + 'our-story.php'}
+check(hashlib.sha256((ROOT / PREFIX / 'our-story.php').read_bytes()).hexdigest() == 'd844161ac1a64c1a531dd57780df7418b140a8c0cb4dafeed6929a27a030bfa2', 'church history page matches the attributed editorial adaptation')
 
 home_bytes = (ROOT / 'tests/fixtures/home-audit-reviewed.json').read_bytes()
 check(hashlib.sha256(home_bytes).hexdigest() == 'e07b83984e813558e4f4deeb4fe5baf4eae597daae991d3e5eac5ba29255bac9', 'homepage repair fixture remains exact')
@@ -393,9 +396,9 @@ for old, new in guide['replacements'][guide_path]:
 check((ROOT / guide_path).read_bytes() == guide_content, 'deployment guide matches the exact reviewed documentation delta')
 documentation_paths = {guide_path}
 changed = set(git('diff', '--name-only', BASE, '--', PREFIX).decode().splitlines())
-check(changed == ({PREFIX + p for p in expected} | {PREFIX + p for p in publication} | image_paths | documentation_paths | visitor_paths | appearance_paths | artwork_paths | gallery_repair_paths | owner_paths | home_paths), 'application diff is exact runtime, Publisher, documentation and enumerated visitor/appearance scope')
+check(changed == ({PREFIX + p for p in expected} | {PREFIX + p for p in publication} | image_paths | documentation_paths | visitor_paths | appearance_paths | artwork_paths | gallery_repair_paths | owner_paths | home_paths | story_paths), 'application diff is exact runtime, Publisher, documentation and enumerated visitor/appearance scope')
 changed_since_reconciled = set(git('diff', '--name-only', RECONCILED, '--', PREFIX).decode().splitlines())
-check(changed_since_reconciled == ({PREFIX + p for p in approved} | {PREFIX + 'sw.js'} | {PREFIX + p for p in publication} | image_paths | documentation_paths | visitor_paths | appearance_paths | artwork_paths | gallery_repair_paths | owner_paths | home_paths), 'post-reconciliation diff is exact reviewed source plus enumerated visitor/appearance scope')
+check(changed_since_reconciled == ({PREFIX + p for p in approved} | {PREFIX + 'sw.js'} | {PREFIX + p for p in publication} | image_paths | documentation_paths | visitor_paths | appearance_paths | artwork_paths | gallery_repair_paths | owner_paths | home_paths | story_paths), 'post-reconciliation diff is exact reviewed source plus enumerated visitor/appearance scope')
 for path in ['.cpanel.yml', 'KCMC-Connect-Phase6-Recreated/data/content.json', 'KCMC-Connect-Phase6-Recreated/config.example.php']:
     check((ROOT / path).read_bytes() == source(BASE, path), path + ': unchanged')
 login = (ROOT / PREFIX / 'member/login.php').read_bytes()

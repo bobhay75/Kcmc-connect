@@ -179,8 +179,8 @@ test('activation removes only old KCMC caches',async()=>{
 test('event artwork upgrade precaches the SVG and never the photographed flyer',async()=>{
   const h=harness();
   await h.lifecycle('install');
-  assert.match(h.cacheName,/visitor-member-20261014$/);
-  assert.ok(h.calls.fetch.some(request=>request.url.endsWith('/public-presentation.css?v=visitor-member-20261014')));
+  assert.match(h.cacheName,/visitor-member-history-20261014$/);
+  assert.ok(h.calls.fetch.some(request=>request.url.endsWith('/public-presentation.css?v=visitor-member-history-20261014')));
   assert.ok(h.calls.fetch.some(request=>request.url.endsWith('/trunk-or-treat-2026.svg')));
   assert.ok(h.calls.fetch.every(request=>!request.url.endsWith('/trunk-or-treat-2026.webp')));
 });
@@ -219,4 +219,13 @@ test('legacy artwork rewriting never touches another origin',async()=>{
   const result=await h.dispatch('https://example.org/kcmc-connect/assets/visuals/trunk-or-treat-2026.webp');
   assert.equal(result.handled,false);
   assert.equal(h.calls.fetch.length,0);
+});
+
+
+test('public church story is available from its current offline cache',async()=>{
+  const h=harness({offline:true});
+  await h.seed(h.cacheName,'our-story.php','CHURCH STORY');
+  const result=await h.dispatch('our-story.php',{navigate:true});
+  assert.equal(await result.response.text(),'CHURCH STORY');
+  assert.ok(h.calls.match.every(call=>call.name===h.cacheName));
 });
