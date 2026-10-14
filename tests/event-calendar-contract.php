@@ -28,3 +28,20 @@ calendar_check(count(kcmc_event_calendar($edges,'next-week',$now)['events'])===2
 $upcoming=kcmc_active_items($items);usort($upcoming,'kcmc_compare_event_start');
 foreach([null,'upcoming','<script>',[],['next-week']] as $invalid){calendar_check(kcmc_event_calendar($items,$invalid,$now)['events']===$upcoming,'default and malformed requests retain existing Upcoming behavior');}
 calendar_check(kcmc_event_calendar([],'next-week',$now)['events']===[],'empty week supported');
+
+$legacy=array_replace($weekly,['id'=>'griefshare-0902','title'=>'GriefShare begins','time'=>'9:30 AM','end_time'=>'']);
+$current=array_replace($legacy,['id'=>'griefshare-20261014','title'=>'GriefShare']);
+$pair=[$legacy,$current];$saved=$pair;
+calendar_check(array_column(kcmc_event_calendar($pair,'next-week',$now)['events'],'id')===['griefshare-20261014'],'known duplicate weekly GriefShare shows once');
+calendar_check($pair===$saved,'deduplication does not modify source records');
+foreach(['upcoming','next-week'] as $view){
+ $dynamic=array_map(fn($e)=>array_replace($e,['date'=>date('Y-m-d')]),$pair);
+ calendar_check(count(kcmc_event_calendar($dynamic,$view)['events'])===1,'deduplicate in '.$view);
+}
+calendar_check(count(kcmc_event_calendar([$legacy,array_replace($current,['status'=>'hidden'])],'next-week',$now)['events'])===1,'hidden replacement does not hide legacy');
+calendar_check(kcmc_event_calendar([$legacy,array_replace($current,['deleted_at'=>'2026-10-13'])],'next-week',$now)['events'][0]['id']==='griefshare-0902','deleted replacement does not hide legacy');
+foreach(['time'=>'10:00 AM','location'=>'Other room','end_time'=>'11:00 AM','id'=>'unrelated-series'] as $field=>$value){
+ calendar_check(count(kcmc_event_calendar([$legacy,array_replace($current,[$field=>$value])],'next-week',$now)['events'])===2,'different occurrence preserved: '.$field);
+}
+$once=array_replace($legacy,['repeat'=>'','date'=>'2026-10-21']);
+calendar_check(count(kcmc_event_calendar([$once,$current],'next-week',$now)['events'])===2,'legacy one-time event is never suppressed');

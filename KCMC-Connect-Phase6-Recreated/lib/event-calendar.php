@@ -25,6 +25,29 @@ function kcmc_event_calendar(array $items, mixed $requested = null, ?DateTimeImm
             $events[] = $event;
         }
     }
+    $events = kcmc_calendar_without_legacy_griefshare_duplicate($events);
     usort($events, 'kcmc_compare_event_start');
     return ['view' => $view, 'events' => $events, 'range' => $start->format('M j') . '–' . $end->modify('-1 day')->format('M j, Y')];
+}
+
+/** Suppress only the known legacy weekly duplicate in the public calendar.
+ * Both records must already be visible and describe the same occurrence.
+ * Stored content, one-time events and unrelated series are never changed.
+ */
+function kcmc_calendar_without_legacy_griefshare_duplicate(array $events): array {
+    $current = null;
+    foreach ($events as $event) {
+        if (($event['id'] ?? '') === 'griefshare-20261014' && ($event['repeat'] ?? '') === 'weekly') {
+            $current = $event;
+            break;
+        }
+    }
+    if ($current === null) return $events;
+    return array_values(array_filter($events, static function (array $event) use ($current): bool {
+        if (($event['id'] ?? '') !== 'griefshare-0902' || ($event['repeat'] ?? '') !== 'weekly') return true;
+        foreach (['date', 'time', 'end_time', 'location'] as $field) {
+            if (trim((string)($event[$field] ?? '')) !== trim((string)($current[$field] ?? ''))) return true;
+        }
+        return false;
+    }));
 }
