@@ -97,8 +97,8 @@ connection_check(kcmc_audit_event_label('connection.group_submitted') === 'Group
 
 $worker = file_get_contents(__DIR__ . '/../KCMC-Connect-Phase6-Recreated/sw.js');
 connection_check(is_string($worker) && str_contains($worker, 'Connection-intake client refresh'), 'service-worker update refreshes cached connection client');
-connection_check(str_starts_with(KCMC_CONNECTION_INTAKE, $tmp . DIRECTORY_SEPARATOR), 'connection records live in configured private storage');
-connection_check(str_starts_with(KCMC_CONNECTION_RATE, $tmp . DIRECTORY_SEPARATOR), 'connection rate state lives in configured private storage');
+connection_check(realpath(dirname(KCMC_CONNECTION_INTAKE)) === realpath($tmp), 'connection records live in configured private storage');
+connection_check(realpath(dirname(KCMC_CONNECTION_RATE)) === realpath($tmp), 'connection rate state lives in configured private storage');
 
 foreach (glob($tmp . '/*') ?: [] as $path) @unlink($path);
 @rmdir($tmp);

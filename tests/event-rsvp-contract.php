@@ -95,8 +95,8 @@ $index = file_get_contents(__DIR__ . '/../KCMC-Connect-Phase6-Recreated/admin/in
 rsvp_check(is_string($index) && str_contains($index, "admin/rsvps.php"), 'Publishing Desk links to private RSVP inbox');
 rsvp_check(kcmc_audit_event_label('event.rsvp_submitted') === 'Event RSVP received', 'audit history gives RSVP submissions a friendly label');
 
-rsvp_check(str_starts_with(KCMC_EVENT_RSVPS, $tmp . DIRECTORY_SEPARATOR), 'RSVP records live in configured private data storage');
-rsvp_check(str_starts_with(KCMC_EVENT_RSVP_RATE, $tmp . DIRECTORY_SEPARATOR), 'RSVP rate state lives in configured private data storage');
+rsvp_check(realpath(dirname(KCMC_EVENT_RSVPS)) === realpath($tmp), 'RSVP records live in configured private data storage');
+rsvp_check(realpath(dirname(KCMC_EVENT_RSVP_RATE)) === realpath($tmp), 'RSVP rate state lives in configured private data storage');
 
 foreach (glob($tmp . '/*') ?: [] as $path) @unlink($path);
 @rmdir($tmp);

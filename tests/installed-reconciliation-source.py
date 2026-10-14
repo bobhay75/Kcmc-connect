@@ -31,6 +31,41 @@ def check(ok, message):
     print('PASS:', message, flush=True)
 
 
+OWNER_ROUTES = ['admin/operations.php', 'admin/health.php', 'admin/audit.php', 'admin/audit-export.php', 'admin/push.php', 'admin/backup.php', 'admin/restore.php', 'admin/timecards.php', 'admin/timecards-export.php', 'admin/timecards-print.php']
+OWNER_GUARD = b"require_once __DIR__ . '/../lib/operations-owner.php';\nkcmc_require_operations_owner();\n"
+OWNER_BASE = '4225fce8968747ad4f828a9a36087b04fd020484'
+owner_paths = {PREFIX + p for p in OWNER_ROUTES} | {PREFIX + 'lib/operations-owner.php'}
+check(hashlib.sha256((ROOT / PREFIX / 'lib/operations-owner.php').read_bytes()).hexdigest() == '03989956a73a0f5d995e6eb24fe64d722ed7b47558f94103d7cf79778ac2c2ef', 'owner authorization helper matches reviewed implementation')
+for name in OWNER_ROUTES:
+    before = source(OWNER_BASE, PREFIX + name)
+    anchor = b"require_once __DIR__ . '/../lib/bootstrap.php';\n"
+    check(before.count(anchor) == 1, name + ': owner guard has one bootstrap anchor')
+    check((ROOT / PREFIX / name).read_bytes() == before.replace(anchor, anchor + OWNER_GUARD, 1), name + ': exact owner authorization insertion only')
+
+home_bytes = (ROOT / 'tests/fixtures/home-audit-reviewed.json').read_bytes()
+check(hashlib.sha256(home_bytes).hexdigest() == 'd1364dae04dd62c91d6620cd7a8d32618c734d07dbaf438c81632ab60d362556', 'homepage repair fixture remains exact')
+home = json.loads(home_bytes)
+check(home['source_commit'] == OWNER_BASE and set(home['replacements']) == {'index.php','public-presentation.css','sw.js'}, 'homepage repair has three explicit runtime paths')
+home_paths = {PREFIX + name for name in home['replacements']}
+for name, pairs in home['replacements'].items():
+    content = source(OWNER_BASE, PREFIX + name)
+    for old, new in pairs:
+        check(content.count(old.encode()) == 1, name + ': unique homepage change anchor')
+        content = content.replace(old.encode(), new.encode(), 1)
+    check((ROOT / PREFIX / name).read_bytes() == content, name + ': exact homepage changes only')
+
+
+def prior_runtime(name):
+    content = (ROOT / PREFIX / name).read_bytes()
+    for old, new in reversed(home['replacements'].get(name, [])):
+        check(content.count(new.encode()) == 1, name + ': unique homepage reverse anchor')
+        content = content.replace(new.encode(), old.encode(), 1)
+    if name in OWNER_ROUTES:
+        check(content.count(OWNER_GUARD) == 1, name + ': unique owner guard')
+        return content.replace(OWNER_GUARD, b'', 1)
+    return content
+
+
 installer = source(TONY, 'tools/tony_delivery.py')
 check(hashlib.sha256(installer).hexdigest() == INSTALLER_SHA256, 'reviewed Tony installer SHA-256 matches PR88 evidence')
 # Loading the pinned module only defines its functions; __main__ and install()
@@ -157,11 +192,11 @@ def apply_appearance(name, content):
     return content
 
 for name, info in appearance['new_assets'].items():
-    content = (ROOT / PREFIX / name).read_bytes()
+    content = prior_runtime(name)
     check(git_blob(content) == info['git_blob'] and len(content) == info['bytes'], name + ': exact retouched web image bytes')
     check(len(content) <= 600_000, name + ': mobile image budget')
 for name, blob in appearance['preserved_assets'].items():
-    check(git_blob((ROOT / PREFIX / name).read_bytes()) == blob, name + ': original archive bytes are unchanged')
+    check(git_blob(prior_runtime(name)) == blob, name + ': original archive bytes are unchanged')
 appearance_paths = {PREFIX + p for p in appearance['replacements']} | {PREFIX + p for p in appearance['new_assets']}
 
 # The fresh event illustration is a narrowly enumerated public-artwork change.
@@ -184,35 +219,18 @@ def apply_event_art(name, content):
     return content
 
 for name, info in art['new_assets'].items():
-    content = (ROOT / PREFIX / name).read_bytes()
+    content = prior_runtime(name)
     check(git_blob(content) == info['git_blob'] and len(content) == info['bytes'], name + ': exact event illustration bytes')
     check(len(content) < 20_000, name + ': mobile artwork budget')
 check((ROOT / PREFIX / 'lib/bootstrap.php').read_bytes() == apply_event_art('lib/bootstrap.php', source(art['source_commit'], PREFIX + 'lib/bootstrap.php')), 'bootstrap changes only the reviewed event artwork fields')
 artwork_paths = {PREFIX + p for p in art['replacements']} | {PREFIX + p for p in art['new_assets']}
-
-# Owner-approved Option B: exactly the homepage markup and appended public CSS.
-# Historical provenance, private PHP and archived assets remain authoritative.
-home_bytes = (ROOT / 'tests/fixtures/home-option-b-reviewed.json').read_bytes()
-check(git_blob(home_bytes) == 'a065cdd5e34769cc13d7f55c4af9feefdc668bff', 'Option B delta fixture remains exact')
-home = json.loads(home_bytes)
-check(set(home) == {'source_commit', 'baseline_git_blob', 'replacements'} and home['source_commit'] == '4225fce8968747ad4f828a9a36087b04fd020484', 'Option B baseline remains reviewed PR115 main')
-check(set(home['replacements']) == {'index.php', 'public-presentation.css', 'sw.js'} and set(home['baseline_git_blob']) == set(home['replacements']), 'Option B scope is exactly the public cover, stylesheet and versioned public cache')
-
-def apply_home(name, content):
-    if name not in home['replacements']:
-        return content
-    check(git_blob(content) == home['baseline_git_blob'][name], name + ': historical reconstruction exactly reaches Option B baseline')
-    for old, new in home['replacements'][name]:
-        check(content.count(old.encode()) == 1, name + ': Option B anchor is unique')
-        content = content.replace(old.encode(), new.encode(), 1)
-    return content
 
 for name, content in expected.items():
     for old, new in approved.get(name, []):
         old, new = old.encode(), new.encode()
         check(content.count(old) == 1, name + ': approved replacement has exactly one source anchor')
         content = content.replace(old, new, 1)
-    actual = (ROOT / PREFIX / name).read_bytes()
+    actual = prior_runtime(name)
     if name == 'public-presentation.js':
         # PR99 intentionally removes only the obsolete nested hero-card photo injection.
         marker = b"  // Keep the hero as a single rotating image plane; do not inject a second photo into the service card."
@@ -237,14 +255,14 @@ for name, content in expected.items():
     for old, new in offline['replacements'].get(name, []):
         check(content.count(old.encode()) == 1, name + ': offline repair anchor is unique')
         content = content.replace(old.encode(), new.encode(), 1)
-    content = apply_home(name, apply_event_art(name, apply_appearance(name, apply_visitor(name, content))))
+    content = apply_event_art(name, apply_appearance(name, apply_visitor(name, content)))
     check(actual == content, name + ': exact reviewed runtime plus enumerated visitor and appearance differences only')
 
 for name in set(visitor['replacements']) - set(expected):
     content = apply_appearance(name, apply_visitor(name, source(visitor['source_commit'], PREFIX + name)))
-    check((ROOT / PREFIX / name).read_bytes() == content, name + ': only exact visitor delta permitted')
+    check(prior_runtime(name) == content, name + ': only exact visitor delta permitted')
 for name, sha in visitor['new_files'].items():
-    check(hashlib.sha256((ROOT / PREFIX / name).read_bytes()).hexdigest() == sha, name + ': exact separately tested visitor module')
+    check(hashlib.sha256(prior_runtime(name)).hexdigest() == sha, name + ': exact separately tested visitor module')
 visitor_paths = {PREFIX + p for p in visitor['replacements']} | {PREFIX + p for p in visitor['new_files']}
 
 # The visual audit removes six built-in picture-of-picture choices, while
@@ -330,7 +348,7 @@ for name, blob in publication.items():
         reviewed_arrange = source(gallery['source_commit'], PREFIX + name)
         check(git_blob(reviewed_arrange) == arrange['target_git_blob'], 'Publisher arrange/history target blob matches reviewed build')
         content = apply_gallery(name, reviewed_arrange)
-    check((ROOT / PREFIX / name).read_bytes() == content, name + ': exact reviewed save/fidelity/interaction/arrange deltas only')
+    check(prior_runtime(name) == content, name + ': exact reviewed save/fidelity/interaction/arrange deltas only')
 
 image_inventory = json.loads((ROOT / 'docs/supplied-images-2026-10-06.json').read_text())
 check(len(image_inventory) == 9, 'exactly nine supplied assets inventoried')
@@ -342,7 +360,7 @@ for asset in image_inventory:
 # pinned independently. This permits one named document without exempting any
 # application path from the exact runtime checks above.
 guide_bytes = (ROOT / 'tests/fixtures/deployment-guide-reviewed.json').read_bytes()
-check(hashlib.sha256(guide_bytes).hexdigest() == '4bb31d71293977e1d05cb9e3a2f935d87150c92a897ec9a14330b6de93d9e94b', 'reviewed deployment guide delta remains exact')
+check(hashlib.sha256(guide_bytes).hexdigest() == 'd04541374290c4d6f09cf3a1459533a637f091b8a1439e6cdfc7827bb6564957', 'reviewed deployment guide delta remains exact')
 guide = json.loads(guide_bytes)
 check(set(guide) == {'source_commit', 'replacements'} and guide['source_commit'] == 'f4442fc4cce2121828544b79b8ba3591c5fe0dab', 'deployment guide source remains pinned')
 guide_path = PREFIX + 'DEPLOY.md'
@@ -354,9 +372,9 @@ for old, new in guide['replacements'][guide_path]:
 check((ROOT / guide_path).read_bytes() == guide_content, 'deployment guide matches the exact reviewed documentation delta')
 documentation_paths = {guide_path}
 changed = set(git('diff', '--name-only', BASE, '--', PREFIX).decode().splitlines())
-check(changed == ({PREFIX + p for p in expected} | {PREFIX + p for p in publication} | image_paths | documentation_paths | visitor_paths | appearance_paths | artwork_paths | gallery_repair_paths), 'application diff is exact runtime, Publisher, documentation and enumerated visitor/appearance scope')
+check(changed == ({PREFIX + p for p in expected} | {PREFIX + p for p in publication} | image_paths | documentation_paths | visitor_paths | appearance_paths | artwork_paths | gallery_repair_paths | owner_paths | home_paths), 'application diff is exact runtime, Publisher, documentation and enumerated visitor/appearance scope')
 changed_since_reconciled = set(git('diff', '--name-only', RECONCILED, '--', PREFIX).decode().splitlines())
-check(changed_since_reconciled == ({PREFIX + p for p in approved} | {PREFIX + 'sw.js'} | {PREFIX + p for p in publication} | image_paths | documentation_paths | visitor_paths | appearance_paths | artwork_paths | gallery_repair_paths), 'post-reconciliation diff is exact reviewed source plus enumerated visitor/appearance scope')
+check(changed_since_reconciled == ({PREFIX + p for p in approved} | {PREFIX + 'sw.js'} | {PREFIX + p for p in publication} | image_paths | documentation_paths | visitor_paths | appearance_paths | artwork_paths | gallery_repair_paths | owner_paths | home_paths), 'post-reconciliation diff is exact reviewed source plus enumerated visitor/appearance scope')
 for path in ['.cpanel.yml', 'KCMC-Connect-Phase6-Recreated/data/content.json', 'KCMC-Connect-Phase6-Recreated/config.example.php']:
     check((ROOT / path).read_bytes() == source(BASE, path), path + ': unchanged')
 login = (ROOT / PREFIX / 'member/login.php').read_bytes()

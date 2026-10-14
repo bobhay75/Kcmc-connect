@@ -1,3 +1,5 @@
+> Historical October 8 helpers. The owner now reports repository HEAD `268bebca`; use the separately reviewed [October 13 release](../kcmc-scoped-release-oct13/README.md) for the newer baseline. These earlier pins remain unchanged and must not be bypassed or used to downgrade a newer installation. Hope Keepers has already been appended; do not rerun its historical insertion.
+
 # KCMC scoped host repair
 
 This October 8 repair installs reviewed runtime `f4442fc4cce2121828544b79b8ba3591c5fe0dab`, approved by [PR #108](https://github.com/bobhay75/Kcmc-connect/pull/108). Its replacement scope is 16 application files: six code files, the Publisher media endpoint, and nine supplied images. It accepts exactly one complete preimage bundle: `ae004a659a7c2fb334296fa41f54dd5263f4d5c0` (six existing files and ten absent files), or the installed `61c70f590735522adbfd6be02dab6888924a54fd` release (all 16 files). Mixed, incomplete, or newer states refuse before source downloads. The independent baseline inventory records both complete bundles; the release inventory records source hashes and 13 preserved guards.
