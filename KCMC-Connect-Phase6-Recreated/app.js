@@ -1,5 +1,14 @@
 (() => {
   'use strict';
+  document.querySelector('.skip-link[href="#mainContent"]')?.addEventListener('click', event => {
+    const main = document.getElementById('mainContent');
+    if (!main) return;
+    event.preventDefault();
+    main.setAttribute('tabindex', '-1');
+    main.focus({preventScroll:true});
+    main.style.scrollMarginTop = `${document.querySelector('.topbar')?.getBoundingClientRect().height || 0}px`;
+    main.scrollIntoView({block:'start',behavior:'instant'});
+  });
   const OFFICE_EMAIL = document.body.dataset.officeEmail || 'secretary@umckc.org';
   const views = [...document.querySelectorAll('[data-view]')];
   const routeLinks = [...document.querySelectorAll('[data-route]')];
