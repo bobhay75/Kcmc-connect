@@ -1,0 +1,23 @@
+# KCMC scoped public repair from latest reviewed source
+
+This helper installs only ten public/Publisher runtime files from [154b779a0ea3d27a11300bfe0454f8a7c4aca355](https://github.com/bobhay75/Kcmc-connect/commit/154b779a0ea3d27a11300bfe0454f8a7c4aca355). It updates the homepage, public CSS/JavaScript, worker, manifest, 512 pixel icon, two supplied illustrations, bootstrap and Publication Designer. Latest main also changes ten Operations routes and adds `lib/operations-owner.php`; all eleven owner paths are explicitly excluded from replacement.
+
+Owner-only Operations requires the verified existing active administrator's exact `KCMC_OPERATIONS_OWNER_USER_ID` in web PHP's environment. That identity/configuration has not been verified by this helper. It never reads or edits configuration or user records and preserves old Operations files. Any changed owner route or an already present owner helper refuses before downloads or application writes.
+
+Allowed preimage bundles are complete `268bebca444bd4970bb4ecaa0d6eceb6a11988fd` (eight existing files, two absent illustrations) or complete `4225fce8968747ad4f828a9a36087b04fd020484` (all ten existing). Mixtures, incomplete or unknown versions refuse. The source checker proves the canonical 21-file APP diff is 10 public files plus 11 excluded owner files, with no deletions. All 21 existing guard hashes come from immutable 268beb and 4225 commits, including old Operations bytes; newer repository checkout files are not guard preimages. The owner helper must remain absent, with that absence captured and rechecked during preparation, immediately before each replacement and current-runtime proof.
+
+Close Publisher tabs, drain pending saves/uploads and keep Publisher idle until apply or rollback completes. Confirm web PHP and the command use the same `KCMC_PRIVATE_DATA_DIR`, or the existing default `data/private` directory. CLI/default checks do not prove a hidden PHP-FPM override.
+
+Use the separately supplied immutable, checksum-verified launcher. Standalone entry points are `python3 installer.py preflight`, `python3 installer.py apply`, and `python3 installer.py rollback --session BACKUP_DIRECTORY`. Save the protected session directory for a transaction. Preflight expects one allowed baseline; apply also recognizes an already complete latest public target.
+
+Staged immutable bytes are checked before use. PHP 8.2 syntax and raster MIME/dimensions are verified; the repaired PNG must be 512×512. SVG uses strict Python XML/reference validation and PHP fileinfo MIME, without PHP DOM or getimagesize on SVG. Baseline images are hash-checked only. Assets precede bootstrap, bootstrap precedes PHP consumers, the manifest precedes homepage consumers and the worker is last. Anonymous HTTP checks verify exact statics, icon/manifest query URLs, home-audit-20261013 CSS/worker and protected Publisher redirects.
+
+For an already complete public target, apply validates owners/modes, captures protected/content/Publisher-store fingerprints, verifies HTTP and rechecks leases. It reports a verified public-runtime no-op without download, replacement, backup session, JSON copy or rollback. Failure of that proof refuses without downgrading code. Coordination locks may be created.
+
+A transaction privately backs up affected code and editorial content outside `public_html`. Automatic failure recovery restores only leased public files and preserves any excluded owner code introduced concurrently, provided target leases and Publisher fingerprints permit recovery. Manual rollback requires unchanged old owner files and helper absence before restoration and each write. Both preserve editorial/private records; later target or Publisher-store changes refuse restoration. Either illustration is removed only when restoring an originally absent target that remains this installation's verified file.
+
+Publication/media JSON is fingerprinted under application locks, never copied, printed, restored or replaced. Editorial content is privately backed up and checked but never replaced/restored. Configuration, accounts, prayer, timecards, other private stores and all excluded Operations files are outside the write scope.
+
+The helper performs no Git operations, broad sync, content insertion, owner provisioning or repository alignment. Repository alignment is separate and requires a clean existing checkout. Avoid cPanel Deploy HEAD if it could overwrite this scoped state or deploy deferred owner files.
+
+CI must fetch all three immutable refs, run `verify-inventory.py`, run fixtures on Python 3.6/current Python and run actual PHP 8.2 lint/media validation. Signed-in staff and real-device install/update/offline/push acceptance remain separate.
