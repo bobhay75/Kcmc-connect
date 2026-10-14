@@ -1,0 +1,14 @@
+{
+  "app.js": {
+    "before_sha256": "2a3e82a72ad689cec36984541c8c5a4c1b740fa2de7e38b2e1cd7b5aee373348",
+    "after_sha256": "d2d349264224e119482187e0fdbfcee6cd6ed29c16b1874c65c88cf29dd93963",
+    "replacements": [
+      [
+        "  'use strict';\n",
+        "  'use strict';\n  document.querySelector('.skip-link[href=\"#mainContent\"]')?.addEventListener('click', event => {\n    const main = document.getElementById('mainContent');\n    if (!main) return;\n    event.preventDefault();\n    main.setAttribute('tabindex', '-1');\n    main.focus({preventScroll:true});\n    main.style.scrollMarginTop = `${document.querySelector('.topbar')?.getBoundingClientRect().height || 0}px`;\n    main.scrollIntoView({block:'start',behavior:'instant'});\n  });\n"
+      ]
+    ],
+    "before_bytes": 18999,
+    "after_bytes": 19463
+  }
+}

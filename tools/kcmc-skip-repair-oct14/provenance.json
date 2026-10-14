@@ -1,0 +1,18 @@
+{
+  "release": "kcmc-skip-repair-20261014",
+  "reviewed_source_commit": "dd2af94b8fd84e055f13f86fb77d86959b46d0d1",
+  "merged_pull_request": 128,
+  "fixture_source_commit": "b18454042ddeb19e069821ea9a238b40335c780b",
+  "frozen_engine_sha256": "4df2cdef03853c80c96350398b6a5b92cb78722e202debd3279d535fb9e757d7",
+  "installer_sha256": "3d92c48e16062af4d75994cdaedbbb4234df58b8c7e86ddf4214817f41dc01db",
+  "host_scope": ["app.js"],
+  "before_sha256": "2a3e82a72ad689cec36984541c8c5a4c1b740fa2de7e38b2e1cd7b5aee373348",
+  "before_bytes": 18999,
+  "after_sha256": "d2d349264224e119482187e0fdbfcee6cd6ed29c16b1874c65c88cf29dd93963",
+  "after_bytes": 19463,
+  "inserted_lines": 9,
+  "host_stage_gate": "Exact pinned after SHA256, byte count and private mode; no JavaScript syntax check or execution",
+  "off_host_release_gates": ["Actual Python 3.6 transaction tests", "Node --check on exact reviewed app.js"],
+  "local_author_validation_runtime": "Python 3.12",
+  "local_author_external_calls": "None"
+}

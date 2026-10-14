@@ -1,0 +1,61 @@
+name: KCMC remaining code hosting repair
+on:
+  pull_request:
+    paths:
+      - 'tools/kcmc-code-fixes-oct14/**'
+      - 'tools/kcmc-skip-repair-oct14/**'
+      - '.github/workflows/code-fixes-host.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  current-python-node:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          persist-credentials: false
+      - name: Exact generation, JavaScript and transaction checks
+        run: |
+          set -euo pipefail
+          python3 tools/kcmc-code-fixes-oct14/generate_runner.py
+          git diff --exit-code -- tools/kcmc-code-fixes-oct14/installer.py
+          node --check KCMC-Connect-Phase6-Recreated/app.js
+          python3 tools/kcmc-skip-repair-oct14/test_installer.py --runtime-root KCMC-Connect-Phase6-Recreated
+          python3 tools/kcmc-code-fixes-oct14/test_composition.py --candidate-root KCMC-Connect-Phase6-Recreated
+      - name: Real PHP 8.2 temporary transaction
+        run: |
+          set -euo pipefail
+          docker pull php@sha256:118ef4fb1db5e866fb604f2f260da81f819a0a1eac87a4083f9194f48e00beee
+          kcmc_ci_php=$(mktemp -d)
+          trap 'rm -f -- "$kcmc_ci_php/php"; rmdir -- "$kcmc_ci_php"' EXIT
+          cat > "$kcmc_ci_php/php" <<'SH'
+          #!/usr/bin/env bash
+          set -euo pipefail
+          if [ "$#" -eq 3 ] && [ "$1" = '-n' ] && [ "$2" = '-l' ]; then
+            kcmc_ci_stage=$(dirname -- "$3")
+            exec docker run --rm --network none --user "$(id -u):$(id -g)" \
+              --mount "type=bind,src=$kcmc_ci_stage,dst=$kcmc_ci_stage,readonly" \
+              php@sha256:118ef4fb1db5e866fb604f2f260da81f819a0a1eac87a4083f9194f48e00beee php "$@"
+          fi
+          exec docker run --rm --network none --user "$(id -u):$(id -g)" \
+            php@sha256:118ef4fb1db5e866fb604f2f260da81f819a0a1eac87a4083f9194f48e00beee php "$@"
+          SH
+          chmod 0700 "$kcmc_ci_php/php"
+          PATH="$kcmc_ci_php:$PATH" python3 tools/kcmc-code-fixes-oct14/verify-stage.py --runtime-root KCMC-Connect-Phase6-Recreated
+  python36:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          persist-credentials: false
+      - name: Actual Python 3.6 temporary transactions
+        run: |
+          docker run --rm --network none --user "$(id -u):$(id -g)" \
+            --mount "type=bind,src=$PWD,dst=/source,readonly" \
+            -w /source python@sha256:f8652afaf88c25f0d22354d547d892591067aa4026a7fa9a6819df9f300af6fc \
+            bash -c 'set -e; python3 tools/kcmc-skip-repair-oct14/test_installer.py --runtime-root KCMC-Connect-Phase6-Recreated; python3 tools/kcmc-code-fixes-oct14/test_composition.py --candidate-root KCMC-Connect-Phase6-Recreated'
