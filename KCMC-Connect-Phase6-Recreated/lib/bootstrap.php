@@ -8,6 +8,7 @@ const KCMC_CONFIG = KCMC_ROOT . '/config.php';
 const KCMC_BACKUPS = KCMC_ROOT . '/backups';
 const KCMC_RETIRED_CONTENT_IDS = ['backpack-blessing-2026'];
 const KCMC_LOCAL_TIMEZONE = 'America/Chicago';
+require_once __DIR__ . '/post-controls.php';
 
 $privateDataDir = trim((string)(getenv('KCMC_PRIVATE_DATA_DIR') ?: ''));
 define('KCMC_PRIVATE_DATA', $privateDataDir !== '' ? rtrim($privateDataDir, '/') : KCMC_ROOT . '/data/private');
@@ -261,13 +262,13 @@ function kcmc_apply_required_public_content(array &$data): bool {
 
 function kcmc_featured_announcement_index(array $announcements): ?int {
     foreach ($announcements as $index => $announcement) {
-        if (is_array($announcement) && ($announcement['id'] ?? '') === 'owner-announcement') return (int)$index;
+        if (is_array($announcement) && empty($announcement['deleted_at']) && ($announcement['id'] ?? '') === 'owner-announcement') return (int)$index;
     }
 
     $selected = null;
     $selectedPriority = PHP_INT_MIN;
     foreach ($announcements as $index => $announcement) {
-        if (!is_array($announcement)) continue;
+        if (!is_array($announcement) || !empty($announcement['deleted_at'])) continue;
         $id = (string)($announcement['id'] ?? '');
         if ($id === '' || in_array($id, KCMC_RETIRED_CONTENT_IDS, true)) continue;
         $priority = (int)($announcement['priority'] ?? 0);
@@ -326,14 +327,17 @@ function kcmc_content(): array {
     return $data;
 }
 
-function kcmc_write_content(array $data, string $actor = 'system'): void {
+function kcmc_write_content(array $data, string $actor = 'system', ?string $expectedHash = null): void {
     if (!is_dir(KCMC_BACKUPS) && !mkdir(KCMC_BACKUPS, 0750, true) && !is_dir(KCMC_BACKUPS)) throw new RuntimeException('Unable to create backup storage.');
     $lock = @fopen(KCMC_DATA . '.lock', 'c+');
     if ($lock === false || !flock($lock, LOCK_EX)) throw new RuntimeException('Unable to lock content storage.');
     try {
+        if ($expectedHash !== null && !hash_equals($expectedHash, hash_file('sha256', KCMC_DATA) ?: '')) {
+            throw new RuntimeException('Content changed. Reload and review the current posts.');
+        }
         if (is_file(KCMC_DATA)) {
             $stamp = gmdate('Ymd-His') . '-' . bin2hex(random_bytes(3));
-            @copy(KCMC_DATA, KCMC_BACKUPS . "/content-$stamp.json");
+            if (!copy(KCMC_DATA, KCMC_BACKUPS . "/content-$stamp.json")) throw new RuntimeException('Unable to back up content. Nothing was published.');
         }
         $data['meta']['version'] = '3.0.0';
         $data['meta']['updated_at'] = gmdate('c');
@@ -541,8 +545,9 @@ function kcmc_update_user_login(string $id): void {
 
 function kcmc_active_items(array $items): array {
     $now = time();
+    $items = array_map(static fn($item) => is_array($item) ? kcmc_next_weekly_occurrence($item) : null, $items);
     return array_values(array_filter($items, function($item) use ($now): bool {
-        if (!is_array($item)) return false;
+        if (!is_array($item) || !empty($item['deleted_at'])) return false;
         if (in_array((string)($item['id'] ?? ''), KCMC_RETIRED_CONTENT_IDS, true)) return false;
         if (($item['status'] ?? 'published') !== 'published') return false;
         if (!empty($item['starts_at']) && strtotime((string)$item['starts_at']) > $now) return false;

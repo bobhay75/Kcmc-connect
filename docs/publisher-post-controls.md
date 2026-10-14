@@ -1,0 +1,9 @@
+# Publisher post controls
+
+Adds **Manage posts: Delete, Trash and weekly events** to the Publishing Desk. Each announcement and event has an individually confirmed Delete action. Delete retains the record and its ID in Trash, removes it from public views, and can be reversed. Restored posts are hidden until separately reviewed and published. Existing required-event defaults cannot recreate a deleted event because its ID remains stored.
+
+Events support Once or Weekly, with an optional inclusive last weekly date. Weekly displays the next occurrence in America/Chicago without modifying the original series date, time, or location. The public display advances after the event's local calendar day, including across daylight-saving changes. Weekly replaces the original single-event expiry; switching back to Once restores it. The existing calendar download saves the displayed occurrence only. Existing RSVP records remain associated with the event ID; this change does not create attendance lists for separate weekly occurrences.
+
+No existing event is automatically made recurring. The PR does not change saved content, Trunk or Treat timing, office email, imagery, private prayer stores, roles, or owner-only Operations. Publisher access remains limited to the existing editorial roles. Changes require POST, CSRF, per-action confirmation, and a content-version check repeated under the write lock. Failure to copy the pre-change backup now aborts publication instead of continuing silently.
+
+Validation: PHP lint and post-controls behavioral tests cover next-week projection, both DST transitions, inclusive end dates, restoring one-off expiry, field preservation, deletion/restore, public filtering, and invalid actions. CI also runs the repository's affected security and publishing workflows. This is a separate draft feature PR; it is not part of PR #125's approved live content publication.
