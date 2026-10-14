@@ -14,9 +14,10 @@ $data['contact']['office_hours']=trim((string)($_POST['contact_hours']??''));
 $data['contact']['address']=trim((string)($_POST['contact_address']??''));
 $announcements=is_array($data['announcements']??null)?$data['announcements']:[];
 $requestedAnnouncementId=(string)($_POST['announcement_id']??'');
+foreach($announcements as $savedAnnouncement){if(is_array($savedAnnouncement)&&($savedAnnouncement['id']??'')===$requestedAnnouncementId&&!empty($savedAnnouncement['deleted_at'])){http_response_code(409);exit('This announcement was deleted. Reload the Publishing Desk.');}}
 $announcementIndex=null;
 foreach($announcements as $i=>$announcement){
-    if(is_array($announcement)&&($announcement['id']??'')===$requestedAnnouncementId&&!in_array($requestedAnnouncementId,KCMC_RETIRED_CONTENT_IDS,true)){$announcementIndex=(int)$i;break;}
+    if(is_array($announcement)&&empty($announcement['deleted_at'])&&($announcement['id']??'')===$requestedAnnouncementId&&!in_array($requestedAnnouncementId,KCMC_RETIRED_CONTENT_IDS,true)){$announcementIndex=(int)$i;break;}
 }
 if($announcementIndex===null)$announcementIndex=kcmc_featured_announcement_index($announcements);
 if($announcementIndex===null){$announcements[]=['id'=>'owner-announcement'];$announcementIndex=array_key_last($announcements);}
@@ -34,7 +35,7 @@ $data['bulletin']['welcome']=trim((string)($_POST['bulletin_welcome']??''));
 $data['bulletin']['notes']=array_values(array_filter(array_map('trim',preg_split('/\R/',(string)($_POST['bulletin_notes']??'')))));
 $postedEvents=$_POST['events']??[];
 foreach($postedEvents as $i=>$p){
-    if(!isset($data['events'][$i]))continue;
+    if(!isset($data['events'][$i]) || !empty($data['events'][$i]['deleted_at']))continue;
     $data['events'][$i]['title']=trim((string)($p['title']??''));
     $data['events'][$i]['date']=trim((string)($p['date']??''));
     $data['events'][$i]['time']=trim((string)($p['time']??''));

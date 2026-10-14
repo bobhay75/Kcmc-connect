@@ -34,6 +34,28 @@ def check(ok, message):
 
 # Recover only the exact reviewed three-file bug repair before validating the
 # historical source chain. Role, account and public-presentation pins stay intact.
+# Preserve historical proofs while allowing only the explicit Publisher delta.
+post_bytes = (ROOT / 'tests/fixtures/post-controls-reviewed.json').read_bytes()
+check(hashlib.sha256(post_bytes).hexdigest() == 'e5d8300a9f0d1a6f674d9f9287a100c9d49b7d279f1e9d5995151c1d0d1bab24', 'Publisher post-controls fixture is exact')
+post_delta = json.loads(post_bytes)
+check(set(post_delta['modified']) == {'lib/bootstrap.php', 'admin/index.php', 'admin/save.php', 'lib/public-presentation.php'}, 'Publisher existing-file scope is exact')
+check(set(post_delta['new_files']) == {'lib/post-controls.php', 'admin/posts.php'}, 'Publisher new-file scope is exact')
+def before_post_controls(name):
+    content = (ROOT / PREFIX / name).read_bytes()
+    record = post_delta['modified'].get(name)
+    if record:
+        check(hashlib.sha256(content).hexdigest() == record['after_sha256'], name + ': Publisher target bytes match')
+        for old, new in reversed(record['replacements']):
+            check(content.count(new.encode()) == 1, name + ': Publisher reverse anchor unique')
+            content = content.replace(new.encode(), old.encode(), 1)
+        check(hashlib.sha256(content).hexdigest() == record['before_sha256'], name + ': historical Publisher preimage matches')
+    return content
+for name in post_delta['modified']:
+    before_post_controls(name)
+for name, digest in post_delta['new_files'].items():
+    check(hashlib.sha256((ROOT / PREFIX / name).read_bytes()).hexdigest() == digest, name + ': exact new Publisher module')
+post_paths = {PREFIX + name for name in post_delta['modified']} | {PREFIX + name for name in post_delta['new_files']}
+
 minimal_bytes = (ROOT / 'tests/fixtures/minimal-repair-reviewed.json').read_bytes()
 check(hashlib.sha256(minimal_bytes).hexdigest() == '2af4494a39137e6d5dee42c532d30dd2a47085ac34fcc92e1e8541100c37e91d', 'minimal repair fixture remains exact')
 minimal = json.loads(minimal_bytes)
@@ -78,7 +100,7 @@ for name, pairs in home['replacements'].items():
 
 
 def prior_runtime(name):
-    content = minimal_preimages[name] if name in minimal_preimages else (ROOT / PREFIX / name).read_bytes()
+    content = minimal_preimages[name] if name in minimal_preimages else before_post_controls(name)
     for old, new in reversed(home['replacements'].get(name, [])):
         check(content.count(new.encode()) == 1, name + ': unique homepage reverse anchor')
         content = content.replace(new.encode(), old.encode(), 1)
@@ -244,7 +266,7 @@ for name, info in art['new_assets'].items():
     content = prior_runtime(name)
     check(git_blob(content) == info['git_blob'] and len(content) == info['bytes'], name + ': exact event illustration bytes')
     check(len(content) < 20_000, name + ': mobile artwork budget')
-check((ROOT / PREFIX / 'lib/bootstrap.php').read_bytes() == apply_event_art('lib/bootstrap.php', source(art['source_commit'], PREFIX + 'lib/bootstrap.php')), 'bootstrap changes only the reviewed event artwork fields')
+check(before_post_controls('lib/bootstrap.php') == apply_event_art('lib/bootstrap.php', source(art['source_commit'], PREFIX + 'lib/bootstrap.php')), 'bootstrap changes only the reviewed event artwork fields')
 artwork_paths = {PREFIX + p for p in art['replacements']} | {PREFIX + p for p in art['new_assets']}
 
 for name, content in expected.items():
@@ -399,9 +421,9 @@ check(git_blob(source(BASE, editorial_path)) == 'e7eb008c163a524f036d52b5e8e6203
 subprocess.check_call([sys.executable, str(ROOT / 'tests/editorial-content-source.py')], cwd=ROOT)
 editorial_paths = {editorial_path}
 changed = set(git('diff', '--name-only', BASE, '--', PREFIX).decode().splitlines())
-check(changed == ({PREFIX + p for p in expected} | {PREFIX + p for p in publication} | image_paths | documentation_paths | visitor_paths | appearance_paths | artwork_paths | gallery_repair_paths | owner_paths | home_paths | minimal_paths | editorial_paths), 'application diff is exact prior scope plus enumerated minimal repair')
+check(changed == ({PREFIX + p for p in expected} | {PREFIX + p for p in publication} | image_paths | documentation_paths | visitor_paths | appearance_paths | artwork_paths | gallery_repair_paths | owner_paths | home_paths | minimal_paths | editorial_paths | post_paths), 'application diff is exact prior scope plus enumerated minimal repair')
 changed_since_reconciled = set(git('diff', '--name-only', RECONCILED, '--', PREFIX).decode().splitlines())
-check(changed_since_reconciled == ({PREFIX + p for p in approved} | {PREFIX + 'sw.js'} | {PREFIX + p for p in publication} | image_paths | documentation_paths | visitor_paths | appearance_paths | artwork_paths | gallery_repair_paths | owner_paths | home_paths | minimal_paths | editorial_paths), 'post-reconciliation diff is exact reviewed source plus enumerated minimal repair')
+check(changed_since_reconciled == ({PREFIX + p for p in approved} | {PREFIX + 'sw.js'} | {PREFIX + p for p in publication} | image_paths | documentation_paths | visitor_paths | appearance_paths | artwork_paths | gallery_repair_paths | owner_paths | home_paths | minimal_paths | editorial_paths | post_paths), 'post-reconciliation diff is exact reviewed source plus enumerated minimal repair')
 for path in ['.cpanel.yml', 'KCMC-Connect-Phase6-Recreated/config.example.php']:
     check((ROOT / path).read_bytes() == source(BASE, path), path + ': unchanged')
 login = (ROOT / PREFIX / 'member/login.php').read_bytes()

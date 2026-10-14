@@ -8,6 +8,9 @@ require_once __DIR__ . '/bootstrap.php';
  */
 function kcmc_public_content_view(array $data): array {
     unset($data['news']);
+    foreach (['events', 'announcements'] as $section) {
+        $data[$section] = array_values(array_filter(is_array($data[$section] ?? null) ? $data[$section] : [], static fn($item) => is_array($item) && empty($item['deleted_at'])));
+    }
     $data['announcements'] = array_values(array_filter(
         is_array($data['announcements'] ?? null) ? $data['announcements'] : [],
         static fn($item): bool => is_array($item) && (string)($item['id'] ?? '') !== 'sep-news-16'
