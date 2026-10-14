@@ -1,0 +1,186 @@
+{
+  "baseline_commit": "2146af219d2fd23136eae1685f91a2a2caec030e",
+  "target_git_blob": "55daccd542b1f5abfe7f267bd833de7384f8c90a",
+  "office_hours": "Tue–Thu • 8:00 AM–4:00 PM",
+  "bulletin": {
+    "title": "KCMC Community Updates — October 14, 2026",
+    "date": "2026-10-14",
+    "welcome": "Same God. New Mercies. Every Day. Community updates from the October 9 Front Pew News.",
+    "notes": [
+      "October 15, 10:00 AM — The Gathering Place: confidential encouragement and resources for caregivers. Everyone is welcome.",
+      "October 15, 12:30 PM — Methodist Women: bring a sack lunch and baby diapers for mission giving. Desserts provided; guest speaker Carrie Padilla of Unite TableRock.",
+      "October 16, 6:00 PM — Friday Night Freedom Worship Service.",
+      "Return Pregnancy Life Line baby bottles by Sunday, October 25.",
+      "October 31 — Trunk or Treat volunteers are needed. See Church updates for arrival, candy and family-friendly setup guidance.",
+      "November 14, 4:30 PM — Richard French Memorial Lasagna Dinner, Fellowship Hall. Tickets are $15 per person from the Methodist Men.",
+      "For prayer or support, contact the church office at 417-739-4395. Personal prayer details are not displayed publicly."
+    ]
+  },
+  "append_events": [
+    {
+      "id": "griefshare-20261014",
+      "title": "GriefShare",
+      "date": "2026-10-14",
+      "time": "9:30 AM",
+      "location": "KCMC",
+      "description": "Listed in the October 9 Front Pew News weekly calendar.",
+      "status": "published",
+      "rsvp": false,
+      "expires_at": "2026-10-14T23:59:59-05:00"
+    },
+    {
+      "id": "salt-light-bible-study-20261014",
+      "title": "Salt & Light Adult Bible Study",
+      "date": "2026-10-14",
+      "time": "5:17 PM",
+      "location": "KCMC",
+      "description": "Listed in the October 9 Front Pew News weekly calendar.",
+      "status": "published",
+      "rsvp": false,
+      "expires_at": "2026-10-14T23:59:59-05:00"
+    },
+    {
+      "id": "launchpad-kids-20261014",
+      "title": "LaunchPad Kids",
+      "date": "2026-10-14",
+      "time": "5:17 PM",
+      "location": "KCMC",
+      "description": "Listed in the October 9 Front Pew News weekly calendar.",
+      "status": "published",
+      "rsvp": false,
+      "expires_at": "2026-10-14T23:59:59-05:00"
+    },
+    {
+      "id": "rooted-youth-20261014",
+      "title": "Rooted Youth",
+      "date": "2026-10-14",
+      "time": "5:17 PM",
+      "location": "KCMC",
+      "description": "Listed in the October 9 Front Pew News weekly calendar.",
+      "status": "published",
+      "rsvp": false,
+      "expires_at": "2026-10-14T23:59:59-05:00"
+    },
+    {
+      "id": "chancel-choir-20261014",
+      "title": "Chancel Choir",
+      "date": "2026-10-14",
+      "time": "7:00 PM",
+      "location": "KCMC",
+      "description": "Listed in the October 9 Front Pew News weekly calendar.",
+      "status": "published",
+      "rsvp": false,
+      "expires_at": "2026-10-14T23:59:59-05:00"
+    },
+    {
+      "id": "quest-preschool-20261015",
+      "title": "Quest Preschool",
+      "date": "2026-10-15",
+      "time": "8:30 AM",
+      "location": "KCMC",
+      "description": "Listed in the October 9 Front Pew News weekly calendar.",
+      "status": "published",
+      "rsvp": false,
+      "expires_at": "2026-10-15T23:59:59-05:00"
+    },
+    {
+      "id": "coffee-bible-study-20261015",
+      "title": "Coffee and Bible Study",
+      "date": "2026-10-15",
+      "time": "8:30 AM",
+      "location": "KCMC",
+      "description": "Listed in the October 9 Front Pew News weekly calendar.",
+      "status": "published",
+      "rsvp": false,
+      "expires_at": "2026-10-15T23:59:59-05:00"
+    },
+    {
+      "id": "gathering-place-20261015",
+      "title": "The Gathering Place",
+      "date": "2026-10-15",
+      "time": "10:00 AM",
+      "location": "KCMC",
+      "description": "Caregivers are welcome to a confidential, positive gathering for discussion, encouragement and available resources.",
+      "status": "published",
+      "rsvp": false,
+      "expires_at": "2026-10-15T23:59:59-05:00"
+    },
+    {
+      "id": "methodist-women-20261015",
+      "title": "Methodist Women’s Meeting",
+      "date": "2026-10-15",
+      "time": "12:30 PM",
+      "location": "KCMC",
+      "description": "Bring a sack lunch; hostesses will provide desserts. Guest speaker: Carrie Padilla of Unite TableRock. Please bring baby diapers of any size for mission giving.",
+      "status": "published",
+      "rsvp": false,
+      "expires_at": "2026-10-15T23:59:59-05:00"
+    },
+    {
+      "id": "beginners-line-dancing-20261015",
+      "title": "Beginner Line Dancing",
+      "date": "2026-10-15",
+      "time": "5:45 PM",
+      "location": "KCMC",
+      "description": "Listed in the October 9 Front Pew News weekly calendar.",
+      "status": "published",
+      "rsvp": false,
+      "expires_at": "2026-10-15T23:59:59-05:00"
+    },
+    {
+      "id": "intermediate-line-dancing-20261015",
+      "title": "Intermediate Line Dancing",
+      "date": "2026-10-15",
+      "time": "6:30 PM",
+      "location": "KCMC",
+      "description": "Listed in the October 9 Front Pew News weekly calendar.",
+      "status": "published",
+      "rsvp": false,
+      "expires_at": "2026-10-15T23:59:59-05:00"
+    },
+    {
+      "id": "friday-night-freedom-20261016",
+      "title": "Friday Night Freedom Worship Service",
+      "date": "2026-10-16",
+      "time": "6:00 PM",
+      "location": "KCMC",
+      "description": "Listed in the October 9 Front Pew News weekly calendar.",
+      "status": "published",
+      "rsvp": false,
+      "expires_at": "2026-10-16T23:59:59-05:00"
+    },
+    {
+      "id": "richard-french-lasagna-20261114",
+      "title": "Richard French Memorial Lasagna Dinner",
+      "date": "2026-11-14",
+      "time": "4:30 PM",
+      "location": "KCMC Fellowship Hall",
+      "description": "Admission is $15 per person. See a member of the Methodist Men for tickets.",
+      "status": "published",
+      "rsvp": false,
+      "expires_at": "2026-11-14T23:59:59-06:00"
+    }
+  ],
+  "append_announcements": [
+    {
+      "id": "trunk-volunteers-20261014",
+      "title": "Trunk or Treat volunteers: welcome families with us",
+      "body": "Help us reach at least 30 decorated trunks! Sign up to bring your vehicle and welcome children and families. The pastors have promised a party for participants if we reach 30 trunks. Volunteers should arrive by 3:30 PM on October 31 to park and decorate. Plan for approximately 200 children: about 200 individually wrapped treats for one each, or 400 for two each. Use commercially packaged, individually wrapped treats. Extra candy is available, and the church can provide candy if purchasing it is a burden. Drop off donated candy at the church office or in the lobby. Keep decorations and optional costumes family-friendly and not frightening; an adult volunteer costume contest is planned. Keep walkways clear and cords secure. Keep vehicles parked until the event is over and families have cleared the area. Smile, welcome each child and be patient with shy visitors. Contact the church office with questions.",
+      "priority": 90,
+      "status": "published",
+      "starts_at": "2026-10-14T00:00:00-05:00",
+      "expires_at": "2026-10-31T23:59:59-05:00",
+      "link": "#events"
+    },
+    {
+      "id": "pll-bottles-20261025",
+      "title": "Return Pregnancy Life Line baby bottles by October 25",
+      "body": "Fill a baby bottle with change or a check to support Pregnancy Life Line/Southern Missouri. Please return your bottle by Sunday, October 25, the last Sunday in October. Contact the church office with questions. Thank you for supporting this ministry!",
+      "priority": 80,
+      "status": "published",
+      "starts_at": "2026-10-14T00:00:00-05:00",
+      "expires_at": "2026-10-25T23:59:59-05:00",
+      "link": "#partner"
+    }
+  ]
+}
