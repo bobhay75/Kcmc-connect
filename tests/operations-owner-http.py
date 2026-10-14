@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 """Exercise real PHP routes with isolated users, storage and HTTP sessions."""
 import http.cookiejar
+import importlib.util
 import json
 import os
 from pathlib import Path
@@ -41,6 +42,18 @@ def run():
     with tempfile.TemporaryDirectory(prefix='kcmc-owner-http-') as tmp:
         work = Path(tmp)
         shutil.copytree(APP, work / 'app')
+        # Exercise the release artifact, not only already-guarded repository pages.
+        spec = importlib.util.spec_from_file_location('release', APP.parent / 'tools/release-operations-owner.py')
+        release = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(release)
+        for name in release.FILES[1:]:
+            path = work / 'app' / name
+            path.write_bytes(path.read_bytes().replace(release.GUARD, b'', 1))
+        (work / 'app' / release.HELPER).unlink()
+        with (work / 'app/.htaccess').open('ab') as f:
+            f.write(b'\nSetEnv KCMC_OPERATIONS_OWNER_USER_ID owner\n')
+        release.prepare(work / 'app', work / 'release-backup')
+        release.apply(work / 'app', work / 'release-backup')
         private = work / 'private'
         private.mkdir()
         users = [dict(id=uid, email=uid+'@example.invalid', email_normalized=uid+'@example.invalid',
@@ -86,6 +99,13 @@ def run():
                             check(request(client,base+'/admin/')[0]==200,'non-owner administrator retains Publishing Desk')
                             check(request(client,base+'/admin/publication-designer.php')[0]==200,'non-owner administrator retains Publisher')
                         check(request(client,base+'/member/timeclock.php')[0]==200,'member retains own Time Clock')
+                        for route in ['member/notifications.php','member/password.php']:
+                            check(request(client,base+'/'+route)[0]==200, uid+': normal member route '+route)
+                        ministry_allowed = uid in ['other_admin','staff'] or (uid=='owner' and configured=='owner')
+                        check(request(client,base+'/member/prayer-care.php')[0]==(200 if ministry_allowed else 403),uid+': existing Prayer and Care access unchanged')
+                        if uid in ['owner','other_admin','recovery']:
+                            for route in ['admin/posts.php','admin/users.php','admin/password-resets.php']:
+                                check(request(client,base+'/'+route)[0]==200,uid+': normal admin route '+route)
                 finally:
                     server.terminate();server.wait(timeout=10)
         print('Operations owner HTTP acceptance passed; no production traffic or records.')
