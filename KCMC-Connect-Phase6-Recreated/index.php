@@ -48,14 +48,11 @@ usort($kcmcAnnouncements, fn($a,$b)=>(int)($b['priority']??0)<=>(int)($a['priori
 <link rel="manifest" href="manifest.webmanifest?v=3.0.1">
 <link rel="preload" as="image" href="assets/visuals/kcmc-building-retouched-20261009.jpg" type="image/jpeg" fetchpriority="high">
 <link rel="stylesheet" href="styles.css?v=3.0.3">
-<link rel="stylesheet" href="public-presentation.css?v=home-option-b-20261013">
+<link rel="stylesheet" href="public-presentation.css?v=fish-only-home-20261014">
 <link rel="icon" href="assets/icons/icon-192.png?v=3.0.1">
 <link rel="apple-touch-icon" href="assets/icons/icon-192.png?v=3.0.1">
 </head>
 <body data-office-email="<?=kcmc_h($kcmcEmail)?>">
-<?php if (!empty($kcmcAnnouncements)): $top=$kcmcAnnouncements[0]; ?>
-<div class="phase6-announcement" role="status"><div class="shell"><strong><?=kcmc_h((string)($top['title']??''))?></strong><span><?=kcmc_h((string)($top['body']??''))?></span></div></div>
-<?php endif; ?>
 <a class="skip-link" href="#mainContent">Skip to content</a>
 <div class="offline-banner" id="offlineBanner" role="status">You’re offline. Saved KCMC Connect pages are still available.</div>
 <p class="sr-only" data-share-status role="status" aria-live="polite" aria-atomic="true"></p>
@@ -69,12 +66,17 @@ usort($kcmcAnnouncements, fn($a,$b)=>(int)($b['priority']??0)<=>(int)($a['priori
         <a class="menu-home" href="#home" data-route="home"><strong>KCMC CONNECT</strong><small>Kimberling City Methodist Church</small></a>
         <a href="#visit" data-route="visit">Plan a visit</a>
         <a href="#watch" data-route="watch">Watch messages</a>
-        <a href="#news" data-route="news">Church updates</a>
+        <a href="#news" data-route="news">Announcements &amp; church updates</a>
         <a href="#events" data-route="events">Events</a>
         <a href="bulletin.php">Latest bulletin</a>
         <a href="care.php">Prayer &amp; care</a>
         <a href="#serve" data-route="serve">Serving</a>
         <a href="#partner" data-route="partner">Get connected</a>
+        <a href="https://www.kimberlingcitymethodist.com/youth" target="_blank" rel="noopener">Kids &amp; youth</a>
+        <a href="<?=kcmc_h($kcmcPhoneHref)?>">Call the church office</a>
+        <a href="<?=kcmc_h($kcmcEmailHref)?>">Email the church office</a>
+        <a href="https://www.facebook.com/KimberlingCityMethodistChurch" target="_blank" rel="noopener">KCMC on Facebook</a>
+        <button type="button" data-share-app data-share-visit>Invite someone this Sunday</button>
         <a class="header-give" href="https://www.simplechurchgiving.net/app/giving/umckc" target="_blank" rel="noopener">Give online</a>
         <button type="button" data-install-app>Save app</button>
         <button type="button" data-share-app>Share KCMC Connect</button>
@@ -97,11 +99,6 @@ usort($kcmcAnnouncements, fn($a,$b)=>(int)($b['priority']??0)<=>(int)($a['priori
         <div class="eyebrow">Welcome to Kimberling City Methodist Church</div>
         <h1>Come as you are.<br>Find your people.</h1>
         <p class="lead">Join us for worship, get to know our church, and find your next step. There’s a place for you at KCMC.</p>
-        <div class="actions home-cover-actions">
-          <a class="action" href="#watch" data-route="watch"><b>Watch</b><span>Live &amp; recent worship</span></a>
-          <a class="action" href="https://www.simplechurchgiving.net/app/giving/umckc" target="_blank" rel="noopener"><b>Give</b><span>Secure online giving</span></a>
-          <a class="action" href="#visit" data-route="visit"><b>Visit</b><span>Plan your first Sunday</span></a>
-        </div>
         <div class="hero-photo-controls" data-hero-controls hidden>
           <button type="button" data-hero-previous aria-label="Previous church photo">←</button>
           <button type="button" data-hero-toggle>Pause photos</button>
@@ -122,7 +119,6 @@ usort($kcmcAnnouncements, fn($a,$b)=>(int)($b['priority']??0)<=>(int)($a['priori
         <b>Three expressions. One church.</b>
         <span>Front Porch Gospel, Traditional Worship, and Contemporary Worship each offer a distinct style with a common mission.</span>
       </div>
-      <a class="btn secondary home-bulletin-link" href="bulletin.php">Latest Bulletin →</a>
     </div>
   </section>
 
@@ -300,9 +296,8 @@ usort($kcmcAnnouncements, fn($a,$b)=>(int)($b['priority']??0)<=>(int)($a['priori
 </section>
 </main>
 
-<footer class="footer"><div class="wrap footer-grid"><div><strong>KCMC CONNECT</strong><p>Kimberling City Methodist Church<br><?=kcmc_h($kcmcAddress)?></p></div><div><p><?=kcmc_h($kcmcPhone)?><br><a href="<?=kcmc_h($kcmcEmailHref)?>"><?=kcmc_h($kcmcEmail)?></a><br><a href="https://www.facebook.com/KimberlingCityMethodistChurch" target="_blank" rel="noopener">KCMC on Facebook</a></p><p class="fine">Leading people to become deeply committed followers of Jesus Christ.</p></div></div></footer>
+<footer class="footer"><div class="wrap footer-grid"><div><strong>KCMC CONNECT</strong><p>Kimberling City Methodist Church<br><?=kcmc_h($kcmcAddress)?></p></div><div><p><?=kcmc_h($kcmcPhone)?><br><?=kcmc_h($kcmcEmail)?></p><p class="fine">Leading people to become deeply committed followers of Jesus Christ.</p></div></div></footer>
 
-<nav class="mobile-nav" aria-label="Mobile navigation"><a href="#home" data-route="home"><span>⌂</span>Home</a><a href="#visit" data-route="visit"><span>◎</span>Visit</a><a href="#watch" data-route="watch"><span>▶</span>Watch</a><a href="#events" data-route="events"><span>◇</span>Events</a><a href="#partner" data-route="partner"><span>✦</span>Connect</a></nav>
 <div class="install-sheet" id="installSheet" role="dialog" aria-modal="true" aria-labelledby="installSheetTitle" hidden>
   <div class="install-sheet-card" tabindex="-1">
     <button class="install-sheet-close" type="button" aria-label="Close install instructions" data-install-close>×</button>
@@ -315,5 +310,4 @@ usort($kcmcAnnouncements, fn($a,$b)=>(int)($b['priority']??0)<=>(int)($a['priori
 </div>
 <script src="app.js?v=visitor-welcome-20261008" defer></script>
 <script src="public-presentation.js?v=blue-fish-menu-20261009" defer></script>
-<a class="phase6-bulletin-fab" href="bulletin.php">Latest Bulletin</a>
 </body></html>

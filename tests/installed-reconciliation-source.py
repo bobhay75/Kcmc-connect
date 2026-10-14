@@ -32,6 +32,28 @@ def check(ok, message):
     print('PASS:', message, flush=True)
 
 
+# Recover only the owner's explicit three-file homepage/navigation cleanup.
+# Full editorial records and all earlier exact-source proofs remain unchanged.
+fish_bytes = (ROOT / 'tests/fixtures/fish-only-home-reviewed.json').read_bytes()
+check(hashlib.sha256(fish_bytes).hexdigest() == '4d5209c2928265aced64afb61dca1b752fd26e034bd8492a5fdd8b18903e696e', 'fish-only homepage fixture is exact')
+fish = json.loads(fish_bytes)
+check(set(fish) == {'source_commit', 'files'} and fish['source_commit'] == '1af697ac828724a74ba15f9c7167f09b45e35f89', 'fish-only homepage baseline remains pinned')
+check(set(fish['files']) == {'index.php', 'public-presentation.css', 'sw.js'}, 'fish-only cleanup changes exactly three public runtime files')
+fish_preimages = {}
+for name, record in fish['files'].items():
+    check(set(record) == {'before_sha256', 'after_sha256', 'replacements'}, name + ': explicit fish-only byte pins')
+    content = (ROOT / PREFIX / name).read_bytes()
+    check(hashlib.sha256(content).hexdigest() == record['after_sha256'], name + ': exact fish-only target')
+    for old, new in reversed(record['replacements']):
+        check(content.count(new.encode()) == 1, name + ': unique reverse fish-only anchor')
+        content = content.replace(new.encode(), old.encode(), 1)
+    check(hashlib.sha256(content).hexdigest() == record['before_sha256'], name + ': exact fish-only preimage')
+    check(content == source(fish['source_commit'], PREFIX + name), name + ': canonical fish-only baseline')
+    fish_preimages[name] = content
+fish_paths = {PREFIX + name for name in fish['files']}
+def before_fish(name):
+    return fish_preimages[name] if name in fish_preimages else (ROOT / PREFIX / name).read_bytes()
+
 # Owner capability delta reverses exactly before all historical privacy proofs.
 owner_access_bytes = (ROOT / 'tests/fixtures/owner-capabilities-reviewed.json').read_bytes()
 check(hashlib.sha256(owner_access_bytes).hexdigest() == 'c0e44ea45c91d23c3c0ae4c1e9158b50fca8333767318ed3421a6cf5c3df1ac1', 'owner capability fixture is exact')
@@ -50,7 +72,7 @@ for name, record in owner_access['modified'].items():
     owner_access_preimages[name] = content
 owner_access_paths = {PREFIX + name for name in owner_access['modified']}
 def before_owner_access(name):
-    return owner_access_preimages[name] if name in owner_access_preimages else (ROOT / PREFIX / name).read_bytes()
+    return owner_access_preimages[name] if name in owner_access_preimages else before_fish(name)
 
 # A separate private ministry, with only two existing navigation changes.
 care_bytes = (ROOT / 'tests/fixtures/prayer-care-reviewed.json').read_bytes()
@@ -83,7 +105,7 @@ check(calendar['source_commit'] == '636dfa89e2d1cd0346741af732e385c950c54513', '
 check(set(calendar['modified']) == {'index.php', 'events.php'} and set(calendar['new_files']) == {'lib/event-calendar.php'}, 'calendar runtime scope is exact')
 calendar_preimages = {}
 for name, record in calendar['modified'].items():
-    content = (ROOT / PREFIX / name).read_bytes()
+    content = before_care(name)
     check(hashlib.sha256(content).hexdigest() == record['after_sha256'], name + ': exact calendar target')
     for old, new in reversed(record['replacements']):
         check(content.count(new.encode()) == 1, name + ': unique reverse calendar anchor')
@@ -506,9 +528,9 @@ check(git_blob(source(BASE, editorial_path)) == 'e7eb008c163a524f036d52b5e8e6203
 subprocess.check_call([sys.executable, str(ROOT / 'tests/editorial-content-source.py')], cwd=ROOT)
 editorial_paths = {editorial_path}
 changed = set(git('diff', '--name-only', BASE, '--', PREFIX).decode().splitlines())
-check(changed == ({PREFIX + p for p in expected} | {PREFIX + p for p in publication} | image_paths | documentation_paths | visitor_paths | appearance_paths | artwork_paths | gallery_repair_paths | owner_paths | home_paths | minimal_paths | editorial_paths | post_paths | skip_paths | calendar_paths | care_paths | owner_access_paths), 'application diff is exact prior scope plus enumerated repairs')
+check(changed == ({PREFIX + p for p in expected} | {PREFIX + p for p in publication} | image_paths | documentation_paths | visitor_paths | appearance_paths | artwork_paths | gallery_repair_paths | owner_paths | home_paths | minimal_paths | editorial_paths | post_paths | skip_paths | calendar_paths | care_paths | owner_access_paths | fish_paths), 'application diff is exact prior scope plus enumerated repairs')
 changed_since_reconciled = set(git('diff', '--name-only', RECONCILED, '--', PREFIX).decode().splitlines())
-check(changed_since_reconciled == ({PREFIX + p for p in approved} | {PREFIX + 'sw.js'} | {PREFIX + p for p in publication} | image_paths | documentation_paths | visitor_paths | appearance_paths | artwork_paths | gallery_repair_paths | owner_paths | home_paths | minimal_paths | editorial_paths | post_paths | skip_paths | calendar_paths | care_paths | owner_access_paths), 'post-reconciliation diff is exact reviewed source plus enumerated repairs')
+check(changed_since_reconciled == ({PREFIX + p for p in approved} | {PREFIX + 'sw.js'} | {PREFIX + p for p in publication} | image_paths | documentation_paths | visitor_paths | appearance_paths | artwork_paths | gallery_repair_paths | owner_paths | home_paths | minimal_paths | editorial_paths | post_paths | skip_paths | calendar_paths | care_paths | owner_access_paths | fish_paths), 'post-reconciliation diff is exact reviewed source plus enumerated repairs')
 for path in ['.cpanel.yml', 'KCMC-Connect-Phase6-Recreated/config.example.php']:
     check((ROOT / path).read_bytes() == source(BASE, path), path + ': unchanged')
 login = (ROOT / PREFIX / 'member/login.php').read_bytes()

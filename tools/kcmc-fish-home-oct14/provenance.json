@@ -1,0 +1,13 @@
+{
+  "frozen_engine_sha256": "4df2cdef03853c80c96350398b6a5b92cb78722e202debd3279d535fb9e757d7",
+  "embedded_engines": {
+    "live154": "a96c11808bf855e4ac8e49652118a149e12b95b4876d4dc245f8c978669cdc58",
+    "main130": "d17ba88d20e51c4c6a7bdab03a13ca479acdb2b93aa611ef95f36a186cf81c4b"
+  },
+  "installer_sha256": "1c2104c6607d9a5e235c4cb63ba5ae717509ee6d22df289c2c12bc79a49c50ea",
+  "scope": [
+    "index.php",
+    "public-presentation.css",
+    "sw.js"
+  ]
+}
