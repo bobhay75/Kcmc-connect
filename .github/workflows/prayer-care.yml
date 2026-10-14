@@ -1,0 +1,25 @@
+name: KCMC Prayer and Care privacy
+on:
+  pull_request:
+  push:
+    branches: [main]
+permissions:
+  contents: read
+jobs:
+  prayer-care:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Syntax and private state transitions
+        run: |
+          php -l KCMC-Connect-Phase6-Recreated/lib/prayer-care.php
+          php -l KCMC-Connect-Phase6-Recreated/member/prayer-care.php
+          php -l KCMC-Connect-Phase6-Recreated/care.php
+          php -l KCMC-Connect-Phase6-Recreated/member/index.php
+          php tests/prayer-care-contract.php
+      - name: Browser dependencies
+        run: |
+          python3 -m pip install playwright
+          python3 -m playwright install --with-deps chromium
+      - name: Synthetic member and pastoral workflow
+        run: python3 tests/prayer-care-browser.py
