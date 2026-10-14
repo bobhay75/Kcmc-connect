@@ -47,7 +47,7 @@ function kcmc_audit_event_label(string $action): string {
 }
 
 function kcmc_audit_visible_context(array $context): array {
-    $allowed = ['role', 'active', 'status', 'previous_status', 'sent', 'expired', 'failed', 'count', 'content_version', 'audience', 'action', 'bytes', 'reason', 'removed', 'kept'];
+    $allowed = ['role', 'active', 'status', 'previous_status', 'sent', 'expired', 'failed', 'count', 'content_version', 'audience', 'action', 'bytes', 'reason', 'removed', 'kept', 'self_approved'];
     $visible = [];
     foreach ($allowed as $key) {
         if (!array_key_exists($key, $context)) continue;
