@@ -442,9 +442,23 @@ function kcmc_role(array $user): string {
     return (string)($user['role'] ?? 'member');
 }
 
+/** The configured, active administrator owner retains every existing app capability.
+ * This does not change stored roles or turn another administrator into the owner.
+ */
+function kcmc_is_designated_owner(array $user): bool {
+    $ownerId = trim((string)(getenv('KCMC_OPERATIONS_OWNER_USER_ID') ?: ''));
+    $userId = (string)($user['id'] ?? '');
+    return !empty($user['active']) && $ownerId !== '' && $userId !== ''
+        && in_array(kcmc_role($user), ['pastor_admin', 'recovery_admin'], true)
+        && hash_equals($ownerId, $userId);
+}
+
 function kcmc_has_role(array $roles, ?array $user = null): bool {
     $user ??= kcmc_current_user();
-    return $user !== null && in_array(kcmc_role($user), $roles, true);
+    if ($user === null) return false;
+    if (in_array(kcmc_role($user), $roles, true)) return true;
+    return kcmc_is_designated_owner($user)
+        && count(array_intersect($roles, ['member', 'prayer_team', 'pastor_admin', 'recovery_admin'])) > 0;
 }
 
 function kcmc_can_publish(?array $user = null): bool {

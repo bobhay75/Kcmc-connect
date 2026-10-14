@@ -1,0 +1,25 @@
+{
+  "source_commit": "f7cc02ab1da1f3b5059b59c27822997e1541fef4",
+  "modified": {
+    "lib/bootstrap.php": {
+      "before_sha256": "f3711fafbe4ae6d3993c1d0d8f884dd4e31acd8a945f8af629bc11f351c532c4",
+      "after_sha256": "96590431ef787a6a689a3c9e1655cdb4cac10c7c86e5cde8f579cd0b3571c518",
+      "replacements": [
+        [
+          "    return (string)($user['role'] ?? 'member');\n}\n\nfunction kcmc_has_role(array $roles, ?array $user = null): bool {\n    $user ??= kcmc_current_user();\n    return $user !== null && in_array(kcmc_role($user), $roles, true);\n}\n\nfunction kcmc_can_publish(?array $user = null): bool {\n",
+          "    return (string)($user['role'] ?? 'member');\n}\n\n/** The configured, active administrator owner retains every existing app capability.\n * This does not change stored roles or turn another administrator into the owner.\n */\nfunction kcmc_is_designated_owner(array $user): bool {\n    $ownerId = trim((string)(getenv('KCMC_OPERATIONS_OWNER_USER_ID') ?: ''));\n    $userId = (string)($user['id'] ?? '');\n    return !empty($user['active']) && $ownerId !== '' && $userId !== ''\n        && in_array(kcmc_role($user), ['pastor_admin', 'recovery_admin'], true)\n        && hash_equals($ownerId, $userId);\n}\n\nfunction kcmc_has_role(array $roles, ?array $user = null): bool {\n    $user ??= kcmc_current_user();\n    if ($user === null) return false;\n    if (in_array(kcmc_role($user), $roles, true)) return true;\n    return kcmc_is_designated_owner($user)\n        && count(array_intersect($roles, ['member', 'prayer_team', 'pastor_admin', 'recovery_admin'])) > 0;\n}\n\nfunction kcmc_can_publish(?array $user = null): bool {\n"
+        ]
+      ]
+    },
+    "lib/prayer-care.php": {
+      "before_sha256": "f26ba0a5b3d1f12cedcf2358b890cd328b84bb4d2f8d627f98cb6af3deeb63e8",
+      "after_sha256": "099ba5c3af68160ce37fa46c5dc38c22893fb578dcdd1062e264be913288835d",
+      "replacements": [
+        [
+          "const KCMC_CARE_ROLES = ['member', 'prayer_team', 'pastor_admin'];\nfunction kcmc_care_empty(): array { return ['version'=>1, 'revision'=>0, 'warriors'=>[], 'entries'=>[], 'commitments'=>[]]; }\nfunction kcmc_care_member(array $user): bool {\n    return !empty($user['active']) && !empty($user['id']) && in_array($user['role'] ?? '', KCMC_CARE_ROLES, true);\n}\nfunction kcmc_care_leader(array $user): bool { return kcmc_care_member($user) && ($user['role'] ?? '') === 'pastor_admin'; }\nfunction kcmc_care_warrior(array $state, array $user): bool {\n    return kcmc_care_member($user) && ($state['warriors'][$user['id']]['status'] ?? '') === 'approved';\n}\n",
+          "const KCMC_CARE_ROLES = ['member', 'prayer_team', 'pastor_admin'];\nfunction kcmc_care_empty(): array { return ['version'=>1, 'revision'=>0, 'warriors'=>[], 'entries'=>[], 'commitments'=>[]]; }\nfunction kcmc_care_member(array $user): bool {\n    return !empty($user['active']) && !empty($user['id']) && kcmc_has_role(KCMC_CARE_ROLES, $user);\n}\nfunction kcmc_care_leader(array $user): bool { return kcmc_care_member($user) && kcmc_has_role(['pastor_admin'], $user); }\nfunction kcmc_care_warrior(array $state, array $user): bool {\n    return kcmc_care_member($user) && ($state['warriors'][$user['id']]['status'] ?? '') === 'approved';\n}\n"
+        ]
+      ]
+    }
+  }
+}
