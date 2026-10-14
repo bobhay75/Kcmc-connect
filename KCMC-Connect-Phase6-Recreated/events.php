@@ -1,8 +1,9 @@
 <?php
 require_once __DIR__ . '/lib/bootstrap.php';
+require_once __DIR__ . '/lib/event-calendar.php';
 $d = kcmc_content();
-$events = kcmc_active_items($d['events'] ?? []);
-usort($events, 'kcmc_compare_event_start');
+$calendar = kcmc_event_calendar($d['events'] ?? [], $_GET['event_view'] ?? null);
+$events = $calendar['events'];
 ?>
 <!doctype html>
 <html lang="en">
@@ -17,11 +18,16 @@ usort($events, 'kcmc_compare_event_start');
   </style>
 </head>
 <body>
-<main class="page">
+<main class="page" id="events">
   <a href="./#events">← KCMC Connect</a>
   <p class="eyebrow">WHAT’S HAPPENING</p>
   <h1>Upcoming events</h1>
-  <?php if(!$events): ?><p>No current events are published.</p><?php endif; ?>
+  <nav class="btns" aria-label="Event calendar view">
+      <a class="btn <?= $calendar['view']==='upcoming'?'gold':'secondary' ?>" href="?event_view=upcoming#events"<?= $calendar['view']==='upcoming'?' aria-current="page"':'' ?>>Upcoming</a>
+      <a class="btn <?= $calendar['view']==='next-week'?'gold':'secondary' ?>" href="?event_view=next-week#events"<?= $calendar['view']==='next-week'?' aria-current="page"':'' ?>>Next week</a>
+    </nav>
+    <p class="muted"><?= $calendar['view']==='next-week'?'Next week: '.kcmc_h($calendar['range']).' · Sunday–Saturday · Central time':'Showing the next occurrence of each published event.' ?></p>
+  <?php if(!$events): ?><p><?= $calendar['view']==='next-week'?'No events are published for next week. Choose Upcoming to see other dates.':'No current events are published.' ?></p><?php endif; ?>
   <?php foreach($events as $event):
     $image = (string)($event['image'] ?? '');
     $hasImage = preg_match('#\Aassets/visuals/[A-Za-z0-9][A-Za-z0-9._-]*\z#', $image) === 1;

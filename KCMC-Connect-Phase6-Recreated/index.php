@@ -1,5 +1,6 @@
 <?php
 require_once __DIR__ . '/lib/bootstrap.php';
+require_once __DIR__ . '/lib/event-calendar.php';
 require_once __DIR__ . '/lib/public-presentation.php';
 $kcmc = kcmc_public_content();
 $member = kcmc_current_user_if_session();
@@ -19,8 +20,8 @@ $kcmcSchema = json_encode([
   'telephone' => $kcmcPhone,
   'email' => $kcmcEmail,
 ], JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE | JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT) ?: '{}';
-$kcmcEvents = kcmc_active_items($kcmc['events'] ?? []);
-usort($kcmcEvents, 'kcmc_compare_event_start');
+$calendar = kcmc_event_calendar($kcmc['events'] ?? [], $_GET['event_view'] ?? null);
+$kcmcEvents = $calendar['events'];
 $kcmcHasRsvpEvents = count(array_filter($kcmcEvents, fn($event)=>!array_key_exists('rsvp',$event)||$event['rsvp']!==false)) > 0;
 $kcmcAnnouncements = kcmc_active_items($kcmc['announcements'] ?? []);
 usort($kcmcAnnouncements, fn($a,$b)=>(int)($b['priority']??0)<=>(int)($a['priority']??0));
@@ -238,8 +239,13 @@ usort($kcmcAnnouncements, fn($a,$b)=>(int)($b['priority']??0)<=>(int)($a['priori
 </section>
 <section class="view" data-view="events">
   <div class="wrap partner-hero"><div class="eyebrow">Events</div><h1 class="display-title">What’s next at KCMC.</h1><p class="lead muted">Upcoming gatherings, studies and community events, with one-tap calendar saves and easy ways to connect.</p></div>
+  <div class="wrap"><nav class="btns" aria-label="Event calendar view">
+      <a class="btn <?= $calendar['view']==='upcoming'?'gold':'secondary' ?>" href="?event_view=upcoming#events"<?= $calendar['view']==='upcoming'?' aria-current="page"':'' ?>>Upcoming</a>
+      <a class="btn <?= $calendar['view']==='next-week'?'gold':'secondary' ?>" href="?event_view=next-week#events"<?= $calendar['view']==='next-week'?' aria-current="page"':'' ?>>Next week</a>
+    </nav>
+    <p class="muted"><?= $calendar['view']==='next-week'?'Next week: '.kcmc_h($calendar['range']).' · Sunday–Saturday · Central time':'Showing the next occurrence of each published event.' ?></p></div>
   <section class="section"><div class="wrap grid3 event-grid">
-    <?php if(!$kcmcEvents): ?><p>No current events are published.</p><?php endif; ?>
+    <?php if(!$kcmcEvents): ?><p><?= $calendar['view']==='next-week'?'No events are published for next week. Choose Upcoming to see other dates.':'No current events are published.' ?></p><?php endif; ?>
     <?php foreach($kcmcEvents as $event):
       $eventTitle=(string)($event['title']??'');
       $eventDate=(string)($event['date']??'');

@@ -1,0 +1,24 @@
+name: KCMC next-week calendar
+on:
+  pull_request:
+  push:
+    branches: [main]
+permissions:
+  contents: read
+jobs:
+  calendar:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: PHP syntax and date/privacy boundaries
+        run: |
+          php -l KCMC-Connect-Phase6-Recreated/lib/event-calendar.php
+          php -l KCMC-Connect-Phase6-Recreated/index.php
+          php -l KCMC-Connect-Phase6-Recreated/events.php
+          php tests/event-calendar-contract.php
+      - name: Browser dependencies
+        run: |
+          python3 -m pip install playwright
+          python3 -m playwright install --with-deps chromium
+      - name: Navigation and occurrence calendar download
+        run: python3 tests/event-calendar-browser.py
