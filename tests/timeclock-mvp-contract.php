@@ -36,7 +36,10 @@ tc_check(str_contains($member, 'kcmc_verify_csrf'), 'employee mutations require 
 tc_check(str_contains($member, "(string)\$user['id']"), 'employee page scopes reads and writes to signed-in user');
 tc_check(str_contains($member, 'name="certify"'), 'pay-period submission requires employee certification control');
 tc_check(str_contains($admin, "kcmc_require_role(['pastor_admin', 'recovery_admin'])"), 'time-card review requires administrator role');
-tc_check(str_contains($admin, 'cannot approve or return their own time card'), 'reviewer self-approval is blocked');
+tc_check(str_contains($admin, "getenv('KCMC_TIMECARD_SELF_APPROVAL_ENABLED')") && str_contains($admin, "=== '1'"), 'owner self-approval requires explicit server policy');
+tc_check(str_contains($admin, "\$isSelfReview && (\$action !== 'approve' || !\$selfApprovalEnabled)"), 'self-review defaults to denied and never permits self-return');
+tc_check(str_contains($admin, 'kcmc_require_operations_owner()'), 'time-card approval remains restricted to the configured owner');
+tc_check(str_contains($lib, 'bool $allowSelfApproval=false'), 'direct time-card review defaults to denying self-approval');
 tc_check(str_contains($csv, "!== 'approved'"), 'CSV export is restricted to approved periods');
 tc_check(str_contains($print, "!== 'approved'"), 'print/PDF view is restricted to approved periods');
 tc_check(str_contains($csv, 'kcmc_csv_download'), 'accounting export uses spreadsheet-safe private CSV helper');

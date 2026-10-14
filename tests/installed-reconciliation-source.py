@@ -34,13 +34,26 @@ def check(ok, message):
 OWNER_ROUTES = ['admin/operations.php', 'admin/health.php', 'admin/audit.php', 'admin/audit-export.php', 'admin/push.php', 'admin/backup.php', 'admin/restore.php', 'admin/timecards.php', 'admin/timecards-export.php', 'admin/timecards-print.php']
 OWNER_GUARD = b"require_once __DIR__ . '/../lib/operations-owner.php';\nkcmc_require_operations_owner();\n"
 OWNER_BASE = '4225fce8968747ad4f828a9a36087b04fd020484'
+self_approval_bytes = (ROOT / 'tests/fixtures/owner-self-approval-reviewed.json').read_bytes()
+check(hashlib.sha256(self_approval_bytes).hexdigest() == '453a46807c811ea7fb034a6fb06a27da8b7578c0bbb5b7387414577d86d1f6bd', 'owner self-approval provenance fixture remains exact')
+self_approval = json.loads(self_approval_bytes)
+check(set(self_approval) == {'source_commit', 'reviewed_commit', 'files', 'scope'}, 'self-approval fixture fields are bounded')
+check(self_approval['source_commit'] == '4e7ddeb82c498aab0183a9e500ffa4289091e5aa' and self_approval['reviewed_commit'] == 'a693e8ff4c550b57d9de335bb7ef4fbb3b4d0c65', 'self-approval source and reviewed target commits are pinned')
+check(set(self_approval['files']) == {'admin/timecards.php', 'lib/timeclock.php', 'lib/audit-history.php'}, 'self-approval runtime scope is exactly three files')
+self_approval_paths = {PREFIX + name for name in self_approval['files']}
+for name, hashes in self_approval['files'].items():
+    check(set(hashes) == {'source_sha256', 'target_sha256'}, name + ': bounded provenance hashes')
+    check(hashlib.sha256(source(self_approval['source_commit'], PREFIX + name)).hexdigest() == hashes['source_sha256'], name + ': exact pre-policy source')
+    check(hashlib.sha256(source(self_approval['reviewed_commit'], PREFIX + name)).hexdigest() == hashes['target_sha256'], name + ': exact reviewed policy source')
+    check(hashlib.sha256((ROOT / PREFIX / name).read_bytes()).hexdigest() == hashes['target_sha256'], name + ': current bytes match reviewed policy source')
 owner_paths = {PREFIX + p for p in OWNER_ROUTES} | {PREFIX + 'lib/operations-owner.php'}
 check(hashlib.sha256((ROOT / PREFIX / 'lib/operations-owner.php').read_bytes()).hexdigest() == '03989956a73a0f5d995e6eb24fe64d722ed7b47558f94103d7cf79778ac2c2ef', 'owner authorization helper matches reviewed implementation')
 for name in OWNER_ROUTES:
     before = source(OWNER_BASE, PREFIX + name)
     anchor = b"require_once __DIR__ . '/../lib/bootstrap.php';\n"
     check(before.count(anchor) == 1, name + ': owner guard has one bootstrap anchor')
-    check((ROOT / PREFIX / name).read_bytes() == before.replace(anchor, anchor + OWNER_GUARD, 1), name + ': exact owner authorization insertion only')
+    policy_baseline = source(self_approval['source_commit'], PREFIX + name) if name in self_approval['files'] else (ROOT / PREFIX / name).read_bytes()
+    check(policy_baseline == before.replace(anchor, anchor + OWNER_GUARD, 1), name + ': exact owner authorization insertion before enumerated policy delta')
 
 home_bytes = (ROOT / 'tests/fixtures/home-audit-reviewed.json').read_bytes()
 check(hashlib.sha256(home_bytes).hexdigest() == 'e07b83984e813558e4f4deeb4fe5baf4eae597daae991d3e5eac5ba29255bac9', 'homepage repair fixture remains exact')
@@ -57,6 +70,10 @@ for name, pairs in home['replacements'].items():
 
 def prior_runtime(name):
     content = (ROOT / PREFIX / name).read_bytes()
+    # The three whole-file hashes above constrain the policy delta. Reconstruct
+    # its exact parent before checking every historical pin and owner guard.
+    if name in self_approval['files']:
+        content = source(self_approval['source_commit'], PREFIX + name)
     for old, new in reversed(home['replacements'].get(name, [])):
         check(content.count(new.encode()) == 1, name + ': unique homepage reverse anchor')
         content = content.replace(new.encode(), old.encode(), 1)
@@ -372,9 +389,9 @@ for old, new in guide['replacements'][guide_path]:
 check((ROOT / guide_path).read_bytes() == guide_content, 'deployment guide matches the exact reviewed documentation delta')
 documentation_paths = {guide_path}
 changed = set(git('diff', '--name-only', BASE, '--', PREFIX).decode().splitlines())
-check(changed == ({PREFIX + p for p in expected} | {PREFIX + p for p in publication} | image_paths | documentation_paths | visitor_paths | appearance_paths | artwork_paths | gallery_repair_paths | owner_paths | home_paths), 'application diff is exact runtime, Publisher, documentation and enumerated visitor/appearance scope')
+check(changed == ({PREFIX + p for p in expected} | {PREFIX + p for p in publication} | image_paths | documentation_paths | visitor_paths | appearance_paths | artwork_paths | gallery_repair_paths | owner_paths | home_paths | self_approval_paths), 'application diff is exact runtime, Publisher, documentation and enumerated visitor/appearance/owner policy scope')
 changed_since_reconciled = set(git('diff', '--name-only', RECONCILED, '--', PREFIX).decode().splitlines())
-check(changed_since_reconciled == ({PREFIX + p for p in approved} | {PREFIX + 'sw.js'} | {PREFIX + p for p in publication} | image_paths | documentation_paths | visitor_paths | appearance_paths | artwork_paths | gallery_repair_paths | owner_paths | home_paths), 'post-reconciliation diff is exact reviewed source plus enumerated visitor/appearance scope')
+check(changed_since_reconciled == ({PREFIX + p for p in approved} | {PREFIX + 'sw.js'} | {PREFIX + p for p in publication} | image_paths | documentation_paths | visitor_paths | appearance_paths | artwork_paths | gallery_repair_paths | owner_paths | home_paths | self_approval_paths), 'post-reconciliation diff is exact reviewed source plus enumerated visitor/appearance/owner policy scope')
 for path in ['.cpanel.yml', 'KCMC-Connect-Phase6-Recreated/data/content.json', 'KCMC-Connect-Phase6-Recreated/config.example.php']:
     check((ROOT / path).read_bytes() == source(BASE, path), path + ': unchanged')
 login = (ROOT / PREFIX / 'member/login.php').read_bytes()

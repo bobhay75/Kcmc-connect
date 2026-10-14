@@ -37,6 +37,18 @@ missing configuration, a configured non-administrator, private cache headers,
 and preservation of Publishing Desk, Publisher and employee Time Clock access.
 Existing signed-in/readability fixtures explicitly configure their synthetic owner.
 
-The historical runtime provenance checks retain every old pin. A separate exact
-source check permits only the two-line guard insertion on the ten listed routes
-and pins the new helper; removing or moving a guard fails verification.
+The policy acceptance matrix also rejects unset, `0`, `true`, and `01` policy
+values; missing/non-administrator owner configuration; valid-session non-owner
+approval attempts; invalid CSRF; self-return; self-adjustment; self-correction
+application/rejection; and repeat approval. Denied actions preserve the complete
+payroll file and emit no successful review audit. Enabled approval must preserve
+the prior review history and append a matching actor/timestamp plus one flagged
+private audit event. All accounts and payroll records are synthetic.
+
+The historical runtime provenance checks retain every old pin. Exact checks
+retain the two-line guard insertion on all ten routes and pin the owner helper.
+The self-approval fixture separately pins the complete parent and target bytes
+for only `admin/timecards.php`, `lib/timeclock.php`, and `lib/audit-history.php`,
+then reconstructs the parent for all historical checks. Removing a guard,
+changing an unenumerated runtime file, or changing a pinned policy file fails
+verification. These are source checks, not evidence of a production installation.

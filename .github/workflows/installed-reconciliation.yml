@@ -24,6 +24,7 @@ jobs:
         run: |
           set -euo pipefail
           mkdir -p reconciliation-artifacts
+          git fetch --no-tags origin 4e7ddeb82c498aab0183a9e500ffa4289091e5aa a693e8ff4c550b57d9de335bb7ef4fbb3b4d0c65
           python3 tests/installed-reconciliation-source.py | tee reconciliation-artifacts/source.txt
           git diff --check 2146af219d2fd23136eae1685f91a2a2caec030e
           git diff --stat 2146af219d2fd23136eae1685f91a2a2caec030e > reconciliation-artifacts/diff-stat.txt
