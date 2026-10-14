@@ -48,6 +48,9 @@ def run():
                  for uid, role in [('owner','pastor_admin'),('other_admin','pastor_admin'),
                                    ('recovery','recovery_admin'),('staff','member')]]
         (private / 'users.json').write_text(json.dumps({'version':1,'users':users}), encoding='utf-8')
+        period_start='2026-09-23'; period_end='2026-10-22'
+        seeded_timeclock={'version':1,'entries':[{'id':'time_owner_1','user_id':'owner','work_date':'2026-10-13','clock_in_at':'2026-10-13T15:00:00+00:00','clock_out_at':'2026-10-13T16:00:00+00:00','breaks':[],'category':'KCMC Connect / IT','description':'Synthetic owner work','status':'submitted','created_at':'2026-10-13T15:00:00+00:00','updated_at':'2026-10-13T16:00:00+00:00','net_minutes':60,'corrections':[]}], 'periods':[{'user_id':'owner','start':period_start,'end':period_end,'status':'submitted','submitted_at':'2026-10-13T16:05:00+00:00','approved_at':None,'approved_by':None,'returned_at':None,'return_reason':None}], 'adjustments':[], 'correction_requests':[]}
+        (private / 'timeclock.json').write_text(json.dumps(seeded_timeclock), encoding='utf-8')
         # Repeat with missing configuration and with a non-administrator ID.
         for configured in ['owner', '', 'staff']:
             with socket.socket() as sock:
@@ -86,8 +89,41 @@ def run():
                             check(request(client,base+'/admin/')[0]==200,'non-owner administrator retains Publishing Desk')
                             check(request(client,base+'/admin/publication-designer.php')[0]==200,'non-owner administrator retains Publisher')
                         check(request(client,base+'/member/timeclock.php')[0]==200,'member retains own Time Clock')
+                        if uid=='owner' and configured=='owner':
+                            status,_,html=request(client,base+'/admin/timecards.php')
+                            csrf=re.search(r'name="csrf" value="([^"]+)"',html).group(1)
+                            status,_,html=request(client,base+'/admin/timecards.php',dict(csrf=csrf,action='approve',user_id='owner',start=period_start,end=period_end))
+                            check(status==200 and 'Owner self-approval is disabled' in html,'self-approval defaults to disabled policy')
+                            stored=json.loads((private/'timeclock.json').read_text(encoding='utf-8'))
+                            check(stored['periods'][0]['status']=='submitted','disabled self-approval leaves payroll record unchanged')
                 finally:
                     server.terminate();server.wait(timeout=10)
+        # Explicit policy activation permits only the configured owner to self-approve and records immutable review metadata.
+        (private / 'timeclock.json').write_text(json.dumps(seeded_timeclock), encoding='utf-8')
+        with socket.socket() as sock:
+            sock.bind(('127.0.0.1', 0)); port=sock.getsockname()[1]
+        base=f'http://127.0.0.1:{port}/app'
+        env={k:v for k,v in os.environ.items() if not k.startswith('KCMC_')}
+        env.update(KCMC_PRIVATE_DATA_DIR=str(private), KCMC_SETUP_KEY='', KCMC_OPERATIONS_OWNER_USER_ID='owner', KCMC_TIMECARD_SELF_APPROVAL_ENABLED='1')
+        with (work / 'server-self-approval.log').open('w') as log:
+            server=subprocess.Popen(['php','-S',f'127.0.0.1:{port}','-t',str(work)], env=env, stdout=log, stderr=log)
+            try:
+                for _ in range(60):
+                    try:
+                        urllib.request.urlopen(base+'/',timeout=1).close(); break
+                    except Exception: time.sleep(.1)
+                jar=http.cookiejar.CookieJar(); client=urllib.request.build_opener(urllib.request.HTTPCookieProcessor(jar),NoRedirect())
+                _,_,html=request(client,base+'/member/login.php'); csrf=re.search(r'name="csrf" value="([^"]+)"',html).group(1)
+                check(request(client,base+'/member/login.php',dict(csrf=csrf,email='owner@example.invalid',password=password))[0]==302,'owner sign-in for enabled self-approval')
+                _,_,html=request(client,base+'/admin/timecards.php'); csrf=re.search(r'name="csrf" value="([^"]+)"',html).group(1)
+                status,_,html=request(client,base+'/admin/timecards.php',dict(csrf=csrf,action='approve',user_id='owner',start=period_start,end=period_end))
+                check(status==200 and 'Time card approved.' in html,'explicit policy enables owner self-approval')
+                stored=json.loads((private/'timeclock.json').read_text(encoding='utf-8')); period=stored['periods'][0]
+                check(period['status']=='approved' and period['approved_by']=='owner' and period.get('self_approved') is True,'self-approved period stores actor and explicit flag')
+                history=period.get('review_history',[])
+                check(len(history)==1 and history[0]['actor_id']=='owner' and history[0]['self_approved'] is True and bool(history[0]['at']),'self-approval appends timestamped review history')
+            finally:
+                server.terminate();server.wait(timeout=10)
         print('Operations owner HTTP acceptance passed; no production traffic or records.')
 
 if __name__=='__main__': run()
