@@ -201,7 +201,11 @@ class RepairTests(unittest.TestCase):
 
     def test_target_head_bad_modes_refuse_instead_of_normalizing(self):
         git(self.repo,'reset','--hard',self.target)
-        (self.repo/'synthetic-files/file-000.txt').chmod(0o644)
+        # Git versions differ in which unchanged files reset recreates.
+        # Set the complete correct target, then introduce the measured violation.
+        for name in git(self.repo,'ls-files','-z').decode().split('\0'):
+            if name: (self.repo/name).chmod(0o644)
+        (self.repo/EXACT_PATHS[0]).chmod(0o664)
         self.assert_refused_before_chmod()
 
     def test_mixed_target_modes_refuse(self):
