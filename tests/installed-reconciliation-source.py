@@ -42,6 +42,27 @@ for name in OWNER_ROUTES:
     check(before.count(anchor) == 1, name + ': owner guard has one bootstrap anchor')
     check((ROOT / PREFIX / name).read_bytes() == before.replace(anchor, anchor + OWNER_GUARD, 1), name + ': exact owner authorization insertion only')
 
+# Exact visitor/member navigation delta, layered over the preserved homepage review.
+next_bytes = (ROOT / 'tests/fixtures/visitor-member-reviewed.json').read_bytes()
+check(hashlib.sha256(next_bytes).hexdigest() == 'e588eba2312cc642cad15e4231d45972b7933e7d6dd50457d09e756ac3d4103d', 'visitor/member fixture remains exact')
+next_review = json.loads(next_bytes)
+check(next_review['source_commit'] == '4e7ddeb82c498aab0183a9e500ffa4289091e5aa' and set(next_review['replacements']) == {'index.php', 'public-presentation.css', 'sw.js'}, 'visitor/member change has three explicit runtime paths')
+for name, pairs in next_review['replacements'].items():
+    expected_next = source(next_review['source_commit'], PREFIX + name)
+    for old, new in pairs:
+        check(expected_next.count(old.encode()) == 1, name + ': unique visitor/member change anchor')
+        expected_next = expected_next.replace(old.encode(), new.encode(), 1)
+    check((ROOT / PREFIX / name).read_bytes() == expected_next, name + ': exact visitor/member delta only')
+
+
+def before_next_steps(name):
+    content = (ROOT / PREFIX / name).read_bytes()
+    for old, new in reversed(next_review['replacements'].get(name, [])):
+        check(content.count(new.encode()) == 1, name + ': unique visitor/member reverse anchor')
+        content = content.replace(new.encode(), old.encode(), 1)
+    return content
+
+
 home_bytes = (ROOT / 'tests/fixtures/home-audit-reviewed.json').read_bytes()
 check(hashlib.sha256(home_bytes).hexdigest() == 'e07b83984e813558e4f4deeb4fe5baf4eae597daae991d3e5eac5ba29255bac9', 'homepage repair fixture remains exact')
 home = json.loads(home_bytes)
@@ -52,11 +73,11 @@ for name, pairs in home['replacements'].items():
     for old, new in pairs:
         check(content.count(old.encode()) == 1, name + ': unique homepage change anchor')
         content = content.replace(old.encode(), new.encode(), 1)
-    check((ROOT / PREFIX / name).read_bytes() == content, name + ': exact homepage changes only')
+    check(before_next_steps(name) == content, name + ': exact homepage changes only')
 
 
 def prior_runtime(name):
-    content = (ROOT / PREFIX / name).read_bytes()
+    content = before_next_steps(name)
     for old, new in reversed(home['replacements'].get(name, [])):
         check(content.count(new.encode()) == 1, name + ': unique homepage reverse anchor')
         content = content.replace(new.encode(), old.encode(), 1)

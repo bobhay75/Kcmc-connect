@@ -47,7 +47,7 @@ usort($kcmcAnnouncements, fn($a,$b)=>(int)($b['priority']??0)<=>(int)($a['priori
 <link rel="manifest" href="manifest.webmanifest?v=3.0.1">
 <link rel="preload" as="image" href="assets/visuals/kcmc-building-retouched-20261009.jpg" type="image/jpeg" fetchpriority="high">
 <link rel="stylesheet" href="styles.css?v=3.0.3">
-<link rel="stylesheet" href="public-presentation.css?v=home-audit-20261013">
+<link rel="stylesheet" href="public-presentation.css?v=visitor-member-20261014">
 <link rel="icon" href="assets/icons/icon-192.png?v=3.0.1">
 <link rel="apple-touch-icon" href="assets/icons/icon-192.png?v=3.0.1">
 </head>
@@ -125,6 +125,32 @@ usort($kcmcAnnouncements, fn($a,$b)=>(int)($b['priority']??0)<=>(int)($a['priori
     </div>
   </section>
 
+  <section class="section welcome-next home-next" aria-labelledby="home-next-title">
+    <div class="wrap">
+      <div class="section-head"><div><h2 id="home-next-title">Your next step at KCMC</h2></div></div>
+      <div class="home-next-grid">
+        <article class="card"><h3>Planning your first Sunday?</h3><p>Choose a service, find directions and see what to expect. Launch Kids meets during the 10:30 AM service.</p><div class="btns"><a class="btn" href="#visit" data-route="visit">Plan your visit</a><a class="btn secondary" href="https://maps.app.goo.gl/W6kRCHvbaVJ7mwte7" target="_blank" rel="noopener">Get directions</a></div><p class="fine">Have an arrival question? <a href="<?=kcmc_h($kcmcPhoneHref)?>">Call the church office</a>.</p></article>
+        <article class="card"><h3>This week at KCMC</h3><p>Find the bulletin, upcoming gatherings and a place to get connected.</p>
+          <?php $homeBulletinDate = trim((string)($kcmc['bulletin']['date'] ?? '')); ?>
+          <?php if(kcmc_valid_event_date($homeBulletinDate)): ?><p class="fine">Latest published bulletin: <time datetime="<?=kcmc_h($homeBulletinDate)?>"><?=kcmc_h(date('M j, Y', strtotime($homeBulletinDate)))?></time></p><?php endif; ?>
+          <div class="btns"><a class="btn" href="bulletin.php">Read the bulletin</a><a class="btn secondary" href="#events" data-route="events">See all events</a><a class="btn secondary" href="#partner" data-route="partner">Find a group</a></div>
+        </article>
+      </div>
+      <div class="home-upcoming" aria-labelledby="home-upcoming-title">
+        <h3 id="home-upcoming-title">Upcoming gatherings</h3>
+        <?php
+          $homeToday = (new DateTimeImmutable('today', new DateTimeZone(KCMC_LOCAL_TIMEZONE)))->format('Y-m-d');
+          $homeUpcoming = array_slice(array_values(array_filter($kcmcEvents, static fn($event): bool => kcmc_valid_event_date((string)($event['date'] ?? '')) && (string)$event['date'] >= $homeToday)), 0, 3);
+        ?>
+        <?php if($homeUpcoming): ?><ul class="home-event-list">
+          <?php foreach($homeUpcoming as $homeEvent): ?>
+          <li><time datetime="<?=kcmc_h((string)$homeEvent['date'])?>"><?=kcmc_h(date('D, M j', strtotime((string)$homeEvent['date'])))?></time><div><strong><?=kcmc_h((string)($homeEvent['title'] ?? 'Church gathering'))?></strong><span><?=kcmc_h((string)($homeEvent['time'] ?? ''))?><?=!empty($homeEvent['location']) ? ' • ' . kcmc_h((string)$homeEvent['location']) : ''?></span></div><a class="btn secondary" href="#events" data-route="events" aria-label="See event details for <?=kcmc_h((string)($homeEvent['title'] ?? 'Church gathering'))?>">Event details</a></li>
+          <?php endforeach; ?>
+        </ul><?php else: ?><p>More gathering dates will appear here when published. <a href="<?=kcmc_h($kcmcPhoneHref)?>">Ask the church office what’s coming up</a>.</p><?php endif; ?>
+      </div>
+    </div>
+  </section>
+
   <section class="section" aria-label="KCMC kids and family photos">
     <div class="wrap grid3" data-kcmc-photo-gallery>
       <div><img style="display:block;width:100%;height:auto;border-radius:18px" src="./assets/visuals/kcmc-family-outdoor-event.jpg" alt="Children and adults enjoying balloons and an inflatable slide at a Kimberling City outdoor event" loading="lazy" decoding="async" width="2048" height="1536"></div>
@@ -141,16 +167,6 @@ usort($kcmcAnnouncements, fn($a,$b)=>(int)($b['priority']??0)<=>(int)($a['priori
     </div>
   </section>
 
-  <section class="section welcome-next">
-    <div class="wrap">
-      <div class="section-head"><div><div class="eyebrow">Life together</div><h2>Your next step starts here.</h2></div><p>Leading people to become deeply committed followers of Jesus Christ.</p></div>
-      <div class="grid3">
-        <article class="card"><h3>New to KCMC?</h3><p>Find service times, directions and a friendly way to introduce yourself.</p><div class="btns"><a class="btn" href="#visit" data-route="visit">Plan your visit</a></div></article>
-        <article class="card"><h3>This week</h3><p>Find the church bulletin and the gatherings published by our team.</p><div class="btns"><a class="btn" href="bulletin.php">Read the bulletin</a><a class="btn secondary" href="#events" data-route="events">See events</a></div></article>
-        <article class="card"><h3>Get connected</h3><p>Ask about groups, serving, or finding your place in church life.</p><div class="btns"><a class="btn" href="#partner" data-route="partner">Get connected</a></div></article>
-      </div>
-    </div>
-  </section>
 
   <section class="section alt">
     <div class="wrap">
