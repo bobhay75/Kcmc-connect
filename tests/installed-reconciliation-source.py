@@ -32,6 +32,29 @@ def check(ok, message):
     print('PASS:', message, flush=True)
 
 
+# A separate private ministry, with only two existing navigation changes.
+care_bytes = (ROOT / 'tests/fixtures/prayer-care-reviewed.json').read_bytes()
+check(hashlib.sha256(care_bytes).hexdigest() == '50e529814613de8f0ad123d420a46c35f9f4953515448fa27bf1b4828e689a9f', 'Prayer and Care fixture is exact')
+care = json.loads(care_bytes)
+check(care['source_commit'] == '1af697ac828724a74ba15f9c7167f09b45e35f89', 'Prayer and Care baseline is pinned')
+check(set(care['modified']) == {'care.php', 'member/index.php'}, 'only existing prayer navigation changes')
+check(set(care['new_files']) == {'lib/prayer-care.php', 'member/prayer-care.php'}, 'new private ministry scope is exact')
+care_preimages = {}
+for name, record in care['modified'].items():
+    content = (ROOT / PREFIX / name).read_bytes()
+    check(hashlib.sha256(content).hexdigest() == record['after_sha256'], name + ': exact Prayer and Care target')
+    for old, new in reversed(record['replacements']):
+        check(content.count(new.encode()) == 1, name + ': unique Prayer and Care reverse anchor')
+        content = content.replace(new.encode(), old.encode(), 1)
+    check(hashlib.sha256(content).hexdigest() == record['before_sha256'], name + ': exact Prayer and Care preimage')
+    check(content == source(care['source_commit'], PREFIX + name), name + ': canonical Prayer and Care preimage')
+    care_preimages[name] = content
+for name, digest in care['new_files'].items():
+    check(hashlib.sha256((ROOT / PREFIX / name).read_bytes()).hexdigest() == digest, name + ': exact new private module')
+care_paths = {PREFIX + name for name in care['modified']} | {PREFIX + name for name in care['new_files']}
+def before_care(name):
+    return care_preimages[name] if name in care_preimages else (ROOT / PREFIX / name).read_bytes()
+
 # Preserve the full historical proof beneath the explicit public calendar delta.
 calendar_bytes = (ROOT / 'tests/fixtures/event-calendar-reviewed.json').read_bytes()
 check(hashlib.sha256(calendar_bytes).hexdigest() == 'a26b9938efc2e4edcabb4d33ad902b33e1b34bf46809715d04b94c0d1c1f1f92', 'calendar fixture is exact')
@@ -52,7 +75,7 @@ for name, digest in calendar['new_files'].items():
     check(hashlib.sha256((ROOT / PREFIX / name).read_bytes()).hexdigest() == digest, name + ': exact read-only calendar helper')
 calendar_paths = {PREFIX + name for name in calendar['modified']} | {PREFIX + name for name in calendar['new_files']}
 def before_calendar(name):
-    return calendar_preimages[name] if name in calendar_preimages else (ROOT / PREFIX / name).read_bytes()
+    return calendar_preimages[name] if name in calendar_preimages else before_care(name)
 
 # Recover the single reviewed skip-link insertion before the historical chain.
 skip_bytes = (ROOT / 'tests/fixtures/skip-link-reviewed.json').read_bytes()
@@ -463,9 +486,9 @@ check(git_blob(source(BASE, editorial_path)) == 'e7eb008c163a524f036d52b5e8e6203
 subprocess.check_call([sys.executable, str(ROOT / 'tests/editorial-content-source.py')], cwd=ROOT)
 editorial_paths = {editorial_path}
 changed = set(git('diff', '--name-only', BASE, '--', PREFIX).decode().splitlines())
-check(changed == ({PREFIX + p for p in expected} | {PREFIX + p for p in publication} | image_paths | documentation_paths | visitor_paths | appearance_paths | artwork_paths | gallery_repair_paths | owner_paths | home_paths | minimal_paths | editorial_paths | post_paths | skip_paths | calendar_paths), 'application diff is exact prior scope plus enumerated repairs')
+check(changed == ({PREFIX + p for p in expected} | {PREFIX + p for p in publication} | image_paths | documentation_paths | visitor_paths | appearance_paths | artwork_paths | gallery_repair_paths | owner_paths | home_paths | minimal_paths | editorial_paths | post_paths | skip_paths | calendar_paths | care_paths), 'application diff is exact prior scope plus enumerated repairs')
 changed_since_reconciled = set(git('diff', '--name-only', RECONCILED, '--', PREFIX).decode().splitlines())
-check(changed_since_reconciled == ({PREFIX + p for p in approved} | {PREFIX + 'sw.js'} | {PREFIX + p for p in publication} | image_paths | documentation_paths | visitor_paths | appearance_paths | artwork_paths | gallery_repair_paths | owner_paths | home_paths | minimal_paths | editorial_paths | post_paths | skip_paths | calendar_paths), 'post-reconciliation diff is exact reviewed source plus enumerated repairs')
+check(changed_since_reconciled == ({PREFIX + p for p in approved} | {PREFIX + 'sw.js'} | {PREFIX + p for p in publication} | image_paths | documentation_paths | visitor_paths | appearance_paths | artwork_paths | gallery_repair_paths | owner_paths | home_paths | minimal_paths | editorial_paths | post_paths | skip_paths | calendar_paths | care_paths), 'post-reconciliation diff is exact reviewed source plus enumerated repairs')
 for path in ['.cpanel.yml', 'KCMC-Connect-Phase6-Recreated/config.example.php']:
     check((ROOT / path).read_bytes() == source(BASE, path), path + ': unchanged')
 login = (ROOT / PREFIX / 'member/login.php').read_bytes()
