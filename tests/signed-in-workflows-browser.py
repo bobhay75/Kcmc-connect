@@ -102,9 +102,11 @@ def main() -> int:
                 page.on("pageerror", lambda exc: errors.append(str(exc)))
 
                 page.goto(BASE + "/", wait_until="domcontentloaded")
-                if "KCMC CONNECT" not in page.locator("body").inner_text():
-                    die("public home did not render the KCMC Connect shell")
-                print("PASS: public home renders before sign-in")
+                page.locator("#siteMenu summary").click()
+                if "KCMC CONNECT" not in page.locator("#siteMenuLinks").inner_text():
+                    die("public home did not render the KCMC Connect shell inside the fish menu")
+                page.keyboard.press("Escape")
+                print("PASS: public home exposes its KCMC navigation through the fish before sign-in")
 
                 page.goto(BASE + "/member/login.php", wait_until="domcontentloaded")
                 page.locator('input[name="email"]').fill("admin@example.invalid")
