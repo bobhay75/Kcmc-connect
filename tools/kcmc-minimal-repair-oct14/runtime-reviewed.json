@@ -1,0 +1,42 @@
+{
+  "lib/timeclock.php": {
+    "before_sha256": "ae4ab252bb060a4c34bdb845c445b206c70d675e74c7ebc8503353716eacc810",
+    "after_sha256": "b7d57844cf775953b242fe8f91ac73f5b8721a2ee72ccfc341df6c675853addc",
+    "before_bytes": 19780,
+    "after_bytes": 19991,
+    "replacements": [
+      [
+        "function kcmc_timeclock_review_period(string $userId,string $start,string $end,string $reviewerId,string $action,string $reason=''): array {\n",
+        "function kcmc_timeclock_review_period(string $userId,string $start,string $end,string $reviewerId,string $action,string $reason=''): array {\n if($userId===$reviewerId)throw new RuntimeException('A reviewer cannot approve or return their own time card.');\n"
+      ],
+      [
+        "  $idx=null;foreach(($s['periods']??[]) as $i=>$p)if(is_array($p)&&($p['user_id']??'')===$userId&&($p['start']??'')===$start&&($p['end']??'')===$end)$idx=$i;if($idx===null||($s['periods'][$idx]['status']??'')!=='submitted')throw new RuntimeException('That pay period is not awaiting review.');$now=kcmc_timeclock_now();if($action==='approve'){$s['periods'][$idx]['status']='approved';$s['periods'][$idx]['approved_at']=$now;$s['periods'][$idx]['approved_by']=$reviewerId;}elseif($action==='return'){$reason=trim($reason);if($reason===''||kcmc_text_length($reason)>500)throw new RuntimeException('Enter a return reason up to 500 characters.');$s['periods'][$idx]['status']='returned';$s['periods'][$idx]['returned_at']=$now;$s['periods'][$idx]['return_reason']=$reason;}else throw new RuntimeException('Unsupported review action.');foreach(($s['entries']??[]) as &$e)if(is_array($e)&&($e['user_id']??'')===$userId&&($e['work_date']??'')>=$start&&($e['work_date']??'')<=$end)$e['status']=$s['periods'][$idx]['status']==='approved'?'approved':'completed';unset($e);return $s['periods'][$idx];\n",
+        "  if(!is_array($s['entries']??null))throw new RuntimeException('Stored time entries require review.');\n  $idx=null;foreach(($s['periods']??[]) as $i=>$p)if(is_array($p)&&($p['user_id']??'')===$userId&&($p['start']??'')===$start&&($p['end']??'')===$end)$idx=$i;if($idx===null||($s['periods'][$idx]['status']??'')!=='submitted')throw new RuntimeException('That pay period is not awaiting review.');$now=kcmc_timeclock_now();if($action==='approve'){$s['periods'][$idx]['status']='approved';$s['periods'][$idx]['approved_at']=$now;$s['periods'][$idx]['approved_by']=$reviewerId;}elseif($action==='return'){$reason=trim($reason);if($reason===''||kcmc_text_length($reason)>500)throw new RuntimeException('Enter a return reason up to 500 characters.');$s['periods'][$idx]['status']='returned';$s['periods'][$idx]['returned_at']=$now;$s['periods'][$idx]['return_reason']=$reason;}else throw new RuntimeException('Unsupported review action.');foreach($s['entries'] as &$e)if(is_array($e)&&($e['user_id']??'')===$userId&&($e['work_date']??'')>=$start&&($e['work_date']??'')<=$end)$e['status']=$s['periods'][$idx]['status']==='approved'?'approved':'completed';unset($e);return $s['periods'][$idx];\n"
+      ]
+    ]
+  },
+  "member/activate.php": {
+    "before_sha256": "654d77e753a39293b93c46f16b837f01b99c6a2deee96af93dcc3d239ff6fa29",
+    "after_sha256": "c04f33489530ee92a61a4ab99f232bdc87e0eb7f6c7ca3c9013b1f123bb8b592",
+    "before_bytes": 5292,
+    "after_bytes": 5314,
+    "replacements": [
+      [
+        "kcmc_private_headers();\n",
+        "kcmc_private_headers();\nkcmc_session_start();\n"
+      ]
+    ]
+  },
+  "member/reset-password.php": {
+    "before_sha256": "36c4b6dc16129026a595deeb7010e55509287c88c76cecab77181246f3dd56c9",
+    "after_sha256": "43eec998663a5c3a2e822d43bcab53e044c7ff819ad0a201579d2751a95ffe45",
+    "before_bytes": 4620,
+    "after_bytes": 4642,
+    "replacements": [
+      [
+        "kcmc_private_headers();\n",
+        "kcmc_private_headers();\nkcmc_session_start();\n"
+      ]
+    ]
+  }
+}

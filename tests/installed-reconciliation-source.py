@@ -31,6 +31,27 @@ def check(ok, message):
     print('PASS:', message, flush=True)
 
 
+# Recover only the exact reviewed three-file bug repair before validating the
+# historical source chain. Role, account and public-presentation pins stay intact.
+minimal_bytes = (ROOT / 'tests/fixtures/minimal-repair-reviewed.json').read_bytes()
+check(hashlib.sha256(minimal_bytes).hexdigest() == '2af4494a39137e6d5dee42c532d30dd2a47085ac34fcc92e1e8541100c37e91d', 'minimal repair fixture remains exact')
+minimal = json.loads(minimal_bytes)
+check(set(minimal) == {'source_commit', 'files'} and minimal['source_commit'] == '4e7ddeb82c498aab0183a9e500ffa4289091e5aa', 'minimal repair source remains pinned')
+check(set(minimal['files']) == {'lib/timeclock.php', 'member/activate.php', 'member/reset-password.php'}, 'minimal repair changes exactly three enumerated files')
+minimal_preimages = {}
+for name, record in minimal['files'].items():
+    check(set(record) == {'before_sha256', 'after_sha256', 'replacements'}, name + ': explicit repair byte pins')
+    before = source(minimal['source_commit'], PREFIX + name)
+    check(hashlib.sha256(before).hexdigest() == record['before_sha256'], name + ': canonical preimage')
+    patched = before
+    for old, new in record['replacements']:
+        check(patched.count(old.encode()) == 1, name + ': unique repair anchor')
+        patched = patched.replace(old.encode(), new.encode(), 1)
+    check(hashlib.sha256(patched).hexdigest() == record['after_sha256'] and (ROOT / PREFIX / name).read_bytes() == patched, name + ': exact minimal repair only')
+    minimal_preimages[name] = before
+minimal_paths = {PREFIX + name for name in minimal['files']}
+
+
 OWNER_ROUTES = ['admin/operations.php', 'admin/health.php', 'admin/audit.php', 'admin/audit-export.php', 'admin/push.php', 'admin/backup.php', 'admin/restore.php', 'admin/timecards.php', 'admin/timecards-export.php', 'admin/timecards-print.php']
 OWNER_GUARD = b"require_once __DIR__ . '/../lib/operations-owner.php';\nkcmc_require_operations_owner();\n"
 OWNER_BASE = '4225fce8968747ad4f828a9a36087b04fd020484'
@@ -56,7 +77,7 @@ for name, pairs in home['replacements'].items():
 
 
 def prior_runtime(name):
-    content = (ROOT / PREFIX / name).read_bytes()
+    content = minimal_preimages[name] if name in minimal_preimages else (ROOT / PREFIX / name).read_bytes()
     for old, new in reversed(home['replacements'].get(name, [])):
         check(content.count(new.encode()) == 1, name + ': unique homepage reverse anchor')
         content = content.replace(new.encode(), old.encode(), 1)
@@ -372,9 +393,9 @@ for old, new in guide['replacements'][guide_path]:
 check((ROOT / guide_path).read_bytes() == guide_content, 'deployment guide matches the exact reviewed documentation delta')
 documentation_paths = {guide_path}
 changed = set(git('diff', '--name-only', BASE, '--', PREFIX).decode().splitlines())
-check(changed == ({PREFIX + p for p in expected} | {PREFIX + p for p in publication} | image_paths | documentation_paths | visitor_paths | appearance_paths | artwork_paths | gallery_repair_paths | owner_paths | home_paths), 'application diff is exact runtime, Publisher, documentation and enumerated visitor/appearance scope')
+check(changed == ({PREFIX + p for p in expected} | {PREFIX + p for p in publication} | image_paths | documentation_paths | visitor_paths | appearance_paths | artwork_paths | gallery_repair_paths | owner_paths | home_paths | minimal_paths), 'application diff is exact prior scope plus enumerated minimal repair')
 changed_since_reconciled = set(git('diff', '--name-only', RECONCILED, '--', PREFIX).decode().splitlines())
-check(changed_since_reconciled == ({PREFIX + p for p in approved} | {PREFIX + 'sw.js'} | {PREFIX + p for p in publication} | image_paths | documentation_paths | visitor_paths | appearance_paths | artwork_paths | gallery_repair_paths | owner_paths | home_paths), 'post-reconciliation diff is exact reviewed source plus enumerated visitor/appearance scope')
+check(changed_since_reconciled == ({PREFIX + p for p in approved} | {PREFIX + 'sw.js'} | {PREFIX + p for p in publication} | image_paths | documentation_paths | visitor_paths | appearance_paths | artwork_paths | gallery_repair_paths | owner_paths | home_paths | minimal_paths), 'post-reconciliation diff is exact reviewed source plus enumerated minimal repair')
 for path in ['.cpanel.yml', 'KCMC-Connect-Phase6-Recreated/data/content.json', 'KCMC-Connect-Phase6-Recreated/config.example.php']:
     check((ROOT / path).read_bytes() == source(BASE, path), path + ': unchanged')
 login = (ROOT / PREFIX / 'member/login.php').read_bytes()

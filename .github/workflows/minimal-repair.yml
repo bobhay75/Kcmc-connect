@@ -1,0 +1,53 @@
+name: KCMC minimal timecard and token-session repair
+on:
+  pull_request:
+    paths:
+      - 'KCMC-Connect-Phase6-Recreated/lib/timeclock.php'
+      - 'KCMC-Connect-Phase6-Recreated/member/activate.php'
+      - 'KCMC-Connect-Phase6-Recreated/member/reset-password.php'
+      - 'tests/timeclock-own-review-contract.php'
+      - 'tests/token-session-http.py'
+      - 'tests/fixtures/minimal-repair-reviewed.json'
+      - '.github/workflows/minimal-repair.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  repair:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          persist-credentials: false
+      - name: Syntax and real PHP behavior
+        run: |
+          set -euo pipefail
+          php -l KCMC-Connect-Phase6-Recreated/lib/timeclock.php
+          php -l KCMC-Connect-Phase6-Recreated/member/activate.php
+          php -l KCMC-Connect-Phase6-Recreated/member/reset-password.php
+          php tests/timeclock-own-review-contract.php
+          python3 tests/token-session-http.py --app KCMC-Connect-Phase6-Recreated
+      - name: Reproduce the defects on the immutable previous source
+        run: |
+          git fetch --no-tags origin 4e7ddeb82c498aab0183a9e500ffa4289091e5aa
+          python3 <<'PY'
+          from pathlib import Path
+          import subprocess
+          import tempfile
+          with tempfile.TemporaryDirectory(prefix='kcmc-minimal-before-') as tmp:
+              root = Path(tmp)
+              archive = subprocess.check_output(['git', 'archive', '4e7ddeb82c498aab0183a9e500ffa4289091e5aa'])
+              subprocess.run(['tar', '-xf', '-', '-C', str(root)], input=archive, check=True)
+              app = root / 'KCMC-Connect-Phase6-Recreated'
+              cases = [
+                  (['php', 'tests/timeclock-own-review-contract.php', str(app / 'lib/timeclock.php'), 'self_approve'], 'was accepted by the service'),
+                  (['php', 'tests/timeclock-own-review-contract.php', str(app / 'lib/timeclock.php'), 'other_approve'], 'reviewed shift did not receive the intended status'),
+                  (['python3', 'tests/token-session-http.py', '--app', str(app), '--case', 'invitation_session_roundtrip'], 'Token GET must emit session cookie before any HTML output'),
+                  (['python3', 'tests/token-session-http.py', '--app', str(app), '--case', 'reset_session_roundtrip'], 'Token GET must emit session cookie before any HTML output'),
+              ]
+              for command, marker in cases:
+                  result = subprocess.run(command, capture_output=True, text=True)
+                  assert result.returncode != 0 and marker in result.stdout + result.stderr, 'Expected previous-source defect was not reproduced'
+                  print('PASS: previous source reproduces', marker)
+          PY

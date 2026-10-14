@@ -3,6 +3,7 @@ declare(strict_types=1);
 require_once __DIR__ . '/../lib/bootstrap.php';
 require_once __DIR__ . '/../lib/password-lifecycle.php';
 kcmc_private_headers();
+kcmc_session_start();
 $token = trim((string)($_GET['token'] ?? $_POST['token'] ?? ''));
 $reset = kcmc_find_password_reset($token);
 $target = $reset ? kcmc_find_user_by_id((string)($reset['user_id'] ?? '')) : null;
