@@ -90,7 +90,7 @@ def run():
                             check(request(client,base+'/admin/publication-designer.php')[0]==200,'non-owner administrator retains Publisher')
                         check(request(client,base+'/member/timeclock.php')[0]==200,'member retains own Time Clock')
                         if uid=='owner' and configured=='owner':
-                            status,_,html=request(client,base+'/admin/timecards.php')
+                            status,_,html=request(client,base+'/member/timeclock.php')
                             csrf=re.search(r'name="csrf" value="([^"]+)"',html).group(1)
                             status,_,html=request(client,base+'/admin/timecards.php',dict(csrf=csrf,action='approve',user_id='owner',start=period_start,end=period_end))
                             check(status==200 and 'Owner self-approval is disabled' in html,'self-approval defaults to disabled policy')
@@ -115,7 +115,7 @@ def run():
                 jar=http.cookiejar.CookieJar(); client=urllib.request.build_opener(urllib.request.HTTPCookieProcessor(jar),NoRedirect())
                 _,_,html=request(client,base+'/member/login.php'); csrf=re.search(r'name="csrf" value="([^"]+)"',html).group(1)
                 check(request(client,base+'/member/login.php',dict(csrf=csrf,email='owner@example.invalid',password=password))[0]==302,'owner sign-in for enabled self-approval')
-                _,_,html=request(client,base+'/admin/timecards.php'); csrf=re.search(r'name="csrf" value="([^"]+)"',html).group(1)
+                _,_,html=request(client,base+'/member/timeclock.php'); csrf=re.search(r'name="csrf" value="([^"]+)"',html).group(1)
                 status,_,html=request(client,base+'/admin/timecards.php',dict(csrf=csrf,action='approve',user_id='owner',start=period_start,end=period_end))
                 check(status==200 and 'Time card approved.' in html,'explicit policy enables owner self-approval')
                 stored=json.loads((private/'timeclock.json').read_text(encoding='utf-8')); period=stored['periods'][0]
