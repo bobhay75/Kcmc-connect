@@ -56,7 +56,7 @@ with tempfile.TemporaryDirectory(prefix='kcmc-calendar-') as tmp:
                 assert card.get_attribute('data-date')==str(wed)
                 assert page.get_by_role('heading',name='GriefShare begins',exact=True).count()==0
                 button=card.get_by_role('button',name='Add GriefShare to calendar')
-                button.scroll_into_view_if_needed()
+                button.click(trial=True)  # Wait for animations, scrolling and pointer hit testing.
                 assert button.evaluate('(el)=>{const r=el.getBoundingClientRect(); return el.contains(document.elementFromPoint(r.x+r.width/2,r.y+r.height/2));}')
                 assert page.get_by_role('heading',name='One-time fixture',exact=True).is_visible()
                 assert page.get_by_role('heading',name='PRIVATE HIDDEN FIXTURE',exact=True).count()==0
