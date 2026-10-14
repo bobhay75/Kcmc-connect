@@ -43,7 +43,7 @@ for name in OWNER_ROUTES:
     check((ROOT / PREFIX / name).read_bytes() == before.replace(anchor, anchor + OWNER_GUARD, 1), name + ': exact owner authorization insertion only')
 
 home_bytes = (ROOT / 'tests/fixtures/home-audit-reviewed.json').read_bytes()
-check(hashlib.sha256(home_bytes).hexdigest() == 'e07b83984e813558e4f4deeb4fe5baf4eae597daae991d3e5eac5ba29255bac9', 'homepage repair fixture remains exact')
+check(hashlib.sha256(home_bytes).hexdigest() == 'd1364dae04dd62c91d6620cd7a8d32618c734d07dbaf438c81632ab60d362556', 'homepage repair fixture remains exact')
 home = json.loads(home_bytes)
 check(home['source_commit'] == OWNER_BASE and set(home['replacements']) == {'index.php','public-presentation.css','sw.js'}, 'homepage repair has three explicit runtime paths')
 home_paths = {PREFIX + name for name in home['replacements']}

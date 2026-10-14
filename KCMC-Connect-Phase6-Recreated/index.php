@@ -47,7 +47,7 @@ usort($kcmcAnnouncements, fn($a,$b)=>(int)($b['priority']??0)<=>(int)($a['priori
 <link rel="manifest" href="manifest.webmanifest?v=3.0.1">
 <link rel="preload" as="image" href="assets/visuals/kcmc-building-retouched-20261009.jpg" type="image/jpeg" fetchpriority="high">
 <link rel="stylesheet" href="styles.css?v=3.0.3">
-<link rel="stylesheet" href="public-presentation.css?v=home-audit-20261013">
+<link rel="stylesheet" href="public-presentation.css?v=home-option-b-20261013">
 <link rel="icon" href="assets/icons/icon-192.png?v=3.0.1">
 <link rel="apple-touch-icon" href="assets/icons/icon-192.png?v=3.0.1">
 </head>
@@ -87,10 +87,10 @@ usort($kcmcAnnouncements, fn($a,$b)=>(int)($b['priority']??0)<=>(int)($a['priori
 <main id="mainContent">
 <section class="view active" data-view="home">
   <section class="hero hero-imagery home-cover" data-hero-gallery aria-label="Welcome to KCMC">
-    <img class="hero-photo is-current home-cover-photo" data-hero-photo src="./assets/visuals/kcmc-building-retouched-20261009.jpg" alt="Kimberling City Methodist Church exterior; foreground weeds retouched" loading="eager" decoding="async" fetchpriority="high" width="1402" height="1122">
-    <img class="hero-photo home-cover-photo" data-hero-photo src="./assets/visuals/kcmc-worship-2017.webp" alt="People gathered for worship at KCMC, photographed in 2017" loading="lazy" decoding="async" width="640" height="344" hidden>
-    <img class="hero-photo home-cover-photo" data-hero-photo src="./assets/visuals/kcmc-congregation-gathering.jpg" alt="People seated around tables facing the KCMC worship stage" loading="lazy" decoding="async" width="2048" height="1105" hidden>
-    <img class="hero-photo home-cover-photo" data-hero-photo src="./assets/visuals/kcmc-family-outdoor-event.jpg" alt="Children and adults enjoying balloons and an inflatable slide at a Kimberling City outdoor event" loading="lazy" decoding="async" width="2048" height="1536" hidden>
+    <img class="home-cover-photo hero-photo is-current" data-hero-photo src="./assets/visuals/kcmc-building-retouched-20261009.jpg" alt="Kimberling City Methodist Church exterior; foreground weeds retouched" loading="eager" decoding="async" fetchpriority="high" width="1402" height="1122">
+    <img class="home-cover-photo hero-photo" data-hero-photo src="./assets/visuals/kcmc-worship-2017.webp" alt="People gathered for worship at KCMC, photographed in 2017" loading="lazy" decoding="async" width="640" height="344" hidden>
+    <img class="home-cover-photo hero-photo" data-hero-photo src="./assets/visuals/kcmc-congregation-gathering.jpg" alt="People seated around tables facing the KCMC worship stage" loading="lazy" decoding="async" width="2048" height="1105" hidden>
+    <img class="home-cover-photo hero-photo" data-hero-photo src="./assets/visuals/kcmc-family-outdoor-event.jpg" alt="Children and adults enjoying balloons and an inflatable slide at a Kimberling City outdoor event" loading="lazy" decoding="async" width="2048" height="1536" hidden>
     <div class="wrap home-cover-layout">
       <div class="home-cover-card">
         <div class="eyebrow">Welcome to Kimberling City Methodist Church</div>
