@@ -328,3 +328,15 @@ body[data-office-email]{background:#0d2235}
 /* Keep gallery controls readable within the single welcome card. */
 .home-cover .hero-photo-controls{position:relative;z-index:3}
 .home-cover .home-cover-card{min-width:0}
+
+/* Visitor and member next steps, below the unobstructed church photograph. */
+.home-next-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:22px}
+.home-upcoming{margin-top:28px}
+.home-event-list{list-style:none;margin:0;padding:0}
+.home-event-list li{display:flex;align-items:center;gap:18px;padding:18px 0;border-bottom:1px solid #ccd7df}
+.home-event-list time{font-weight:800;flex:0 0 100px}
+.home-event-list li>div{flex:1;min-width:0;overflow-wrap:anywhere}
+.home-event-list strong,.home-event-list span{display:block}
+.home-event-list span{margin-top:5px}
+.home-next .fine a,.home-upcoming>p a{color:inherit;text-decoration:underline}
+@media(max-width:760px){.home-next-grid{grid-template-columns:1fr}.home-event-list li{align-items:flex-start;flex-wrap:wrap}.home-event-list li>div{flex-basis:calc(100% - 118px)}.home-event-list .btn{margin-left:118px}}
