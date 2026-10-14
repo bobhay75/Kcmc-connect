@@ -1,0 +1,55 @@
+name: KCMC three-file hosting transaction
+on:
+  pull_request:
+    paths:
+      - 'tools/kcmc-minimal-repair-oct14/**'
+      - 'KCMC-Connect-Phase6-Recreated/lib/timeclock.php'
+      - 'KCMC-Connect-Phase6-Recreated/member/activate.php'
+      - 'KCMC-Connect-Phase6-Recreated/member/reset-password.php'
+      - '.github/workflows/minimal-host-transaction.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  current-python-php:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          persist-credentials: false
+      - name: Transaction and independent failure fixtures
+        run: |
+          python3 tools/kcmc-minimal-repair-oct14/test_installer.py --runtime-root KCMC-Connect-Phase6-Recreated
+          python3 tools/kcmc-minimal-repair-oct14/test_independent_safety.py
+      - name: Actual PHP 8.2 syntax-only staging, apply, no-op and rollback
+        run: |
+          set -euo pipefail
+          docker pull php@sha256:118ef4fb1db5e866fb604f2f260da81f819a0a1eac87a4083f9194f48e00beee
+          kcmc_ci_php=$(mktemp -d)
+          trap 'rm -f -- "$kcmc_ci_php/php"; rmdir -- "$kcmc_ci_php"' EXIT
+          cat > "$kcmc_ci_php/php" <<'SH'
+          #!/usr/bin/env bash
+          set -euo pipefail
+          if [ "$#" -eq 3 ] && [ "$1" = '-n' ] && [ "$2" = '-l' ]; then
+            kcmc_ci_stage=$(dirname -- "$3")
+            exec docker run --rm --network none --user "$(id -u):$(id -g)" \
+              --mount "type=bind,src=$kcmc_ci_stage,dst=$kcmc_ci_stage,readonly" \
+              php@sha256:118ef4fb1db5e866fb604f2f260da81f819a0a1eac87a4083f9194f48e00beee php "$@"
+          fi
+          exec docker run --rm --network none --user "$(id -u):$(id -g)" \
+            php@sha256:118ef4fb1db5e866fb604f2f260da81f819a0a1eac87a4083f9194f48e00beee php "$@"
+          SH
+          chmod 0700 "$kcmc_ci_php/php"
+          PATH="$kcmc_ci_php:$PATH" python3 tools/kcmc-minimal-repair-oct14/verify-stage.py --runtime-root KCMC-Connect-Phase6-Recreated
+  python36:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          persist-credentials: false
+      - name: Actual Python 3.6 transaction fixtures
+        run: |
+          docker run --rm --network none --user "$(id -u):$(id -g)" \
+            --mount "type=bind,src=$PWD,dst=/source,readonly" \
+            -w /source python:3.6 \
+            bash -c 'set -e; python3 tools/kcmc-minimal-repair-oct14/test_installer.py --runtime-root KCMC-Connect-Phase6-Recreated; python3 tools/kcmc-minimal-repair-oct14/test_independent_safety.py'
