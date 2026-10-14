@@ -32,6 +32,28 @@ def check(ok, message):
     print('PASS:', message, flush=True)
 
 
+# Preserve the full historical proof beneath the explicit public calendar delta.
+calendar_bytes = (ROOT / 'tests/fixtures/event-calendar-reviewed.json').read_bytes()
+check(hashlib.sha256(calendar_bytes).hexdigest() == 'a26b9938efc2e4edcabb4d33ad902b33e1b34bf46809715d04b94c0d1c1f1f92', 'calendar fixture is exact')
+calendar = json.loads(calendar_bytes)
+check(calendar['source_commit'] == '636dfa89e2d1cd0346741af732e385c950c54513', 'calendar baseline remains pinned')
+check(set(calendar['modified']) == {'index.php', 'events.php'} and set(calendar['new_files']) == {'lib/event-calendar.php'}, 'calendar runtime scope is exact')
+calendar_preimages = {}
+for name, record in calendar['modified'].items():
+    content = (ROOT / PREFIX / name).read_bytes()
+    check(hashlib.sha256(content).hexdigest() == record['after_sha256'], name + ': exact calendar target')
+    for old, new in reversed(record['replacements']):
+        check(content.count(new.encode()) == 1, name + ': unique reverse calendar anchor')
+        content = content.replace(new.encode(), old.encode(), 1)
+    check(hashlib.sha256(content).hexdigest() == record['before_sha256'], name + ': exact calendar preimage')
+    check(content == source(calendar['source_commit'], PREFIX + name), name + ': canonical calendar baseline')
+    calendar_preimages[name] = content
+for name, digest in calendar['new_files'].items():
+    check(hashlib.sha256((ROOT / PREFIX / name).read_bytes()).hexdigest() == digest, name + ': exact read-only calendar helper')
+calendar_paths = {PREFIX + name for name in calendar['modified']} | {PREFIX + name for name in calendar['new_files']}
+def before_calendar(name):
+    return calendar_preimages[name] if name in calendar_preimages else (ROOT / PREFIX / name).read_bytes()
+
 # Recover the single reviewed skip-link insertion before the historical chain.
 skip_bytes = (ROOT / 'tests/fixtures/skip-link-reviewed.json').read_bytes()
 check(hashlib.sha256(skip_bytes).hexdigest() == 'a0eca743524847af7a4c184fde0b2acd3c9938f93ee3358bef367ebd14c29e3d', 'skip-link fixture remains exact')
@@ -61,7 +83,7 @@ post_delta = json.loads(post_bytes)
 check(set(post_delta['modified']) == {'lib/bootstrap.php', 'admin/index.php', 'admin/save.php', 'lib/public-presentation.php'}, 'Publisher existing-file scope is exact')
 check(set(post_delta['new_files']) == {'lib/post-controls.php', 'admin/posts.php'}, 'Publisher new-file scope is exact')
 def before_post_controls(name):
-    content = (ROOT / PREFIX / name).read_bytes()
+    content = before_calendar(name)
     record = post_delta['modified'].get(name)
     if record:
         check(hashlib.sha256(content).hexdigest() == record['after_sha256'], name + ': Publisher target bytes match')
@@ -116,7 +138,7 @@ for name, pairs in home['replacements'].items():
     for old, new in pairs:
         check(content.count(old.encode()) == 1, name + ': unique homepage change anchor')
         content = content.replace(old.encode(), new.encode(), 1)
-    check((ROOT / PREFIX / name).read_bytes() == content, name + ': exact homepage changes only')
+    check(before_calendar(name) == content, name + ': exact homepage changes only')
 
 
 def prior_runtime(name):
@@ -441,9 +463,9 @@ check(git_blob(source(BASE, editorial_path)) == 'e7eb008c163a524f036d52b5e8e6203
 subprocess.check_call([sys.executable, str(ROOT / 'tests/editorial-content-source.py')], cwd=ROOT)
 editorial_paths = {editorial_path}
 changed = set(git('diff', '--name-only', BASE, '--', PREFIX).decode().splitlines())
-check(changed == ({PREFIX + p for p in expected} | {PREFIX + p for p in publication} | image_paths | documentation_paths | visitor_paths | appearance_paths | artwork_paths | gallery_repair_paths | owner_paths | home_paths | minimal_paths | editorial_paths | post_paths | skip_paths), 'application diff is exact prior scope plus enumerated repairs')
+check(changed == ({PREFIX + p for p in expected} | {PREFIX + p for p in publication} | image_paths | documentation_paths | visitor_paths | appearance_paths | artwork_paths | gallery_repair_paths | owner_paths | home_paths | minimal_paths | editorial_paths | post_paths | skip_paths | calendar_paths), 'application diff is exact prior scope plus enumerated repairs')
 changed_since_reconciled = set(git('diff', '--name-only', RECONCILED, '--', PREFIX).decode().splitlines())
-check(changed_since_reconciled == ({PREFIX + p for p in approved} | {PREFIX + 'sw.js'} | {PREFIX + p for p in publication} | image_paths | documentation_paths | visitor_paths | appearance_paths | artwork_paths | gallery_repair_paths | owner_paths | home_paths | minimal_paths | editorial_paths | post_paths | skip_paths), 'post-reconciliation diff is exact reviewed source plus enumerated repairs')
+check(changed_since_reconciled == ({PREFIX + p for p in approved} | {PREFIX + 'sw.js'} | {PREFIX + p for p in publication} | image_paths | documentation_paths | visitor_paths | appearance_paths | artwork_paths | gallery_repair_paths | owner_paths | home_paths | minimal_paths | editorial_paths | post_paths | skip_paths | calendar_paths), 'post-reconciliation diff is exact reviewed source plus enumerated repairs')
 for path in ['.cpanel.yml', 'KCMC-Connect-Phase6-Recreated/config.example.php']:
     check((ROOT / path).read_bytes() == source(BASE, path), path + ': unchanged')
 login = (ROOT / PREFIX / 'member/login.php').read_bytes()
