@@ -45,7 +45,7 @@ def run():
         private.mkdir()
         users = [dict(id=uid, email=uid+'@example.invalid', email_normalized=uid+'@example.invalid',
                       display_name='Synthetic '+uid, role=role, active=True, password_hash=hashed)
-                 for uid, role in [('owner','pastor_admin'),('other_admin','pastor_admin'),
+                 for uid, role in [('owner','recovery_admin'),('other_admin','pastor_admin'),
                                    ('recovery','recovery_admin'),('staff','member')]]
         (private / 'users.json').write_text(json.dumps({'version':1,'users':users}), encoding='utf-8')
         # Repeat with missing configuration and with a non-administrator ID.

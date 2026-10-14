@@ -9,14 +9,14 @@ with tempfile.TemporaryDirectory(prefix='kcmc-care-browser-') as tmp:
     shutil.copytree(ROOT/'KCMC-Connect-Phase6-Recreated',app,ignore=shutil.ignore_patterns('private','backups','config.php'))
     secret='SyntheticPassword-2040!'
     password=subprocess.check_output([PHP,'-r','echo password_hash($argv[1],PASSWORD_DEFAULT);',secret]).decode()
-    users=[{'id':name,'email':name+'@example.invalid','email_normalized':name+'@example.invalid','display_name':name.title()+' Example','role':role,'active':True,'password_hash':password} for name,role in [('alice','member'),('bob','member'),('pastor','pastor_admin'),('recovery','recovery_admin'),('team','prayer_team')]]
+    users=[{'id':name,'email':name+'@example.invalid','email_normalized':name+'@example.invalid','display_name':name.title()+' Example','role':role,'active':True,'password_hash':password} for name,role in [('alice','member'),('bob','member'),('pastor','pastor_admin'),('recovery','recovery_admin'),('owner','recovery_admin'),('team','prayer_team')]]
     (private/'users.json').write_text(json.dumps({'version':1,'users':users}))
     legacy=json.dumps({'version':1,'prayers':[{'id':'old-private','submitted_by':'bob','message':'LEGACY_PRIVATE_DO_NOT_IMPORT','status':'private','audience':'pastors_only','created_at':'2026-10-01T12:00:00Z'}]})
     (private/'prayers.json').write_text(legacy)
     content=(app/'data/content.json').read_bytes()
     with socket.socket() as sock:sock.bind(('127.0.0.1',0));port=sock.getsockname()[1]
     base=f'http://127.0.0.1:{port}';url=base+'/member/prayer-care.php'
-    env={**os.environ,'KCMC_PRIVATE_DATA_DIR':str(private),'KCMC_SETUP_KEY':''}
+    env={**os.environ,'KCMC_PRIVATE_DATA_DIR':str(private),'KCMC_SETUP_KEY':'','KCMC_OPERATIONS_OWNER_USER_ID':'owner'}
     proc=subprocess.Popen([PHP,'-S',f'127.0.0.1:{port}','-t',str(app)],env=env,stdout=subprocess.DEVNULL,stderr=subprocess.DEVNULL)
     try:
         for _ in range(50):
@@ -33,9 +33,9 @@ with tempfile.TemporaryDirectory(prefix='kcmc-care-browser-') as tmp:
                 page.goto(url);return page
             anon=browser.new_page();anon.goto(url);assert '/login.php' in anon.url
             assert 'LEGACY_PRIVATE_DO_NOT_IMPORT' not in anon.content()
-            alice=member('alice');bob=member('bob');pastor=member('pastor');team=member('team');recovery=member('recovery')
+            alice=member('alice');bob=member('bob');pastor=member('pastor');team=member('team');recovery=member('recovery');owner=member('owner')
             assert recovery.goto(url).status==403
-            for page in [alice,bob,pastor,team]:
+            for page in [alice,bob,pastor,team,owner]:
                 response=page.goto(url);assert 'no-store' in response.headers['cache-control'];assert 'noindex' in response.headers['x-robots-tag']
                 assert 'LEGACY_PRIVATE_DO_NOT_IMPORT' not in page.content()
             assert alice.goto(url+'?view=review').status==403;alice.goto(url)
@@ -43,7 +43,12 @@ with tempfile.TemporaryDirectory(prefix='kcmc-care-browser-') as tmp:
             alice.get_by_label('I will keep prayer requests confidential',exact=False).check();alice.get_by_role('button',name='Sign up to pray',exact=True).click()
             assert alice.get_by_text('Prayer warriors · Awaiting approval').is_visible()
             assert json.loads((private/'users.json').read_text())['users'][0]['role']=='member'
-            pastor.goto(url+'?view=review');pastor.get_by_role('button',name='Approve signup',exact=True).click()
+            assert owner.goto(base+'/admin/operations.php').status==200
+            assert owner.goto(base+'/member/prayer-team.php').status==200
+            assert recovery.goto(url+'?view=review').status==403
+            owner.goto(url+'?view=review');owner.get_by_role('button',name='Approve signup',exact=True).click()
+            out=os.environ.get('KCMC_OWNER_SCREENSHOT')
+            if out:owner.screenshot(path=out,full_page=True)
             alice.goto(url);assert alice.get_by_text('Prayer warriors · You’re on the team').is_visible()
             # A signup never unlocks the legacy confidential inbox.
             assert alice.goto(base+'/member/prayer-team.php').status==403

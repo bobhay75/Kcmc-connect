@@ -17,6 +17,7 @@ jobs:
           php -l KCMC-Connect-Phase6-Recreated/care.php
           php -l KCMC-Connect-Phase6-Recreated/member/index.php
           php tests/prayer-care-contract.php
+          php tests/owner-capabilities.php
       - name: Browser dependencies
         run: |
           python3 -m pip install playwright

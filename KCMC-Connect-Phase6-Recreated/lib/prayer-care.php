@@ -6,9 +6,9 @@ require_once __DIR__ . '/bootstrap.php';
 const KCMC_CARE_ROLES = ['member', 'prayer_team', 'pastor_admin'];
 function kcmc_care_empty(): array { return ['version'=>1, 'revision'=>0, 'warriors'=>[], 'entries'=>[], 'commitments'=>[]]; }
 function kcmc_care_member(array $user): bool {
-    return !empty($user['active']) && !empty($user['id']) && in_array($user['role'] ?? '', KCMC_CARE_ROLES, true);
+    return !empty($user['active']) && !empty($user['id']) && kcmc_has_role(KCMC_CARE_ROLES, $user);
 }
-function kcmc_care_leader(array $user): bool { return kcmc_care_member($user) && ($user['role'] ?? '') === 'pastor_admin'; }
+function kcmc_care_leader(array $user): bool { return kcmc_care_member($user) && kcmc_has_role(['pastor_admin'], $user); }
 function kcmc_care_warrior(array $state, array $user): bool {
     return kcmc_care_member($user) && ($state['warriors'][$user['id']]['status'] ?? '') === 'approved';
 }
