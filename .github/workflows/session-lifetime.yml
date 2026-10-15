@@ -9,6 +9,10 @@ on:
       - 'KCMC-Connect-Phase6-Recreated/member/password.php'
       - 'KCMC-Connect-Phase6-Recreated/lib/audit-history.php'
       - 'tests/session-lifetime-contract.php'
+      - 'tests/session-credential-contract.php'
+      - 'tests/session-credential-http.py'
+      - 'tests/token-session-http.py'
+      - 'tests/fixtures/session-credential-reviewed.json'
       - '.github/workflows/session-lifetime.yml'
   push:
     branches: [main]
@@ -19,6 +23,10 @@ on:
       - 'KCMC-Connect-Phase6-Recreated/member/password.php'
       - 'KCMC-Connect-Phase6-Recreated/lib/audit-history.php'
       - 'tests/session-lifetime-contract.php'
+      - 'tests/session-credential-contract.php'
+      - 'tests/session-credential-http.py'
+      - 'tests/token-session-http.py'
+      - 'tests/fixtures/session-credential-reviewed.json'
       - '.github/workflows/session-lifetime.yml'
 
 permissions:
@@ -38,3 +46,33 @@ jobs:
           php -l KCMC-Connect-Phase6-Recreated/lib/audit-history.php
       - name: Session lifetime contracts
         run: php tests/session-lifetime-contract.php
+      - name: Credential binding contracts
+        run: php tests/session-credential-contract.php
+      - name: Real-route synthetic browser sessions
+        run: |
+          python3 tests/session-credential-http.py --app KCMC-Connect-Phase6-Recreated
+          python3 tests/token-session-http.py --app KCMC-Connect-Phase6-Recreated
+      - name: Prior-source revocation negative control
+        run: |
+          python3 - <<'PY'
+          import json
+          from pathlib import Path
+          import shutil
+          import subprocess
+          import tempfile
+          root = Path.cwd()
+          fixture = json.loads((root / 'tests/fixtures/session-credential-reviewed.json').read_text())
+          with tempfile.TemporaryDirectory(prefix='kcmc-session-negative-') as directory:
+              app = Path(directory) / 'app'
+              shutil.copytree(root / 'KCMC-Connect-Phase6-Recreated', app)
+              for name, record in fixture['files'].items():
+                  content = (app / name).read_bytes()
+                  for old, new in reversed(record['replacements']):
+                      assert content.count(new.encode()) == 1
+                      content = content.replace(new.encode(), old.encode(), 1)
+                  (app / name).write_bytes(content)
+              command = ['python3', str(root / 'tests/session-credential-http.py'), '--app', str(app), '--case', 'reset_revokes_both_existing_sessions']
+              result = subprocess.run(command, text=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+              print(result.stdout)
+              assert result.returncode != 0 and 'Stale authenticated browser must be redirected before private content is served' in result.stdout, 'Prior source must fail the actual stale-session access assertion'
+          PY

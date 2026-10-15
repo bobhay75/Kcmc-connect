@@ -32,6 +32,29 @@ def check(ok, message):
     print('PASS:', message, flush=True)
 
 
+# Recover exactly the reviewed credential-binding delta before older proofs.
+# Historical credential, owner and privacy pins remain unchanged underneath it.
+credential_bytes = (ROOT / 'tests/fixtures/session-credential-reviewed.json').read_bytes()
+check(hashlib.sha256(credential_bytes).hexdigest() == '85acda478e90d091f46f290018ab4eca65283e380b0eefa87752b1d27a8128c8', 'session credential fixture is exact')
+credential = json.loads(credential_bytes)
+check(set(credential) == {'source_commit', 'files'} and credential['source_commit'] == '93c72f4fc430d311e01108d3a30d0561bb701c9d', 'session credential baseline remains pinned')
+check(set(credential['files']) == {'lib/bootstrap.php', 'lib/session-lifetime.php', 'member/login.php', 'member/password.php'}, 'session revocation changes exactly four authentication runtime files')
+credential_preimages = {}
+for name, record in credential['files'].items():
+    check(set(record) == {'before_sha256', 'after_sha256', 'replacements'}, name + ': explicit credential-repair byte pins')
+    content = (ROOT / PREFIX / name).read_bytes()
+    check(hashlib.sha256(content).hexdigest() == record['after_sha256'], name + ': exact credential-repair target')
+    for old, new in reversed(record['replacements']):
+        check(content.count(new.encode()) == 1, name + ': unique reverse credential-repair anchor')
+        content = content.replace(new.encode(), old.encode(), 1)
+    check(hashlib.sha256(content).hexdigest() == record['before_sha256'], name + ': exact credential-repair preimage')
+    check(content == source(credential['source_commit'], PREFIX + name), name + ': canonical credential-repair baseline')
+    credential_preimages[name] = content
+credential_paths = {PREFIX + name for name in credential['files']}
+def before_credentials(name):
+    return credential_preimages[name] if name in credential_preimages else (ROOT / PREFIX / name).read_bytes()
+
+
 # Recover only the owner's explicit three-file homepage/navigation cleanup.
 # Full editorial records and all earlier exact-source proofs remain unchanged.
 fish_bytes = (ROOT / 'tests/fixtures/fish-only-home-reviewed.json').read_bytes()
@@ -52,7 +75,7 @@ for name, record in fish['files'].items():
     fish_preimages[name] = content
 fish_paths = {PREFIX + name for name in fish['files']}
 def before_fish(name):
-    return fish_preimages[name] if name in fish_preimages else (ROOT / PREFIX / name).read_bytes()
+    return fish_preimages[name] if name in fish_preimages else before_credentials(name)
 
 # Owner capability delta reverses exactly before all historical privacy proofs.
 owner_access_bytes = (ROOT / 'tests/fixtures/owner-capabilities-reviewed.json').read_bytes()
@@ -62,7 +85,7 @@ check(owner_access['source_commit'] == 'f7cc02ab1da1f3b5059b59c27822997e1541fef4
 check(set(owner_access['modified']) == {'lib/bootstrap.php', 'lib/prayer-care.php'}, 'owner capability runtime scope is exact')
 owner_access_preimages = {}
 for name, record in owner_access['modified'].items():
-    content = (ROOT / PREFIX / name).read_bytes()
+    content = before_credentials(name)
     check(hashlib.sha256(content).hexdigest() == record['after_sha256'], name + ': exact owner capability target')
     for old, new in reversed(record['replacements']):
         check(content.count(new.encode()) == 1, name + ': unique owner capability reverse anchor')
@@ -528,12 +551,12 @@ check(git_blob(source(BASE, editorial_path)) == 'e7eb008c163a524f036d52b5e8e6203
 subprocess.check_call([sys.executable, str(ROOT / 'tests/editorial-content-source.py')], cwd=ROOT)
 editorial_paths = {editorial_path}
 changed = set(git('diff', '--name-only', BASE, '--', PREFIX).decode().splitlines())
-check(changed == ({PREFIX + p for p in expected} | {PREFIX + p for p in publication} | image_paths | documentation_paths | visitor_paths | appearance_paths | artwork_paths | gallery_repair_paths | owner_paths | home_paths | minimal_paths | editorial_paths | post_paths | skip_paths | calendar_paths | care_paths | owner_access_paths | fish_paths), 'application diff is exact prior scope plus enumerated repairs')
+check(changed == ({PREFIX + p for p in expected} | {PREFIX + p for p in publication} | image_paths | documentation_paths | visitor_paths | appearance_paths | artwork_paths | gallery_repair_paths | owner_paths | home_paths | minimal_paths | editorial_paths | post_paths | skip_paths | calendar_paths | care_paths | owner_access_paths | fish_paths | credential_paths), 'application diff is exact prior scope plus enumerated repairs')
 changed_since_reconciled = set(git('diff', '--name-only', RECONCILED, '--', PREFIX).decode().splitlines())
-check(changed_since_reconciled == ({PREFIX + p for p in approved} | {PREFIX + 'sw.js'} | {PREFIX + p for p in publication} | image_paths | documentation_paths | visitor_paths | appearance_paths | artwork_paths | gallery_repair_paths | owner_paths | home_paths | minimal_paths | editorial_paths | post_paths | skip_paths | calendar_paths | care_paths | owner_access_paths | fish_paths), 'post-reconciliation diff is exact reviewed source plus enumerated repairs')
+check(changed_since_reconciled == ({PREFIX + p for p in approved} | {PREFIX + 'sw.js'} | {PREFIX + p for p in publication} | image_paths | documentation_paths | visitor_paths | appearance_paths | artwork_paths | gallery_repair_paths | owner_paths | home_paths | minimal_paths | editorial_paths | post_paths | skip_paths | calendar_paths | care_paths | owner_access_paths | fish_paths | credential_paths), 'post-reconciliation diff is exact reviewed source plus enumerated repairs')
 for path in ['.cpanel.yml', 'KCMC-Connect-Phase6-Recreated/config.example.php']:
     check((ROOT / path).read_bytes() == source(BASE, path), path + ': unchanged')
-login = (ROOT / PREFIX / 'member/login.php').read_bytes()
+login = before_credentials('member/login.php')
 check(login.split(b'?><!doctype html>', 1)[0] == base['member/login.php'].split(b'?><!doctype html>', 1)[0], 'staff authentication PHP remains byte-for-byte unchanged')
 js = (ROOT / PREFIX / 'public-presentation.js').read_text()
 css = (ROOT / PREFIX / 'public-presentation.css').read_text()

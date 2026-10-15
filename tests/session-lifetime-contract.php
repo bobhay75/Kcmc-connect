@@ -17,10 +17,10 @@ session_check(KCMC_SESSION_REGENERATE_SECONDS === 900, 'session ID rotation inte
 $now = 2000000000;
 $legacy = ['kcmc_user_id' => 'usr_legacy'];
 $legacyState = kcmc_session_lifetime_state($legacy, $now);
-session_check(($legacyState['status'] ?? '') === 'initialize', 'legacy authenticated session is identified for safe timestamp initialization');
+session_check(($legacyState['status'] ?? '') === 'initialize', 'lifetime helper identifies missing timestamps independently of credential authentication');
 $legacyApplied = kcmc_session_apply_lifetime($legacy, $now);
-session_check(($legacyApplied['status'] ?? '') === 'active' && !empty($legacyApplied['initialized']), 'legacy authenticated session is initialized without forced logout');
-session_check($legacy['kcmc_auth_started_at'] === $now && $legacy['kcmc_auth_last_activity_at'] === $now && $legacy['kcmc_auth_last_regenerated_at'] === $now, 'legacy session receives all lifetime timestamps');
+session_check(($legacyApplied['status'] ?? '') === 'active' && !empty($legacyApplied['initialized']), 'lifetime helper initializes timestamp metadata only; central credential validation is separate');
+session_check($legacy['kcmc_auth_started_at'] === $now && $legacy['kcmc_auth_last_activity_at'] === $now && $legacy['kcmc_auth_last_regenerated_at'] === $now, 'lifetime helper supplies all lifetime timestamps');
 
 $active = [
     'kcmc_auth_started_at' => $now - 1000,

@@ -388,7 +388,11 @@ function kcmc_current_user(bool $recordActivity = true): ?array {
 
     require_once __DIR__ . '/session-lifetime.php';
     $now = time();
-    $lifetime = kcmc_session_apply_lifetime($_SESSION, $now, $recordActivity);
+    // Missing bindings also require sign-in: blessing an old session here
+    // could preserve access after a password was changed before this rollout.
+    $lifetime = kcmc_session_credentials_match($_SESSION, $user)
+        ? kcmc_session_apply_lifetime($_SESSION, $now, $recordActivity)
+        : ['status' => 'credentials_changed', 'regenerate' => false];
     if (($lifetime['status'] ?? '') !== 'active') {
         $reason = (string)($lifetime['status'] ?? 'expired');
         kcmc_session_audit_expiration($id, $reason, $now);
@@ -419,6 +423,7 @@ function kcmc_login_user(array $user): void {
     $_SESSION['kcmc_user_id'] = (string)$user['id'];
     $_SESSION['csrf'] = bin2hex(random_bytes(24));
     kcmc_session_initialize_auth($_SESSION, time());
+    kcmc_session_bind_credentials($_SESSION, $user);
 }
 
 function kcmc_logout_user(): void {
