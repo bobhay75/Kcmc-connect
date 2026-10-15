@@ -3,10 +3,20 @@
 from __future__ import print_function
 import argparse
 import hashlib
+import os
+import re
+import shutil
+import subprocess
 import sys
 import types
 
 VARIANTS = ('live154', 'main130', 'livecalendar')
+PHP82_LOCATIONS = (
+    '/opt/cpanel/ea-php82/root/usr/bin/php',
+    '/opt/alt/php82/usr/bin/php',
+    '/opt/alt/php82/usr/bin/php-cli',
+    '/usr/local/bin/ea-php82',
+)
 # EMBEDDED_ENGINES
 
 class Refusal(RuntimeError):
@@ -57,6 +67,30 @@ def select(engines):
     require(len(matches)==1,'Unknown or mixed index/CSS/worker bundle; no repair made. '+ '; '.join(refusals))
     return matches[0]
 
+def php82_candidates():
+    paths=list(PHP82_LOCATIONS)
+    # The hosting account's ordinary PHP command is a final compatibility fallback.
+    found=shutil.which('php')
+    if found:
+        paths.append(os.path.abspath(found))
+    unique=[]
+    for path in paths:
+        if path not in unique:
+            unique.append(path)
+    return unique
+
+def choose_php82_cli():
+    """Version-only checks, before any private backup creation or staging."""
+    for path in php82_candidates():
+        try:
+            output=subprocess.check_output([path,'-n','-v'],stderr=subprocess.STDOUT,timeout=8)
+        except (OSError, subprocess.SubprocessError):
+            continue
+        match=re.match(br'\APHP (8\.2\.[0-9]+) \(cli\)(?:\s|\Z)',output)
+        if match is not None:
+            return path,match.group(1).decode('ascii')
+    raise Refusal('No compatible PHP 8.2 CLI found; no backup or live replacement made')
+
 def main():
     parser=argparse.ArgumentParser(description=__doc__)
     parser.add_argument('action',nargs='?',default='check',choices=('check','apply','rollback'))
@@ -81,6 +115,10 @@ def main():
             variant,state,files=select(engines)
             module=engines[variant]
             print('VARIANT '+variant)
+            if state=='before':
+                php,version=choose_php82_cli()
+                module.PHP=php
+                print('PHP_CLI '+php+' PHP '+version)
             if args.action=='check':
                 print('CHECK '+('READY' if state=='before' else 'ALREADY_REPAIRED'))
                 for path in module.PATHS:

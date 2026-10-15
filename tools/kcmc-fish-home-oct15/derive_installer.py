@@ -3,6 +3,7 @@
 from __future__ import print_function
 import difflib
 import argparse
+import ast
 import hashlib
 import json
 from pathlib import Path
@@ -139,12 +140,19 @@ def build(from_source=False):
         runtime=json.loads((HERE/'runtime-reviewed.json').read_text())
     sources={variant:derive_engine(raw,variant,runtime[variant]) for variant in VARIANTS}
     payload={variant:[source,sha(source.encode('utf-8'))] for variant,source in sources.items()}
+    previous=(HERE/'provenance/frozen-fish-oct15-installer.py').read_bytes()
+    if sha(previous)!='f716ab7b1b99f01738de84d4eff37107a5057043c4d6c38be13c1e78f03ac288':
+        raise ValueError('Previous three-variant installer source changed')
+    tree=ast.parse(previous.decode('utf-8'))
+    previous_payload=next(ast.literal_eval(node.value) for node in tree.body if isinstance(node,ast.Assign) and any(isinstance(target,ast.Name) and target.id=='EMBEDDED' for target in node.targets))
+    if payload!=previous_payload:
+        raise ValueError('PHP wrapper compatibility must preserve all three transaction engines exactly')
     wrapper=(HERE/'wrapper.py.in').read_text()
     if wrapper.count('# EMBEDDED_ENGINES')!=1:
         raise ValueError('Wrapper embedding anchor changed')
     wrapper=wrapper.replace('# EMBEDDED_ENGINES','EMBEDDED = '+repr(payload))
     (HERE/'installer.py').write_text(wrapper)
-    (HERE/'provenance.json').write_text(json.dumps({'frozen_engine_sha256':ENGINE_SHA256,'embedded_engines':{variant:payload[variant][1] for variant in sources},'installer_sha256':sha(wrapper.encode('utf-8')),'scope':list(PATHS)},indent=2)+'\n')
+    (HERE/'provenance.json').write_text(json.dumps({'frozen_engine_sha256':ENGINE_SHA256,'embedded_engines':{variant:payload[variant][1] for variant in sources},'installer_sha256':sha(wrapper.encode('utf-8')),'scope':list(PATHS),'wrapper_only_parent_sha256':sha(previous)},indent=2)+'\n')
     print('Derived installer SHA256 '+sha(wrapper.encode('utf-8')))
 
 if __name__=='__main__':

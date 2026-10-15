@@ -19,11 +19,17 @@ def main():
     if not args.php:raise ValueError('PHP CLI needed for staging validation')
     spec=importlib.util.spec_from_file_location('stage_fish_installer',str(HERE/'installer.py'))
     wrapper=importlib.util.module_from_spec(spec);spec.loader.exec_module(wrapper)
+    # This override exists only in the temporary validation helper. The published
+    # installer's argument parser has no runtime override, and its own version
+    # validation is exercised here against the actual test CLI before staging.
+    wrapper.php82_candidates=lambda:[str(Path(args.php).resolve())]
+    selected_php,selected_version=wrapper.choose_php82_cli()
+    print('REAL_PHP_CLI_SELECTION '+selected_php+' PHP '+selected_version+' PASS')
     for variant in wrapper.VARIANTS:
         with tempfile.TemporaryDirectory(prefix='kcmc-fish-real-php-') as temporary:
             root=Path(temporary);app=root/'app';app.mkdir();engines=wrapper.load_engines()
             for name,m in engines.items():
-                m.APP=app;m.BACKUPS=root/('private-'+name);m.UID=os.getuid();m.GID=os.getgid();m.PHP=args.php
+                m.APP=app;m.BACKUPS=root/('private-'+name);m.UID=os.getuid();m.GID=os.getgid();m.PHP=selected_php
             m=engines[variant];originals={}
             for path in m.PATHS:
                 originals[path]=(HERE/'evidence'/variant/path).read_bytes();(app/path).write_bytes(originals[path]);(app/path).chmod(0o644)

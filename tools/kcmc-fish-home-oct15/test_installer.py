@@ -42,6 +42,9 @@ class CompositionTests(unittest.TestCase):
         self.temp=tempfile.TemporaryDirectory(prefix='kcmc-fish-variant-');self.addCleanup(self.temp.cleanup)
         self.root=Path(self.temp.name);self.app=self.root/'app';self.app.mkdir()
         self.w=module();self.engines=self.w.load_engines()
+        self.real_choose_php82_cli=self.w.choose_php82_cli
+        self.php_selection=mock.patch.object(self.w,'choose_php82_cli',return_value=('/opt/cpanel/ea-php82/root/usr/bin/php','8.2.34'))
+        self.php_selection_mock=self.php_selection.start();self.addCleanup(self.php_selection.stop)
         for variant,m in self.engines.items():
             m.APP=self.app;m.BACKUPS=self.root/('private-'+variant);m.UID=os.getuid();m.GID=os.getgid()
         self.sentinels={'config.php':b'<?php // owner config untouched\n','data/content.json':b'{"owner":"editorial"}',
@@ -76,6 +79,55 @@ class CompositionTests(unittest.TestCase):
         code,text=self.run_cli();self.assertEqual(code,0);self.assertIn('VARIANT live154',text);self.assertIn('CHECK READY',text)
         for p,i in original.items():self.assertEqual(identity(self.app/p),i)
         self.assertTrue(all(not m.BACKUPS.exists() for m in self.engines.values()))
+        self.assertLess(text.index('PHP_CLI '),text.index('CHECK READY'))
+    def test_no_compatible_php_refused_before_any_backups(self):
+        before={path:identity(self.app/path) for path in self.engines['live154'].PATHS}
+        self.php_selection_mock.side_effect=self.w.Refusal('No compatible PHP 8.2 CLI found; no backup or live replacement made')
+        for action in ('check','apply'):
+            code,text=self.run_cli(action);self.assertEqual(code,1);self.assertNotIn('CHECK READY',text)
+            self.assertIn('no backup or live replacement',text)
+        self.assertTrue(all(not m.BACKUPS.exists() for m in self.engines.values()))
+        for path,value in before.items():self.assertEqual(identity(self.app/path),value)
+    def test_cloudlinux_fallback_binds_validated_path_before_stage(self):
+        self.php_selection.stop()
+        m=self.engines['livecalendar'];self.install_before('livecalendar')
+        calls=[]
+        def command(argv,**kwargs):
+            calls.append(argv)
+            self.assertEqual(argv[1],'-n')
+            if argv[0]=='/opt/cpanel/ea-php82/root/usr/bin/php':
+                self.assertTrue(all(not candidate.BACKUPS.exists() for candidate in self.engines.values()))
+                raise FileNotFoundError(2,'Absent cPanel runtime')
+            self.assertEqual(argv[0],'/opt/alt/php82/usr/bin/php')
+            if argv[2]=='-v':return b'PHP 8.2.34 (cli) (built: test)\n'
+            self.assertEqual(argv[2],'-l');return b'No syntax errors detected\n'
+        with mock.patch.object(subprocess,'check_output',side_effect=command):
+            code,text=self.run_cli('apply')
+        self.assertEqual(code,0,text);self.assertIn('PHP_CLI /opt/alt/php82/usr/bin/php PHP 8.2.34',text)
+        self.assertEqual(m.PHP,'/opt/alt/php82/usr/bin/php');self.assertEqual(len(calls),4)
+    def test_already_repaired_noop_needs_no_runtime_discovery(self):
+        self.apply();before={path:identity(self.app/path) for path in self.engines['live154'].PATHS}
+        self.php_selection_mock.side_effect=AssertionError('No PHP probing for a complete after bundle')
+        for action in ('check','apply'):
+            code,text=self.run_cli(action);self.assertEqual(code,0,text);self.assertIn('ALREADY_REPAIRED',text)
+        for path,value in before.items():self.assertEqual(identity(self.app/path),value)
+    def test_syntax_failure_retry_preserves_terminal_failed_session(self):
+        self.install_before('livecalendar');m=self.engines['livecalendar']
+        def failed_lint(argv,**kwargs):
+            if argv[2]=='-v':return b'PHP 8.2.34 (cli)\n'
+            raise subprocess.CalledProcessError(255,argv,output=b'Synthetic syntax failure')
+        with mock.patch.object(subprocess,'check_output',side_effect=failed_lint):
+            code,text=self.run_cli('apply')
+        self.assertEqual(code,1);self.assertIn('no live replacement',text)
+        session=next(m.BACKUPS.glob('repair-*'));value=m.load(session)
+        self.assertEqual((value['phase'],value['intent'],value['uncertain']),('rolled_back',None,[]))
+        self.assertTrue(all(record['installed'] is None for record in value['files'].values()))
+        journal_identity=identity(session/'journal.json');old_backup=(session/'original-0.code').read_bytes()
+        self.apply()
+        self.assertEqual(len(list(m.BACKUPS.glob('repair-*'))),2)
+        self.assertEqual(identity(session/'journal.json'),journal_identity)
+        self.assertEqual((session/'original-0.code').read_bytes(),old_backup)
+        self.assert_sentinels()
     def test_both_known_variants_apply_noop_and_explicit_rollback(self):
         for variant in self.w.VARIANTS:
             self.install_before(variant);m=self.engines[variant]
@@ -193,7 +245,53 @@ class CompositionTests(unittest.TestCase):
         for args in [('apply','--variant','live154'),('check','--session','bad'),('rollback',),('rollback','--variant','live154')]:
             code,text=self.run_cli(*args);self.assertEqual(code,1)
 
+class PHPSelectionTests(unittest.TestCase):
+    def setUp(self):
+        self.w=module()
+    def test_missing_cpanel_runtime_falls_back_to_cloudlinux_cli(self):
+        calls=[]
+        def command(argv,**kwargs):
+            calls.append(argv)
+            self.assertEqual(argv[1:],['-n','-v'])
+            if argv[0]=='/opt/cpanel/ea-php82/root/usr/bin/php':raise FileNotFoundError(2,'Unavailable')
+            return b'PHP 8.2.34 (cli) (built: test)\n'
+        with mock.patch.object(subprocess,'check_output',side_effect=command),mock.patch.object(self.w.shutil,'which',return_value=None):
+            self.assertEqual(self.w.choose_php82_cli(),('/opt/alt/php82/usr/bin/php','8.2.34'))
+        self.assertEqual(len(calls),2)
+    def test_unavailable_fixed_paths_fall_back_to_hosting_path_command(self):
+        def command(argv,**kwargs):
+            if argv[0]=='/usr/local/bin/php':return b'PHP 8.2.27 (cli)\n'
+            raise FileNotFoundError(2,'Unavailable')
+        with mock.patch.object(subprocess,'check_output',side_effect=command),mock.patch.object(self.w.shutil,'which',return_value='/usr/local/bin/php'):
+            self.assertEqual(self.w.choose_php82_cli(),('/usr/local/bin/php','8.2.27'))
+    def test_wrong_versions_and_non_cli_banners_are_rejected(self):
+        banners=[b'PHP 8.1.34 (cli)\n',b'PHP 8.3.1 (cli)\n',b'PHP 8.2.34 (cgi-fcgi)\n',b'PHP 8.2.34 (fpm-fcgi)\n',b'Warning first\nPHP 8.2.34 (cli)\n']
+        for banner in banners:
+            with self.subTest(banner=banner),mock.patch.object(subprocess,'check_output',return_value=banner),mock.patch.object(self.w.shutil,'which',return_value=None):
+                with self.assertRaisesRegex(self.w.Refusal,'No compatible PHP 8.2 CLI'):
+                    self.w.choose_php82_cli()
+    def test_nonzero_exit_and_timeout_are_not_accepted_as_valid_cli(self):
+        failures=[subprocess.CalledProcessError(1,['php'],output=b'PHP 8.2.34 (cli)\n'),subprocess.TimeoutExpired(['php'],8),PermissionError(13,'Unavailable')]
+        for error in failures:
+            with self.subTest(error=type(error).__name__),mock.patch.object(subprocess,'check_output',side_effect=error),mock.patch.object(self.w.shutil,'which',return_value=None):
+                with self.assertRaises(self.w.Refusal):self.w.choose_php82_cli()
+    def test_candidates_are_absolute_and_duplicates_removed(self):
+        with mock.patch.object(self.w.shutil,'which',return_value='/opt/alt/php82/usr/bin/php'):
+            paths=self.w.php82_candidates()
+        self.assertEqual(len(paths),len(set(paths)));self.assertTrue(all(os.path.isabs(path) for path in paths))
+        self.assertEqual(paths[0],'/opt/cpanel/ea-php82/root/usr/bin/php')
+    def test_no_user_php_argument_override(self):
+        with mock.patch.object(sys,'argv',['installer.py','check','--php','/tmp/arbitrary']),contextlib.redirect_stderr(io.StringIO()):
+            with self.assertRaises(SystemExit) as error:self.w.main()
+        self.assertEqual(error.exception.code,2)
+
 class ProvenanceTests(unittest.TestCase):
+    def test_all_three_engines_equal_the_prior_stage_failure_installer(self):
+        raw=(HERE/'provenance/frozen-fish-oct15-installer.py').read_bytes()
+        self.assertEqual(sha(raw),'f716ab7b1b99f01738de84d4eff37107a5057043c4d6c38be13c1e78f03ac288')
+        tree=ast.parse(raw.decode('utf-8'))
+        old=next(ast.literal_eval(node.value) for node in tree.body if isinstance(node,ast.Assign) and any(isinstance(target,ast.Name) and target.id=='EMBEDDED' for target in node.targets))
+        self.assertEqual(old,module().EMBEDDED)
     def test_host_index_reconstructs_from_frozen_calendar_patch_and_git154_source(self):
         self.assertEqual(derive_installer.verify_livecalendar_preimage(),source('livecalendar','index.php'))
         self.assertEqual(len(source('livecalendar','index.php')),33550)

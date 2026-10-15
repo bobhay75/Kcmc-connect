@@ -5,10 +5,11 @@
     "main130": "d17ba88d20e51c4c6a7bdab03a13ca479acdb2b93aa611ef95f36a186cf81c4b",
     "livecalendar": "ddb7575a021c2b21b913b8a4474cf835dfce1211322204cb8a4c77f2dd40c6d0"
   },
-  "installer_sha256": "f716ab7b1b99f01738de84d4eff37107a5057043c4d6c38be13c1e78f03ac288",
+  "installer_sha256": "763fc0e01491e299751818ae57978210f447d0c098ce027e799de0892c23d8db",
   "scope": [
     "index.php",
     "public-presentation.css",
     "sw.js"
-  ]
+  ],
+  "wrapper_only_parent_sha256": "f716ab7b1b99f01738de84d4eff37107a5057043c4d6c38be13c1e78f03ac288"
 }
