@@ -1,0 +1,23 @@
+{
+  "frozen_engine_sha256": "4df2cdef03853c80c96350398b6a5b92cb78722e202debd3279d535fb9e757d7",
+  "reviewed_delta_sha256": "85acda478e90d091f46f290018ab4eca65283e380b0eefa87752b1d27a8128c8",
+  "embedded_engines": {
+    "live154": "b189eb86f27697c89a55bae312ef9fd15ce7f80cc52c3bdcc3f723875f26c6e5",
+    "main93": "3a549c861652f79a94eef43322a43dd06a1e23125cf364682973de5d42cad201"
+  },
+  "installer_sha256": "3825af3dafe498d60bb8b2934b8e80cfb5e2ece0738acd344bc6d7f1e859a932",
+  "scope": [
+    "lib/session-lifetime.php",
+    "lib/bootstrap.php",
+    "member/login.php",
+    "member/password.php"
+  ],
+  "approved_source_commits": {
+    "live154": "154b779a0ea3d27a11300bfe0454f8a7c4aca355",
+    "main93": "93c72f4fc430d311e01108d3a30d0561bb701c9d"
+  },
+  "dependency_recovery_delta": {
+    "before": "            verify_lease(path, record['installed'])\n            data, original_meta = read(Path(session) / ('original-' + str(index) + '.php'))\n",
+    "after": "            verify_lease(path, record['installed'])\n            if index == 0 and (uncertain or conflicts):\n                conflicts.append(path)\n                continue\n            data, original_meta = read(Path(session) / ('original-' + str(index) + '.php'))\n"
+  }
+}
