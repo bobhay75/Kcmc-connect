@@ -50,7 +50,7 @@ class Fixture:
         self.runner = self.root / 'route.php'; self.runner.write_text(RUNNER)
         pw = subprocess.check_output([PHP, '-r', 'echo password_hash("Synthetic-Fixture-2031!", PASSWORD_DEFAULT);'], text=True)
         self.users = [dict(id=uid, role=role, active=active, display_name='Synthetic '+uid,
-            email=uid+'@example.invalid', password_hash=pw)
+            email=uid+'@example.invalid', email_normalized=uid+'@example.invalid', password_hash=pw)
             for uid,role,active in [('owner','recovery_admin',True), ('pastor','pastor_admin',True),
                 ('recovery','recovery_admin',True), ('member','member',True), ('prayer','prayer_team',True),
                 ('inactive','pastor_admin',False)]]

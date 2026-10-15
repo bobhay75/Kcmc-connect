@@ -55,6 +55,11 @@ def run(app):
                 status,headers,html=request(anon,base+'/'+route)
                 check(status==302 and '/member/login.php' in headers.get('Location',''),'anonymous private route '+route)
                 check('no-store' in headers.get('Cache-Control','') and 'SECRET' not in html,'anonymous privacy '+route)
+            private_before={p.name:p.read_bytes() for p in f.private.iterdir() if p.is_file()}
+            for payload in [None,{}]:
+                status,headers,html=request(anon,base+'/admin/timeclock-period-close.php',payload)
+                check(status==404,'period cutoff refuses HTTP '+('GET' if payload is None else 'POST'))
+                check({p.name:p.read_bytes() for p in f.private.iterdir() if p.is_file()}==private_before,'HTTP cutoff leaves private stores unchanged')
             clients={}
             for uid in ['owner','pastor','recovery','prayer','member']:
                 client=urllib.request.build_opener(urllib.request.HTTPCookieProcessor(http.cookiejar.CookieJar()),NoRedirect());clients[uid]=client
@@ -64,6 +69,8 @@ def run(app):
                 status,headers,page=request(client,base+'/member/')
                 check(status==200 and '<title>My Account' in page and 'no-store' in headers.get('Cache-Control',''),'personal landing '+uid)
                 check('SECRET' not in page and 'Send private request' not in page,'landing has no prayer payload '+uid)
+                status,headers,page=request(client,base+'/member/timeclock.php')
+                check(status==200 and 'Clock In' in page,'clock remains available to signed-in '+uid)
                 status,headers,page=request(client,base+'/admin/home.php')
                 check(status==(403 if uid=='member' else 200),'hub role '+uid)
                 status,headers,page=request(client,base+'/admin/prayer-inbox.php')

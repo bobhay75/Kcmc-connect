@@ -45,8 +45,8 @@ with tempfile.TemporaryDirectory(prefix='kcmc-care-browser-') as tmp:
                 response=page.goto(url);assert 'no-store' in response.headers['cache-control'];assert 'noindex' in response.headers['x-robots-tag']
                 assert 'LEGACY_PRIVATE_DO_NOT_IMPORT' not in page.content()
             assert alice.goto(url+'?view=review').status==403;alice.goto(url)
-            assert alice.request.post(url,data={'action':'join','revision':'0','confidential':'1'}).status==403
-            assert pastor.request.post(admin_url,data={'action':'approve_warrior','revision':'0','target':'alice'}).status==403
+            assert alice.request.post(url,form={'action':'join','revision':'0','confidential':'1'}).status==403
+            assert pastor.request.post(admin_url,form={'action':'approve_warrior','revision':'0','target':'alice'}).status==403
             alice.get_by_label('I will keep prayer requests confidential',exact=False).check();alice.get_by_role('button',name='Sign up to pray',exact=True).click()
             assert alice.get_by_text('Prayer warriors · Awaiting approval').is_visible()
             assert json.loads((private/'users.json').read_text())['users'][0]['role']=='member'
@@ -73,7 +73,7 @@ with tempfile.TemporaryDirectory(prefix='kcmc-care-browser-') as tmp:
             # not an implicit approval or a discarded POST. The new admin form
             # then performs the same permitted action with a fresh CSRF check.
             before_redirect=(private/'prayer-care.json').read_bytes()
-            old_post=owner.request.post(url,data={
+            old_post=owner.request.post(url,form={
                 'action':'approve_warrior','target':'alice',
                 'csrf':owner.locator('input[name=csrf]').first.input_value(),
                 'revision':owner.locator('input[name=revision]').first.input_value(),
