@@ -1,0 +1,15 @@
+{
+  "source_commit": "93c72f4fc430d311e01108d3a30d0561bb701c9d",
+  "files": {
+    "member/notifications.php": {
+      "before_sha256": "58c1c85095270ce554a097e260f61ef4c0fff4807a82c1bb8dbc787ba1fa069c",
+      "after_sha256": "ba09e7eb974c1f36ff545cfca6bc9f6ea855933eb74c3db1595ec182c151afcf",
+      "replacements": [
+        [
+          "<?php if (kcmc_can_publish($user)): ?><a class=\"btn secondary\" href=\"<?=kcmc_h(kcmc_url('admin/push.php'))?>\">Send update</a><?php endif; ?>",
+          "<?php if (kcmc_is_designated_owner($user)): ?><a class=\"btn secondary\" href=\"<?=kcmc_h(kcmc_url('admin/push.php'))?>\">Send update</a><?php endif; ?>"
+        ]
+      ]
+    }
+  }
+}
