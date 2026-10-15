@@ -20,28 +20,32 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $error = $policy;
     } else {
         $userId = (string)($user['id'] ?? '');
-        $changed = kcmc_update_json_store(KCMC_USERS, ['version' => 1, 'users' => []], function (array &$state) use ($userId, $newPassword): bool {
+        $expectedHash = (string)$user['password_hash'];
+        $changedUser = kcmc_update_json_store(KCMC_USERS, ['version' => 1, 'users' => []], function (array &$state) use ($userId, $newPassword, $expectedHash): ?array {
             foreach ($state['users'] as &$stored) {
                 if (!is_array($stored) || ($stored['id'] ?? '') !== $userId || empty($stored['active'])) continue;
+                if (!hash_equals($expectedHash, (string)($stored['password_hash'] ?? ''))) return null;
                 $stored['password_hash'] = password_hash($newPassword, PASSWORD_DEFAULT);
                 $stored['updated_at'] = gmdate('c');
+                $changed = $stored;
                 unset($stored);
-                return true;
+                return $changed;
             }
             unset($stored);
-            return false;
+            return null;
         });
-        if (!$changed) {
-            $error = 'Your active account could not be updated.';
+        if (!$changedUser) {
+            $error = 'Your account changed. Reload and sign in again before retrying.';
         } else {
+            $user = $changedUser;
+            kcmc_session_bind_credentials($_SESSION, $user);
             kcmc_revoke_password_resets_for_user($userId, 'password_changed');
             kcmc_clear_login_failures((string)($user['email_normalized'] ?? $user['email'] ?? ''));
             session_regenerate_id(true);
             kcmc_session_mark_regenerated($_SESSION, time());
             $_SESSION['csrf'] = bin2hex(random_bytes(24));
             kcmc_audit('auth.password_changed', ['role' => kcmc_role($user)]);
-            $success = 'Password changed successfully. Your current session remains signed in.';
-            $user = kcmc_find_user_by_id($userId) ?? $user;
+            $success = 'Password changed successfully. This session remains signed in; other sessions must sign in again.';
         }
     }
 }
@@ -57,5 +61,5 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 <label>New password <span class="portal-fine">(at least 12 characters)</span><input type="password" name="new_password" autocomplete="new-password" minlength="12" required></label>
 <label>Confirm new password<input type="password" name="confirm_password" autocomplete="new-password" minlength="12" required></label>
 <button class="btn gold" type="submit">Change password</button></form>
-<p class="portal-fine">Changing your password also invalidates any unused password-reset links previously issued for this account.</p>
+<p class="portal-fine">Changing your password signs out other sessions and invalidates any unused password-reset links previously issued for this account.</p>
 </section></main></body></html>

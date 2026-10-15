@@ -22,17 +22,27 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $user = kcmc_find_user_by_email($email);
         if ($user && !empty($user['active']) && password_verify($password, (string)($user['password_hash'] ?? ''))) {
             if (password_needs_rehash((string)$user['password_hash'], PASSWORD_DEFAULT)) {
-                kcmc_update_json_store(KCMC_USERS, ['version' => 1, 'users' => []], function (array &$state) use ($user, $password): void {
-                    foreach ($state['users'] as &$stored) if (($stored['id'] ?? '') === ($user['id'] ?? '')) $stored['password_hash'] = password_hash($password, PASSWORD_DEFAULT);
+                $user = kcmc_update_json_store(KCMC_USERS, ['version' => 1, 'users' => []], function (array &$state) use ($user, $password): ?array {
+                    foreach ($state['users'] as &$stored) {
+                        if (($stored['id'] ?? '') !== ($user['id'] ?? '')) continue;
+                        if (empty($stored['active']) || !hash_equals((string)$user['password_hash'], (string)($stored['password_hash'] ?? ''))) return null;
+                        $stored['password_hash'] = password_hash($password, PASSWORD_DEFAULT);
+                        $updated = $stored;
+                        unset($stored);
+                        return $updated;
+                    }
                     unset($stored);
+                    return null;
                 });
             }
-            kcmc_clear_login_failures($email);
-            kcmc_update_user_login((string)$user['id']);
-            kcmc_login_user($user);
-            kcmc_audit('auth.login', ['role' => kcmc_role($user)]);
-            header('Location: ' . $next);
-            exit;
+            if ($user !== null) {
+                kcmc_clear_login_failures($email);
+                kcmc_update_user_login((string)$user['id']);
+                kcmc_login_user($user);
+                kcmc_audit('auth.login', ['role' => kcmc_role($user)]);
+                header('Location: ' . $next);
+                exit;
+            }
         }
         kcmc_record_login_failure($email);
         $error = 'The email or password was not recognized.';
