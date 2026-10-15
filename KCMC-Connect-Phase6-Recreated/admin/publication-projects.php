@@ -1,12 +1,15 @@
 <?php
 declare(strict_types=1);
 require_once __DIR__ . '/../lib/bootstrap.php';
-$user = kcmc_require_role(['pastor_admin', 'recovery_admin']);
+require_once __DIR__ . '/../lib/publication-drafts.php';
 kcmc_private_headers();
 header('Content-Type: application/json; charset=utf-8');
-
-$storePath = KCMC_PRIVATE_DATA . '/publications.json';
-$defaultStore = ['version' => 2, 'projects' => []];
+$passive = ($_SERVER['REQUEST_METHOD'] ?? '') === 'GET' && ($_GET['watch'] ?? '') === '1';
+if ($passive) {
+    $user = kcmc_current_user(false);
+    if ($user === null) pub_fail('Sign in again to continue. Your unsaved changes are still here.', 401);
+    if (!kcmc_can_publish($user)) pub_fail('Access denied.', 403);
+} else $user = kcmc_require_role(['pastor_admin', 'recovery_admin']);
 
 function pub_fail(string $message, int $status = 400): never {
     http_response_code($status);
@@ -137,22 +140,39 @@ function pub_normalize_project(array $project): array {
 
 $method = strtoupper((string)($_SERVER['REQUEST_METHOD'] ?? 'GET'));
 if ($method === 'GET') {
-    $store = kcmc_read_json_store($storePath, $defaultStore);
-    $projects = array_map('pub_normalize_project', array_values(array_filter($store['projects'] ?? [], 'is_array')));
+    session_write_close();
+    try { $store = kcmc_publication_read_store(); }
+    catch (RuntimeException $e) { pub_fail('Publication storage needs administrator review. No changes were made.', 503); }
+    if ($passive) {
+        $id = is_string($_GET['id'] ?? null) ? $_GET['id'] : '';
+        if (!preg_match('/\Apub_[a-f0-9]{24}\z/', $id)) pub_fail('Choose a saved publication.', 422);
+        foreach ($store['projects'] as $project) if ($project['id'] === $id) {
+            echo json_encode(['ok'=>true, 'project'=>['id'=>$id, 'revision'=>kcmc_publication_revision($project), 'updated'=>$project['updated']]], JSON_UNESCAPED_SLASHES);
+            exit;
+        }
+        pub_fail('That publication is no longer available.', 404);
+    }
+    $projects = array_map(static function (array $project): array { $project = pub_normalize_project($project); $project['revision'] = kcmc_publication_revision($project); return $project; }, $store['projects']);
     usort($projects, static fn(array $a, array $b): int => strcmp((string)($b['updated'] ?? ''), (string)($a['updated'] ?? '')));
     echo json_encode(['ok' => true, 'projects' => $projects], JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
     exit;
 }
 
 if ($method !== 'POST') pub_fail('Method not allowed.', 405);
-$raw = file_get_contents('php://input');
+$raw = file_get_contents('php://input', false, null, 0, 16777217);
+if (is_string($raw) && strlen($raw) > 16777216) pub_fail('This publication request is too large.', 413);
 $body = json_decode($raw ?: '', true);
 if (!is_array($body)) pub_fail('Invalid JSON.');
-if (!kcmc_verify_csrf($body['csrf'] ?? null)) pub_fail('Invalid session token.', 403);
+if (!is_string($body['csrf'] ?? null) || !kcmc_verify_csrf($body['csrf'])) pub_fail('Invalid session token.', 403);
+session_write_close();
 
 $name = pub_text($body['name'] ?? '', 120);
 if ($name === '') $name = 'Untitled publication';
-$id = is_string($body['id'] ?? null) && preg_match('/\Apub_[a-f0-9]{24}\z/', (string)$body['id']) ? (string)$body['id'] : kcmc_random_id('pub');
+$id = $body['id'] ?? null;
+if ($id !== null && (!is_string($id) || !preg_match('/\Apub_[a-f0-9]{24}\z/', $id))) pub_fail('Invalid publication ID.', 422);
+if ($id !== null && !array_key_exists('revision', $body)) pub_fail('This editor is out of date. Duplicate or copy your changes before reloading.', 428);
+$revision = $body['revision'] ?? 0;
+if (!is_int($revision) || $revision < 0) pub_fail('Invalid publication revision.', 422);
 $rawPages = $body['pages'] ?? null;
 if ($rawPages === null) {
     $rawPages = [[
@@ -170,29 +190,10 @@ foreach ($rawPages as $rawPage) {
     $totalItems += count($validated['items']);
     $pages[] = $validated;
 }
-$now = gmdate('c');
-$project = [
-    'id' => $id,
-    'name' => $name,
-    'pages' => $pages,
-    'updated' => $now,
-    'updated_by' => (string)($user['id'] ?? ''),
-];
-
-kcmc_update_json_store($storePath, $defaultStore, function (array &$state) use ($project): void {
-    $projects = array_values(array_filter($state['projects'] ?? [], 'is_array'));
-    $found = false;
-    foreach ($projects as $i => $existing) {
-        if (($existing['id'] ?? '') === $project['id']) {
-            $projects[$i] = $project;
-            $found = true;
-            break;
-        }
-    }
-    if (!$found) array_unshift($projects, $project);
-    usort($projects, static fn(array $a, array $b): int => strcmp((string)($b['updated'] ?? ''), (string)($a['updated'] ?? '')));
-    $state['version'] = 2;
-    $state['projects'] = $projects;
-});
+try {
+    $project = kcmc_publication_save_draft(['name'=>$name, 'pages'=>$pages], $id, $revision, (string)($user['id'] ?? ''));
+} catch (KcmcPublicationConflict $e) { pub_fail($e->getMessage(), 409); }
+catch (RuntimeException $e) { pub_fail('The publication was not saved. Your edits are still here; ask an administrator to review storage.', 503); }
+$id = $project['id'];
 kcmc_audit('publication_project_saved', ['publication_id' => $id, 'page_count' => count($pages), 'item_count' => $totalItems]);
 echo json_encode(['ok' => true, 'project' => $project], JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);

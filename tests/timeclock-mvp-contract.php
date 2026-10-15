@@ -35,7 +35,7 @@ tc_check(str_contains($member, 'kcmc_require_login()'), 'employee time clock req
 tc_check(str_contains($member, 'kcmc_verify_csrf'), 'employee mutations require CSRF');
 tc_check(str_contains($member, "(string)\$user['id']"), 'employee page scopes reads and writes to signed-in user');
 tc_check(!str_contains($member, 'name="certify"') && str_contains($admin, 'value="submit_period"'), 'pay-period preparation belongs to administrator review');
-tc_check(str_contains($admin, "kcmc_require_role(['pastor_admin', 'recovery_admin'])"), 'time-card review requires administrator role');
+tc_check(str_contains($admin, 'kcmc_require_payroll_reviewer()'), 'time-card review requires the owner or explicitly selected payroll reviewer');
 tc_check(str_contains($admin, 'cannot approve or return their own time card'), 'reviewer self-approval is blocked');
 tc_check(str_contains($csv, "!== 'approved'"), 'CSV export is restricted to approved periods');
 tc_check(str_contains($print, "!== 'approved'"), 'print/PDF view is restricted to approved periods');

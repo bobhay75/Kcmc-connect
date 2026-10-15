@@ -1,0 +1,44 @@
+name: KCMC payroll handoff
+on:
+  pull_request:
+    paths:
+      - 'KCMC-Connect-Phase6-Recreated/**'
+      - 'tests/payroll-*'
+      - 'tests/timeclock-*'
+      - '.github/workflows/payroll-automation.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  protected-routes:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          persist-credentials: false
+      - name: Current payroll and clock boundaries
+        run: |
+          set -euo pipefail
+          php -v
+          for file in KCMC-Connect-Phase6-Recreated/lib/payroll.php KCMC-Connect-Phase6-Recreated/admin/{payroll-setup,timecards,timecards-export,timecards-print,timeclock-period-close}.php; do php -l "$file"; done
+          php tests/payroll-automation-contract.php
+          python3 tests/payroll-route-contract.py
+          python3 tests/timeclock-route-workflow-contract.py
+          php tests/timeclock-employee-workflow-contract.php
+          php tests/timeclock-mvp-contract.php
+          php tests/timeclock-correction-contract.php
+          git diff --check
+  host-php82:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          persist-credentials: false
+      - name: Actual PHP 8.2 payroll state and concurrent workers
+        run: |
+          set -euo pipefail
+          docker pull php:8.2-cli
+          docker run --rm --network none -v "$PWD:/source:ro" -w /source php:8.2-cli php tests/payroll-automation-contract.php
+          docker run --rm --network none -v "$PWD:/source:ro" -w /source php:8.2-cli php tests/timeclock-employee-workflow-contract.php

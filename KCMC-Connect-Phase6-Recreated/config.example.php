@@ -9,5 +9,10 @@ return [
     'invitation_mail_enabled' => false,
     'invitation_from' => '',
     'invitation_from_name' => 'KCMC Connect',
+
+    // Payroll email additionally requires explicit owner selection of email delivery.
+    // Environment KCMC_PAYROLL_FROM / KCMC_PAYROLL_FROM_NAME override these.
+    'payroll_from' => '',
+    'payroll_from_name' => 'KCMC Connect',
 ];
 // First-run recovery setup uses only the server environment variable KCMC_SETUP_KEY.

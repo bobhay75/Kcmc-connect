@@ -327,13 +327,22 @@ function kcmc_content(): array {
     return $data;
 }
 
-function kcmc_write_content(array $data, string $actor = 'system', ?string $expectedHash = null): void {
+function kcmc_write_content(array $data, string $actor = 'system', ?string $expectedHash = null, bool $requireValidCurrent = false): string {
     if (!is_dir(KCMC_BACKUPS) && !mkdir(KCMC_BACKUPS, 0750, true) && !is_dir(KCMC_BACKUPS)) throw new RuntimeException('Unable to create backup storage.');
     $lock = @fopen(KCMC_DATA . '.lock', 'c+');
     if ($lock === false || !flock($lock, LOCK_EX)) throw new RuntimeException('Unable to lock content storage.');
     try {
         if ($expectedHash !== null && !hash_equals($expectedHash, hash_file('sha256', KCMC_DATA) ?: '')) {
             throw new RuntimeException('Content changed. Reload and review the current posts.');
+        }
+        // The normal editor refuses damaged input instead of publishing its
+        // public fallback view. Explicit backup restoration keeps its own path.
+        if ($requireValidCurrent) {
+            $currentRaw = @file_get_contents(KCMC_DATA);
+            $current = is_string($currentRaw) ? json_decode($currentRaw, true) : null;
+            if (!is_array($current)) throw new RuntimeException('Current content storage needs review.');
+            foreach (['contact', 'announcements', 'events', 'bulletin'] as $section) if (!is_array($current[$section] ?? null)) throw new RuntimeException('Current content storage needs review.');
+            foreach (['announcements', 'events'] as $section) foreach ($current[$section] as $item) if (!is_array($item) || !is_string($item['id'] ?? null)) throw new RuntimeException('Current content storage needs review.');
         }
         if (is_file(KCMC_DATA)) {
             $stamp = gmdate('Ymd-His') . '-' . bin2hex(random_bytes(3));
@@ -345,8 +354,9 @@ function kcmc_write_content(array $data, string $actor = 'system', ?string $expe
         $json = json_encode($data, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
         if ($json === false) throw new RuntimeException('Unable to encode content.');
         $tmp = KCMC_DATA . '.tmp-' . bin2hex(random_bytes(6));
-        if (file_put_contents($tmp, $json . PHP_EOL, LOCK_EX) === false) throw new RuntimeException('Unable to write content.');
+        if (file_put_contents($tmp, $json . PHP_EOL, LOCK_EX) !== strlen($json . PHP_EOL)) { @unlink($tmp); throw new RuntimeException('Unable to write content.'); }
         if (!rename($tmp, KCMC_DATA)) { @unlink($tmp); throw new RuntimeException('Unable to publish content.'); }
+        return hash('sha256', $json . PHP_EOL);
     } finally {
         flock($lock, LOCK_UN);
         fclose($lock);
@@ -505,12 +515,23 @@ function kcmc_require_login(string $next = ''): array {
     exit;
 }
 
+/** Fixed same-app navigation on denied HTML pages; no role or record details. */
+function kcmc_access_denied(string $message = 'Access denied.'): never {
+    http_response_code(403);
+    kcmc_private_headers();
+    header('Content-Type: text/html; charset=utf-8');
+    $home = kcmc_h(kcmc_url());
+    $account = kcmc_h(kcmc_url('member/'));
+    $style = kcmc_h(kcmc_url('styles.css?v=3.0.0'));
+    $text = kcmc_h($message);
+    echo '<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="robots" content="noindex,nofollow"><title>Access denied • KCMC Connect</title><link rel="stylesheet" href="' . $style . '"></head><body class="portal-body"><main class="portal-shell portal-narrow"><section class="portal-card"><h1>Unable to open this page</h1><p role="alert">' . $text . '</p><nav class="portal-actions" aria-label="Page navigation"><a class="btn secondary" href="' . $home . '">Home</a><a class="btn secondary" href="' . $account . '">My account</a></nav></section></main></body></html>';
+    exit;
+}
+
 function kcmc_require_role(array $roles): array {
     $user = kcmc_require_login();
     if (!kcmc_has_role($roles, $user)) {
-        http_response_code(403);
-        kcmc_private_headers();
-        exit('Access denied.');
+        kcmc_access_denied('Access denied.');
     }
     return $user;
 }

@@ -16,7 +16,7 @@ tcc_check(str_contains($lib,"\$period['correction_count']"),'approved or submitt
 tcc_check(str_contains($member,"'request_correction'"),'employee UI submits correction requests');
 tcc_check(str_contains($member,'Your correction requests'),'employee can review request status');
 tcc_check(str_contains($member,'Supervisor adjusted'),'existing supervisor adjustment marker is preserved');
-tcc_check(str_contains($admin,"kcmc_require_role(['pastor_admin', 'recovery_admin'])"),'correction review remains administrator-only');
+tcc_check(str_contains($admin,'kcmc_require_payroll_reviewer()'),'correction review remains restricted to the owner or selected payroll reviewer');
 tcc_check(str_contains($admin,'kcmc_verify_csrf'),'administrator correction actions require CSRF');
 tcc_check(str_contains($admin,"'apply_correction'")&&str_contains($admin,"'reject_correction'"),'administrator can apply or reject pending correction requests');
 tcc_check(str_contains($admin,"'timeclock.correction_applied'")&&str_contains($admin,"'timeclock.correction_rejected'"),'correction actions emit privacy-safe audit events');

@@ -1,0 +1,13 @@
+'use strict';
+const assert = require('node:assert/strict');
+const {sortedTasks, filteredTasks} = require('../KCMC-Connect-Phase6-Recreated/member/workspace.js');
+const task = (id, due_date, priority = 'normal', blocked = false, status = 'open') => ({id, title: id, due_date, priority, blocked, status, created_at: 10});
+const tasks = [task('done', '2026-10-01', 'high', true, 'done'), task('high', '', 'high'), task('overdue', '2026-10-14'), task('blocked', '2026-10-20', 'low', true), task('today', '2026-10-15'), task('future', '2026-10-20')];
+assert.deepEqual(sortedTasks(tasks, 'smart', '2026-10-15').map(t => t.id), ['blocked', 'overdue', 'today', 'future', 'high', 'done']);
+assert.deepEqual(sortedTasks(tasks, 'due', '2026-10-15').map(t => t.id), ['overdue', 'today', 'blocked', 'future', 'high', 'done']);
+assert.deepEqual(sortedTasks(tasks, 'priority', '2026-10-15').map(t => t.id), ['high', 'overdue', 'today', 'future', 'blocked', 'done']);
+assert.equal(filteredTasks(tasks, 'open').length, 5);
+assert.deepEqual(filteredTasks(tasks, 'done').map(t => t.id), ['done']);
+assert.equal(filteredTasks(tasks, 'all').length, 6);
+assert.equal(tasks[0].id, 'done', 'sorting does not mutate the source collection');
+console.log('PASS: smart/due/priority ordering, status filters and non-mutating sorting.');
