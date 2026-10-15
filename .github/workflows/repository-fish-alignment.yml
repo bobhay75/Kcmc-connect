@@ -1,0 +1,61 @@
+name: KCMC pinned fish repository alignment
+on:
+  pull_request:
+    paths:
+      - 'tools/kcmc-repository-align-oct15/**'
+      - '.github/workflows/repository-fish-alignment.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  real-git-clean-fast-forward:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          persist-credentials: false
+      - name: Exact helper checksums and isolated real-Git safety checks
+        run: |
+          set -euo pipefail
+          cd tools/kcmc-repository-align-oct15
+          sha256sum -c CHECKSUMS.sha256
+          python3 -B test_align_repository.py
+  python36-real-git-clean-fast-forward:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          persist-credentials: false
+      - name: Actual Python 3.6 interpreter with supported real Git
+        run: |
+          set -euo pipefail
+          kcmc_python36_image='python@sha256:f8652afaf88c25f0d22354d547d892591067aa4026a7fa9a6819df9f300af6fc'
+          kcmc_python36_root=$(mktemp -d)
+          kcmc_python36_container=''
+          kcmc_python36_cleanup() {
+            if [ -n "$kcmc_python36_container" ]; then
+              docker rm -f "$kcmc_python36_container" >/dev/null 2>&1 || true
+            fi
+            rm -rf -- "$kcmc_python36_root"
+          }
+          trap kcmc_python36_cleanup EXIT
+          docker pull "$kcmc_python36_image"
+          kcmc_python36_container=$(docker create --network none "$kcmc_python36_image")
+          docker cp "$kcmc_python36_container:/usr/local/." "$kcmc_python36_root/"
+          docker rm "$kcmc_python36_container" >/dev/null
+          kcmc_python36_container=''
+          # The old image's Git may predate the production minimum. Extract its
+          # genuine interpreter/stdlib and use the runner's real Git 2.32+.
+          # No Git-version answer or production guard is mocked or bypassed.
+          export PYTHONHOME="$kcmc_python36_root"
+          export LD_LIBRARY_PATH="$kcmc_python36_root/lib"
+          export PYTHONDONTWRITEBYTECODE=1
+          "$kcmc_python36_root/bin/python3.6" -c 'import sys; print(sys.version); assert sys.version_info[:2] == (3, 6)'
+          git --version
+          cd tools/kcmc-repository-align-oct15
+          sha256sum -c CHECKSUMS.sha256
+          "$kcmc_python36_root/bin/python3.6" -B test_align_repository.py
