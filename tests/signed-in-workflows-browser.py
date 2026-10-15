@@ -12,6 +12,7 @@ import json
 import os
 import pathlib
 import signal
+import shutil
 import subprocess
 import tempfile
 import time
@@ -39,7 +40,10 @@ def main() -> int:
         die(f"Playwright is required: {exc}")
 
     with tempfile.TemporaryDirectory(prefix="kcmc-signed-in-") as tmp:
-        private = pathlib.Path(tmp) / "private"
+        work = pathlib.Path(tmp)
+        app = work / ROOT.name
+        shutil.copytree(ROOT, app, ignore=shutil.ignore_patterns('config.php', 'private', 'backups'))
+        private = work / "private"
         private.mkdir(mode=0o750)
         password = "Synthetic-Test-Password-2031!"
         hash_proc = subprocess.run(
@@ -66,6 +70,17 @@ def main() -> int:
         (private / "users.json").write_text(json.dumps(users), encoding="utf-8")
         (private / "login-attempts.json").write_text(json.dumps({"attempts": {}}), encoding="utf-8")
 
+        # Start with the same submitted state reported by the owner: a prior
+        # turn-in must never hide the live punch controls for the current period.
+        period = json.loads(subprocess.check_output(
+            ["php", "-r", "require $argv[1]; echo json_encode(kcmc_timeclock_period());", str(app / "lib/timeclock.php")],
+            text=True,
+        ))
+        (private / "timeclock.json").write_text(json.dumps({
+            "version": 1, "entries": [], "adjustments": [], "correction_requests": [],
+            "periods": [{"user_id": "test_admin", "start": period[0], "end": period[1],
+                "status": "submitted", "submitted_at": "2026-01-01T00:00:00Z"}],
+        }), encoding="utf-8")
         env = os.environ.copy()
         env["KCMC_PRIVATE_DATA_DIR"] = str(private)
         env["KCMC_SETUP_KEY"] = ""
@@ -74,8 +89,8 @@ def main() -> int:
         # blocking the single PHP server before the sign-in redirect completes.
         server_log = (pathlib.Path(tmp) / 'php.log').open('w+', encoding='utf-8')
         server = subprocess.Popen(
-            ["php", "-S", "127.0.0.1:8766", "-t", str(ROOT.parent)],
-            cwd=str(ROOT.parent),
+            ["php", "-S", "127.0.0.1:8766", "-t", str(work)],
+            cwd=str(work),
             env=env,
             stdout=server_log,
             stderr=subprocess.STDOUT,
@@ -115,11 +130,19 @@ def main() -> int:
                 page.wait_for_url("**/member/**", timeout=5000)
 
                 page.goto(BASE + "/member/", wait_until="domcontentloaded")
-                assert_title(page, "Member Prayer", "signed-in member area loads")
-                if "VERIFIED MEMBER AREA" not in page.locator("body").inner_text():
-                    die("member area did not show the verified-member shell")
+                assert_title(page, "My Account", "personal account area loads")
+                if page.get_by_role("navigation", name="Personal settings").count() != 1:
+                    die("account area did not show personal settings")
+                if page.locator('a[href*="/admin/"]').count() != 1:
+                    die("personal account should expose one Administration entry")
+                if page.get_by_role("button", name="Send private request").count():
+                    die("the account overview repeated the private prayer form")
+                page.get_by_role("link", name="Administration", exact=True).click()
+                assert_title(page, "Administration", "Administration opens from the account")
+                if page.get_by_role("link", name="Open Employee time cards", exact=True).count() != 1:
+                    die("owner Administration did not expose employee review")
+                page.get_by_role("link", name="Open Publishing", exact=True).click()
 
-                page.goto(BASE + "/admin/", wait_until="domcontentloaded")
                 assert_title(page, "KCMC Publishing Desk", "Publishing Desk loads for pastor admin")
                 if page.locator('button:has-text("Publish changes")').count() != 1:
                     die("Publishing Desk did not expose the guarded publish control")
@@ -130,6 +153,7 @@ def main() -> int:
                 page.wait_for_load_state("domcontentloaded")
                 if "Clocked in" not in page.locator("body").inner_text():
                     die("Time Clock did not enter the clocked-in state")
+                page.get_by_text("Add work details (optional)", exact=True).click()
                 page.locator('select[name="category"]').select_option(label="KCMC Connect / IT")
                 page.locator('textarea[name="description"]').fill("Synthetic signed-in acceptance check")
                 page.locator('button:has-text("Clock Out")').click()
@@ -137,7 +161,41 @@ def main() -> int:
                 body = page.locator("body").inner_text()
                 if "Synthetic signed-in acceptance check" not in body or "You are clocked out" not in body:
                     die("Time Clock did not save and render the completed synthetic shift")
-                print("PASS: Time Clock clock-in and clock-out interaction works")
+                if page.get_by_role("button", name="Submit pay period", exact=True).count():
+                    die("employee page exposed a manual pay-period approval/turn-in action")
+                print("PASS: submitted current period retains Clock In and Clock Out; optional work details save")
+
+                page.get_by_text("Request a correction", exact=True).click()
+                page.get_by_label("What needs to be corrected?", exact=True).fill("Synthetic correction reason for administrator review.")
+                page.get_by_role("button", name="Send Correction Request", exact=True).click()
+                if "Correction request sent" not in page.locator("body").inner_text():
+                    die("employee correction request did not reach administrator review")
+                if not json.loads((private / "timeclock.json").read_text())["correction_requests"]:
+                    die("the correction request was not saved privately")
+                screenshots = pathlib.Path(os.environ.get("KCMC_WORKFLOW_SCREENSHOTS", str(ROOT.parent / "test-artifacts/signed-in-workflows")))
+                screenshots.mkdir(parents=True, exist_ok=True)
+                for width, height in [(390, 844), (1365, 900)]:
+                    page.set_viewport_size({"width": width, "height": height})
+                    if not page.evaluate("document.documentElement.scrollWidth <= innerWidth"):
+                        die("employee time clock overflows viewport " + str(width))
+                    page.screenshot(path=str(screenshots / ("timeclock-" + str(width) + ".png")), full_page=True)
+
+                page.goto(BASE + "/admin/home.php", wait_until="domcontentloaded")
+                page.get_by_role("link", name="Open Employee time cards", exact=True).click()
+                page.get_by_role("button", name="Prepare for review", exact=True).click()
+                page.get_by_role("button", name="Approve", exact=True).click()
+                own_period = next(row for row in json.loads((private / "timeclock.json").read_text())["periods"] if row["user_id"] == "test_admin")
+                if own_period["status"] != "approved" or own_period.get("approved_by") != "test_admin":
+                    die("designated owner could not approve their own test time card")
+                print("PASS: administrator controls are separate and the designated owner can approve their own test card")
+                page.get_by_role("link", name="Home", exact=True).click()
+                assert_title(page, "KCMC", "time-card Home returns to the public site")
+                page.goto(BASE + "/member/timeclock.php", wait_until="domcontentloaded")
+                page.get_by_role("button", name="Clock In", exact=True).click()
+                page.get_by_role("button", name="Clock Out", exact=True).click()
+                if "You are clocked out" not in page.locator("body").inner_text():
+                    die("an approved current time card prevented the next shift")
+                print("PASS: an approved current card also permits the next shift without required work details")
 
                 page.goto(BASE + "/admin/rsvps.php", wait_until="domcontentloaded")
                 assert_title(page, "Event RSVPs", "authenticated RSVP inbox loads")

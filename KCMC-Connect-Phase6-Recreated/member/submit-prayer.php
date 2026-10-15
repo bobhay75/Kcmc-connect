@@ -31,4 +31,4 @@ kcmc_update_json_store(KCMC_PRAYERS, ['version' => 1, 'prayers' => []], function
     $state['prayers'][] = $prayer;
 });
 kcmc_audit('prayer.submitted', ['prayer_id' => $prayer['id'], 'audience' => $prayer['audience']]);
-header('Location: ' . kcmc_url('member/?submitted=1'));
+header('Location: ' . kcmc_url('member/prayers.php?submitted=1'));

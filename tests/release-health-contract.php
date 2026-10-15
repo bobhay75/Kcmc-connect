@@ -51,6 +51,15 @@ health_check(!preg_match('/token_hash|password_hash|KCMC_PRAYERS|push_vapid_priv
 health_check(str_contains($page, "admin/push.php") && str_contains($page, "admin/users.php") && str_contains($page, "admin/backup.php"), 'dashboard links to operational follow-up controls');
 
 $member = file_get_contents(__DIR__ . '/../KCMC-Connect-Phase6-Recreated/member/index.php');
-health_check(is_string($member) && str_contains($member, "admin/health.php"), 'administrator home links to release health');
+$desk = file_get_contents(__DIR__ . '/../KCMC-Connect-Phase6-Recreated/admin/index.php');
+$home = file_get_contents(__DIR__ . '/../KCMC-Connect-Phase6-Recreated/admin/home.php');
+$operations = file_get_contents(__DIR__ . '/../KCMC-Connect-Phase6-Recreated/admin/operations.php');
+health_check(is_string($member) && str_contains($member, "kcmc_url('admin/home.php')"), 'personal account links to the administration hub');
+health_check(is_string($desk) && str_contains($desk, "kcmc_url('admin/home.php')"), 'Publishing Desk links back to Administration');
+health_check(is_string($home) && str_contains($home, "kcmc_require_role(['prayer_team', 'pastor_admin', 'recovery_admin'])")
+    && str_contains($home, 'kcmc_private_headers()') && str_contains($home, 'kcmc_is_designated_owner($user)')
+    && preg_match('/if \(\$owner\)\s*\{[^}]*\'admin\/operations\.php\'/s', $home) === 1, 'Administration exposes Operations only to the designated owner');
+health_check(is_string($operations) && str_contains($operations, 'kcmc_require_operations_owner()')
+    && str_contains($operations, "'href' => 'admin/health.php'") && str_contains($page, 'kcmc_require_operations_owner()'), 'protected Operations links to release health');
 
 echo "Release health contract checks passed.\n";

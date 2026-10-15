@@ -51,6 +51,15 @@ audit_check(str_contains($page, 'kcmc_audit_recent_rows(KCMC_AUDIT_LOG'), 'audit
 audit_check(!preg_match('/ip_hash|password_hash|token_hash|KCMC_PRAYERS|push-subscriptions\.json/', $page), 'audit page source does not expose sensitive raw fields or private stores');
 
 $member = file_get_contents(__DIR__ . '/../KCMC-Connect-Phase6-Recreated/member/index.php');
-audit_check(is_string($member) && str_contains($member, 'admin/audit.php'), 'administrator home links to audit history');
+$desk = file_get_contents(__DIR__ . '/../KCMC-Connect-Phase6-Recreated/admin/index.php');
+$home = file_get_contents(__DIR__ . '/../KCMC-Connect-Phase6-Recreated/admin/home.php');
+$operations = file_get_contents(__DIR__ . '/../KCMC-Connect-Phase6-Recreated/admin/operations.php');
+audit_check(is_string($member) && str_contains($member, "kcmc_url('admin/home.php')"), 'personal account links to the administration hub');
+audit_check(is_string($desk) && str_contains($desk, "kcmc_url('admin/home.php')"), 'Publishing Desk links back to Administration');
+audit_check(is_string($home) && str_contains($home, "kcmc_require_role(['prayer_team', 'pastor_admin', 'recovery_admin'])")
+    && str_contains($home, 'kcmc_private_headers()') && str_contains($home, 'kcmc_is_designated_owner($user)')
+    && preg_match('/if \(\$owner\)\s*\{[^}]*\'admin\/operations\.php\'/s', $home) === 1, 'Administration exposes Operations only to the designated owner');
+audit_check(is_string($operations) && str_contains($operations, 'kcmc_require_operations_owner()')
+    && str_contains($operations, "'href' => 'admin/audit.php'") && str_contains($page, 'kcmc_require_operations_owner()'), 'protected Operations links to audit history');
 
 echo "Audit history contract checks passed.\n";

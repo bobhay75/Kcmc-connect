@@ -15,7 +15,7 @@ with tempfile.TemporaryDirectory(prefix='kcmc-care-browser-') as tmp:
     (private/'prayers.json').write_text(legacy)
     content=(app/'data/content.json').read_bytes()
     with socket.socket() as sock:sock.bind(('127.0.0.1',0));port=sock.getsockname()[1]
-    base=f'http://127.0.0.1:{port}';url=base+'/member/prayer-care.php'
+    base=f'http://127.0.0.1:{port}';url=base+'/member/prayer-care.php';admin_url=base+'/admin/prayer-care.php'
     env={**os.environ,'KCMC_PRIVATE_DATA_DIR':str(private),'KCMC_SETUP_KEY':'','KCMC_OPERATIONS_OWNER_USER_ID':'owner'}
     proc=subprocess.Popen([PHP,'-S',f'127.0.0.1:{port}','-t',str(app)],env=env,stdout=subprocess.DEVNULL,stderr=subprocess.DEVNULL)
     try:
@@ -30,6 +30,12 @@ with tempfile.TemporaryDirectory(prefix='kcmc-care-browser-') as tmp:
                 page.on('pageerror',lambda e:errors.append(str(e)))
                 page.goto(base+'/member/login.php');page.locator('[name=email]').fill(name+'@example.invalid');page.locator('[name=password]').fill(secret)
                 page.locator('button[type=submit]').click();page.wait_for_url('**/member/')
+                assert 'My Account' in page.title()
+                assert page.get_by_role('navigation',name='Personal settings').count()==1
+                assert page.get_by_role('button',name='Send private request',exact=True).count()==0
+                assert page.get_by_role('link',name='Administration',exact=True).count()==int(name in ['pastor','recovery','owner'])
+                assert page.get_by_role('link',name='Ministry work',exact=True).count()==int(name=='team')
+                assert page.locator('a[href*="/admin/"]').count()==int(name in ['pastor','recovery','owner','team'])
                 page.goto(url);return page
             anon=browser.new_page();anon.goto(url);assert '/login.php' in anon.url
             assert 'LEGACY_PRIVATE_DO_NOT_IMPORT' not in anon.content()
@@ -39,14 +45,42 @@ with tempfile.TemporaryDirectory(prefix='kcmc-care-browser-') as tmp:
                 response=page.goto(url);assert 'no-store' in response.headers['cache-control'];assert 'noindex' in response.headers['x-robots-tag']
                 assert 'LEGACY_PRIVATE_DO_NOT_IMPORT' not in page.content()
             assert alice.goto(url+'?view=review').status==403;alice.goto(url)
-            assert alice.request.post(url,data={'action':'join','revision':'0','confidential':'1'}).status==403
+            assert alice.request.post(url,form={'action':'join','revision':'0','confidential':'1'}).status==403
+            assert pastor.request.post(admin_url,form={'action':'approve_warrior','revision':'0','target':'alice'}).status==403
             alice.get_by_label('I will keep prayer requests confidential',exact=False).check();alice.get_by_role('button',name='Sign up to pray',exact=True).click()
             assert alice.get_by_text('Prayer warriors · Awaiting approval').is_visible()
             assert json.loads((private/'users.json').read_text())['users'][0]['role']=='member'
             assert owner.goto(base+'/admin/operations.php').status==200
             assert owner.goto(base+'/member/prayer-team.php').status==200
+            assert owner.url==base+'/admin/prayer-inbox.php'
+            assert owner.goto(base+'/admin/home.php').status==200
+            assert team.goto(base+'/admin/home.php').status==200
+            assert team.get_by_role('link',name='Open Confidential prayer inbox',exact=True).count()==1
+            assert team.get_by_role('link',name='Open Prayer & Care review',exact=True).count()==0
             assert recovery.goto(url+'?view=review').status==403
-            owner.goto(url+'?view=review');owner.get_by_role('button',name='Approve signup',exact=True).click()
+            assert recovery.goto(admin_url).status==403
+            # Old GET bookmarks redirect safely; personal Care has no admin UI.
+            owner.goto(url+'?view=review');assert owner.url==admin_url+'?view=review'
+            for personal in [alice,bob,pastor,team,owner]:
+                personal.goto(url)
+                assert personal.get_by_role('link',name='Pastoral review',exact=True).count()==0
+                assert personal.get_by_role('button',name='Approve signup',exact=True).count()==0
+                assert personal.get_by_role('button',name='Approve chosen audience',exact=True).count()==0
+            assert alice.goto(admin_url).status==403
+            assert team.goto(admin_url).status==403
+            owner.goto(admin_url)
+            # A still-open legacy approval form gets a method-preserving redirect,
+            # not an implicit approval or a discarded POST. The new admin form
+            # then performs the same permitted action with a fresh CSRF check.
+            before_redirect=(private/'prayer-care.json').read_bytes()
+            old_post=owner.request.post(url,form={
+                'action':'approve_warrior','target':'alice',
+                'csrf':owner.locator('input[name=csrf]').first.input_value(),
+                'revision':owner.locator('input[name=revision]').first.input_value(),
+            },max_redirects=0)
+            assert old_post.status==307 and old_post.headers['location']=='/admin/prayer-care.php?view=review'
+            assert (private/'prayer-care.json').read_bytes()==before_redirect
+            owner.get_by_role('button',name='Approve signup',exact=True).click()
             out=os.environ.get('KCMC_OWNER_SCREENSHOT')
             if out:owner.screenshot(path=out,full_page=True)
             alice.goto(url);assert alice.get_by_text('Prayer warriors · You’re on the team').is_visible()
@@ -66,7 +100,7 @@ with tempfile.TemporaryDirectory(prefix='kcmc-care-browser-') as tmp:
             submit(bob,private_words)
             submit(bob,need,audience='team')
             alice.goto(url);assert need not in alice.content() and private_words not in alice.content()
-            pastor.goto(url+'?view=review');card=pastor.locator('article').filter(has_text=need)
+            pastor.goto(admin_url);card=pastor.locator('article').filter(has_text=need)
             card.get_by_role('button',name='Approve chosen audience').click()
             alice.goto(url);assert alice.get_by_text(need,exact=True).is_visible();assert private_words not in alice.content()
             team.goto(url);assert need not in team.content()
@@ -82,13 +116,13 @@ with tempfile.TemporaryDirectory(prefix='kcmc-care-browser-') as tmp:
             card.get_by_text('Update my words').click();card.get_by_label('Updated words').fill(need+' Updated.')
             card.get_by_role('button',name='Save update for review').click()
             alice.goto(url+'?view=mine');assert need not in alice.content()
-            pastor.goto(url+'?view=review');pastor.locator('article').filter(has_text=need).get_by_role('button',name='Approve chosen audience').click()
+            pastor.goto(admin_url);pastor.locator('article').filter(has_text=need).get_by_role('button',name='Approve chosen audience').click()
             bob.goto(url+'?view=mine');bob.locator('article').filter(has_text=need).get_by_role('button',name='Mark answered').click()
             alice.goto(url);assert need not in alice.content()
             alice.goto(url+'?view=praise');assert need not in alice.content()
             submit(bob,praise,kind='praise',audience='members')
             alice.goto(url+'?view=praise');assert praise not in alice.content()
-            pastor.goto(url+'?view=review');pastor.locator('article').filter(has_text=praise).get_by_role('button',name='Approve chosen audience').click()
+            pastor.goto(admin_url);pastor.locator('article').filter(has_text=praise).get_by_role('button',name='Approve chosen audience').click()
             alice.goto(url+'?view=praise');assert alice.get_by_text(praise,exact=True).is_visible()
             assert private_words not in alice.content() and need not in alice.content()
             alice.set_viewport_size({'width':375,'height':850})
@@ -103,5 +137,5 @@ with tempfile.TemporaryDirectory(prefix='kcmc-care-browser-') as tmp:
             assert all(u['role']==v['role'] for u,v in zip(json.loads((private/'users.json').read_text())['users'],users))
             assert not errors,errors
             browser.close()
-        print('PASS: signup/approval, role isolation, CSRF, private audiences, prayer adoption, updates, answered/praise approval, mobile, public exclusion and unchanged legacy/content')
+        print('PASS: personal/admin separation, signup/approval, owner override, role isolation, CSRF, private audiences, prayer adoption, updates, answered/praise approval, mobile, public exclusion and unchanged legacy/content')
     finally:proc.terminate();proc.wait(timeout=10)

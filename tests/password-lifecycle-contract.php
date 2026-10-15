@@ -84,7 +84,10 @@ password_check(str_contains((string)$adminPage, 'kcmc_send_invitation_email'), '
 password_check(!preg_match('/password_hash|current_password|new_password/', (string)$adminPage), 'administrator reset console never handles account passwords');
 
 $memberHome = file_get_contents(__DIR__ . '/../KCMC-Connect-Phase6-Recreated/member/index.php');
-password_check(is_string($memberHome) && str_contains($memberHome, 'member/password.php') && str_contains($memberHome, 'admin/password-resets.php'), 'member home links account security and administrator reset console');
+password_check(is_string($memberHome) && str_contains($memberHome, 'member/password.php'), 'personal dashboard retains account security');
+password_check(str_contains((string)$memberHome, 'admin/home.php') && !str_contains((string)$memberHome, 'admin/password-resets.php'), 'personal dashboard reaches administrative tools through the administration hub');
+$adminHome = file_get_contents(__DIR__ . '/../KCMC-Connect-Phase6-Recreated/admin/home.php');
+password_check(is_string($adminHome) && str_contains($adminHome, 'admin/password-resets.php') && str_contains($adminHome, 'kcmc_can_publish($user)') && str_contains($adminHome, 'if ($publisher)'), 'administrator reset console remains on the role-protected administration hub');
 
 $login = file_get_contents(__DIR__ . '/../KCMC-Connect-Phase6-Recreated/member/login.php');
 password_check(is_string($login) && str_contains($login, 'Forgot your password?') && str_contains($login, "isset(\$_GET['reset'])"), 'sign-in explains password recovery and reset completion');

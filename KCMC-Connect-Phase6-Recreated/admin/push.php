@@ -10,6 +10,8 @@ kcmc_session_start();
 $ready = kcmc_push_delivery_ready();
 $error = '';
 $success = '';
+$warning = '';
+$failures = [];
 
 $allSubscriptions = kcmc_push_active_subscriptions();
 $currentUserId = (string)($user['id'] ?? '');
@@ -50,6 +52,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     continue;
                 }
                 $failed++;
+                $failure = kcmc_push_failure_label($result);
+                $failures[$failure] = ($failures[$failure] ?? 0) + 1;
             }
             $auditCounts = ['sent' => $sent, 'expired' => $expired, 'failed' => $failed];
             if ($scope === 'self') {
@@ -58,7 +62,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 kcmc_audit('push.broadcast_attempted', $auditCounts);
             }
             $label = $scope === 'self' ? 'Device test' : 'Broadcast';
-            $success = "{$label} complete: {$sent} accepted, {$expired} expired subscriptions removed, {$failed} failed.";
+            $summary = "{$label}: {$sent} accepted by the push service, {$expired} expired subscriptions removed, {$failed} failed.";
+            if ($sent === 0) $error = $summary . ' No notification was accepted. Review the details below before retrying.';
+            elseif ($failed > 0) $warning = $summary;
+            else $success = $summary . ' Device display and tap behavior still need to be checked on the device.';
         }
     }
 }
@@ -66,17 +73,19 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 $active = count($allSubscriptions);
 $myActive = count($mySubscriptions);
 ?><!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="robots" content="noindex,nofollow"><title>Push Updates • KCMC Connect</title><link rel="stylesheet" href="<?=kcmc_h(kcmc_url('styles.css?v=3.0.0'))?>"><style>.push-actions{display:grid;gap:18px}.push-action{border:1px solid #d8e0e5;border-radius:14px;padding:16px}.push-action h2{margin-top:0}.push-checklist{padding-left:1.25rem}.push-checklist li{margin:.45rem 0}</style></head>
-<body class="portal-body"><main class="portal-shell portal-narrow"><a class="portal-back" href="<?=kcmc_h(kcmc_url('admin/'))?>">← Publishing desk</a>
+<body class="portal-body"><main class="portal-shell portal-narrow"><a class="portal-back" href="<?=kcmc_h(kcmc_url('admin/home.php'))?>">← Administration</a>
 <section class="portal-card"><p class="eyebrow">PUSH UPDATES</p><h1>Notify subscribed devices</h1>
-<p>This production-safe sender transmits no private content. Subscribed devices receive a generic KCMC Connect update notification and open the public app.</p>
-<p class="portal-fine">Active stored subscriptions: <?=kcmc_h((string)$active)?>. Signed-in account subscriptions: <?=kcmc_h((string)$myActive)?>.</p>
-<?php if (!$ready): ?><p class="portal-alert warning">Delivery is not ready. Configure the VAPID public key, subject and server-only private PEM file before sending.</p><?php endif; ?>
+<p>Send a brief KCMC Connect update to devices that have chosen to receive notifications.</p>
+<p class="portal-fine">Subscribed devices: <?=kcmc_h((string)$active)?>. Devices for your account: <?=kcmc_h((string)$myActive)?>.</p>
+<?php if (!$ready): ?><div class="portal-alert warning"><p>Delivery is not ready. Resolve the server setup below before sending.</p><ul><?php foreach (kcmc_push_delivery_problems() as $problem): ?><li><?=kcmc_h($problem)?></li><?php endforeach; ?></ul></div><?php endif; ?>
 <?php if ($error): ?><p class="portal-alert error" role="alert"><?=kcmc_h($error)?></p><?php endif; ?>
+<?php if ($warning): ?><p class="portal-alert warning" role="status"><?=kcmc_h($warning)?></p><?php endif; ?>
 <?php if ($success): ?><p class="portal-alert success" role="status"><?=kcmc_h($success)?></p><?php endif; ?>
+<?php if ($failures): ?><ul class="portal-alert warning" aria-label="Delivery failure details"><?php foreach ($failures as $failure => $count): ?><li><?=kcmc_h($failure)?>: <?=kcmc_h((string)$count)?></li><?php endforeach; ?></ul><?php endif; ?>
 <div class="push-actions">
-<section class="push-action"><h2>Test my subscribed device</h2><p>Use this first during release verification. It targets only active subscriptions belonging to the account currently signed in here, up to five devices.</p><form class="portal-form" method="post"><input type="hidden" name="csrf" value="<?=kcmc_h(kcmc_csrf())?>"><input type="hidden" name="send_scope" value="self"><label class="portal-check"><input type="checkbox" name="confirm_send" value="1" required><span>Send one generic KCMC test notification only to my subscribed device(s).</span></label><button class="btn gold" type="submit" <?=$ready && $myActive > 0 ? '' : 'disabled'?>>Test my device</button></form></section>
-<section class="push-action"><h2>Final mobile acceptance</h2><p>Complete this once on one authorized mobile device before closing the push release gate.</p><ol class="push-checklist"><li>On the signed-in member Notifications page, enable notifications and confirm this page shows at least one signed-in account subscription.</li><li>Put KCMC Connect in the background, confirm the self-test checkbox above, and select <strong>Test my device</strong>.</li><li>Verify the result reports at least one accepted delivery with no unexpected failure.</li><li>Verify the notification appears while the app is backgrounded, then tap it and confirm KCMC Connect opens.</li><li>Return to the member Notifications page, turn notifications off, and confirm this page returns to zero signed-in account subscriptions for that test device.</li></ol><p class="portal-fine"><strong>No broadcast is required for acceptance.</strong> A real mobile device is still required because CI cannot prove operating-system background delivery or notification tap behavior.</p></section>
-<section class="push-action"><h2>Broadcast to subscribed devices</h2><p>Use this only after the signed-in-device test succeeds and there is an actual church update to send. A maximum of 200 active subscriptions is processed per manual broadcast.</p><form class="portal-form" method="post"><input type="hidden" name="csrf" value="<?=kcmc_h(kcmc_csrf())?>"><input type="hidden" name="send_scope" value="broadcast"><label class="portal-check"><input type="checkbox" name="confirm_send" value="1" required><span>Send one generic KCMC update notification to all active subscribed devices.</span></label><button class="btn gold" type="submit" <?=$ready && $active > 0 ? '' : 'disabled'?>>Send update</button></form></section>
+<section class="push-action"><h2>Test my subscribed device</h2><p>Send a test to notifications enabled for your account on up to five devices.</p><form class="portal-form" method="post"><input type="hidden" name="csrf" value="<?=kcmc_h(kcmc_csrf())?>"><input type="hidden" name="send_scope" value="self"><label class="portal-check"><input type="checkbox" name="confirm_send" value="1" required><span>Send a test only to my devices.</span></label><button class="btn gold" type="submit" <?=$ready && $myActive > 0 ? '' : 'disabled'?>>Test my device</button></form></section>
+<details class="push-action"><summary>Check delivery on your phone</summary><ol class="push-checklist"><li>Open Notifications on your phone and enable notifications. Confirm this page shows a device for your account.</li><li>Put KCMC Connect in the background. From another window or device, select <strong>Test my device</strong> above.</li><li>Check that the push service accepts the test. Review any failure message before retrying.</li><li>Check that the notification appears on your phone, then tap it to open KCMC Connect.</li><li>To test turning notifications off, disable them on that phone. Reload this page and confirm the device count decreases.</li></ol><p class="portal-fine">Use <strong>Test my device</strong> to check delivery. A broadcast is not needed. Acceptance by the push service does not confirm that your phone displayed the notification.</p></details>
+<section class="push-action"><h2>Broadcast to subscribed devices</h2><p>Send an update to everyone who has enabled notifications, up to 200 devices per send.</p><form class="portal-form" method="post"><input type="hidden" name="csrf" value="<?=kcmc_h(kcmc_csrf())?>"><input type="hidden" name="send_scope" value="broadcast"><label class="portal-check"><input type="checkbox" name="confirm_send" value="1" required><span>Send a KCMC update to all subscribed devices.</span></label><button class="btn gold" type="submit" <?=$ready && $active > 0 ? '' : 'disabled'?>>Send update</button></form></section>
 </div>
-<p class="portal-fine">A 30-second guard applies to both actions. Dead subscriptions that return HTTP 404 or 410 are automatically deactivated. Other delivery failures remain active for later review.</p>
+<p class="portal-fine">Wait 30 seconds between sends. Expired device registrations are removed automatically; other failed devices stay registered.</p>
 </section></main></body></html>

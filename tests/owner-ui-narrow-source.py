@@ -6,6 +6,8 @@ import json
 from pathlib import Path
 import subprocess
 
+from workflow_source_layer import Layer
+
 ROOT = Path(__file__).resolve().parents[1]
 PREFIX = 'KCMC-Connect-Phase6-Recreated/'
 BASE = '93c72f4fc430d311e01108d3a30d0561bb701c9d'
@@ -19,6 +21,7 @@ def check(ok, message):
     print('PASS:', message)
 
 def run(git_source):
+    workflows = Layer(ROOT, git_source)
     all_paths = set()
     for name, (sha, expected_paths) in FIXTURES.items():
         raw = (ROOT / 'tests/fixtures' / name).read_bytes()
@@ -36,7 +39,7 @@ def run(git_source):
             for old, new in entry['replacements']:
                 check(expected.count(old.encode()) == 1, path + ': one forward anchor')
                 expected = expected.replace(old.encode(), new.encode(), 1)
-            actual = (ROOT / PREFIX / path).read_bytes()
+            actual = workflows.before(path)
             check(actual == expected and hashlib.sha256(actual).hexdigest() == entry['after_sha256'], path + ': only enumerated target bytes')
             for old, new in reversed(entry['replacements']):
                 check(actual.count(new.encode()) == 1, path + ': one reverse anchor')
@@ -45,11 +48,11 @@ def run(git_source):
     check(len(all_paths) == 4, 'A7 and A5 together touch exactly four existing runtime files')
     # Existing authorization identity and role policy remain authoritative. This
     # helper is deliberately reused rather than replaced by a second owner ID rule.
-    owner_helper = (ROOT / PREFIX / 'lib/operations-owner.php').read_bytes()
+    owner_helper = workflows.before('lib/operations-owner.php')
     check(hashlib.sha256(owner_helper).hexdigest() == '03989956a73a0f5d995e6eb24fe64d722ed7b47558f94103d7cf79778ac2c2ef', 'operations owner guard remains exact')
-    sender = (ROOT / PREFIX / 'admin/push.php').read_bytes()
+    sender = workflows.before('admin/push.php')
     canonical_sender = subprocess.check_output(['git', '-C', str(git_source), 'show', BASE + ':' + PREFIX + 'admin/push.php'])
-    check(sender == canonical_sender, 'push destination authorization and sender remain byte-identical')
+    check(sender == canonical_sender, 'historical push destination authorization and sender remain byte-identical beneath the exact workflow layer')
     print('Narrow owner UI/account source proofs passed.')
 
 if __name__ == '__main__':

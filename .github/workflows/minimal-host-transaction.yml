@@ -6,6 +6,8 @@ on:
       - 'KCMC-Connect-Phase6-Recreated/lib/timeclock.php'
       - 'KCMC-Connect-Phase6-Recreated/member/activate.php'
       - 'KCMC-Connect-Phase6-Recreated/member/reset-password.php'
+      - 'tests/workflow_source_layer.py'
+      - 'tests/fixtures/workflow-journeys-reviewed.json'
       - '.github/workflows/minimal-host-transaction.yml'
   workflow_dispatch:
 permissions:
@@ -17,16 +19,23 @@ jobs:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
         with:
           persist-credentials: false
-      - name: Transaction and independent failure fixtures
+      - name: Fetch exact historical workflow baseline
+        run: git fetch --no-tags origin 00fdd469482564a3511a29a27a99502c24a32845
+      - name: Historical transaction and independent failure fixtures
         run: |
-          python3 tools/kcmc-minimal-repair-oct14/test_installer.py --runtime-root KCMC-Connect-Phase6-Recreated
+          set -euo pipefail
+          kcmc_minimal_historical=$(mktemp -d)
+          trap 'rm -rf -- "$kcmc_minimal_historical"' EXIT
+          python3 tests/workflow_source_layer.py --baseline-output "$kcmc_minimal_historical/app"
+          python3 tools/kcmc-minimal-repair-oct14/test_installer.py --runtime-root "$kcmc_minimal_historical/app"
           python3 tools/kcmc-minimal-repair-oct14/test_independent_safety.py
       - name: Actual PHP 8.2 syntax-only staging, apply, no-op and rollback
         run: |
           set -euo pipefail
           docker pull php@sha256:118ef4fb1db5e866fb604f2f260da81f819a0a1eac87a4083f9194f48e00beee
           kcmc_ci_php=$(mktemp -d)
-          trap 'rm -f -- "$kcmc_ci_php/php"; rmdir -- "$kcmc_ci_php"' EXIT
+          trap 'rm -rf -- "$kcmc_ci_php"' EXIT
+          python3 tests/workflow_source_layer.py --baseline-output "$kcmc_ci_php/app"
           cat > "$kcmc_ci_php/php" <<'SH'
           #!/usr/bin/env bash
           set -euo pipefail
@@ -40,16 +49,22 @@ jobs:
             php@sha256:118ef4fb1db5e866fb604f2f260da81f819a0a1eac87a4083f9194f48e00beee php "$@"
           SH
           chmod 0700 "$kcmc_ci_php/php"
-          PATH="$kcmc_ci_php:$PATH" python3 tools/kcmc-minimal-repair-oct14/verify-stage.py --runtime-root KCMC-Connect-Phase6-Recreated
+          PATH="$kcmc_ci_php:$PATH" python3 tools/kcmc-minimal-repair-oct14/verify-stage.py --runtime-root "$kcmc_ci_php/app"
   python36:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
         with:
           persist-credentials: false
-      - name: Actual Python 3.6 transaction fixtures
+      - name: Actual Python 3.6 historical transaction fixtures
         run: |
+          set -euo pipefail
+          git fetch --no-tags origin 00fdd469482564a3511a29a27a99502c24a32845
+          kcmc_minimal_historical=$(mktemp -d)
+          trap 'rm -rf -- "$kcmc_minimal_historical"' EXIT
+          python3 tests/workflow_source_layer.py --baseline-output "$kcmc_minimal_historical/app"
           docker run --rm --network none --user "$(id -u):$(id -g)" \
             --mount "type=bind,src=$PWD,dst=/source,readonly" \
-            -w /source python:3.6 \
-            bash -c 'set -e; python3 tools/kcmc-minimal-repair-oct14/test_installer.py --runtime-root KCMC-Connect-Phase6-Recreated; python3 tools/kcmc-minimal-repair-oct14/test_independent_safety.py'
+            --mount "type=bind,src=$kcmc_minimal_historical/app,dst=/historical-runtime,readonly" \
+            -w /source python@sha256:f8652afaf88c25f0d22354d547d892591067aa4026a7fa9a6819df9f300af6fc \
+            bash -c 'set -e; python3 tools/kcmc-minimal-repair-oct14/test_installer.py --runtime-root /historical-runtime; python3 tools/kcmc-minimal-repair-oct14/test_independent_safety.py'

@@ -1,7 +1,9 @@
 #!/usr/bin/env python3
-"""Focused acceptance of the installed Tony staff entry and four-page repair.
+"""Historical acceptance of Tony's staff entry and original four-page repair.
 
-Runs a copied real PHP app with synthetic accounts/records in temporary storage.
+Runs the exact reversible workflow preimage with synthetic accounts/records.
+Every original readability assertion remains intact. Current employee and admin
+journeys are verified separately against the current application source.
 No production traffic, credentials, email, push, or church-record mutations.
 Screenshots and measured contrast results use KCMC_RECONCILIATION_OUTPUT.
 """
@@ -21,6 +23,8 @@ import urllib.request
 from zoneinfo import ZoneInfo
 
 from playwright.sync_api import sync_playwright
+
+from workflow_source_layer import Layer
 
 APP = Path(__file__).resolve().parents[1] / "KCMC-Connect-Phase6-Recreated"
 OUT = Path(os.environ.get("KCMC_RECONCILIATION_OUTPUT", "/tmp/kcmc-reconciliation-review"))
@@ -202,11 +206,12 @@ def check_controls_and_keyboard(page, label: str) -> int:
 
 def main() -> None:
     OUT.mkdir(parents=True, exist_ok=True)
+    print('Historical four-page readability: exact workflow preimage; original assertions preserved', flush=True)
     original_content = sha256(APP / "data/content.json")
     with tempfile.TemporaryDirectory(prefix="kcmc-reconciliation-") as td:
         work = Path(td)
         local = work / "app"
-        shutil.copytree(APP, local, ignore=shutil.ignore_patterns("config.php", "private", "backups"))
+        Layer(APP.parent).copy_baseline(local)
         copied_content = sha256(local / "data/content.json")
         private = work / "private"
         private.mkdir(mode=0o750)

@@ -13,6 +13,8 @@ on:
       - 'tests/push-subscription-contract.php'
       - 'tests/push-subscription-contract.cjs'
       - 'tests/push-delivery-contract.php'
+      - 'tests/push-client-runtime.cjs'
+      - 'tests/push-diagnostics-routes.py'
       - '.github/workflows/push-subscription-foundation.yml'
   push:
     branches: [main]
@@ -27,6 +29,8 @@ on:
       - 'tests/push-subscription-contract.php'
       - 'tests/push-subscription-contract.cjs'
       - 'tests/push-delivery-contract.php'
+      - 'tests/push-client-runtime.cjs'
+      - 'tests/push-diagnostics-routes.py'
       - '.github/workflows/push-subscription-foundation.yml'
 
 permissions:
@@ -52,3 +56,5 @@ jobs:
           php tests/push-subscription-contract.php
           php tests/push-delivery-contract.php
           node tests/push-subscription-contract.cjs
+          node tests/push-client-runtime.cjs
+          python3 tests/push-diagnostics-routes.py

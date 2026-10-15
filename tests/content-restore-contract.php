@@ -48,6 +48,15 @@ restore_check(str_contains($page, "kcmc_audit('content.restored'"), 'successful 
 restore_check(!preg_match('/KCMC_USERS|KCMC_INVITES|KCMC_PRAYERS|KCMC_PUSH_SUBSCRIPTIONS/', $page), 'restore page does not access private data stores');
 
 $member = file_get_contents(__DIR__ . '/../KCMC-Connect-Phase6-Recreated/member/index.php');
-restore_check(is_string($member) && str_contains($member, 'admin/restore.php'), 'administrator home links to content restore');
+$desk = file_get_contents(__DIR__ . '/../KCMC-Connect-Phase6-Recreated/admin/index.php');
+$home = file_get_contents(__DIR__ . '/../KCMC-Connect-Phase6-Recreated/admin/home.php');
+$operations = file_get_contents(__DIR__ . '/../KCMC-Connect-Phase6-Recreated/admin/operations.php');
+restore_check(is_string($member) && str_contains($member, "kcmc_url('admin/home.php')"), 'personal account links to the administration hub');
+restore_check(is_string($desk) && str_contains($desk, "kcmc_url('admin/home.php')"), 'Publishing Desk links back to Administration');
+restore_check(is_string($home) && str_contains($home, "kcmc_require_role(['prayer_team', 'pastor_admin', 'recovery_admin'])")
+    && str_contains($home, 'kcmc_private_headers()') && str_contains($home, 'kcmc_is_designated_owner($user)')
+    && preg_match('/if \(\$owner\)\s*\{[^}]*\'admin\/operations\.php\'/s', $home) === 1, 'Administration exposes Operations only to the designated owner');
+restore_check(is_string($operations) && str_contains($operations, 'kcmc_require_operations_owner()')
+    && str_contains($operations, "'href' => 'admin/restore.php'") && str_contains($page, 'kcmc_require_operations_owner()'), 'protected Operations links to content restore');
 
 echo "Guarded content restore contract checks passed.\n";
