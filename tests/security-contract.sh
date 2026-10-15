@@ -19,7 +19,10 @@ grep -Fq '<FilesMatch "(?:\.json(?:\.tmp-[A-Fa-f0-9]+)?|\.ndjson|\.lock)$">' "$a
 grep -q "kcmc_require_role(\['member', 'prayer_team', 'pastor_admin'\])" "$app_dir/member/submit-prayer.php" || fail "Prayer submission role gate is missing"
 grep -q "kcmc_require_role(\['prayer_team', 'pastor_admin'\])" "$app_dir/member/prayer-team.php" || fail "Prayer-team role gate is missing"
 grep -q "kcmc_require_role(\['pastor_admin'\])" "$app_dir/admin/prayers.php" || fail "Pastor approval role gate is missing"
-grep -q "Prayer content is intentionally unavailable" "$app_dir/member/index.php" || fail "Recovery privacy boundary is missing"
+grep -q "Prayer content is intentionally unavailable" "$app_dir/member/prayers.php" || fail "Recovery prayer privacy boundary is missing"
+if grep -Eq 'KCMC_PRAYERS|KCMC_PRAYER_CARE|kcmc_prayer_care_store' "$app_dir/member/index.php"; then
+  fail "The personal account dashboard reads a prayer store"
+fi
 
 if grep -Eq "submit-prayer\.php|KCMC_PRAYERS|name=\"share_with_members\"" "$app_dir/care.php" "$app_dir/index.php"; then
   fail "A public page exposes the private prayer workflow"

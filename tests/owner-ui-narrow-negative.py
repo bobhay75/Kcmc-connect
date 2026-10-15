@@ -8,6 +8,8 @@ import subprocess
 import sys
 import tempfile
 
+from workflow_source_layer import Layer
+
 ROOT = Path(__file__).resolve().parents[1]
 PINS = {
     'push-owner-link-reviewed.json': 'b6ca2c3e1e218627643aa9d5962ccc11b535242bb7e4e5c25303afd776f32042',
@@ -26,7 +28,7 @@ CASES = {
 def run():
     with tempfile.TemporaryDirectory(prefix='kcmc-owner-ui-negative-') as directory:
         app = Path(directory) / 'app'
-        shutil.copytree(ROOT / 'KCMC-Connect-Phase6-Recreated', app)
+        Layer(ROOT).copy_baseline(app)
         for name, sha in PINS.items():
             raw = (ROOT / 'tests/fixtures' / name).read_bytes()
             assert hashlib.sha256(raw).hexdigest() == sha, 'Exact fixture required: ' + name
@@ -48,7 +50,7 @@ def run():
             assert not any(message in output for message in ['Fatal error:', 'headers already sent', 'PHP Warning:']), (
                 'A PHP harness error cannot satisfy a negative control: ' + case)
             print('PASS: prior source fails the intended assertion:', case)
-    print('Three exact prior-source owner UI/account negative controls passed.')
+    print('Three exact historical prior-source owner UI/account negative controls passed.')
 
 
 if __name__ == '__main__': run()

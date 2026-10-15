@@ -13,6 +13,9 @@ on:
       - 'tests/fixtures/push-owner-link-reviewed.json'
       - 'tests/fixtures/owner-account-guard-reviewed.json'
       - 'tests/installed-reconciliation-source.py'
+      - 'tests/workflow_source_layer.py'
+      - 'tests/workflow-source-negative.py'
+      - 'tests/fixtures/workflow-journeys-reviewed.json'
       - '.github/workflows/owner-ui-narrow.yml'
   workflow_dispatch:
 
@@ -46,11 +49,16 @@ jobs:
         run: |
           python3 tests/installed-reconciliation-source.py
           python3 tests/owner-ui-narrow-source.py
-      - name: Real PHP routes with isolated synthetic accounts
+          python3 tests/workflow-source-negative.py
+      - name: Historical real PHP routes on exact workflow preimages
         run: python3 tests/owner-ui-narrow-routes.py
+      - name: Current account and owner authorization route guards
+        run: python3 tests/owner-ui-narrow-routes.py --current-account-guards
       - name: Exact prior-source behavior negative controls
         run: python3 tests/owner-ui-narrow-negative.py
       - name: Existing password lifecycle and owner privacy contracts
         run: |
           php tests/password-lifecycle-contract.php
           php tests/owner-capabilities.php
+      - name: Untouched original password contract on exact historical source
+        run: python3 tests/workflow_source_layer.py --historical-password-contract

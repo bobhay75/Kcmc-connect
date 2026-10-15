@@ -1,9 +1,15 @@
 #!/usr/bin/env python3
-"""Real PHP route execution with temporary accounts and sessions; no sockets or delivery.
+"""Historical and current account guards with real PHP routes; no delivery.
 
 This is a CLI route harness, so it proves PHP authorization, rendered controls and
 store effects, not HTTP transport headers or browser interactions. Each request
 loads unmodified route source in a fresh PHP process and isolated session.
+
+The default suite preserves every original A7/A5 assertion against the exact
+workflow preimage. --current-account-guards additionally runs all compatible
+account/authorization cases on the current app; only the superseded personal
+Send update placement case is historical. Current administrative navigation and
+broadcast journeys have their own required real-route suites.
 """
 import argparse
 import copy
@@ -16,6 +22,8 @@ import shutil
 import subprocess
 import tempfile
 import unittest
+
+from workflow_source_layer import Layer
 
 APP = Path(__file__).resolve().parents[1] / 'KCMC-Connect-Phase6-Recreated'
 PHP = os.environ.get('KCMC_TEST_PHP', 'php')
@@ -218,10 +226,31 @@ class NarrowOwnerRoutes(unittest.TestCase):
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
-    parser.add_argument('--app', type=Path, default=APP)
+    parser.add_argument('--app', type=Path)
     parser.add_argument('--case')
+    parser.add_argument('--current-account-guards', action='store_true')
     args = parser.parse_args()
-    APP = args.app.resolve()
-    suite = unittest.defaultTestLoader.loadTestsFromName(args.case, NarrowOwnerRoutes) if args.case else unittest.defaultTestLoader.loadTestsFromTestCase(NarrowOwnerRoutes)
-    result = unittest.TextTestRunner(verbosity=2).run(suite)
-    raise SystemExit(not result.wasSuccessful())
+    historical = None
+    if args.app:
+        # Explicit app is used by the exact prior-source negative controls.
+        APP = args.app.resolve()
+    elif args.current_account_guards:
+        print('Current application account and owner authorization route checks', flush=True)
+    else:
+        historical = tempfile.TemporaryDirectory(prefix='kcmc-owner-ui-historical-')
+        APP = Layer(APP.parent).copy_baseline(Path(historical.name) / 'app')
+        print('Historical A7/A5 routes: exact workflow preimage, original assertions preserved', flush=True)
+    try:
+        if args.case:
+            suite = unittest.defaultTestLoader.loadTestsFromName(args.case, NarrowOwnerRoutes)
+        elif args.current_account_guards:
+            names = unittest.defaultTestLoader.getTestCaseNames(NarrowOwnerRoutes)
+            suite = unittest.TestSuite(NarrowOwnerRoutes(name) for name in names
+                if name != 'test_send_update_link_matches_existing_owner_route_for_every_role_and_config')
+        else:
+            suite = unittest.defaultTestLoader.loadTestsFromTestCase(NarrowOwnerRoutes)
+        result = unittest.TextTestRunner(verbosity=2).run(suite)
+        raise SystemExit(not result.wasSuccessful())
+    finally:
+        if historical:
+            historical.cleanup()

@@ -8,6 +8,8 @@ on:
       - 'KCMC-Connect-Phase6-Recreated/admin/password-resets.php'
       - 'KCMC-Connect-Phase6-Recreated/member/notifications.php'
       - 'KCMC-Connect-Phase6-Recreated/lib/bootstrap.php'
+      - 'tests/workflow_source_layer.py'
+      - 'tests/fixtures/workflow-journeys-reviewed.json'
       - '.github/workflows/owner-guard-host.yml'
   workflow_dispatch:
 permissions:
@@ -22,15 +24,18 @@ jobs:
           ref: ${{ github.event.pull_request.head.sha || github.sha }}
           persist-credentials: false
       - name: Fetch only exact approved source objects
-        run: git fetch --no-tags origin 93c72f4fc430d311e01108d3a30d0561bb701c9d
+        run: git fetch --no-tags origin 93c72f4fc430d311e01108d3a30d0561bb701c9d 00fdd469482564a3511a29a27a99502c24a32845
       - name: Exact generation, source membership and transactions
         run: |
           set -euo pipefail
+          kcmc_owner_historical=$(mktemp -d)
+          trap 'rm -rf -- "$kcmc_owner_historical"' EXIT
+          python3 tests/workflow_source_layer.py --baseline-output "$kcmc_owner_historical/app"
           cd tools/kcmc-owner-guard-oct15
           sha256sum -c CHECKSUMS.sha256
           python3 -B derive_installer.py
           git diff --exit-code -- installer.py provenance.json
-          python3 -B test_installer.py --runtime-root ../../KCMC-Connect-Phase6-Recreated --git-root ../..
+          python3 -B test_installer.py --runtime-root "$kcmc_owner_historical/app" --git-root ../..
           python3 -B test_inherited_safety.py
       - name: Real PHP8.2 temporary four-file transaction
         run: |
@@ -62,8 +67,14 @@ jobs:
           persist-credentials: false
       - name: Actual Python3.6 exact source and temporary transactions
         run: |
+          set -euo pipefail
+          git fetch --no-tags origin 00fdd469482564a3511a29a27a99502c24a32845
+          kcmc_owner_historical=$(mktemp -d)
+          trap 'rm -rf -- "$kcmc_owner_historical"' EXIT
+          python3 tests/workflow_source_layer.py --baseline-output "$kcmc_owner_historical/app"
           docker run --rm --network none --user "$(id -u):$(id -g)" \
             --mount "type=bind,src=$PWD,dst=/source,readonly" \
+            --mount "type=bind,src=$kcmc_owner_historical/app,dst=/historical-runtime,readonly" \
             -w /source/tools/kcmc-owner-guard-oct15 \
             python@sha256:f8652afaf88c25f0d22354d547d892591067aa4026a7fa9a6819df9f300af6fc \
-            bash -c 'set -e; python3 -B test_installer.py --runtime-root ../../KCMC-Connect-Phase6-Recreated; python3 -B test_inherited_safety.py'
+            bash -c 'set -e; python3 -B test_installer.py --runtime-root /historical-runtime; python3 -B test_inherited_safety.py'

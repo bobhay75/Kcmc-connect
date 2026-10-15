@@ -2,60 +2,18 @@
 require_once __DIR__ . '/../lib/bootstrap.php';
 kcmc_private_headers();
 $user = kcmc_require_login();
+$firstName = trim(explode(' ', (string)($user['display_name'] ?? ''))[0]);
 $prayerAccess = kcmc_has_role(['member', 'prayer_team', 'pastor_admin'], $user);
-$allPrayers = [];
-if ($prayerAccess) {
-    $store = kcmc_read_json_store(KCMC_PRAYERS, ['version' => 1, 'prayers' => []]);
-    $allPrayers = array_values(array_filter($store['prayers'] ?? [], 'is_array'));
-}
-$memberWall = array_values(array_filter($allPrayers, fn(array $prayer): bool => ($prayer['status'] ?? '') === 'approved' && ($prayer['audience'] ?? '') === 'members'));
-usort($memberWall, fn($a, $b) => strcmp((string)($b['created_at'] ?? ''), (string)($a['created_at'] ?? '')));
-$myRequests = array_values(array_filter($allPrayers, fn(array $prayer): bool => ($prayer['submitted_by'] ?? '') === ($user['id'] ?? '')));
-usort($myRequests, fn($a, $b) => strcmp((string)($b['created_at'] ?? ''), (string)($a['created_at'] ?? '')));
-$firstName = trim(explode(' ', (string)$user['display_name'])[0]);
+$administration = kcmc_can_publish($user);
+$ministryWork = kcmc_can_view_private_prayers($user);
 ?><!doctype html>
-<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="robots" content="noindex,nofollow"><title>Member Prayer • KCMC Connect</title><link rel="stylesheet" href="<?=kcmc_h(kcmc_url('styles.css?v=3.0.0'))?>"></head>
-<body class="portal-body"><main class="portal-shell">
-  <header class="portal-top"><div><a class="portal-back" href="<?=kcmc_h(kcmc_url())?>">← KCMC Connect</a><p class="eyebrow">VERIFIED MEMBER AREA</p><h1>Welcome, <?=kcmc_h($firstName)?>.</h1><p class="portal-lead">Prayer stays inside the KCMC family and under pastoral care.</p></div><nav class="portal-actions">
-    <?php if ($prayerAccess): ?><a class="btn gold" href="<?=kcmc_h(kcmc_url('member/prayer-care.php'))?>">Prayer &amp; Care</a><?php endif; ?>
-    <a class="btn secondary" href="<?=kcmc_h(kcmc_url('member/timeclock.php'))?>">Time Clock</a>
-    <?php if (kcmc_can_publish($user)): ?><a class="btn secondary" href="<?=kcmc_h(kcmc_url('admin/'))?>">Publishing</a><?php endif; ?>
-    <?php if (kcmc_can_publish($user)): ?><a class="btn secondary" href="<?=kcmc_h(kcmc_url('admin/health.php'))?>">Release health</a><?php endif; ?>
-    <?php if (kcmc_can_publish($user)): ?><a class="btn secondary" href="<?=kcmc_h(kcmc_url('admin/restore.php'))?>">Content restore</a><?php endif; ?>
-    <?php if (kcmc_can_publish($user)): ?><a class="btn secondary" href="<?=kcmc_h(kcmc_url('admin/audit.php'))?>">Audit history</a><?php endif; ?>
-    <?php if (kcmc_can_publish($user)): ?><a class="btn secondary" href="<?=kcmc_h(kcmc_url('admin/push.php'))?>">Push updates</a><?php endif; ?>
-    <?php if (kcmc_can_manage_users($user)): ?><a class="btn secondary" href="<?=kcmc_h(kcmc_url('admin/users.php'))?>">Members</a><?php endif; ?>
-    <?php if (kcmc_can_manage_users($user)): ?><a class="btn secondary" href="<?=kcmc_h(kcmc_url('admin/password-resets.php'))?>">Password resets</a><?php endif; ?>
-    <?php if (kcmc_can_view_private_prayers($user)): ?><a class="btn secondary" href="<?=kcmc_h(kcmc_url('member/prayer-team.php'))?>">Prayer team</a><?php endif; ?>
-    <a class="btn secondary" href="<?=kcmc_h(kcmc_url('member/notifications.php'))?>">Notifications</a>
-    <a class="btn secondary" href="<?=kcmc_h(kcmc_url('member/password.php'))?>">Account security</a>
-    <form method="post" action="<?=kcmc_h(kcmc_url('member/logout.php'))?>"><input type="hidden" name="csrf" value="<?=kcmc_h(kcmc_csrf())?>"><button class="btn secondary" type="submit">Sign out</button></form>
-  </nav></header>
-  <?php if (!$prayerAccess): ?>
-  <section class="portal-card portal-section"><p class="eyebrow">RECOVERY ACCESS</p><h2>Prayer content is intentionally unavailable.</h2><p>This account can maintain member access and publish public church information, but it cannot read, submit or moderate prayer requests.</p><div class="portal-actions"><a class="btn gold" href="<?=kcmc_h(kcmc_url('admin/users.php'))?>">Manage member access</a><a class="btn secondary" href="<?=kcmc_h(kcmc_url('admin/'))?>">Open publishing</a></div></section>
-  <?php else: ?>
-  <?php if (isset($_GET['submitted'])): ?><p class="portal-alert success">Your request was received securely.</p><?php endif; ?>
-  <div class="portal-grid">
-    <section class="portal-card"><p class="eyebrow">REQUEST PRAYER</p><h2>How can we pray?</h2><p>Pastors and the prayer team can receive your request privately. Sharing with members is optional and always requires pastoral approval.</p>
-      <form class="portal-form" method="post" action="<?=kcmc_h(kcmc_url('member/submit-prayer.php'))?>">
-        <input type="hidden" name="csrf" value="<?=kcmc_h(kcmc_csrf())?>">
-        <label>Prayer or care request<textarea name="message" rows="7" minlength="10" maxlength="2000" required></textarea></label>
-        <label>How should your name appear?<select name="name_display"><option value="anonymous">Anonymous</option><option value="first_name">Use my first name</option></select></label>
-        <label class="portal-check"><input type="checkbox" name="share_with_members" value="1"><span>After a Pastor administrator approves it, share this request on the members-only prayer wall.</span></label>
-        <button class="btn gold" type="submit">Send private request</button>
-      </form>
-    </section>
-    <section class="portal-card"><p class="eyebrow">MEMBERS-ONLY PRAYER WALL</p><h2>Pray with KCMC.</h2>
-      <?php if (!$memberWall): ?><p class="portal-empty">No member-shared requests are currently published.</p><?php endif; ?>
-      <div class="prayer-list"><?php foreach ($memberWall as $prayer): ?><article class="prayer-card">
-        <div class="prayer-meta"><strong><?=kcmc_h((string)($prayer['public_name'] ?? 'Anonymous'))?></strong><time datetime="<?=kcmc_h((string)($prayer['created_at'] ?? ''))?>"><?=kcmc_h(date('M j', strtotime((string)$prayer['created_at'])))?></time></div>
-        <p><?=nl2br(kcmc_h((string)($prayer['message'] ?? '')))?></p>
-      </article><?php endforeach; ?></div>
-    </section>
-  </div>
-  <section class="portal-card portal-section"><p class="eyebrow">MY REQUESTS</p><h2>Your recent submissions</h2>
-    <?php if (!$myRequests): ?><p class="portal-empty">You have not submitted a prayer request.</p><?php endif; ?>
-    <div class="request-status-list"><?php foreach (array_slice($myRequests, 0, 10) as $request): ?><div><span><?=kcmc_h(date('M j, Y', strtotime((string)$request['created_at'])))?></span><strong><?=kcmc_h(ucwords(str_replace('_', ' ', (string)($request['status'] ?? 'received'))))?></strong><small><?=($request['audience'] ?? '') === 'members' ? 'Requested for member sharing' : 'Pastors and prayer team only'?></small></div><?php endforeach; ?></div>
-  </section>
-  <?php endif; ?>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="robots" content="noindex,nofollow"><title>My Account • KCMC Connect</title><link rel="stylesheet" href="<?=kcmc_h(kcmc_url('styles.css?v=3.0.0'))?>"><style>
+.account-shell{max-width:960px}.account-top h1{font-size:clamp(2.4rem,6vw,4.5rem)}.account-top .portal-actions{align-items:flex-start}.account-info{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px;margin:20px 0}.account-info div{min-width:0}.account-info dt{font-weight:700}.account-info dd{margin:4px 0 0;overflow-wrap:anywhere}.account-links{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}.account-link{display:block;border:1px solid #567080;border-radius:12px;padding:16px;text-decoration:none}.account-link strong{display:block}.account-link span{display:block;margin-top:6px;color:var(--muted,#b8c8d4);line-height:1.5}.account-work{margin-top:20px}.account-shell :is(a,button):focus-visible{outline:3px solid #e3b958;outline-offset:4px}@media(max-width:600px){.account-info,.account-links{grid-template-columns:1fr}.account-top{display:block}.account-top .portal-actions{margin:20px 0}}
+</style></head>
+<body class="portal-body"><main class="portal-shell account-shell">
+<header class="portal-top account-top"><div><a class="portal-back" href="<?=kcmc_h(kcmc_url())?>">← Home</a><p class="eyebrow">MY ACCOUNT</p><h1>Welcome<?= $firstName !== '' ? ', '.kcmc_h($firstName) : '' ?>.</h1><p class="portal-lead">Your information and personal settings.</p></div><form method="post" action="<?=kcmc_h(kcmc_url('member/logout.php'))?>"><input type="hidden" name="csrf" value="<?=kcmc_h(kcmc_csrf())?>"><button class="btn secondary" type="submit">Sign out</button></form></header>
+<section class="portal-card"><h2>Your information</h2><dl class="account-info"><div><dt>Name</dt><dd><?=kcmc_h((string)($user['display_name'] ?? ''))?></dd></div><div><dt>Email</dt><dd><?=kcmc_h((string)($user['email'] ?? ''))?></dd></div></dl><p class="portal-fine">Contact the church office if your name or email needs updating.</p>
+<nav class="account-links" aria-label="Personal settings"><a class="account-link" href="<?=kcmc_h(kcmc_url('member/password.php'))?>"><strong>Account security</strong><span>Change your password.</span></a><a class="account-link" href="<?=kcmc_h(kcmc_url('member/notifications.php'))?>"><strong>Notifications</strong><span>Choose updates for this device.</span></a></nav></section>
+<section class="portal-card portal-section"><h2>My church links</h2><nav class="account-links" aria-label="Personal church links"><?php if ($prayerAccess): ?><a class="account-link" href="<?=kcmc_h(kcmc_url('member/prayer-care.php'))?>"><strong>Prayer &amp; Care</strong><span>Share a need, offer prayer or celebrate answered prayer.</span></a><a class="account-link" href="<?=kcmc_h(kcmc_url('member/prayers.php'))?>"><strong>Earlier prayer requests</strong><span>Your existing requests and the approved member prayer wall.</span></a><?php endif; ?><a class="account-link" href="<?=kcmc_h(kcmc_url('member/timeclock.php'))?>"><strong>Staff time clock</strong><span>Clock in or out and request a correction to your time.</span></a></nav></section>
+<?php if ($administration || $ministryWork): ?><section class="account-work"><a class="btn secondary" href="<?=kcmc_h(kcmc_url('admin/home.php'))?>"><?= $administration ? 'Administration' : 'Ministry work' ?></a></section><?php endif; ?>
 </main></body></html>

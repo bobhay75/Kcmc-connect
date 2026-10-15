@@ -22,11 +22,11 @@ push_self_check(str_contains((string)$page, "kcmc_push_deactivate_endpoint((stri
 push_self_check(str_contains((string)$page, "push.self_test_attempted"), 'self-test emits a distinct audit event');
 push_self_check(str_contains((string)$page, "push.broadcast_attempted"), 'broadcast audit event remains intact');
 push_self_check(str_contains((string)$page, 'Test my subscribed device'), 'UI offers signed-in-device verification before broadcast');
-push_self_check(str_contains((string)$page, 'Final mobile acceptance'), 'UI gives the owner an explicit final mobile acceptance checklist');
-push_self_check(str_contains((string)$page, 'No broadcast is required for acceptance.'), 'release acceptance does not require a church-wide broadcast');
-push_self_check(str_contains((string)$page, 'background delivery or notification tap behavior'), 'UI states the real-device-only verification boundary');
+push_self_check(str_contains((string)$page, '<details class="push-action"><summary>Check delivery on your phone</summary>'), 'phone troubleshooting is available without cluttering the send controls');
+push_self_check(str_contains((string)$page, 'A broadcast is not needed.'), 'device verification does not require a church-wide broadcast');
+push_self_check(str_contains((string)$page, 'does not confirm that your phone displayed the notification'), 'UI distinguishes provider acceptance from actual phone receipt');
 push_self_check(str_contains((string)$page, 'send_scope" value="self"'), 'self-test form posts the self scope explicitly');
 push_self_check(str_contains((string)$page, 'send_scope" value="broadcast"'), 'broadcast form posts the broadcast scope explicitly');
-push_self_check(str_contains((string)$page, 'Signed-in account subscriptions:'), 'UI reports only a count for signed-in-account subscriptions');
+push_self_check(str_contains((string)$page, 'Devices for your account:'), 'UI reports only a count for signed-in-account subscriptions');
 push_self_check(!str_contains((string)$page, 'p256dh') && !str_contains((string)$page, "['auth']"), 'push page does not render subscription cryptographic key material');
 echo "Push self-test contract checks passed.\n";

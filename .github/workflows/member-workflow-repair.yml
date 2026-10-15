@@ -1,0 +1,52 @@
+name: KCMC personal workspace and clock workflow
+on:
+  pull_request:
+    paths:
+      - 'KCMC-Connect-Phase6-Recreated/**'
+      - 'tests/member-account-*.py'
+      - 'tests/timeclock-employee-workflow-contract.php'
+      - 'tests/timeclock-route-workflow-contract.py'
+      - 'tests/push-client-runtime.cjs'
+      - 'tests/push-diagnostics-routes.py'
+      - '.github/workflows/member-workflow-repair.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  current-workflows:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          persist-credentials: false
+      - name: Current protected routes and stored-state behavior
+        run: |
+          set -euo pipefail
+          php tests/timeclock-employee-workflow-contract.php
+          python3 tests/timeclock-route-workflow-contract.py
+          python3 tests/member-account-routes.py
+          python3 tests/push-diagnostics-routes.py
+          node --test tests/push-client-runtime.cjs
+          php tests/owner-capabilities.php
+          php tests/password-lifecycle-contract.php
+      - name: Actual HTTP privacy and legacy navigation
+        run: python3 tests/member-account-http.py
+      - name: Browser dependencies
+        run: |
+          python3 -m pip install playwright==1.55.0
+          python3 -m playwright install --with-deps chromium
+      - name: Phone and desktop workspace rendering
+        run: |
+          python3 tests/member-account-render.py
+          python3 tests/signed-in-workflows-browser.py
+      - name: Save synthetic account screenshots
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: member-workspace-renders
+          path: |
+            test-artifacts/member-account
+            test-artifacts/signed-in-workflows
+          if-no-files-found: ignore
+          retention-days: 7

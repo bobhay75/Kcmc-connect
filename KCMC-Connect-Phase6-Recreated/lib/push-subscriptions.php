@@ -70,6 +70,39 @@ function kcmc_push_delivery_ready(): bool {
     return function_exists('curl_init') && function_exists('openssl_sign') && kcmc_push_subject() !== '' && kcmc_push_key_material() !== null;
 }
 
+/** Safe configuration guidance; never return configuration values or key paths. */
+function kcmc_push_delivery_problems(): array {
+    $problems = [];
+    if (!function_exists('curl_init')) $problems[] = 'The server PHP cURL extension is unavailable.';
+    if (!function_exists('openssl_sign')) $problems[] = 'The server PHP OpenSSL extension is unavailable.';
+    if (kcmc_push_public_key() === '') $problems[] = 'The VAPID public key is missing or invalid.';
+    if (kcmc_push_subject() === '') $problems[] = 'The VAPID contact address is missing or invalid.';
+    if (kcmc_push_private_key_file() === '') {
+        $problems[] = 'The server-only VAPID private key file is missing, unreadable or inside the public app.';
+    } elseif (function_exists('openssl_sign') && kcmc_push_public_key() !== '' && kcmc_push_key_material() === null) {
+        $problems[] = 'The VAPID key pair is invalid or does not match. Restore the existing pair before retrying.';
+    }
+    return $problems;
+}
+
+/** Reduce transport results to fixed messages; endpoints and raw errors stay private. */
+function kcmc_push_failure_label(array $result): string {
+    $reason = (string)($result['reason'] ?? '');
+    $known = [
+        'not_ready' => 'Server push configuration is incomplete',
+        'unresolvable_endpoint' => 'The push service could not be resolved to a public address',
+        'vapid_failed' => 'The server could not sign the push request',
+        'curl_init_failed' => 'The server could not start the push connection',
+        'transport_error' => 'The push service connection failed; check server outbound HTTPS and certificate trust',
+    ];
+    if (isset($known[$reason])) return $known[$reason];
+    $status = (int)($result['status'] ?? 0);
+    if (in_array($status, [401, 403], true)) return 'The push service rejected authentication (HTTP ' . $status . '); check the existing VAPID pair and re-enable the affected device';
+    if ($status === 429) return 'The push service rate limit was reached (HTTP 429); wait before retrying';
+    if ($status >= 400 && $status <= 599) return 'The push service rejected the request (HTTP ' . $status . ')';
+    return 'The push service did not accept the request';
+}
+
 function kcmc_push_validate_subscription(array $payload): ?array {
     $endpoint = trim((string)($payload['endpoint'] ?? ''));
     $keys = $payload['keys'] ?? null;

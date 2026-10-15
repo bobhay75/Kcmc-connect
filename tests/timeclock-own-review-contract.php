@@ -17,6 +17,7 @@ function tc_seed(string $subject): array {
         'version' => 1,
         'entries' => [
             ['id'=>'target-shift','user_id'=>$subject,'work_date'=>'2026-09-30','status'=>'submitted',
+             'clock_in_at'=>'2026-09-30T13:00:00+00:00','clock_out_at'=>'2026-09-30T15:00:00+00:00',
              'net_minutes'=>120,'description'=>'Synthetic completed work','category'=>'Other',
              'corrections'=>[['id'=>'historic-correction','reason'=>'Preserve original evidence',
                               'before'=>['net_minutes'=>100],'after'=>['net_minutes'=>120]]]],

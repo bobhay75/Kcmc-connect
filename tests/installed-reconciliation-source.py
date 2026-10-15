@@ -8,6 +8,8 @@ import re
 import subprocess
 import sys
 
+from workflow_source_layer import Layer
+
 ROOT = Path(__file__).resolve().parents[1]
 PREFIX = 'KCMC-Connect-Phase6-Recreated/'
 BASE = '2146af219d2fd23136eae1685f91a2a2caec030e'
@@ -32,6 +34,15 @@ def check(ok, message):
     print('PASS:', message, flush=True)
 
 
+# The current user-requested workflows are an exact reversible layer over the
+# signed 00fdd baseline. Recover it before every historical assertion below;
+# current journeys and roles are tested separately on the current application.
+workflow_layer = Layer(ROOT)
+workflow_paths = set(workflow_layer.paths)
+def before_workflows(name):
+    return workflow_layer.before(name)
+
+
 # Reverse only the separately pinned owner UI and account-target protections.
 # Every older session, owner-role, privacy and deployment assertion remains below.
 owner_ui_fixture_pins = {
@@ -48,7 +59,7 @@ for fixture_name, (fixture_sha, fixture_paths) in owner_ui_fixture_pins.items():
     check(not (set(owner_ui_preimages) & fixture_paths), fixture_name + ': repair layers do not overlap')
     for name, record in fixture['files'].items():
         check(set(record) == {'before_sha256', 'after_sha256', 'replacements'}, name + ': explicit narrow owner byte pins')
-        content = (ROOT / PREFIX / name).read_bytes()
+        content = before_workflows(name)
         check(hashlib.sha256(content).hexdigest() == record['after_sha256'], name + ': exact narrow owner target')
         for old, new in reversed(record['replacements']):
             check(content.count(new.encode()) == 1, name + ': one narrow owner reverse anchor')
@@ -59,7 +70,7 @@ for fixture_name, (fixture_sha, fixture_paths) in owner_ui_fixture_pins.items():
 owner_ui_paths = {PREFIX + name for name in owner_ui_preimages}
 check(len(owner_ui_paths) == 4, 'two independent owner repairs touch exactly four existing runtime files')
 def before_owner_ui(name):
-    return owner_ui_preimages[name] if name in owner_ui_preimages else (ROOT / PREFIX / name).read_bytes()
+    return owner_ui_preimages[name] if name in owner_ui_preimages else before_workflows(name)
 
 
 # Recover exactly the reviewed credential-binding delta before older proofs.
@@ -72,7 +83,7 @@ check(set(credential['files']) == {'lib/bootstrap.php', 'lib/session-lifetime.ph
 credential_preimages = {}
 for name, record in credential['files'].items():
     check(set(record) == {'before_sha256', 'after_sha256', 'replacements'}, name + ': explicit credential-repair byte pins')
-    content = (ROOT / PREFIX / name).read_bytes()
+    content = before_workflows(name)
     check(hashlib.sha256(content).hexdigest() == record['after_sha256'], name + ': exact credential-repair target')
     for old, new in reversed(record['replacements']):
         check(content.count(new.encode()) == 1, name + ': unique reverse credential-repair anchor')
@@ -95,7 +106,7 @@ check(set(fish['files']) == {'index.php', 'public-presentation.css', 'sw.js'}, '
 fish_preimages = {}
 for name, record in fish['files'].items():
     check(set(record) == {'before_sha256', 'after_sha256', 'replacements'}, name + ': explicit fish-only byte pins')
-    content = (ROOT / PREFIX / name).read_bytes()
+    content = before_workflows(name)
     check(hashlib.sha256(content).hexdigest() == record['after_sha256'], name + ': exact fish-only target')
     for old, new in reversed(record['replacements']):
         check(content.count(new.encode()) == 1, name + ': unique reverse fish-only anchor')
@@ -136,7 +147,7 @@ check(set(care['modified']) == {'care.php', 'member/index.php'}, 'only existing 
 check(set(care['new_files']) == {'lib/prayer-care.php', 'member/prayer-care.php'}, 'new private ministry scope is exact')
 care_preimages = {}
 for name, record in care['modified'].items():
-    content = (ROOT / PREFIX / name).read_bytes()
+    content = before_workflows(name)
     check(hashlib.sha256(content).hexdigest() == record['after_sha256'], name + ': exact Prayer and Care target')
     for old, new in reversed(record['replacements']):
         check(content.count(new.encode()) == 1, name + ': unique Prayer and Care reverse anchor')
@@ -167,7 +178,7 @@ for name, record in calendar['modified'].items():
     check(content == source(calendar['source_commit'], PREFIX + name), name + ': canonical calendar baseline')
     calendar_preimages[name] = content
 for name, digest in calendar['new_files'].items():
-    check(hashlib.sha256((ROOT / PREFIX / name).read_bytes()).hexdigest() == digest, name + ': exact read-only calendar helper')
+    check(hashlib.sha256(before_workflows(name)).hexdigest() == digest, name + ': exact read-only calendar helper')
 calendar_paths = {PREFIX + name for name in calendar['modified']} | {PREFIX + name for name in calendar['new_files']}
 def before_calendar(name):
     return calendar_preimages[name] if name in calendar_preimages else before_care(name)
@@ -187,7 +198,7 @@ for name, record in skip['files'].items():
     for old, new in record['replacements']:
         check(patched.count(old.encode()) == 1, name + ': unique skip-link insertion anchor')
         patched = patched.replace(old.encode(), new.encode(), 1)
-    check(hashlib.sha256(patched).hexdigest() == record['after_sha256'] and (ROOT / PREFIX / name).read_bytes() == patched, name + ': exact skip-link insertion only')
+    check(hashlib.sha256(patched).hexdigest() == record['after_sha256'] and before_workflows(name) == patched, name + ': exact skip-link insertion only')
     skip_preimages[name] = before
 skip_paths = {PREFIX + name for name in skip['files']}
 
@@ -213,7 +224,7 @@ def before_post_controls(name):
 for name in post_delta['modified']:
     before_post_controls(name)
 for name, digest in post_delta['new_files'].items():
-    check(hashlib.sha256((ROOT / PREFIX / name).read_bytes()).hexdigest() == digest, name + ': exact new Publisher module')
+    check(hashlib.sha256(before_workflows(name)).hexdigest() == digest, name + ': exact new Publisher module')
 post_paths = {PREFIX + name for name in post_delta['modified']} | {PREFIX + name for name in post_delta['new_files']}
 
 minimal_bytes = (ROOT / 'tests/fixtures/minimal-repair-reviewed.json').read_bytes()
@@ -230,7 +241,7 @@ for name, record in minimal['files'].items():
     for old, new in record['replacements']:
         check(patched.count(old.encode()) == 1, name + ': unique repair anchor')
         patched = patched.replace(old.encode(), new.encode(), 1)
-    check(hashlib.sha256(patched).hexdigest() == record['after_sha256'] and (ROOT / PREFIX / name).read_bytes() == patched, name + ': exact minimal repair only')
+    check(hashlib.sha256(patched).hexdigest() == record['after_sha256'] and before_workflows(name) == patched, name + ': exact minimal repair only')
     minimal_preimages[name] = before
 minimal_paths = {PREFIX + name for name in minimal['files']}
 
@@ -239,12 +250,12 @@ OWNER_ROUTES = ['admin/operations.php', 'admin/health.php', 'admin/audit.php', '
 OWNER_GUARD = b"require_once __DIR__ . '/../lib/operations-owner.php';\nkcmc_require_operations_owner();\n"
 OWNER_BASE = '4225fce8968747ad4f828a9a36087b04fd020484'
 owner_paths = {PREFIX + p for p in OWNER_ROUTES} | {PREFIX + 'lib/operations-owner.php'}
-check(hashlib.sha256((ROOT / PREFIX / 'lib/operations-owner.php').read_bytes()).hexdigest() == '03989956a73a0f5d995e6eb24fe64d722ed7b47558f94103d7cf79778ac2c2ef', 'owner authorization helper matches reviewed implementation')
+check(hashlib.sha256(before_workflows('lib/operations-owner.php')).hexdigest() == '03989956a73a0f5d995e6eb24fe64d722ed7b47558f94103d7cf79778ac2c2ef', 'owner authorization helper matches reviewed implementation')
 for name in OWNER_ROUTES:
     before = source(OWNER_BASE, PREFIX + name)
     anchor = b"require_once __DIR__ . '/../lib/bootstrap.php';\n"
     check(before.count(anchor) == 1, name + ': owner guard has one bootstrap anchor')
-    check((ROOT / PREFIX / name).read_bytes() == before.replace(anchor, anchor + OWNER_GUARD, 1), name + ': exact owner authorization insertion only')
+    check(before_workflows(name) == before.replace(anchor, anchor + OWNER_GUARD, 1), name + ': exact owner authorization insertion only')
 
 home_bytes = (ROOT / 'tests/fixtures/home-audit-reviewed.json').read_bytes()
 check(hashlib.sha256(home_bytes).hexdigest() == 'd1364dae04dd62c91d6620cd7a8d32618c734d07dbaf438c81632ab60d362556', 'homepage repair fixture remains exact')
@@ -581,9 +592,9 @@ check(git_blob(source(BASE, editorial_path)) == 'e7eb008c163a524f036d52b5e8e6203
 subprocess.check_call([sys.executable, str(ROOT / 'tests/editorial-content-source.py')], cwd=ROOT)
 editorial_paths = {editorial_path}
 changed = set(git('diff', '--name-only', BASE, '--', PREFIX).decode().splitlines())
-check(changed == ({PREFIX + p for p in expected} | {PREFIX + p for p in publication} | image_paths | documentation_paths | visitor_paths | appearance_paths | artwork_paths | gallery_repair_paths | owner_paths | home_paths | minimal_paths | editorial_paths | post_paths | skip_paths | calendar_paths | care_paths | owner_access_paths | fish_paths | credential_paths | owner_ui_paths), 'application diff is exact prior scope plus enumerated repairs')
+check(changed == ({PREFIX + p for p in expected} | {PREFIX + p for p in publication} | image_paths | documentation_paths | visitor_paths | appearance_paths | artwork_paths | gallery_repair_paths | owner_paths | home_paths | minimal_paths | editorial_paths | post_paths | skip_paths | calendar_paths | care_paths | owner_access_paths | fish_paths | credential_paths | owner_ui_paths | workflow_paths), 'application diff is exact prior scope plus enumerated repairs')
 changed_since_reconciled = set(git('diff', '--name-only', RECONCILED, '--', PREFIX).decode().splitlines())
-check(changed_since_reconciled == ({PREFIX + p for p in approved} | {PREFIX + 'sw.js'} | {PREFIX + p for p in publication} | image_paths | documentation_paths | visitor_paths | appearance_paths | artwork_paths | gallery_repair_paths | owner_paths | home_paths | minimal_paths | editorial_paths | post_paths | skip_paths | calendar_paths | care_paths | owner_access_paths | fish_paths | credential_paths | owner_ui_paths), 'post-reconciliation diff is exact reviewed source plus enumerated repairs')
+check(changed_since_reconciled == ({PREFIX + p for p in approved} | {PREFIX + 'sw.js'} | {PREFIX + p for p in publication} | image_paths | documentation_paths | visitor_paths | appearance_paths | artwork_paths | gallery_repair_paths | owner_paths | home_paths | minimal_paths | editorial_paths | post_paths | skip_paths | calendar_paths | care_paths | owner_access_paths | fish_paths | credential_paths | owner_ui_paths | workflow_paths), 'post-reconciliation diff is exact reviewed source plus enumerated repairs')
 # Reverse only the mandatory read-only deployment task before the historical proof.
 deployment_bytes = (ROOT / 'tests/fixtures/deployment-preflight-reviewed.json').read_bytes()
 check(hashlib.sha256(deployment_bytes).hexdigest() == '5983e3965249361d1e99afd6896d7c6a1e1c88cb7a03587371df1b6ec7933dfc', 'deployment preflight fixture is exact')
