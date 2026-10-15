@@ -1,0 +1,15 @@
+{
+  "embedded_engines": {
+    "php": "4df2cdef03853c80c96350398b6a5b92cb78722e202debd3279d535fb9e757d7",
+    "skip": "3d92c48e16062af4d75994cdaedbbb4234df58b8c7e86ddf4214817f41dc01db"
+  },
+  "installer_sha256": "9524d49fc365a578d4d82586ed94521a9d05313f4d9de453d1ad4d89d8161308",
+  "php_discovery_sha256": "da19f21fba6901f8eccaa64d4624fe72dba7b68ef7884f6686a2a2d839fc2437",
+  "scope": [
+    "lib/timeclock.php",
+    "member/activate.php",
+    "member/reset-password.php",
+    "app.js"
+  ],
+  "wrapper_only_parent_sha256": "11c33dbd438c614353074cdd8193d5b6fb54d3728baa77dbeef0cebf67e4938a"
+}

@@ -1,0 +1,15 @@
+{
+  "source_commit": "2146af219d2fd23136eae1685f91a2a2caec030e",
+  "files": {
+    ".cpanel.yml": {
+      "before_sha256": "5a1b138bbc0fc417f7fd8928c48a15f75c4dce494fc8b8474f31ba25d6965cdb",
+      "after_sha256": "933bd0497162fc126ace200986e6e8c570b4f872cea5b1e6ca2759c7b7f28b30",
+      "replacements": [
+        [
+          "deployment:\n  tasks:\n",
+          "deployment:\n  tasks:\n    - python3 -I -B tools/check-deployment-divergence.py || exit 1\n"
+        ]
+      ]
+    }
+  }
+}

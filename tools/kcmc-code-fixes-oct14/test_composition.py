@@ -10,6 +10,7 @@ import json
 import os
 from pathlib import Path
 import stat
+import subprocess
 import sys
 import tempfile
 import unittest
@@ -97,7 +98,13 @@ class CompositionTests(unittest.TestCase):
                                  "case \"$*\" in\n  '-n -v') printf 'PHP 8.2.34 (cli)\\n' ;;\n" +
                                  "  '-n -l '*) printf 'No syntax errors detected\\n' ;;\n  *) exit 97 ;;\nesac\n")
         self.php_stub.chmod(0o700)
-        self.engines['php'].PHP = str(self.php_stub)
+        self.real_choose_php82_cli = self.wrapper.choose_php82_cli
+        # Save the real callable rather than stopping/restarting a patcher; this
+        # remains safe with the actual Python 3.6 unittest.mock cleanup behavior.
+        self.php_selection = mock.patch.object(self.wrapper, 'choose_php82_cli',
+                                               return_value=(str(self.php_stub), '8.2.34'))
+        self.php_selection_mock = self.php_selection.start()
+        self.addCleanup(self.php_selection.stop)
         self.sentinels = {'config.php': b'<?php // synthetic private config\n',
                           'data/private/users.json': b'{"synthetic":"users unchanged"}',
                           'data/private/timeclock.json': b'{"synthetic":"records unchanged"}',
@@ -234,12 +241,75 @@ class CompositionTests(unittest.TestCase):
         self.assertFalse(self.php_calls.exists())
         self.assertTrue(all(not module.BACKUPS.exists() for module in self.engines.values()))
 
+    def test_runtime_selection_precedes_both_ready_reports(self):
+        code, output, errors = self.invoke('check')
+        self.assertEqual((code, errors), (0, ''))
+        self.assertLess(output.index('PHP_CLI '), output.index('GROUP php CHECK READY'))
+        self.assertLess(output.index('PHP_CLI '), output.index('GROUP skip CHECK READY'))
+        self.assertEqual(self.engines['php'].PHP, str(self.php_stub))
+        self.php_selection_mock.assert_called_once_with()
+        self.assertFalse(self.php_calls.exists())
+
+    def test_unavailable_runtime_refuses_before_ready_backups_or_writes(self):
+        self.php_selection_mock.side_effect = self.wrapper.Refusal(
+            'No compatible PHP 8.2 CLI found; no backup or live replacement made')
+        for action in ('check', 'apply'):
+            before = self.snapshot()
+            code, output, errors = self.invoke(action)
+            self.assertEqual(code, 1)
+            self.assertIn('No compatible PHP 8.2 CLI found', errors)
+            self.assertNotIn('CHECK READY', output)
+            self.assert_unchanged(before)
+            self.assertTrue(all(not m.BACKUPS.exists() for m in self.engines.values()))
+
+    def test_php_after_does_not_probe_runtime_for_js_only_retry_or_noop(self):
+        self.set_after('php')
+        self.php_selection_mock.side_effect = AssertionError('No probe needed for repaired PHP')
+        self.assertEqual(self.invoke('check')[0], 0)
+        self.assertEqual(self.invoke('apply')[0], 0)
+        self.assertEqual(self.invoke('apply')[0], 0)
+        self.php_selection_mock.assert_not_called()
+        self.assertFalse(self.php_calls.exists())
+        self.assert_state(self.after, self.after)
+
+    def test_rollback_does_not_need_php_runtime(self):
+        self.assertEqual(self.invoke('apply')[0], 0)
+        self.php_selection_mock.side_effect = AssertionError('Rollback restores verified backups')
+        for group in ('skip', 'php'):
+            session = self.sessions(group)[0]
+            code, output, errors = self.invoke('rollback', '--group', group, '--session', session.name)
+            self.assertEqual((code, errors), (0, ''))
+        self.assert_state(self.before, self.before)
+
+    def test_cloudlinux_fallback_is_used_by_full_staged_apply(self):
+        self.php_selection_mock.side_effect = self.real_choose_php82_cli
+        calls = []
+        def command(argv, **kwargs):
+            calls.append(argv)
+            if argv[2] == '-v' and len(calls) <= 2:
+                self.assertTrue(all(not m.BACKUPS.exists() for m in self.engines.values()))
+            if argv[0] == '/opt/cpanel/ea-php82/root/usr/bin/php':
+                raise FileNotFoundError(2, 'Unavailable')
+            self.assertEqual(argv[0], '/opt/alt/php82/usr/bin/php')
+            if argv[2] == '-v':
+                return b'PHP 8.2.34 (cli) (built: test)\n'
+            self.assertEqual(argv[1:3], ['-n', '-l'])
+            return b'No syntax errors detected\n'
+        with mock.patch.object(subprocess, 'check_output', side_effect=command):
+            code, output, errors = self.invoke('apply')
+        self.assertEqual((code, errors), (0, ''))
+        self.assertIn('PHP_CLI /opt/alt/php82/usr/bin/php PHP 8.2.34', output)
+        self.assertEqual(self.engines['php'].PHP, '/opt/alt/php82/usr/bin/php')
+        self.assertEqual(len(calls), 6)
+        self.assert_state(self.after, self.after)
+
     def test_unknown_js_blocks_php_before_any_write(self):
         (self.app / 'app.js').write_bytes(b'// RAW_RECORD_MUST_NOT_APPEAR: unknown newer script\n')
         before = self.snapshot()
         code, output, errors = self.invoke('apply')
         self.assertEqual(code, 1)
         self.assertIn('GROUP skip PREFLIGHT_REFUSED', errors)
+        self.php_selection_mock.assert_not_called()
         self.assertNotIn('RAW_RECORD_MUST_NOT_APPEAR', output + errors)
         self.assert_unchanged(before)
         self.assertTrue(all(not module.BACKUPS.exists() for module in self.engines.values()))
@@ -498,6 +568,63 @@ class CompositionTests(unittest.TestCase):
         self.assertEqual(modules['php'].PHP, '/opt/cpanel/ea-php82/root/usr/bin/php')
         self.assertTrue(all((module.UID, module.GID) == (2162, 2147) for module in modules.values()))
 
+
+class PHPSelectionTests(unittest.TestCase):
+    def setUp(self):
+        self.w=runner()
+    def test_missing_cpanel_runtime_falls_back_to_cloudlinux_cli(self):
+        calls=[]
+        def command(argv,**kwargs):
+            calls.append(argv)
+            self.assertEqual(argv[1:],['-n','-v'])
+            if argv[0]=='/opt/cpanel/ea-php82/root/usr/bin/php':raise FileNotFoundError(2,'Unavailable')
+            return b'PHP 8.2.34 (cli) (built: test)\n'
+        with mock.patch.object(subprocess,'check_output',side_effect=command),mock.patch.object(self.w.shutil,'which',return_value=None):
+            self.assertEqual(self.w.choose_php82_cli(),('/opt/alt/php82/usr/bin/php','8.2.34'))
+        self.assertEqual(len(calls),2)
+    def test_unavailable_fixed_paths_fall_back_to_hosting_path_command(self):
+        def command(argv,**kwargs):
+            if argv[0]=='/usr/local/bin/php':return b'PHP 8.2.27 (cli)\n'
+            raise FileNotFoundError(2,'Unavailable')
+        with mock.patch.object(subprocess,'check_output',side_effect=command),mock.patch.object(self.w.shutil,'which',return_value='/usr/local/bin/php'):
+            self.assertEqual(self.w.choose_php82_cli(),('/usr/local/bin/php','8.2.27'))
+    def test_wrong_versions_and_non_cli_banners_are_rejected(self):
+        banners=[b'PHP 8.1.34 (cli)\n',b'PHP 8.3.1 (cli)\n',b'PHP 8.2.34 (cgi-fcgi)\n',b'PHP 8.2.34 (fpm-fcgi)\n',b'Warning first\nPHP 8.2.34 (cli)\n']
+        for banner in banners:
+            with self.subTest(banner=banner),mock.patch.object(subprocess,'check_output',return_value=banner),mock.patch.object(self.w.shutil,'which',return_value=None):
+                with self.assertRaisesRegex(self.w.Refusal,'No compatible PHP 8.2 CLI'):
+                    self.w.choose_php82_cli()
+    def test_nonzero_exit_and_timeout_are_not_accepted_as_valid_cli(self):
+        failures=[subprocess.CalledProcessError(1,['php'],output=b'PHP 8.2.34 (cli)\n'),subprocess.TimeoutExpired(['php'],8),PermissionError(13,'Unavailable')]
+        for error in failures:
+            with self.subTest(error=type(error).__name__),mock.patch.object(subprocess,'check_output',side_effect=error),mock.patch.object(self.w.shutil,'which',return_value=None):
+                with self.assertRaises(self.w.Refusal):self.w.choose_php82_cli()
+    def test_candidates_are_absolute_and_duplicates_removed(self):
+        with mock.patch.object(self.w.shutil,'which',return_value='/opt/alt/php82/usr/bin/php'):
+            paths=self.w.php82_candidates()
+        self.assertEqual(len(paths),len(set(paths)));self.assertTrue(all(os.path.isabs(path) for path in paths))
+        self.assertEqual(paths[0],'/opt/cpanel/ea-php82/root/usr/bin/php')
+    def test_no_user_php_argument_override(self):
+        with mock.patch.object(sys,'argv',['installer.py','check','--php','/tmp/arbitrary']),contextlib.redirect_stderr(io.StringIO()):
+            with self.assertRaises(SystemExit) as error:self.w.main()
+        self.assertEqual(error.exception.code,2)
+
+class ProvenanceTests(unittest.TestCase):
+    def test_embedded_engines_are_exact_frozen_sibling_sources(self):
+        w = runner()
+        for group, sibling in (('php', 'kcmc-minimal-repair-oct14'),
+                               ('skip', 'kcmc-skip-repair-oct14')):
+            source, expected = w.EMBEDDED[group]
+            raw = (HERE.parent / sibling / 'installer.py').read_bytes()
+            self.assertEqual(source.encode('utf-8'), raw)
+            self.assertEqual(expected, sha(raw))
+        proof = json.loads((HERE / 'provenance.json').read_text())
+        self.assertEqual(proof['installer_sha256'], sha((HERE / 'installer.py').read_bytes()))
+        helper = (HERE / 'installer.py').read_text()
+        helper = helper[helper.index('def php82_candidates():'):helper.index('def preflight(')].rstrip()
+        self.assertEqual(proof['php_discovery_sha256'], sha(helper.encode('utf-8')))
+        self.assertEqual(proof['scope'], ['lib/timeclock.php', 'member/activate.php',
+                                         'member/reset-password.php', 'app.js'])
 
 if __name__ == '__main__':
     unittest.main()

@@ -4,6 +4,7 @@ on:
     paths:
       - 'tools/kcmc-code-fixes-oct14/**'
       - 'tools/kcmc-skip-repair-oct14/**'
+      - 'tools/kcmc-minimal-repair-oct14/**'
       - '.github/workflows/code-fixes-host.yml'
   workflow_dispatch:
 permissions:
@@ -21,8 +22,10 @@ jobs:
         run: |
           set -euo pipefail
           python3 tools/kcmc-code-fixes-oct14/generate_runner.py
-          git diff --exit-code -- tools/kcmc-code-fixes-oct14/installer.py
+          git diff --exit-code -- tools/kcmc-code-fixes-oct14/installer.py tools/kcmc-code-fixes-oct14/provenance.json
+          (cd tools/kcmc-code-fixes-oct14 && sha256sum -c CHECKSUMS.sha256)
           node --check KCMC-Connect-Phase6-Recreated/app.js
+          python3 tools/kcmc-minimal-repair-oct14/test_installer.py --runtime-root KCMC-Connect-Phase6-Recreated
           python3 tools/kcmc-skip-repair-oct14/test_installer.py --runtime-root KCMC-Connect-Phase6-Recreated
           python3 tools/kcmc-code-fixes-oct14/test_composition.py --candidate-root KCMC-Connect-Phase6-Recreated
       - name: Real PHP 8.2 temporary transaction
@@ -58,4 +61,4 @@ jobs:
           docker run --rm --network none --user "$(id -u):$(id -g)" \
             --mount "type=bind,src=$PWD,dst=/source,readonly" \
             -w /source python@sha256:f8652afaf88c25f0d22354d547d892591067aa4026a7fa9a6819df9f300af6fc \
-            bash -c 'set -e; python3 tools/kcmc-skip-repair-oct14/test_installer.py --runtime-root KCMC-Connect-Phase6-Recreated; python3 tools/kcmc-code-fixes-oct14/test_composition.py --candidate-root KCMC-Connect-Phase6-Recreated'
+            bash -c 'set -e; python3 tools/kcmc-minimal-repair-oct14/test_installer.py --runtime-root KCMC-Connect-Phase6-Recreated; python3 tools/kcmc-skip-repair-oct14/test_installer.py --runtime-root KCMC-Connect-Phase6-Recreated; python3 tools/kcmc-code-fixes-oct14/test_composition.py --candidate-root KCMC-Connect-Phase6-Recreated'
