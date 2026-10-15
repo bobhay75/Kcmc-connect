@@ -89,7 +89,7 @@ class CompositionTests(unittest.TestCase):
         self.assertTrue(all(not m.BACKUPS.exists() for m in self.engines.values()))
         for path,value in before.items():self.assertEqual(identity(self.app/path),value)
     def test_cloudlinux_fallback_binds_validated_path_before_stage(self):
-        self.php_selection.stop()
+        self.php_selection_mock.side_effect=self.real_choose_php82_cli
         m=self.engines['livecalendar'];self.install_before('livecalendar')
         calls=[]
         def command(argv,**kwargs):
