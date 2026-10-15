@@ -75,7 +75,10 @@ class Fixture:
         env = {k:v for k,v in os.environ.items() if not k.startswith('KCMC_')}
         env.update(KCMC_PRIVATE_DATA_DIR=str(self.private),KCMC_SETUP_KEY='')
         self.log = (self.root / 'server.log').open('w')
-        self.server = subprocess.Popen(['php','-d','output_buffering=0','-d','zlib.output_compression=0',
+        # These temporary fixtures may replace PHP source to model a competing
+        # write. Never let OPcache reuse a same-second pre-hook compilation.
+        self.server = subprocess.Popen(['php','-d','opcache.enable=0','-d','opcache.enable_cli=0',
+             '-d','output_buffering=0','-d','zlib.output_compression=0',
              '-d','display_errors=1','-d','log_errors=1','-d','session.save_path='+str(self.sessions),
              '-S','127.0.0.1:'+str(port),'-t',str(self.root)],env=env,stdout=self.log,stderr=self.log,start_new_session=True)
         for _ in range(80):

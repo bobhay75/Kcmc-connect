@@ -58,10 +58,13 @@ class SessionCredentialHTTP(unittest.TestCase):
         self.assertIn('/member/login.php?', headers.get('Location', ''))
         self.assertIn('expired=1', headers.get('Location', ''))
     def assert_preserved(self, before, after):
-        self.assertEqual(set(after)-set(before), set(), 'Credential update must add no account schema fields')
-        for field, value in before.items():
-            if field not in ('password_hash', 'updated_at', 'last_login_at'):
-                self.assertEqual(after[field], value, 'Credential update must preserve '+field)
+        # Legacy accounts need not already carry timestamps. Ordinary login and
+        # password updates may add them, but no new authentication/account field
+        # is permitted and every other field must remain exactly as it was.
+        mutable = {'password_hash', 'updated_at', 'last_login_at'}
+        self.assertEqual({key: value for key, value in after.items() if key not in mutable},
+            {key: value for key, value in before.items() if key not in mutable},
+            'Credential update must preserve every field except the password hash and existing mutable timestamps')
     def prepare_race(self, replacement_users):
         # Only the temporary copied app is instrumented. A competing write runs
         # immediately before the production users-store lock, after verification.
@@ -75,6 +78,9 @@ class SessionCredentialHTTP(unittest.TestCase):
                 '    }\n')
         bootstrap.write_text(source.replace(marker, marker+hook))
         self.fixture.write('synthetic-race.json', replacement_users)
+    def assert_race_applied(self):
+        self.assertFalse((self.fixture.private/'synthetic-race.json').exists(),
+            'Synthetic competing credential write must execute before the users-store lock')
     def test_password_change_preserves_only_current_browser_and_lifetime(self):
         actor = self.login(); other = self.login(); issuer = self.login('issuer')
         before = copy.deepcopy(self.fixture.user('member'))
@@ -156,6 +162,7 @@ class SessionCredentialHTTP(unittest.TestCase):
         replacement['users'][1]['password_hash'] = fresh_hash
         self.prepare_race(replacement)
         status, _, body = self.password_change(actor, csrf)
+        self.assert_race_applied()
         self.assertEqual(status, 200)
         self.assertIn('Your account changed.', body)
         self.assertEqual(self.fixture.user('member')['password_hash'], fresh_hash)
@@ -174,6 +181,7 @@ class SessionCredentialHTTP(unittest.TestCase):
                 self.prepare_race(replacement)
                 client = self.fixture.client(); csrf = self.csrf(client, '/member/login.php')
                 status, _, body = client.request('/member/login.php', {'csrf': csrf, 'email': 'member@example.invalid', 'password': OLD_PASSWORD})
+                self.assert_race_applied()
                 self.assertEqual(status, 200)
                 self.assertIn('The email or password was not recognized.', body)
                 self.assertEqual(self.fixture.user('member'), replacement['users'][1], 'Stale rehash must not overwrite newer credential/activation state')
