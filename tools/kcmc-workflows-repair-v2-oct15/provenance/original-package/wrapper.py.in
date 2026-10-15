@@ -1,0 +1,209 @@
+#!/usr/bin/env python3
+"""Pinned KCMC owner/workflows repair; Python3.6+, offline, reversible code only."""
+from __future__ import print_function
+import argparse
+import contextlib
+import hashlib
+import os
+import re
+import shutil
+import subprocess
+import sys
+import types
+
+VARIANTS = ('pre_a7', 'owner_a7')
+ENGINE_IDS = ('owner',) + VARIANTS
+PRIVATE_BACKUP_ROOTS = ('/home/bobsome1/kcmc-workflows-owner-backups',
+    '/home/bobsome1/kcmc-workflows-pre_a7-backups', '/home/bobsome1/kcmc-workflows-owner_a7-backups')
+PHP82_LOCATIONS = ('/opt/cpanel/ea-php82/root/usr/bin/php', '/opt/alt/php82/usr/bin/php',
+    '/opt/alt/php82/usr/bin/php-cli', '/usr/local/bin/ea-php82')
+# EMBEDDED_ENGINES
+# EMBEDDED_PREREQUISITE
+
+
+class Refusal(RuntimeError): pass
+
+
+def require(ok, message):
+    if not ok: raise Refusal(message)
+
+
+def load_engines():
+    require(set(EMBEDDED) == set(ENGINE_IDS), 'Embedded group inventory refused')
+    for key in ENGINE_IDS:
+        source, expected = EMBEDDED[key]
+        require(isinstance(source, str) and hashlib.sha256(source.encode('utf-8')).hexdigest() == expected,
+                'Embedded engine checksum mismatch')
+    engines = {}
+    for key in ENGINE_IDS:
+        module = types.ModuleType('kcmc_workflows_' + key); module.__file__ = '<verified-' + key + '>'
+        exec(compile(EMBEDDED[key][0], module.__file__, 'exec'), module.__dict__); engines[key] = module
+    require(not (set(engines['owner'].PATHS) & set(engines[VARIANTS[0]].PATHS)), 'Code groups overlap')
+    require(engines[VARIANTS[0]].PATHS == engines[VARIANTS[1]].PATHS, 'Workflow profile scope differs')
+    return engines
+
+
+def capture_prerequisite(module):
+    module.caller(); module.inventory(); unused, expected = module.live(PREREQUISITE['path'])
+    module.require(expected['sha256'] == PREREQUISITE['sha256'] and expected['bytes'] == PREREQUISITE['bytes'],
+        'Approved post-session bootstrap required; no repair made. Use diagnose for code hashes only.')
+    module.verify_lease(PREREQUISITE['path'], expected)
+    return expected
+
+
+@contextlib.contextmanager
+def prerequisite_guard(module, captured=None):
+    expected = capture_prerequisite(module) if captured is None else captured
+    module.verify_lease(PREREQUISITE['path'], expected); frozen_locked = module.locked
+    @contextlib.contextmanager
+    def guarded_locked():
+        module.verify_lease(PREREQUISITE['path'], expected)
+        with frozen_locked() as frozen_check:
+            def checked():
+                module.verify_lease(PREREQUISITE['path'], expected); frozen_check()
+                module.verify_lease(PREREQUISITE['path'], expected)
+            checked(); yield checked; checked()
+        module.verify_lease(PREREQUISITE['path'], expected)
+    module.locked = guarded_locked
+    try: yield expected
+    finally: module.locked = frozen_locked
+
+
+def select(engines):
+    matches = []; reasons = []
+    for key in VARIANTS:
+        module = engines[key]; module.caller(); module.inventory(); module.unfinished()
+        try:
+            state, files = module.inspect(); matches.append((key, state, files))
+        except module.Refusal as error:
+            # Refusal messages contain fixed code paths and metadata labels only.
+            reasons.append(key + ': ' + str(error))
+    if matches and all(state == 'after' for key, state, files in matches):
+        require(len(matches) == len(VARIANTS), 'Incomplete common target profile')
+        first = matches[0][2]
+        require(all(all(files[path][1] == first[path][1] and files[path][2] == first[path][2] for path in first)
+                    for unused, state, files in matches), 'Common target lease changed')
+        return 'common_after', 'after', first
+    require(len(matches) == 1 and matches[0][1] == 'before',
+        'Unknown or mixed workflow bundle; no repair made. Use diagnose for code hashes only. ' + '; '.join(reasons))
+    return matches[0]
+
+
+def preflight(engines):
+    captured = capture_prerequisite(engines['owner'])
+    module = engines['owner']; module.unfinished(); owner = module.inspect()
+    selected = select(engines)
+    module.verify_lease(PREREQUISITE['path'], captured)
+    return {'owner': owner, 'workflows': selected}, captured
+
+
+def diagnose(engines):
+    module = engines[VARIANTS[0]]; module.caller(); module.inventory()
+    paths = engines['owner'].PATHS + module.PATHS + (PREREQUISITE['path'],)
+    records = {}
+    for path in paths: records[path] = module.optional_live(path)
+    for path in paths:
+        unused, info, parent = records[path]; module.verify_parent(path, parent); module.verify_lease(path, info)
+    for path in paths:
+        unused, info, parent = records[path]
+        if info is None:
+            print('CODE ' + path + ' ABSENT parent_dev=' + str(parent['dev']) + ' parent_ino=' + str(parent['ino']))
+        else:
+            print('CODE ' + path + ' sha256=' + info['sha256'] + ' bytes=' + str(info['bytes']) +
+                ' mode=' + format(info['mode'], '04o') + ' uid=' + str(info['uid']) + ' gid=' + str(info['gid']) + ' links=' + str(info['nlink']))
+    print('Hashes-only read-only diagnostic complete; no code, backup, private-data or repository operation.')
+
+
+def php82_candidates():
+    candidates = list(PHP82_LOCATIONS); found = shutil.which('php')
+    if found: candidates.append(os.path.abspath(found))
+    result = []
+    for candidate in candidates:
+        if candidate not in result: result.append(candidate)
+    return result
+
+
+def choose_php82_cli():
+    for candidate in php82_candidates():
+        try: version = subprocess.check_output([candidate, '-n', '-v'], stderr=subprocess.STDOUT, timeout=8)
+        except (OSError, subprocess.SubprocessError): continue
+        match = re.match(br'\APHP (8\.2\.[0-9]+) \(cli\)(?:\s|\Z)', version)
+        if match: return candidate, match.group(1).decode('ascii')
+    raise Refusal('No compatible PHP8.2 CLI found; no backup or live replacement made')
+
+
+def report_files(group, state, files):
+    print('GROUP ' + group + ' ' + ('READY' if state == 'before' else 'ALREADY_REPAIRED'))
+    for path, record in files.items():
+        info = record[1]
+        print('CODE ' + path + (' ABSENT' if info is None else ' sha256=' + info['sha256']))
+
+
+def report_session(group, variant, session):
+    if session is None:
+        print('GROUP ' + group + ' ALREADY_REPAIRED; no replacement or new backup.')
+    else:
+        print('GROUP ' + group + ' REPAIRED')
+        print('PRIVATE_ROLLBACK ' + str(session))
+        command = 'python3 installer.py rollback --group ' + group
+        if group == 'workflows': command += ' --variant ' + variant
+        print('ROLLBACK_COMMAND ' + command + ' --session ' + session.name)
+
+
+def main():
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument('action', nargs='?', default='check', choices=('check', 'diagnose', 'apply', 'rollback'))
+    parser.add_argument('--group', choices=('owner', 'workflows')); parser.add_argument('--variant', choices=VARIANTS)
+    parser.add_argument('--session'); args = parser.parse_args(); engines = {}; completed = []
+    try:
+        if args.action == 'rollback':
+            require(args.group is not None and args.session is not None and
+                ((args.group == 'owner' and args.variant is None) or (args.group == 'workflows' and args.variant is not None)),
+                'Rollback requires its exact group/session and workflow variant only when applicable')
+        else:
+            require(args.group is None and args.variant is None and args.session is None, 'No group/variant/session override for check/apply/diagnose')
+        engines = load_engines()
+        if args.action == 'diagnose': diagnose(engines); return 0
+        if args.action == 'rollback':
+            key = 'owner' if args.group == 'owner' else args.variant; module = engines[key]
+            # An unrelated incomplete group remains visible; do not use rollback to bypass it.
+            for other in ENGINE_IDS:
+                if other != key: engines[other].caller(); engines[other].inventory(); engines[other].unfinished()
+            captured = capture_prerequisite(module)
+            with prerequisite_guard(module, captured):
+                session = module.rollback(args.session); module.verify_lease(PREREQUISITE['path'], captured)
+            print('GROUP ' + args.group + ' ROLLED_BACK ' + str(session)); return 0
+        states, captured = preflight(engines)
+        php = None
+        if states['owner'][0] == 'before' or states['workflows'][1] == 'before':
+            php, version = choose_php82_cli(); print('PHP_CLI ' + php + ' PHP ' + version)
+        engines['owner'].verify_lease(PREREQUISITE['path'], captured)
+        if args.action == 'check':
+            report_files('owner', states['owner'][0], states['owner'][1])
+            report_files('workflows', states['workflows'][1], states['workflows'][2])
+            print('CHECK ' + ('ALREADY_REPAIRED' if states['owner'][0] == states['workflows'][1] == 'after' else 'READY'))
+            print('Read-only check complete; no code, backup, private-data or repository operation.'); return 0
+        workflow_variant = states['workflows'][0]
+        key = VARIANTS[0] if workflow_variant == 'common_after' else workflow_variant
+        for group, variant in [('owner', 'owner'), ('workflows', key)]:
+            module = engines[variant]
+            if php is not None: module.PHP = php
+            with prerequisite_guard(module, captured):
+                session = module.apply(); module.verify_lease(PREREQUISITE['path'], captured)
+                state, files = module.inspect(); require(state == 'after', 'Group target verification failed')
+            completed.append(group); report_session(group, variant, session)
+        final, unused = preflight(engines); engines['owner'].verify_lease(PREREQUISITE['path'], captured)
+        require(final['owner'][0] == final['workflows'][1] == 'after', 'Final group target verification failed')
+        print('CHECK ALREADY_REPAIRED; both independent code groups verified. No schedule, email or private record operation.')
+        return 0
+    except BaseException as error:
+        known = (Refusal,) + tuple(module.Refusal for module in engines.values())
+        message = str(error) if isinstance(error, known) else 'Unexpected failure; refused safely'
+        print('REFUSED ' + message, file=sys.stderr)
+        if completed: print('PRIOR_VERIFIED_GROUPS ' + ', '.join(completed) + '; these were not automatically downgraded.', file=sys.stderr)
+        for root in PRIVATE_BACKUP_ROOTS: print('PRIVATE_BACKUP_ROOT ' + root, file=sys.stderr)
+        print('Existing journals, recorded installed leases and uncertain candidates are retained for manual review.', file=sys.stderr)
+        return 1
+
+
+if __name__ == '__main__': sys.exit(main())

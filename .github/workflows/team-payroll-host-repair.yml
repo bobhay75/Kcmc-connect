@@ -1,0 +1,94 @@
+name: KCMC scoped team and payroll hosting repair
+on:
+  pull_request:
+    paths:
+      - 'tools/kcmc-team-payroll-repair-oct15/**'
+      - 'tools/kcmc-workflows-repair-v2-oct15/**'
+      - 'tools/kcmc-team-payroll-host-coordinator-oct15.py'
+      - 'tools/test-team-payroll-host-coordinator-oct15.py'
+      - 'tools/verify-team-payroll-host-coordinator-oct15.py'
+      - 'tools/kcmc-team-payroll-host-oct15-CHECKSUMS.sha256'
+      - 'KCMC-Connect-Phase6-Recreated/lib/**'
+      - 'KCMC-Connect-Phase6-Recreated/admin/**'
+      - 'KCMC-Connect-Phase6-Recreated/member/**'
+      - 'KCMC-Connect-Phase6-Recreated/api/**'
+      - '.github/workflows/team-payroll-host-repair.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  current-python-php:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          persist-credentials: false
+      - name: Fetch only exact reviewed source objects
+        run: git fetch --no-tags origin 3317aed0c4b6a1619f8f68cced6a73fc4a245055 131071542f7985eb5d483d8123764df9319a7e37 00fdd469482564a3511a29a27a99502c24a32845 ba7b5df314e1be604d46443025d41b1c8fe732a4
+      - name: Exact derivation, canonical Git membership and transaction safety
+        run: |
+          set -euo pipefail
+          cd tools/kcmc-team-payroll-repair-oct15
+          sha256sum -c CHECKSUMS.sha256
+          python3 -B derive_installer.py
+          git diff --exit-code -- installer.py provenance.json
+          python3 -B test_installer.py --runtime-root ../../KCMC-Connect-Phase6-Recreated --git-root ../..
+          python3 -B test_existing_safety.py
+          python3 -B test_policy_safety.py
+          node --check evidence/after/member/workspace.js
+          node --check evidence/after/admin/publishing-desk.js
+          node --check evidence/after/admin/event-descriptions.js
+      - name: Corrected core artifact and exact two-release coordination
+        run: |
+          set -euo pipefail
+          sha256sum -c tools/kcmc-team-payroll-host-oct15-CHECKSUMS.sha256
+          cd tools/kcmc-workflows-repair-v2-oct15
+          sha256sum -c CHECKSUMS.sha256
+          python3 -B derive_installer.py
+          git diff --exit-code -- installer.py provenance.json
+          python3 -B test_installer.py --git-root ../..
+          python3 -B test_existing_safety.py
+          python3 -B test_policy_safety.py
+          python3 -B test_v2_safety.py
+          cd ../..
+          python3 -B tools/test-team-payroll-host-coordinator-oct15.py
+      - name: Real PHP8.2 temporary transactions without application execution
+        run: |
+          set -euo pipefail
+          docker pull php@sha256:118ef4fb1db5e866fb604f2f260da81f819a0a1eac87a4083f9194f48e00beee
+          kcmc_team_payroll_php=$(mktemp -d)
+          trap 'rm -f -- "$kcmc_team_payroll_php/php"; rmdir -- "$kcmc_team_payroll_php"' EXIT
+          cat > "$kcmc_team_payroll_php/php" <<'SH'
+          #!/usr/bin/env bash
+          set -euo pipefail
+          if [ "$#" -eq 3 ] && [ "$1" = '-n' ] && [ "$2" = '-l' ]; then
+            kcmc_team_payroll_stage=$(dirname -- "$3")
+            exec docker run --rm --network none --user "$(id -u):$(id -g)" \
+              --mount "type=bind,src=$kcmc_team_payroll_stage,dst=$kcmc_team_payroll_stage,readonly" \
+              php@sha256:118ef4fb1db5e866fb604f2f260da81f819a0a1eac87a4083f9194f48e00beee php "$@"
+          fi
+          exec docker run --rm --network none --user "$(id -u):$(id -g)" \
+            php@sha256:118ef4fb1db5e866fb604f2f260da81f819a0a1eac87a4083f9194f48e00beee php "$@"
+          SH
+          chmod 0700 "$kcmc_team_payroll_php/php"
+          python3 -B tools/kcmc-team-payroll-repair-oct15/verify-stage.py --php "$kcmc_team_payroll_php/php"
+          python3 -B tools/kcmc-workflows-repair-v2-oct15/verify-stage.py --php "$kcmc_team_payroll_php/php"
+          python3 -B tools/verify-team-payroll-host-coordinator-oct15.py --php "$kcmc_team_payroll_php/php"
+  python36:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          persist-credentials: false
+      - name: Actual Python3.6 temporary transactions from read-only package
+        run: |
+          set -euo pipefail
+          docker run --rm --network none --user "$(id -u):$(id -g)" \
+            --mount "type=bind,src=$PWD,dst=/source,readonly" \
+            -w /source \
+            python@sha256:f8652afaf88c25f0d22354d547d892591067aa4026a7fa9a6819df9f300af6fc \
+            bash -c 'set -e; sha256sum -c tools/kcmc-team-payroll-host-oct15-CHECKSUMS.sha256; cd tools/kcmc-team-payroll-repair-oct15; sha256sum -c CHECKSUMS.sha256; python3 -B test_installer.py --runtime-root ../../KCMC-Connect-Phase6-Recreated; python3 -B test_existing_safety.py; python3 -B test_policy_safety.py; cd ../kcmc-workflows-repair-v2-oct15; sha256sum -c CHECKSUMS.sha256; python3 -B test_installer.py; python3 -B test_existing_safety.py; python3 -B test_policy_safety.py; python3 -B test_v2_safety.py; cd ../..; python3 -B tools/test-team-payroll-host-coordinator-oct15.py'

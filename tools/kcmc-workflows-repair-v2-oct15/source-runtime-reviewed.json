@@ -1,0 +1,179 @@
+{
+  "baseline_commit": "00fdd469482564a3511a29a27a99502c24a32845",
+  "paths": [
+    "lib/timeclock.php",
+    "lib/push-subscriptions.php",
+    "member/push-settings.js",
+    "admin/prayer-care.php",
+    "admin/prayer-inbox.php",
+    "member/prayers.php",
+    "admin/timeclock-period-close.php",
+    "admin/home.php",
+    "admin/prayers.php",
+    "member/prayer-care.php",
+    "member/prayer-team.php",
+    "member/submit-prayer.php",
+    "member/timeclock.php",
+    "admin/timecards.php",
+    "admin/push.php",
+    "member/notifications.php",
+    "admin/index.php",
+    "member/index.php"
+  ],
+  "dependencies": {
+    "admin/timeclock-period-close.php": [
+      "lib/timeclock.php"
+    ],
+    "admin/home.php": [
+      "admin/prayer-care.php",
+      "admin/prayer-inbox.php"
+    ],
+    "admin/prayers.php": [
+      "admin/home.php"
+    ],
+    "member/prayer-care.php": [
+      "admin/prayer-care.php"
+    ],
+    "member/prayer-team.php": [
+      "admin/prayer-inbox.php"
+    ],
+    "member/submit-prayer.php": [
+      "member/prayers.php"
+    ],
+    "member/timeclock.php": [
+      "lib/timeclock.php"
+    ],
+    "admin/timecards.php": [
+      "lib/timeclock.php",
+      "admin/home.php"
+    ],
+    "admin/push.php": [
+      "lib/push-subscriptions.php",
+      "admin/home.php"
+    ],
+    "member/notifications.php": [
+      "lib/push-subscriptions.php",
+      "member/push-settings.js"
+    ],
+    "admin/index.php": [
+      "admin/home.php"
+    ],
+    "member/index.php": [
+      "admin/home.php",
+      "member/prayers.php",
+      "member/prayer-care.php",
+      "member/timeclock.php",
+      "member/notifications.php"
+    ]
+  },
+  "files": {
+    "lib/timeclock.php": {
+      "before_sha256": "b7d57844cf775953b242fe8f91ac73f5b8721a2ee72ccfc341df6c675853addc",
+      "before_bytes": 19991,
+      "after_sha256": "41abfa115120faf46487c38449261536553319653dc531331f2f0297dd135636",
+      "after_bytes": 26832
+    },
+    "lib/push-subscriptions.php": {
+      "before_sha256": "9985d52d01558c3db751400ddfaaa92a38b6d251f36b306aa56bc97875be72d3",
+      "before_bytes": 13305,
+      "after_sha256": "ad69b69567d4aad246ba3bb99ea385ecc7c0b4aea2b1b079195ea06cb4923958",
+      "after_bytes": 15515
+    },
+    "member/push-settings.js": {
+      "before_sha256": "35ae8aedbfab07025e40f7510e0852e09dfbb73cd05e3ca06e14bf4c2f807943",
+      "before_bytes": 3463,
+      "after_sha256": "f92ede20083b580ddce13f16c2ce0d3b17238774a5cd56b82d2690766a1a4c99",
+      "after_bytes": 5512
+    },
+    "admin/prayer-care.php": {
+      "before_sha256": null,
+      "before_bytes": 0,
+      "after_sha256": "8ff07b0388da607eab9d0f5978cbca3fccfd672f18f71aba69840fb174287a85",
+      "after_bytes": 246
+    },
+    "admin/prayer-inbox.php": {
+      "before_sha256": null,
+      "before_bytes": 0,
+      "after_sha256": "1761b8b4d702695325a81384267441dac2b3a8dad447ba6f23939775093db93d",
+      "after_bytes": 2044
+    },
+    "member/prayers.php": {
+      "before_sha256": null,
+      "before_bytes": 0,
+      "after_sha256": "ad6f55fda7925e8369e59e314760e38432af410b8525d84ca076ef5b3ba9e52e",
+      "after_bytes": 4755
+    },
+    "admin/timeclock-period-close.php": {
+      "before_sha256": null,
+      "before_bytes": 0,
+      "after_sha256": "2c5926c43dce2b38c00b9d76cf965537dd30af6153d269c6d16d25fdc81dde01",
+      "after_bytes": 631
+    },
+    "admin/home.php": {
+      "before_sha256": null,
+      "before_bytes": 0,
+      "after_sha256": "aea64b933fbc5a3abf5acd75e2812fe98011ea673d77990f7ea7ca8a32a85911",
+      "after_bytes": 3052
+    },
+    "admin/prayers.php": {
+      "before_sha256": "ea2989ab50b4014d8ee24f93beff18d0add3eaa84b2e6c4a7df6857fcd88e65d",
+      "before_bytes": 4055,
+      "after_sha256": "b0f86d582c6318e5d18991939767514a63f73049208bc778d584c30a6f30306d",
+      "after_bytes": 4065
+    },
+    "member/prayer-care.php": {
+      "before_sha256": "cfd1ccf7f2048a533f7b28c9c13e2154db8d8c3d84f6302e46573ca812e2b233",
+      "before_bytes": 11973,
+      "after_sha256": "fc0d6e95228e1dbd716eda34ac742f054f7822c88526c799de4c5941b79000a1",
+      "after_bytes": 13652
+    },
+    "member/prayer-team.php": {
+      "before_sha256": "be2756c50da7aba768b0006f2c4333e43f4dcc1c066cb15f5b54b402034da7e3",
+      "before_bytes": 2034,
+      "after_sha256": "a04546e73e0ba35a67032f6d252070b7b665eff76f1a7d71626a690a05ebb65d",
+      "after_bytes": 434
+    },
+    "member/submit-prayer.php": {
+      "before_sha256": "6400071371b1dd879e3b24ac40e5a12e672dcb9b2a55ebc2bcbe377ed215483c",
+      "before_bytes": 1540,
+      "after_sha256": "715eb60841dd450e98a8e21129d1af9c659ea01a73611f6774df656abaf3f1ab",
+      "after_bytes": 1551
+    },
+    "member/timeclock.php": {
+      "before_sha256": "7864fdee399f90ae5a5bea97fa4c0bf9b5a6a23255f4de31051d21c03bf1663d",
+      "before_bytes": 13589,
+      "after_sha256": "83c40fec83941f52fab10569a7ce503e70fcdcdb67ca46d1d008fb7bdda37529",
+      "after_bytes": 13078
+    },
+    "admin/timecards.php": {
+      "before_sha256": "7c3a0cf6c6558090d85245fc4126a631399cb1ef53faa950e646c1381522ea4e",
+      "before_bytes": 18396,
+      "after_sha256": "2576d0b02dcfd5abf84f90e57e46102ba8cdeb01fdc2829cff5b94fdd27b5bf1",
+      "after_bytes": 21356
+    },
+    "admin/push.php": {
+      "before_sha256": "3977e5f354606b27fe812f6def7303f7caebfd6b75fc80935453550bafc38858",
+      "before_bytes": 7310,
+      "after_sha256": "4d227e4c3799b822d86ecf6a7d1827882154c492a30ec024c5fca55e475d3089",
+      "after_bytes": 7680
+    },
+    "member/notifications.php": {
+      "before_sha256": "ba09e7eb974c1f36ff545cfca6bc9f6ea855933eb74c3db1595ec182c151afcf",
+      "before_bytes": 2365,
+      "after_sha256": "3e426c87454fbcd90603b08d027d93c4ca2d4c827fa313271e2978aabfaaeae1",
+      "after_bytes": 2217
+    },
+    "admin/index.php": {
+      "before_sha256": "26d545a340b26a7a6919e648d9ce7d8c7a779c84ff33a7676d57416d4fbd9e05",
+      "before_bytes": 10477,
+      "after_sha256": "1c9df6db3d15913d64291b3d4594f77a378702ec59e840777762539bcf95ac29",
+      "after_bytes": 10608
+    },
+    "member/index.php": {
+      "before_sha256": "649faced49db64f25f1c61575c13109835cc81f29e48ac97bfc5d9670e47f359",
+      "before_bytes": 6771,
+      "after_sha256": "b8073e15d0cc85bb62fc830d2752ce5d87f7672d9469ebd6df44aad64d2a6b15",
+      "after_bytes": 3904
+    }
+  }
+}

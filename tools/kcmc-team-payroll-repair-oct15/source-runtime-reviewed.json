@@ -1,0 +1,245 @@
+{
+  "baseline_commit": "3317aed0c4b6a1619f8f68cced6a73fc4a245055",
+  "source_commit": "131071542f7985eb5d483d8123764df9319a7e37",
+  "paths": [
+    "lib/bootstrap.php",
+    "lib/operations-owner.php",
+    "lib/publication-drafts.php",
+    "lib/team-workspace.php",
+    "lib/payroll.php",
+    "member/workspace.css",
+    "member/workspace.js",
+    "admin/publishing-desk.js",
+    "admin/event-descriptions.js",
+    "api/team-workspace.php",
+    "admin/publication-projects.php",
+    "admin/save.php",
+    "admin/payroll-setup.php",
+    "admin/timeclock-period-close.php",
+    "admin/timecards-export.php",
+    "admin/timecards-print.php",
+    "admin/timecards.php",
+    "admin/publication-designer.php",
+    "admin/index.php",
+    "member/prayer-care.php",
+    "member/work.php",
+    "admin/home.php",
+    "member/index.php"
+  ],
+  "dependencies": {
+    "lib/operations-owner.php": [
+      "lib/bootstrap.php"
+    ],
+    "lib/publication-drafts.php": [
+      "lib/bootstrap.php"
+    ],
+    "lib/team-workspace.php": [
+      "lib/bootstrap.php"
+    ],
+    "lib/payroll.php": [
+      "lib/bootstrap.php"
+    ],
+    "api/team-workspace.php": [
+      "lib/team-workspace.php"
+    ],
+    "admin/publication-projects.php": [
+      "lib/publication-drafts.php"
+    ],
+    "admin/save.php": [
+      "lib/bootstrap.php"
+    ],
+    "admin/payroll-setup.php": [
+      "lib/operations-owner.php",
+      "lib/payroll.php"
+    ],
+    "admin/timeclock-period-close.php": [
+      "lib/payroll.php"
+    ],
+    "admin/timecards-export.php": [
+      "lib/payroll.php"
+    ],
+    "admin/timecards-print.php": [
+      "lib/payroll.php"
+    ],
+    "admin/timecards.php": [
+      "lib/payroll.php",
+      "admin/timecards-export.php",
+      "admin/timecards-print.php"
+    ],
+    "admin/publication-designer.php": [
+      "lib/bootstrap.php",
+      "admin/publication-projects.php"
+    ],
+    "admin/index.php": [
+      "lib/bootstrap.php",
+      "admin/save.php",
+      "admin/publishing-desk.js",
+      "admin/event-descriptions.js",
+      "admin/publication-designer.php"
+    ],
+    "member/prayer-care.php": [
+      "lib/bootstrap.php"
+    ],
+    "member/work.php": [
+      "lib/bootstrap.php",
+      "api/team-workspace.php",
+      "member/workspace.js",
+      "member/workspace.css"
+    ],
+    "admin/home.php": [
+      "lib/payroll.php",
+      "admin/index.php",
+      "admin/payroll-setup.php",
+      "admin/timecards.php",
+      "member/work.php"
+    ],
+    "member/index.php": [
+      "lib/team-workspace.php",
+      "lib/payroll.php",
+      "member/work.php",
+      "admin/home.php",
+      "member/prayer-care.php",
+      "admin/timecards.php"
+    ]
+  },
+  "files": {
+    "lib/bootstrap.php": {
+      "before_sha256": "d4eecc7375f6e678632b8b88fb8c64faaba6ac43513a59bae42fe673505bc263",
+      "before_bytes": 24274,
+      "after_sha256": "fc1193ac15e46cbacdc2d8ba7cc1300478a424f8893c628250e72c9ce67420e7",
+      "after_bytes": 26316
+    },
+    "lib/operations-owner.php": {
+      "before_sha256": "03989956a73a0f5d995e6eb24fe64d722ed7b47558f94103d7cf79778ac2c2ef",
+      "before_bytes": 591,
+      "after_sha256": "5f8e91462c25c39ab8064b0d9da542e24271d03d02cd1cc8ebb243b8f9618b5f",
+      "after_bytes": 540
+    },
+    "lib/publication-drafts.php": {
+      "before_sha256": null,
+      "before_bytes": 0,
+      "after_sha256": "ce267bca4bd096fea0482e599b4a2c9d171d0b27d427183faf2327772be94084",
+      "after_bytes": 5466
+    },
+    "lib/team-workspace.php": {
+      "before_sha256": null,
+      "before_bytes": 0,
+      "after_sha256": "4912d4778f7114eae25ec960a108dbb09f4cbc4a98988e84befa8fff1ed77959",
+      "after_bytes": 22525
+    },
+    "lib/payroll.php": {
+      "before_sha256": null,
+      "before_bytes": 0,
+      "after_sha256": "710edf2c74cc74dfd972a77b2f24b3e5e11280959ea771732e73258fd77ba670",
+      "after_bytes": 18729
+    },
+    "member/workspace.css": {
+      "before_sha256": null,
+      "before_bytes": 0,
+      "after_sha256": "3ff0bb53688028a8cd779b343bc95b54147904d206f589a77281151f4f8c52eb",
+      "after_bytes": 4927
+    },
+    "member/workspace.js": {
+      "before_sha256": null,
+      "before_bytes": 0,
+      "after_sha256": "a685715d88cd58388015d7215e4680c9b7186a2d74294cda5df4465a9498a127",
+      "after_bytes": 31253
+    },
+    "admin/publishing-desk.js": {
+      "before_sha256": null,
+      "before_bytes": 0,
+      "after_sha256": "a6b44e57125dda9e102542fb9f7792e98beabce3a4f4f346504f0d0c180c34c4",
+      "after_bytes": 1749
+    },
+    "admin/event-descriptions.js": {
+      "before_sha256": "930184189b5b3e77c516453663d8b6c23c45341366159f2d0921cc6f1ca0d42e",
+      "before_bytes": 6306,
+      "after_sha256": "0deb684012f2f24c45379708caa1af66cf1ccbd893c0860d728e5632bbae8504",
+      "after_bytes": 6751
+    },
+    "api/team-workspace.php": {
+      "before_sha256": null,
+      "before_bytes": 0,
+      "after_sha256": "6daf13e688bfa73064ad4e7742a4c2d39b83d86734c0e44355327a57314d597b",
+      "after_bytes": 3119
+    },
+    "admin/publication-projects.php": {
+      "before_sha256": "df4065f13e757f9d9310a8ce01cb1174df94e8dd52f32246c84a010697650312",
+      "before_bytes": 9170,
+      "after_sha256": "21ee196bc31273125d02fb2d4971d3d038e80fc8b35c95e426c3b63a4336eb46",
+      "after_bytes": 10240
+    },
+    "admin/save.php": {
+      "before_sha256": "e000ec88b6db714dc01e03a2b9b510f5962ae89ea8d20cd0c830d4e68933ba6c",
+      "before_bytes": 5171,
+      "after_sha256": "b0126586ade9d983dca656acb77934fdef6ad4faba8e1ed1af3f3de3183ff6b3",
+      "after_bytes": 7194
+    },
+    "admin/payroll-setup.php": {
+      "before_sha256": null,
+      "before_bytes": 0,
+      "after_sha256": "beedeed45403dcc835f2608c341d521ce703e15bcbdd6f2213e3a952c77f99f6",
+      "after_bytes": 7715
+    },
+    "admin/timeclock-period-close.php": {
+      "before_sha256": "2c5926c43dce2b38c00b9d76cf965537dd30af6153d269c6d16d25fdc81dde01",
+      "before_bytes": 631,
+      "after_sha256": "a08b53f82e710a0bef88d1de75928bccab5e239f84085e482c2b9ba8d0cae5dc",
+      "after_bytes": 1980
+    },
+    "admin/timecards-export.php": {
+      "before_sha256": "a2f61246dee060a1e98c3387eb0defafd7122471cff0c8f46517e385f778403a",
+      "before_bytes": 2039,
+      "after_sha256": "7a6aa28899309aa27fce207fa9632490adc6b24b74f2fdbcc9c3bfd77c082775",
+      "after_bytes": 1975
+    },
+    "admin/timecards-print.php": {
+      "before_sha256": "8c8f62af1c545a9a957821c263f1f839834c7d6f86b3c120244e5232a7d85a60",
+      "before_bytes": 4138,
+      "after_sha256": "6936d1327d6b94b8fc6061aad0f56ff49a2a2a1764c863bbead424367a480c67",
+      "after_bytes": 4074
+    },
+    "admin/timecards.php": {
+      "before_sha256": "2576d0b02dcfd5abf84f90e57e46102ba8cdeb01fdc2829cff5b94fdd27b5bf1",
+      "before_bytes": 21356,
+      "after_sha256": "e5d84a3b6268672f567f2826b3de2df722ee7b72be16bb452665f9fdd8456736",
+      "after_bytes": 21497
+    },
+    "admin/publication-designer.php": {
+      "before_sha256": "0a5507d65e570b7ff6983adda3464edd8cd53bb8d4cd9636f91fc37d3e929268",
+      "before_bytes": 39622,
+      "after_sha256": "f889441556ae8a861d08bf2a1306272efc6b5fd7f4861407a9c2fc816d851881",
+      "after_bytes": 43618
+    },
+    "admin/index.php": {
+      "before_sha256": "1c9df6db3d15913d64291b3d4594f77a378702ec59e840777762539bcf95ac29",
+      "before_bytes": 10608,
+      "after_sha256": "259cdff8104abc40d0d798262b55ac2dddd467d49f28c2a838ae0b4f62359912",
+      "after_bytes": 11039
+    },
+    "member/prayer-care.php": {
+      "before_sha256": "fc0d6e95228e1dbd716eda34ac742f054f7822c88526c799de4c5941b79000a1",
+      "before_bytes": 13652,
+      "after_sha256": "d4f3ac6dfbca784f305dfd857ce92b169b0c80a69f3fa3dba81f6c9994d0767d",
+      "after_bytes": 13787
+    },
+    "member/work.php": {
+      "before_sha256": null,
+      "before_bytes": 0,
+      "after_sha256": "fad28f0df05c766d883773dfa51af15ce0864a6af6054f99f8e4e9c85a113873",
+      "after_bytes": 5510
+    },
+    "admin/home.php": {
+      "before_sha256": "aea64b933fbc5a3abf5acd75e2812fe98011ea673d77990f7ea7ca8a32a85911",
+      "before_bytes": 3052,
+      "after_sha256": "1a2aa55a8ad09254166ddee8da28f8b44e7d5730d11fcafceff3afecb7cac051",
+      "after_bytes": 4596
+    },
+    "member/index.php": {
+      "before_sha256": "b8073e15d0cc85bb62fc830d2752ce5d87f7672d9469ebd6df44aad64d2a6b15",
+      "before_bytes": 3904,
+      "after_sha256": "6165173ece50bc22ad562e467381adc99962eb705c9369ad065e586e69b55d33",
+      "after_bytes": 4367
+    }
+  }
+}

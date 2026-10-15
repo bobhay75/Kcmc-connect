@@ -1,0 +1,50 @@
+{
+  "lib/password-lifecycle.php": {
+    "before_sha256": "6ae3f838d154bbe83d2bb5edfa77132cdc006bf9be5236977110e2cf2fd0c85e",
+    "before_bytes": 6046,
+    "after_sha256": "80f49fd1de0a073c5d8a2bb224831e57ba85ad89c2e3e3d2a44db2cb64fa9692",
+    "after_bytes": 6103,
+    "replacements": [
+      [
+        "    if ($actorId === '' || $targetId === '' || hash_equals($actorId, $targetId)) return false;\n    $actorRole = kcmc_role($actor);",
+        "    if ($actorId === '' || $targetId === '' || hash_equals($actorId, $targetId)) return false;\n    if (kcmc_is_designated_owner($target)) return false;\n    $actorRole = kcmc_role($actor);"
+      ]
+    ]
+  },
+  "admin/users.php": {
+    "before_sha256": "7eee24ce34d9d3fabe0fb227f3c92f93d4339f80389d82584b6a58be4c9faed3",
+    "before_bytes": 15525,
+    "after_sha256": "66f3871c779251bc35b0d96b40df2fc36a7d6e357e701f164f50cf06cd848555",
+    "after_bytes": 15783,
+    "replacements": [
+      [
+        "            elseif ($targetId === ($current['id'] ?? '')) $error = 'You cannot disable your own account.';\n",
+        "            elseif ($targetId === ($current['id'] ?? '')) $error = 'You cannot disable your own account.';\n            elseif (kcmc_is_designated_owner($target)) $error = 'Another administrator cannot change the designated owner account.';\n"
+      ],
+      [
+        "<?php if (($member['id'] ?? '') !== ($current['id'] ?? '')): ?><form method=\"post\"><input type=\"hidden\" name=\"csrf\" value=\"<?=kcmc_h(kcmc_csrf())?>\"><input type=\"hidden\" name=\"action\" value=\"set_active\">",
+        "<?php if (($member['id'] ?? '') !== ($current['id'] ?? '') && !kcmc_is_designated_owner($member)): ?><form method=\"post\"><input type=\"hidden\" name=\"csrf\" value=\"<?=kcmc_h(kcmc_csrf())?>\"><input type=\"hidden\" name=\"action\" value=\"set_active\">"
+      ],
+      [
+        "<?php else: ?>Current user<?php endif; ?></span></div><?php endforeach; ?>",
+        "<?php else: ?><?=($member['id'] ?? '') === ($current['id'] ?? '') ? 'Current user' : 'Designated owner account'?><?php endif; ?></span></div><?php endforeach; ?>"
+      ]
+    ]
+  },
+  "admin/password-resets.php": {
+    "before_sha256": "d32838fe3d7483bb4ba6fbd1fc948672d6187bd34c0c47c65c5ed720fd75f4af",
+    "before_bytes": 7967,
+    "after_sha256": "263a233c57c4413378c7839736af4131850dc84f8dac82a6268f829e19107157",
+    "after_bytes": 8206,
+    "replacements": [
+      [
+        "$error = 'This account is outside your password-reset authority. Use Account Security for your own password; elevated administrator resets require the Recovery administrator.';",
+        "$error = kcmc_is_designated_owner($target) ? 'Another administrator cannot reset the designated owner account. The owner can change their password through Account Security.' : 'This account is outside your password-reset authority. Use Account Security for your own password; elevated administrator resets require the Recovery administrator.';"
+      ],
+      [
+        "<?php else: ?><span class=\"portal-fine\">Recovery administrator required</span><?php endif; ?>",
+        "<?php else: ?><span class=\"portal-fine\"><?=kcmc_is_designated_owner($target) ? 'Designated owner account' : 'Recovery administrator required'?></span><?php endif; ?>"
+      ]
+    ]
+  }
+}

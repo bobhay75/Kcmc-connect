@@ -1,0 +1,19 @@
+<?php
+require_once __DIR__ . '/../lib/bootstrap.php';
+kcmc_private_headers();
+$user = kcmc_require_login();
+$firstName = trim(explode(' ', (string)($user['display_name'] ?? ''))[0]);
+$prayerAccess = kcmc_has_role(['member', 'prayer_team', 'pastor_admin'], $user);
+$administration = kcmc_can_publish($user);
+$ministryWork = kcmc_can_view_private_prayers($user);
+?><!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="robots" content="noindex,nofollow"><title>My Account • KCMC Connect</title><link rel="stylesheet" href="<?=kcmc_h(kcmc_url('styles.css?v=3.0.0'))?>"><style>
+.account-shell{max-width:960px}.account-top h1{font-size:clamp(2.4rem,6vw,4.5rem)}.account-top .portal-actions{align-items:flex-start}.account-info{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px;margin:20px 0}.account-info div{min-width:0}.account-info dt{font-weight:700}.account-info dd{margin:4px 0 0;overflow-wrap:anywhere}.account-links{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}.account-link{display:block;border:1px solid #567080;border-radius:12px;padding:16px;text-decoration:none}.account-link strong{display:block}.account-link span{display:block;margin-top:6px;color:var(--muted,#b8c8d4);line-height:1.5}.account-work{margin-top:20px}.account-shell :is(a,button):focus-visible{outline:3px solid #e3b958;outline-offset:4px}@media(max-width:600px){.account-info,.account-links{grid-template-columns:1fr}.account-top{display:block}.account-top .portal-actions{margin:20px 0}}
+</style></head>
+<body class="portal-body"><main class="portal-shell account-shell">
+<header class="portal-top account-top"><div><a class="portal-back" href="<?=kcmc_h(kcmc_url())?>">← Home</a><p class="eyebrow">MY ACCOUNT</p><h1>Welcome<?= $firstName !== '' ? ', '.kcmc_h($firstName) : '' ?>.</h1><p class="portal-lead">Your information and personal settings.</p></div><form method="post" action="<?=kcmc_h(kcmc_url('member/logout.php'))?>"><input type="hidden" name="csrf" value="<?=kcmc_h(kcmc_csrf())?>"><button class="btn secondary" type="submit">Sign out</button></form></header>
+<section class="portal-card"><h2>Your information</h2><dl class="account-info"><div><dt>Name</dt><dd><?=kcmc_h((string)($user['display_name'] ?? ''))?></dd></div><div><dt>Email</dt><dd><?=kcmc_h((string)($user['email'] ?? ''))?></dd></div></dl><p class="portal-fine">Contact the church office if your name or email needs updating.</p>
+<nav class="account-links" aria-label="Personal settings"><a class="account-link" href="<?=kcmc_h(kcmc_url('member/password.php'))?>"><strong>Account security</strong><span>Change your password.</span></a><a class="account-link" href="<?=kcmc_h(kcmc_url('member/notifications.php'))?>"><strong>Notifications</strong><span>Choose updates for this device.</span></a></nav></section>
+<section class="portal-card portal-section"><h2>My church links</h2><nav class="account-links" aria-label="Personal church links"><?php if ($prayerAccess): ?><a class="account-link" href="<?=kcmc_h(kcmc_url('member/prayer-care.php'))?>"><strong>Prayer &amp; Care</strong><span>Share a need, offer prayer or celebrate answered prayer.</span></a><a class="account-link" href="<?=kcmc_h(kcmc_url('member/prayers.php'))?>"><strong>Earlier prayer requests</strong><span>Your existing requests and the approved member prayer wall.</span></a><?php endif; ?><a class="account-link" href="<?=kcmc_h(kcmc_url('member/timeclock.php'))?>"><strong>Staff time clock</strong><span>Clock in or out and request a correction to your time.</span></a></nav></section>
+<?php if ($administration || $ministryWork): ?><section class="account-work"><a class="btn secondary" href="<?=kcmc_h(kcmc_url('admin/home.php'))?>"><?= $administration ? 'Administration' : 'Ministry work' ?></a></section><?php endif; ?>
+</main></body></html>

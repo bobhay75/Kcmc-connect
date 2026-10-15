@@ -1,0 +1,53 @@
+{
+  "frozen_engine_sha256": "4df2cdef03853c80c96350398b6a5b92cb78722e202debd3279d535fb9e757d7",
+  "baseline_commit": "00fdd469482564a3511a29a27a99502c24a32845",
+  "source_commit": "ba7b5df314e1be604d46443025d41b1c8fe732a4",
+  "input_sha256": {
+    "extension.py": "78eb5ffa7cb36ce34dfa6cdf8af80bc11c304f0b7b25bcf75536f893952d0648",
+    "source-runtime-reviewed.json": "9775522457d5f77b7dc8f5cc6d37a9d95ab3888adf04ceed2490fe13bad3b9e8",
+    "runtime-reviewed.json": "e52f907a256e501e881c68ce790e6260ed9bddb2af911f44d401cafb8ed7c46f",
+    "owner-runtime-reviewed.json": "817ded563dde8678b75e33993cad163410d09401833162b67f183e3f32cf1eea",
+    "prerequisite-reviewed.json": "2b05802509a335d3dd5af320224c408d7d7cacc38821ede2b9ad18f98775f33e"
+  },
+  "embedded_engines": {
+    "owner": "46c6f374ffd67a263bc32b65d9132fa6f1b007ddc990d9efab35b07d66a7f0d5",
+    "pre_a7": "57c642bb608ff57a498060b1409b2a0881280e1bdbb6047906e848996cb05e83",
+    "owner_a7": "1d4ebcaead9034461fca2ea64701a07dbc2026d80e3c2946902024eaf7a36368"
+  },
+  "installer_sha256": "ccf83b72da0e05bf1729a140ae4a93c49367e108970a26e6128f0eee23b892a8",
+  "groups": {
+    "owner": [
+      "lib/password-lifecycle.php",
+      "admin/users.php",
+      "admin/password-resets.php"
+    ],
+    "workflows": [
+      "lib/timeclock.php",
+      "lib/push-subscriptions.php",
+      "member/push-settings.js",
+      "admin/prayer-care.php",
+      "admin/prayer-inbox.php",
+      "member/prayers.php",
+      "admin/timeclock-period-close.php",
+      "admin/home.php",
+      "admin/prayers.php",
+      "member/prayer-care.php",
+      "member/prayer-team.php",
+      "member/submit-prayer.php",
+      "member/timeclock.php",
+      "admin/timecards.php",
+      "admin/push.php",
+      "member/notifications.php",
+      "admin/index.php",
+      "member/index.php"
+    ]
+  },
+  "read_only_prerequisite": {
+    "path": "lib/bootstrap.php",
+    "sha256": "d4eecc7375f6e678632b8b88fb8c64faaba6ac43513a59bae42fe673505bc263",
+    "bytes": 24274
+  },
+  "owner_policy": "Frozen existing-file engine with metadata, .code stage suffix and pinned stage lint only.",
+  "workflows_policy": "Explicit finite ten-function absence/dependency extension; frozen existing-file mover retained unchanged.",
+  "coordination": "Preflight both independent groups before apply; owner then workflows; preserve/report prior verified group success on a later failure; common after tuple coalesced."
+}
