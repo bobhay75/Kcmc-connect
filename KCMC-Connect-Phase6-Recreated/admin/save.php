@@ -3,18 +3,33 @@ require_once __DIR__ . '/../lib/bootstrap.php';
 require_once __DIR__ . '/../lib/backup-retention.php';
 $user = kcmc_require_role(['pastor_admin', 'recovery_admin']);
 kcmc_private_headers();
-if ($_SERVER['REQUEST_METHOD']!=='POST' || !kcmc_verify_csrf($_POST['csrf']??null)) { http_response_code(403); exit('Invalid request'); }
-if ((string)($_POST['confirm_publish'] ?? '') !== '1') { http_response_code(422); exit('Review the changes and confirm that they are ready to publish.'); }
+function kcmc_publish_fail(string $message, int $status): never {
+    http_response_code($status);
+    if (str_contains((string)($_SERVER['HTTP_ACCEPT'] ?? ''), 'application/json')) {
+        header('Content-Type: application/json; charset=utf-8');
+        echo json_encode(['ok'=>false, 'error'=>$message], JSON_UNESCAPED_UNICODE|JSON_UNESCAPED_SLASHES);
+    } else {
+        header('Content-Type: text/html; charset=utf-8');
+        $copy = $_POST; unset($copy['csrf']);
+        echo '<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Publishing • KCMC Connect</title></head><body><main><h1>Changes were not published</h1><p role="alert">' . kcmc_h($message) . '</p><p><a href="' . kcmc_h(kcmc_url('admin/')) . '">Back to Publishing</a> · <a href="' . kcmc_h(kcmc_url()) . '">Home</a></p><details><summary>Copy your unsaved input before reloading</summary><textarea readonly rows="18" cols="70">' . kcmc_h(json_encode($copy, JSON_PRETTY_PRINT|JSON_UNESCAPED_UNICODE|JSON_UNESCAPED_SLASHES) ?: '') . '</textarea></details></main></body></html>';
+    }
+    exit;
+}
+if ($_SERVER['REQUEST_METHOD']!=='POST' || !is_string($_POST['csrf']??null) || !kcmc_verify_csrf($_POST['csrf'])) { kcmc_publish_fail('Invalid request. Your changes were not published.', 403); }
+if ((string)($_POST['confirm_publish'] ?? '') !== '1') { kcmc_publish_fail('Review the changes and confirm that they are ready to publish.', 422); }
+$version = is_string($_POST['version'] ?? null) ? $_POST['version'] : '';
+if (!preg_match('/\A[a-f0-9]{64}\z/', $version)) kcmc_publish_fail('This editor is out of date. Copy your changes before opening the latest version.', 428);
+if (!hash_equals($version, hash_file('sha256', KCMC_DATA) ?: '')) kcmc_publish_fail('Content changed. Your edits are still here. Open the latest version in another tab to compare before publishing.', 409);
 $data=kcmc_content();
 $contactEmail=kcmc_normalize_email((string)($_POST['contact_email']??''));
-if(!kcmc_valid_email($contactEmail)){http_response_code(422);exit('Enter a valid church contact email.');}
+if(!kcmc_valid_email($contactEmail)){kcmc_publish_fail('Enter a valid church contact email.', 422);}
 $data['contact']['phone']=trim((string)($_POST['contact_phone']??''));
 $data['contact']['email']=$contactEmail;
 $data['contact']['office_hours']=trim((string)($_POST['contact_hours']??''));
 $data['contact']['address']=trim((string)($_POST['contact_address']??''));
 $announcements=is_array($data['announcements']??null)?$data['announcements']:[];
 $requestedAnnouncementId=(string)($_POST['announcement_id']??'');
-foreach($announcements as $savedAnnouncement){if(is_array($savedAnnouncement)&&($savedAnnouncement['id']??'')===$requestedAnnouncementId&&!empty($savedAnnouncement['deleted_at'])){http_response_code(409);exit('This announcement was deleted. Reload the Publishing Desk.');}}
+foreach($announcements as $savedAnnouncement){if(is_array($savedAnnouncement)&&($savedAnnouncement['id']??'')===$requestedAnnouncementId&&!empty($savedAnnouncement['deleted_at'])){kcmc_publish_fail('This announcement was deleted. Your input is still here; review the latest Publishing Desk.', 409);}}
 $announcementIndex=null;
 foreach($announcements as $i=>$announcement){
     if(is_array($announcement)&&empty($announcement['deleted_at'])&&($announcement['id']??'')===$requestedAnnouncementId&&!in_array($requestedAnnouncementId,KCMC_RETIRED_CONTENT_IDS,true)){$announcementIndex=(int)$i;break;}
@@ -48,27 +63,27 @@ foreach($postedEvents as $i=>$p){
     $startMinutes=kcmc_event_time_minutes($data['events'][$i]['time']);
     $endMinutes=kcmc_event_time_minutes((string)($data['events'][$i]['end_time']??''));
     if($status==='published' && !kcmc_valid_event_date($date)){
-        http_response_code(422);
-        exit('Each published event must have a valid date.');
+        kcmc_publish_fail('Each published event must have a valid date.', 422);
     }
     if($data['events'][$i]['time']!=='' && $startMinutes===null){
-        http_response_code(422);
-        exit('Event start time must use a format such as 4:30 PM.');
+        kcmc_publish_fail('Event start time must use a format such as 4:30 PM.', 422);
     }
     if((string)($data['events'][$i]['end_time']??'')!=='' && $endMinutes===null){
-        http_response_code(422);
-        exit('Event end time must use a format such as 6:30 PM.');
+        kcmc_publish_fail('Event end time must use a format such as 6:30 PM.', 422);
     }
     if($startMinutes!==null && $endMinutes!==null && $endMinutes<=$startMinutes){
-        http_response_code(422);
-        exit('Event end time must be later than the start time.');
+        kcmc_publish_fail('Event end time must be later than the start time.', 422);
     }
     $data['events'][$i]['status']=$status;
     $ex=trim((string)($p['expires']??''));
     $data['events'][$i]['expires_at']=kcmc_local_datetime_iso($ex,true);
 }
-kcmc_write_content($data,(string)$user['display_name']);
+try { $savedVersion = kcmc_write_content($data,(string)$user['display_name'],$version,true); }
+catch (RuntimeException $e) { kcmc_publish_fail('Content changed or storage is unavailable. Your input is still here. Review the latest version before trying again.', 409); }
 $rotation=kcmc_prune_content_backups(KCMC_BACKUPS);
 kcmc_audit('content.published', ['content_version' => '3.0.0']);
 if(($rotation['removed']??0)>0||($rotation['failed']??0)>0)kcmc_audit('content.backups_rotated',['removed'=>(int)($rotation['removed']??0),'failed'=>(int)($rotation['failed']??0),'kept'=>(int)($rotation['kept']??0)]);
-header('Location: ' . kcmc_url('admin/?msg=' . rawurlencode('Published successfully. Backup created automatically.')));
+if (str_contains((string)($_SERVER['HTTP_ACCEPT'] ?? ''), 'application/json')) {
+    header('Content-Type: application/json; charset=utf-8');
+    echo json_encode(['ok'=>true, 'version'=>$savedVersion]);
+} else header('Location: ' . kcmc_url('admin/?msg=' . rawurlencode('Published successfully. Backup created automatically.')));

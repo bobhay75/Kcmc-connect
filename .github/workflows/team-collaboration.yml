@@ -1,0 +1,72 @@
+name: KCMC team collaboration prototype
+on:
+  pull_request:
+    paths:
+      - 'KCMC-Connect-Phase6-Recreated/**'
+      - 'tests/**'
+      - '.github/workflows/team-collaboration.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  contracts:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          persist-credentials: false
+      - name: Supported PHP runtime and syntax
+        run: |
+          php -v
+          php -r 'if (PHP_VERSION_ID < 80200 || PHP_VERSION_ID >= 90000) exit(1);'
+          for file in KCMC-Connect-Phase6-Recreated/lib/{bootstrap,operations-owner,team-workspace,publication-drafts}.php KCMC-Connect-Phase6-Recreated/api/team-workspace.php KCMC-Connect-Phase6-Recreated/admin/{index,save,home,publication-projects,publication-designer}.php KCMC-Connect-Phase6-Recreated/member/{index,prayer-care,work}.php; do php -l "$file"; done
+          node --check KCMC-Connect-Phase6-Recreated/member/workspace.js
+          node --check KCMC-Connect-Phase6-Recreated/admin/publishing-desk.js
+          node --check KCMC-Connect-Phase6-Recreated/admin/event-descriptions.js
+      - name: Real storage, authorization, revision and privacy checks
+        run: |
+          php tests/team-workspace-contract.php
+          python3 tests/team-workspace-routes.py
+          python3 tests/publication-collaboration-routes.py
+          python3 tests/workspace-client-entries.py
+          python3 tests/member-account-routes.py
+          php tests/publication-project-retention-contract.php
+          php tests/publication-designer-contract.php
+          php tests/publishing-review-guard-contract.php
+          php tests/owner-capabilities.php
+          php tests/session-credential-contract.php
+      - name: Actual client behavior and existing review guard
+        run: |
+          node tests/workspace-client-vm.js
+          node tests/workspace-client-sort.js
+          node tests/publication-collaboration-client.cjs
+          node tests/publishing-desk-client.cjs
+          node tests/event-description-behavior.cjs
+          node tests/publishing-review-guard-contract.cjs
+  offline-browser:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          persist-credentials: false
+      - name: Install browser fixture dependencies
+        run: |
+          python3 -m pip install --disable-pip-version-check playwright
+          python3 -m playwright install --with-deps chromium
+      - name: Synthetic team and publisher journeys
+        env:
+          KCMC_WORKSPACE_SCREENSHOT: collaboration-artifacts/workspace-phone.png
+          KCMC_COLLABORATION_ARTIFACTS: collaboration-artifacts
+        run: |
+          set -euo pipefail
+          mkdir -p collaboration-artifacts
+          python3 tests/workspace-client-browser.py | tee collaboration-artifacts/workspace.txt
+          python3 tests/collaboration-browser.py | tee collaboration-artifacts/publisher.txt
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: kcmc-collaboration-prototype
+          path: collaboration-artifacts/
+          retention-days: 7

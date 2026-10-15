@@ -39,6 +39,8 @@ button,input,select,textarea{font:inherit}.shell{min-height:100vh;display:grid;g
     <button class="btn" id="redoBtn" type="button" disabled title="Redo (Ctrl/Cmd+Shift+Z or Ctrl+Y)">Redo</button>
     <button class="btn" id="duplicateBtn">Duplicate</button>
     <button class="btn" id="saveBtn">Save</button>
+    <button class="btn" id="saveCopyBtn" hidden type="button">Save a copy</button>
+    <button class="btn" id="loadLatestBtn" hidden type="button">Load latest</button>
     <button class="btn primary" id="printBtn">Print / Save PDF</button>
   </div>
 </header>
@@ -133,6 +135,7 @@ const csrf=<?=json_encode(kcmc_csrf(), JSON_UNESCAPED_SLASHES)?>;
 const pageSize=document.getElementById('pageSize'),orientation=document.getElementById('orientation');
 const imagePicker=document.getElementById('imagePicker'),sharedMediaLibrary=document.getElementById('sharedMediaLibrary');
 const props=document.getElementById('properties'),noSel=document.getElementById('noSelection');
+let projectRevision=0,lastSavedFingerprint=null,remoteChange=false,watchTimer=null,watchInFlight=false,watchStopped=false,watchDelay=10000;
 let selected=null,drag=null,projectId=null,currentPageIndex=0,pageState=[],projectGeneration=0,canvasGeneration=0,saveInFlight=false,undoStack=[],redoStack=[],historyRestoring=false;
 const inch=96,sizes={letter:[8.5,11],half:[5.5,8.5],postcard:[4,6]};
 function setStatus(t){status.textContent=t}
@@ -280,24 +283,46 @@ function updatePageControls(){const count=Math.max(1,pageState.length);document.
 function renderPageData(p){canvasGeneration++;pageSize.value=p?.pageSize||'letter';orientation.value=p?.orientation||'portrait';applyPage();page.innerHTML='';(p?.items||[]).forEach(restoreItem);clearSelection();updatePageControls()}
 function showPage(index){commitCurrentPage();if(index<0||index>=pageState.length)return;currentPageIndex=index;renderPageData(pageState[index]);setStatus('Page '+(index+1)+' of '+pageState.length)}
 function resetPagesFromCanvas(){canvasGeneration++;pageState=[currentPageData()];currentPageIndex=0;updatePageControls()}
-function serialize(){commitCurrentPage();return {id:projectId,name:currentProjectName(),pages:pageState.map(p=>({pageSize:p.pageSize,orientation:p.orientation,items:p.items}))}}
+function serialize(){commitCurrentPage();return {id:projectId,revision:projectRevision,name:currentProjectName(),pages:pageState.map(p=>({pageSize:p.pageSize,orientation:p.orientation,items:p.items}))}}
 function restoreItem(item){const el=makeItem(item.type,item.x,item.y,item.w,item.h);el.style.fontFamily=item.fontFamily||'Arial';el.style.fontSize=(item.fontSize||24)+'px';el.style.fontWeight=item.fontWeight||'400';el.style.fontStyle=item.fontStyle||'normal';el.style.textAlign=item.textAlign||'left';el.style.color=item.color||'#17324c';el.style.background=item.fill||'#ffffff';el.style.borderColor=item.borderColor||'#17324c';el.style.borderStyle=(item.borderWidth||0)>0?'solid':'none';el.style.borderWidth=(item.borderWidth||0)+'px';el.style.opacity=item.opacity??1;
  if(item.type==='text'){el.childNodes.forEach(n=>{if(!(n.nodeType===1&&n.classList?.contains('handle')))n.remove()});el.insertBefore(document.createTextNode(item.text||''),el.firstChild)}
  if(item.type==='image'){const img=document.createElement('img');if(item.mediaId){el.dataset.mediaId=item.mediaId;img.src=mediaEndpoint+'?id='+encodeURIComponent(item.mediaId)}else{img.src=item.src||''}img.alt=item.alt||'KCMC photo';el.insertBefore(img,el.firstChild)}
  return el}
-async function save(){
+function publicationFingerprint(p){return JSON.stringify({name:p.name,pages:p.pages})}
+function setRemoteChange(changed){remoteChange=changed;document.getElementById('saveCopyBtn').hidden=!changed;document.getElementById('loadLatestBtn').hidden=!changed}
+async function save(asCopy=false){
  if(saveInFlight)return;
- const p=serialize(),generation=projectGeneration;
+ const p=serialize(),generation=projectGeneration,fingerprint=publicationFingerprint(p);
+ if(asCopy){p.id=null;p.revision=0}
  saveInFlight=true;saveButton.disabled=true;setStatus('Saving…');
  try{
   const r=await fetch(projectEndpoint,{method:'POST',headers:{'Content-Type':'application/json'},credentials:'same-origin',body:JSON.stringify({...p,csrf})});
-  const j=await r.json();if(!r.ok||!j.ok)throw new Error(j.error||'Save failed');
-  if(generation===projectGeneration){projectId=j.project.id;setStatus('Saved for KCMC admins')}
+  if(r.redirected||r.status===401||r.status===403)throw new Error('Sign in again to continue. Your unsaved changes are still here.');
+  const j=await r.json();
+  if(r.status===409){if(generation===projectGeneration){setRemoteChange(true);setStatus(j.error||'This publication changed. Your edits are still here. Save a copy or load the latest version.')}return}
+  if(!r.ok||!j.ok)throw new Error(j.error||'Save failed');
+  if(generation===projectGeneration){projectId=j.project.id;projectRevision=j.project.revision;lastSavedFingerprint=fingerprint;setRemoteChange(false);setStatus('Saved for KCMC admins')}
   await renderSaved();
- }catch(err){if(generation===projectGeneration)setStatus(err.message||'Save failed')}
+ }catch(err){if(generation===projectGeneration)setStatus(err.message||'Save failed — your changes are still here')}
  finally{saveInFlight=false;saveButton.disabled=false}
 }
-function loadProject(p){projectGeneration++;projectId=p.id;document.getElementById('projectName').value=String(p.name||'Untitled publication').slice(0,80);const legacy={pageSize:p.pageSize||'letter',orientation:p.orientation||'portrait',items:Array.isArray(p.items)?p.items:[]};pageState=(Array.isArray(p.pages)&&p.pages.length?p.pages:[legacy]).slice(0,12).map(pg=>({pageSize:pg.pageSize||'letter',orientation:pg.orientation||'portrait',items:Array.isArray(pg.items)?pg.items:[]}));currentPageIndex=0;renderPageData(pageState[0]);resetHistory();setStatus('Loaded '+p.name+' • '+pageState.length+' page'+(pageState.length===1?'':'s'))}
+function loadProject(p){projectGeneration++;projectId=p.id;projectRevision=Number.isInteger(p.revision)?p.revision:0;setRemoteChange(false);document.getElementById('projectName').value=String(p.name||'Untitled publication').slice(0,80);const legacy={pageSize:p.pageSize||'letter',orientation:p.orientation||'portrait',items:Array.isArray(p.items)?p.items:[]};pageState=(Array.isArray(p.pages)&&p.pages.length?p.pages:[legacy]).slice(0,12).map(pg=>({pageSize:pg.pageSize||'letter',orientation:pg.orientation||'portrait',items:Array.isArray(pg.items)?pg.items:[]}));currentPageIndex=0;renderPageData(pageState[0]);resetHistory();lastSavedFingerprint=publicationFingerprint(serialize());setStatus('Loaded '+p.name+' • '+pageState.length+' page'+(pageState.length===1?'':'s'))}
+async function loadLatest(){
+ if(!projectId||saveInFlight)return;
+ const current=serialize();
+ if(lastSavedFingerprint!==publicationFingerprint(current)&&!window.confirm('Load the latest version and discard your unsaved changes? Choose Cancel to keep editing or save a copy.'))return;
+ const id=projectId,generation=projectGeneration,revision=projectRevision,fingerprint=publicationFingerprint(current);
+ try{const r=await fetch(projectEndpoint,{credentials:'same-origin',cache:'no-store'}),j=await r.json();if(!r.ok||!j.ok)throw new Error(j.error||'Could not load the latest version');const latest=(j.projects||[]).find(p=>p.id===id);if(!latest)throw new Error('That publication is no longer available. Save your changes as a copy.');if(id===projectId&&generation===projectGeneration){if(saveInFlight)return;if(projectRevision!==revision){setStatus('Your save finished while checking for updates. Your edits are still here.');return}if(publicationFingerprint(serialize())!==fingerprint){setStatus('Your edits changed while loading. Your changes are still here; choose Load latest again when ready.');return}loadProject(latest)}}catch(err){setStatus(err.message||'Could not load the latest version — your changes are still here')}
+}
+function scheduleWatch(){clearTimeout(watchTimer);if(!document.hidden&&!watchStopped)watchTimer=setTimeout(watchProject,watchDelay)}
+async function watchProject(){
+ if(watchInFlight||document.hidden||watchStopped){scheduleWatch();return}
+ if(!projectId||saveInFlight){scheduleWatch();return}
+ const id=projectId,generation=projectGeneration;watchInFlight=true;
+ try{const r=await fetch(projectEndpoint+'?watch=1&id='+encodeURIComponent(id),{credentials:'same-origin',cache:'no-store'});if(r.status===401||r.status===403){watchStopped=true;setStatus('Sign in again to continue. Your unsaved changes are still here.');return}const j=await r.json();if(!r.ok||!j.ok)throw new Error('Could not check for updates');watchDelay=10000;if(!document.hidden&&id===projectId&&generation===projectGeneration&&j.project.revision>projectRevision){setRemoteChange(true);if(!saveInFlight)setStatus('A newer version was saved. Your edits are still here. Save a copy or load the latest version.')}}catch(err){watchDelay=Math.min(60000,watchDelay*2)}finally{watchInFlight=false;scheduleWatch()}
+}
+document.addEventListener('visibilitychange',()=>{clearTimeout(watchTimer);if(!document.hidden){watchDelay=10000;scheduleWatch()}});
+scheduleWatch();
 async function renderSaved(){const box=document.getElementById('savedList');box.innerHTML='<span class="small">Loading…</span>';try{const r=await fetch(projectEndpoint,{credentials:'same-origin'}),j=await r.json();if(!r.ok||!j.ok)throw new Error(j.error||'Could not load projects');box.innerHTML='';(j.projects||[]).forEach(p=>{const b=document.createElement('button');b.className='template';b.innerHTML='<strong>'+escapeHtml(p.name)+'</strong><br><span class="small">'+new Date(p.updated).toLocaleString()+'</span>';b.onclick=()=>loadProject(p);box.appendChild(b)});if(!(j.projects||[]).length)box.innerHTML='<span class="small">No shared projects yet.</span>'}catch(err){box.innerHTML='<span class="small">'+escapeHtml(err.message||'Could not load projects')+'</span>'}}
 function escapeHtml(s){return s.replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[c]))}
 document.getElementById('templates').addEventListener('click',e=>{const b=e.target.closest('[data-template]');if(b){recordHistory();template(b.dataset.template)}});
@@ -308,8 +333,8 @@ document.getElementById('addImage').onclick=()=>imagePicker.click();
 imagePicker.onchange=async e=>{const file=e.target.files[0];if(!file)return;const generation=projectGeneration,canvas=canvasGeneration,isCurrent=()=>generation===projectGeneration&&canvas===canvasGeneration;setStatus('Uploading photo…');const form=new FormData();form.append('csrf',csrf);form.append('photo',file);try{const r=await fetch(mediaEndpoint,{method:'POST',credentials:'same-origin',body:form}),j=await r.json();if(!r.ok||!j.ok)throw new Error(j.error||'Upload failed');if(isCurrent())addSharedMediaToCanvas(j.media);await renderSharedMedia();if(isCurrent())setStatus('Photo uploaded and added')}catch(err){if(isCurrent())setStatus(err.message||'Upload failed')}finally{imagePicker.value=''}};
 document.getElementById('assetLibrary').addEventListener('click',e=>{const b=e.target.closest('[data-asset]');if(!b)return;recordHistory();const el=makeItem('image',80,80,320,220);const img=document.createElement('img');img.src=b.dataset.asset;img.alt=b.dataset.alt||b.querySelector('strong')?.textContent||'KCMC photo';el.insertBefore(img,el.firstChild);setStatus('KCMC photo added')});
 document.getElementById('deleteItem').onclick=()=>{if(selected){recordHistory();selected.remove();clearSelection();setStatus('Object deleted')}};
-document.getElementById('newBtn').onclick=()=>{projectGeneration++;projectId=null;document.getElementById('projectName').value='Untitled publication';page.innerHTML='';clearSelection();template('flyer');resetHistory();setStatus('New publication')};
-document.getElementById('duplicateBtn').onclick=()=>{commitCurrentPage();const name=currentProjectName();projectGeneration++;projectId=null;document.getElementById('projectName').value=name.slice(0,73)+' - Copy';setStatus('Independent copy ready — click Save')};
+document.getElementById('newBtn').onclick=()=>{projectGeneration++;projectId=null;projectRevision=0;lastSavedFingerprint=null;setRemoteChange(false);document.getElementById('projectName').value='Untitled publication';page.innerHTML='';clearSelection();template('flyer');resetHistory();setStatus('New publication')};
+document.getElementById('duplicateBtn').onclick=()=>{commitCurrentPage();const name=currentProjectName();projectGeneration++;projectId=null;projectRevision=0;lastSavedFingerprint=null;setRemoteChange(false);document.getElementById('projectName').value=name.slice(0,73)+' - Copy';setStatus('Independent copy ready — click Save')};
 prevPage.onclick=()=>showPage(currentPageIndex-1);nextPage.onclick=()=>showPage(currentPageIndex+1);
 addPage.onclick=()=>{commitCurrentPage();if(pageState.length>=12)return;recordHistory();pageState.push({pageSize:pageSize.value,orientation:orientation.value,items:[]});currentPageIndex=pageState.length-1;renderPageData(pageState[currentPageIndex]);setStatus('Blank page added')};
 duplicatePage.onclick=()=>{commitCurrentPage();if(pageState.length>=12)return;recordHistory();const copy=JSON.parse(JSON.stringify(pageState[currentPageIndex]));pageState.splice(currentPageIndex+1,0,copy);currentPageIndex++;renderPageData(copy);setStatus('Page duplicated')};
@@ -338,7 +363,7 @@ document.getElementById('bringFrontBtn').onclick=()=>arrangeSelected('front');
 document.getElementById('bringForwardBtn').onclick=()=>arrangeSelected('forward');
 document.getElementById('sendBackwardBtn').onclick=()=>arrangeSelected('backward');
 document.getElementById('sendBackBtn').onclick=()=>arrangeSelected('back');
-document.getElementById('saveBtn').onclick=save;document.getElementById('printBtn').onclick=async()=>{setStatus('Preparing all pages…');await renderPrintPages();setStatus('Print dialog ready');window.print()};
+document.getElementById('saveBtn').onclick=()=>save();document.getElementById('saveCopyBtn').onclick=()=>save(true);document.getElementById('loadLatestBtn').onclick=loadLatest;document.getElementById('printBtn').onclick=async()=>{setStatus('Preparing all pages…');await renderPrintPages();setStatus('Print dialog ready');window.print()};
 pageSize.onfocus=recordHistory;orientation.onfocus=recordHistory;
 pageSize.onchange=()=>{applyPage();commitCurrentPage()};orientation.onchange=()=>{applyPage();commitCurrentPage()};
 fontFamily.onchange=()=>{if(selected){recordHistory();selected.style.fontFamily=fontFamily.value}};fontSize.oninput=()=>{if(selected){recordHistory();selected.style.fontSize=fontSize.value+'px'}};

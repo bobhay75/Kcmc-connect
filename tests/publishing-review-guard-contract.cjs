@@ -26,9 +26,12 @@ for (const marker of [
   'name="confirm_publish"',
   'I reviewed these changes and they are ready to publish.',
   "form.addEventListener('submit'",
-  'submit.disabled = count <= 0 || !confirm.checked',
+  'submit.disabled = publishing || count <= 0 || !confirm.checked',
   "form.addEventListener('input', refresh)",
   "form.addEventListener('change', refresh)",
+  "form.addEventListener('kcmc:publish-start'",
+  "form.addEventListener('kcmc:published'",
+  "form.addEventListener('kcmc:publish-finished'",
 ]) {
   check(script.includes(marker), `Publishing Desk guard contains ${marker}`);
 }

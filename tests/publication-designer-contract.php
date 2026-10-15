@@ -5,6 +5,8 @@ $mediaPath = __DIR__ . '/../KCMC-Connect-Phase6-Recreated/admin/publication-medi
 $src = file_get_contents($designerPath);
 $store = file_get_contents($storePath);
 $media = file_get_contents($mediaPath);
+$drafts = file_get_contents(__DIR__ . '/../KCMC-Connect-Phase6-Recreated/lib/publication-drafts.php');
+$storeImplementation = $store . $drafts;
 
 $designerChecks = [
   "protected admin role" => "kcmc_require_role(['pastor_admin', 'recovery_admin'])",
@@ -54,14 +56,16 @@ $storeChecks = [
   "approved asset allowlist" => "kcmc-building-2024.webp",
   "validated shared media id" => "pub_media_exists",
   "shared media id format" => "pubmedia_[a-f0-9]{24}",
-  "atomic private-store helper" => "kcmc_update_json_store",
+  "versioned atomic private-store helper" => "kcmc_publication_save_draft",
+  "actual exclusive store lock" => 'flock($lock, LOCK_EX)',
+  "version conflict" => "KcmcPublicationConflict",
   "audit record" => "publication_project_saved",
   "multi-page validator" => "Publication must contain between 1 and 12 pages.",
   "legacy one-page migration" => "pub_normalize_project",
   "store version two" => '$state[\'version\'] = 2;',
 ];
 foreach ($storeChecks as $label => $needle) {
-    if (strpos($store, $needle) === false) { fwrite(STDERR, "FAIL: $label\n"); exit(1); }
+    if (strpos($storeImplementation, $needle) === false) { fwrite(STDERR, "FAIL: $label\n"); exit(1); }
 }
 foreach (['innerHTML', 'data/content.json', 'base64_decode'] as $forbidden) {
     if (strpos($store, $forbidden) !== false) { fwrite(STDERR, "FAIL: unsafe store token $forbidden\n"); exit(1); }

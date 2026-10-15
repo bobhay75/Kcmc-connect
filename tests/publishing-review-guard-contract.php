@@ -21,7 +21,7 @@ publish_guard_check($confirmPos !== false, 'explicit publish confirmation is enf
 publish_guard_check($writePos !== false, 'content writer remains present');
 publish_guard_check($csrfPos < $confirmPos, 'CSRF validation happens before publish confirmation');
 publish_guard_check($confirmPos < $writePos, 'publish confirmation happens before any content write');
-publish_guard_check(str_contains($save, 'http_response_code(422)'), 'missing confirmation is rejected as an unprocessable request');
+publish_guard_check(str_contains($save, "kcmc_publish_fail('Review the changes and confirm that they are ready to publish.', 422)"), 'missing confirmation is rejected as an unprocessable request');
 $confirmationNeedle = '($_POST[\'confirm_publish\'] ?? \'\') !== \'1\'';
 publish_guard_check(str_contains($save, $confirmationNeedle), 'only the explicit confirmation value is accepted');
 publish_guard_check(str_contains($save, 'kcmc_prune_content_backups'), 'automatic backup retention remains in the publish path');

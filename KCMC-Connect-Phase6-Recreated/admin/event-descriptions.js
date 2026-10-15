@@ -28,7 +28,7 @@
     const valueOf = control => (control.type === 'checkbox' || control.type === 'radio')
       ? (control.checked ? control.value : '')
       : control.value;
-    const baseline = tracked.map(valueOf);
+    let baseline = tracked.map(valueOf), pendingBaseline = null, publishing = false;
 
     const guard = document.createElement('section');
     guard.className = 'panel publishing-review-guard';
@@ -59,12 +59,15 @@
       countNode.textContent = String(Math.max(0, count));
       confirm.disabled = count <= 0;
       if (count <= 0) confirm.checked = false;
-      submit.disabled = count <= 0 || !confirm.checked;
+      submit.disabled = publishing || count <= 0 || !confirm.checked;
       if (count <= 0) reviewStatus.textContent = 'No changes detected yet.';
       else if (!confirm.checked) reviewStatus.textContent = `${count} changed field${count === 1 ? '' : 's'} detected. Review them, then confirm before publishing.`;
       else reviewStatus.textContent = `${count} changed field${count === 1 ? '' : 's'} reviewed. Publishing is enabled.`;
     }
 
+    form.addEventListener('kcmc:publish-start', () => { pendingBaseline = tracked.map(valueOf); publishing = true; refresh(); });
+    form.addEventListener('kcmc:published', () => { if (pendingBaseline) baseline = pendingBaseline; confirm.checked = false; refresh(); });
+    form.addEventListener('kcmc:publish-finished', () => { pendingBaseline = null; publishing = false; refresh(); });
     form.addEventListener('input', refresh);
     form.addEventListener('change', refresh);
     form.addEventListener('click', () => setTimeout(refresh, 0));

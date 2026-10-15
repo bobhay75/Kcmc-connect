@@ -1,12 +1,11 @@
 <?php
 declare(strict_types=1);
 require_once __DIR__ . '/../lib/bootstrap.php';
-require_once __DIR__ . '/../lib/operations-owner.php';
-kcmc_require_operations_owner();
+require_once __DIR__ . '/../lib/payroll.php';
 require_once __DIR__ . '/../lib/timeclock.php';
 require_once __DIR__ . '/../lib/private-csv.php';
 
-kcmc_require_role(['pastor_admin', 'recovery_admin']);
+kcmc_require_payroll_reviewer();
 $userId = trim((string)($_GET['user'] ?? ''));
 $start = trim((string)($_GET['start'] ?? ''));
 $end = trim((string)($_GET['end'] ?? ''));

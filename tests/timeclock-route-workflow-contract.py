@@ -121,7 +121,7 @@ class TimeclockRoutes(unittest.TestCase):
         self.seed(status='submitted')
         before=(self.private/'timeclock.json').read_bytes()
         html=self.route({'action':'approve','user_id':'owner','reviewer_id':'owner','start':self.start,'end':self.end},route='admin/timecards.php',login='employee')
-        self.assertIn('Access denied.',html)
+        self.assertIn('Payroll review access is restricted.',html)
         self.assertEqual((self.private/'timeclock.json').read_bytes(),before)
 
     def test_open_and_previously_approved_entries_have_no_adjustment_form(self):
@@ -143,9 +143,12 @@ class TimeclockRoutes(unittest.TestCase):
         self.assertEqual(queued['periods'][0]['total_minutes'],120)
         before=(self.private/'timeclock.json').read_bytes()
         env=dict(os.environ,KCMC_PRIVATE_DATA_DIR=str(self.private))
-        proc=subprocess.run([PHP,'-n',str(APP/'admin/timeclock-period-close.php')],text=True,capture_output=True,env=env)
+        diagnose=subprocess.run([PHP,'-n',str(APP/'admin/timeclock-period-close.php'),'--diagnose'],text=True,capture_output=True,env=env)
+        self.assertEqual(diagnose.returncode,0,diagnose.stderr)
+        fingerprint=json.loads(diagnose.stdout)['fingerprint']
+        proc=subprocess.run([PHP,'-n',str(APP/'admin/timeclock-period-close.php'),'--run','--expect-store',fingerprint],text=True,capture_output=True,env=env)
         self.assertEqual(proc.returncode,0,proc.stderr + proc.stdout[:2000])
-        self.assertIn('updated=0; no email or payment sent.',proc.stdout)
+        self.assertIn('updated=0 channel=off mail_accepted=0',proc.stdout)
         self.assertEqual((self.private/'timeclock.json').read_bytes(),before)
 
 if __name__=='__main__':

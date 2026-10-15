@@ -27,18 +27,22 @@ function exact(start){
 const names=['applyPage','syncProps','rgbToHex','publicationText','itemData','currentProjectName',
  'currentPageData','commitCurrentPage','updatePageControls','renderPageData','showPage',
  'resetPagesFromCanvas','serialize','restoreItem','template','loadProject','addSharedMediaToCanvas'];
-if(source.includes('function publicationFill('))names.push('publicationFill');
+for(const name of ['publicationFill','publicationFingerprint','setRemoteChange']){
+ if(source.includes('function '+name+'('))names.push(name);
+}
 const declarations=names.map(name=>exact('function '+name+'(')).join('\n');
 const handlers=["document.getElementById('newBtn').onclick=","document.getElementById('duplicateBtn').onclick=",
  'addPage.onclick=','duplicatePage.onclick=','deletePage.onclick=','imagePicker.onchange=async'];
 const snippets=declarations+'\n'+handlers.map(start=>exact(start)+';').join('\n');
 const sizes=source.match(/^const inch=96,sizes=.*;$/m);assert(sizes,'Missing actual page dimensions');
+const revisionState=source.match(/^let projectRevision=.*;$/m);
+if(source.includes('revision:projectRevision'))assert(revisionState,'Missing actual revision closure state');
 
 function harness(){
  const env={canvas:[],status:'Ready',requests:[],library:[],refreshes:0};
  const ids=['projectName','newBtn','duplicateBtn','pageIndicator','prevPage','nextPage','addPage','duplicatePage',
   'deletePage','pageSize','orientation','imagePicker','fontFamily','fontSize','textColor','fillColor',
-  'borderColor','borderWidth','opacity'];
+  'borderColor','borderWidth','opacity','saveCopyBtn','loadLatestBtn'];
  const fields=Object.fromEntries(ids.map(id=>[id,{value:'',disabled:false}]));
  fields.projectName.value='Original publication';fields.pageSize.value='letter';fields.orientation.value='portrait';
  const page={style:{},querySelectorAll:()=>env.canvas};
@@ -78,6 +82,7 @@ function harness(){
   const borderColor=fields.borderColor,borderWidth=fields.borderWidth,opacity=fields.opacity;
   const prevPage=fields.prevPage,nextPage=fields.nextPage,addPage=fields.addPage,duplicatePage=fields.duplicatePage,deletePage=fields.deletePage;
   ${sizes[0]}
+  ${revisionState?revisionState[0]:''}
   function setStatus(value){env.status=value}
   function clearSelection(){selected=null}
   function recordHistory(){}
@@ -85,7 +90,7 @@ function harness(){
   async function renderSharedMedia(){env.refreshes++}
   ${snippets}
   template('flyer');
-  globalThis.readState=()=>({projectId,projectGeneration,canvasGeneration,currentPageIndex,pages:serialize().pages});
+  globalThis.readState=()=>{const project=serialize();return {projectId,projectGeneration,canvasGeneration,currentPageIndex,revision:project.revision,pages:project.pages}};
  `,context);
  const run=code=>vm.runInContext(code,context);
  return {env,fields,run,state:()=>JSON.parse(JSON.stringify(run('readState()'))),
@@ -125,7 +130,7 @@ async function upload(){
    const pending=h.upload();assert.equal(h.env.requests.length,1);
    if(action==='New')h.fields.newBtn.onclick();
    if(action==='Duplicate')h.fields.duplicateBtn.onclick();
-   if(action==='Load')h.run("loadProject({id:'pub_other',name:'Other publication',pages:[{pageSize:'half',orientation:'landscape',items:[]}]})");
+   if(action==='Load')h.run("loadProject({id:'pub_other',revision:7,name:'Other publication',pages:[{pageSize:'half',orientation:'landscape',items:[]}]})");
    if(action==='Page')h.run('showPage(1)');
    if(action==='AddPage')h.fields.addPage.onclick();
    if(action==='DuplicatePage')h.fields.duplicatePage.onclick();
@@ -136,6 +141,7 @@ async function upload(){
    await pending;
    const after=h.state();
    assert.equal(after.projectId,before.state.projectId,action+': upload changed project ID');
+   assert.equal(after.revision,before.state.revision,action+': upload changed saved project revision');
    assert.equal(h.fields.projectName.value,before.name,action+': upload changed project name');
    if(action==='Same'&&response==='success'){
     assert.equal(h.env.canvas.filter(item=>item.dataset.type==='image').length,1,'Current canvas lost its normal photo insertion');

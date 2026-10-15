@@ -29,7 +29,7 @@ tca_check(str_contains($lib, 'A reviewer cannot adjust their own time entry.'), 
 tca_check(str_contains($lib, 'Approved time is locked.'), 'approved time cannot be adjusted');
 tca_check(str_contains($lib, "(\$entry['status']??'')==='open'"), 'open shifts cannot be adjusted');
 tca_check(str_contains($lib, "\$s['adjustments'][]=\$record"), 'adjustment history is append-only');
-tca_check(str_contains($admin, "kcmc_require_role(['pastor_admin', 'recovery_admin'])"), 'adjustment UI remains administrator-only');
+tca_check(str_contains($admin, 'kcmc_require_payroll_reviewer()'), 'adjustment UI requires the owner-selected payroll review capability');
 tca_check(str_contains($admin, 'kcmc_verify_csrf'), 'adjustment POST requires CSRF');
 tca_check(str_contains($admin, "'timeclock.entry_adjusted'"), 'adjustment emits privacy-safe audit event');
 tca_check(str_contains($admin, 'Save adjustment'), 'administrator has explicit adjustment control');

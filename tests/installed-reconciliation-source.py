@@ -38,7 +38,7 @@ def check(ok, message):
 # signed 00fdd baseline. Recover it before every historical assertion below;
 # current journeys and roles are tested separately on the current application.
 workflow_layer = Layer(ROOT)
-workflow_paths = set(workflow_layer.paths)
+workflow_paths = set(workflow_layer.paths) | set(workflow_layer.phase_two.paths)
 def before_workflows(name):
     return workflow_layer.before(name)
 
@@ -610,7 +610,7 @@ for path, record in deployment['files'].items():
         content = content.replace(new.encode(), old.encode(), 1)
     check(hashlib.sha256(content).hexdigest() == record['before_sha256'], path + ': exact deployment preimage')
     check(content == source(BASE, path), path + ': original deployment tasks unchanged')
-check((ROOT / 'KCMC-Connect-Phase6-Recreated/config.example.php').read_bytes() == source(BASE, 'KCMC-Connect-Phase6-Recreated/config.example.php'), 'config.example.php: unchanged')
+check(before_workflows('config.example.php') == source(BASE, 'KCMC-Connect-Phase6-Recreated/config.example.php'), 'config.example.php: unchanged')
 login = before_credentials('member/login.php')
 check(login.split(b'?><!doctype html>', 1)[0] == base['member/login.php'].split(b'?><!doctype html>', 1)[0], 'staff authentication PHP remains byte-for-byte unchanged')
 js = (ROOT / PREFIX / 'public-presentation.js').read_text()

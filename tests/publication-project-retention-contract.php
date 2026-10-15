@@ -1,7 +1,8 @@
 <?php
 declare(strict_types=1);
-// Exercise the actual save closure with synthetic in-memory state. No bootstrap,
-// authentication, HTTP, private store, or audit operation is invoked.
+// Exercise the actual current CAS store or pinned historical closure with
+// synthetic state only. Current storage uses an isolated temporary directory;
+// no production authentication, HTTP or audit operation is invoked.
 $sourcePath = $argv[1] ?? __DIR__ . '/../KCMC-Connect-Phase6-Recreated/admin/publication-projects.php';
 $case = $argv[2] ?? 'all';
 $source = file_get_contents($sourcePath);
@@ -10,11 +11,19 @@ if (!is_string($source) || !in_array($case, ['all', 'new', 'update'], true)) {
     exit(1);
 }
 $matched = preg_match('/kcmc_update_json_store\(\$storePath, \$defaultStore, (function \(array &\$state\) use \(\$project\): void \{[\s\S]*?\n\})\);/', $source, $match);
-if ($matched !== 1) {
+$retentionModern = str_contains($source, 'kcmc_publication_save_draft');
+if ($matched !== 1 && !$retentionModern) {
     fwrite(STDERR, "Could not extract the exact publication save closure\n");
     exit(1);
 }
-$closureSource = $match[1];
+$closureSource = $matched === 1 ? $match[1] : '';
+if ($retentionModern) {
+    $retentionPrivate = sys_get_temp_dir() . '/kcmc-retention-cas-' . bin2hex(random_bytes(8));
+    if (!mkdir($retentionPrivate, 0700)) throw new RuntimeException('Cannot create isolated fixture.');
+    putenv('KCMC_PRIVATE_DATA_DIR=' . $retentionPrivate);
+    require dirname($sourcePath) . '/../lib/publication-drafts.php';
+    register_shutdown_function(static function () use ($retentionPrivate): void { foreach (glob($retentionPrivate . '/*') as $file) @unlink($file); @rmdir($retentionPrivate); });
+}
 
 function retention_check(bool $condition, string $message): void {
     if (!$condition) {
@@ -47,7 +56,19 @@ function retention_state(int $count): array {
     return ['version' => 2, 'projects' => $projects, 'unrelated_fixture' => ['preserve' => true]];
 }
 
-function retention_save(string $closureSource, array $project, array &$state): void {
+function retention_save(string $closureSource, array &$project, array &$state): void {
+    global $retentionModern;
+    if ($retentionModern) {
+        // Use the actual locked store path for current CAS code. Retain the
+        // exact old closure path below for historical defect negative controls.
+        file_put_contents(kcmc_publication_store_path(), json_encode($state));
+        chmod(kcmc_publication_store_path(), 0600);
+        $existing = null; $revision = 0;
+        foreach ($state['projects'] as $stored) if ($stored['id'] === $project['id']) { $existing = $stored['id']; $revision = kcmc_publication_revision($stored); }
+        $project = kcmc_publication_save_draft($project, $existing, $revision, 'synthetic-owner');
+        $state = kcmc_publication_read_store();
+        return;
+    }
     // The closure captures this project's value exactly as the real endpoint does.
     $save = eval('return ' . $closureSource . ';');
     if (!$save instanceof Closure) throw new RuntimeException('Save closure was not callable');
@@ -96,4 +117,4 @@ if ($case === 'all' || $case === 'update') {
     }
     retention_check($state['unrelated_fixture'] === ['preserve' => true], 'update preserves unrelated state');
 }
-echo "Publication save-retention closure checks passed; all projects are synthetic.\n";
+echo "Publication save-retention checks passed; all projects are synthetic.\n";
