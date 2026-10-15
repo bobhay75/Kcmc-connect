@@ -1,0 +1,25 @@
+{
+  "source_commit": "93c72f4fc430d311e01108d3a30d0561bb701c9d",
+  "files": {
+    "lib/password-lifecycle.php": {
+      "sha256": "6ae3f838d154bbe83d2bb5edfa77132cdc006bf9be5236977110e2cf2fd0c85e",
+      "bytes": 6046,
+      "git_blob_sha1": "3af2e68d0d6bdf48000236c205df1c8a6e8c0337"
+    },
+    "admin/users.php": {
+      "sha256": "7eee24ce34d9d3fabe0fb227f3c92f93d4339f80389d82584b6a58be4c9faed3",
+      "bytes": 15525,
+      "git_blob_sha1": "492044bb109771201c8fd3f2a0ba15e81ead4e83"
+    },
+    "admin/password-resets.php": {
+      "sha256": "d32838fe3d7483bb4ba6fbd1fc948672d6187bd34c0c47c65c5ed720fd75f4af",
+      "bytes": 7967,
+      "git_blob_sha1": "729161ef18d8918b4d8e529c923eabb8fd7cb49d"
+    },
+    "member/notifications.php": {
+      "sha256": "58c1c85095270ce554a097e260f61ef4c0fff4807a82c1bb8dbc787ba1fa069c",
+      "bytes": 2357,
+      "git_blob_sha1": "4992d71a1361f61bcbdd5090ce8079e899c45553"
+    }
+  }
+}
