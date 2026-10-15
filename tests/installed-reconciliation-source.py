@@ -531,8 +531,22 @@ changed = set(git('diff', '--name-only', BASE, '--', PREFIX).decode().splitlines
 check(changed == ({PREFIX + p for p in expected} | {PREFIX + p for p in publication} | image_paths | documentation_paths | visitor_paths | appearance_paths | artwork_paths | gallery_repair_paths | owner_paths | home_paths | minimal_paths | editorial_paths | post_paths | skip_paths | calendar_paths | care_paths | owner_access_paths | fish_paths), 'application diff is exact prior scope plus enumerated repairs')
 changed_since_reconciled = set(git('diff', '--name-only', RECONCILED, '--', PREFIX).decode().splitlines())
 check(changed_since_reconciled == ({PREFIX + p for p in approved} | {PREFIX + 'sw.js'} | {PREFIX + p for p in publication} | image_paths | documentation_paths | visitor_paths | appearance_paths | artwork_paths | gallery_repair_paths | owner_paths | home_paths | minimal_paths | editorial_paths | post_paths | skip_paths | calendar_paths | care_paths | owner_access_paths | fish_paths), 'post-reconciliation diff is exact reviewed source plus enumerated repairs')
-for path in ['.cpanel.yml', 'KCMC-Connect-Phase6-Recreated/config.example.php']:
-    check((ROOT / path).read_bytes() == source(BASE, path), path + ': unchanged')
+# Reverse only the mandatory read-only deployment task before the historical proof.
+deployment_bytes = (ROOT / 'tests/fixtures/deployment-preflight-reviewed.json').read_bytes()
+check(hashlib.sha256(deployment_bytes).hexdigest() == '5983e3965249361d1e99afd6896d7c6a1e1c88cb7a03587371df1b6ec7933dfc', 'deployment preflight fixture is exact')
+deployment = json.loads(deployment_bytes)
+check(set(deployment) == {'source_commit', 'files'} and deployment['source_commit'] == BASE, 'deployment preflight baseline remains historical source')
+check(set(deployment['files']) == {'.cpanel.yml'}, 'deployment interlock changes only the root task list')
+for path, record in deployment['files'].items():
+    check(set(record) == {'before_sha256', 'after_sha256', 'replacements'}, path + ': explicit deployment byte pins')
+    content = (ROOT / path).read_bytes()
+    check(hashlib.sha256(content).hexdigest() == record['after_sha256'], path + ': exact deployment interlock target')
+    for old, new in reversed(record['replacements']):
+        check(content.count(new.encode()) == 1, path + ': unique reverse deployment task anchor')
+        content = content.replace(new.encode(), old.encode(), 1)
+    check(hashlib.sha256(content).hexdigest() == record['before_sha256'], path + ': exact deployment preimage')
+    check(content == source(BASE, path), path + ': original deployment tasks unchanged')
+check((ROOT / 'KCMC-Connect-Phase6-Recreated/config.example.php').read_bytes() == source(BASE, 'KCMC-Connect-Phase6-Recreated/config.example.php'), 'config.example.php: unchanged')
 login = (ROOT / PREFIX / 'member/login.php').read_bytes()
 check(login.split(b'?><!doctype html>', 1)[0] == base['member/login.php'].split(b'?><!doctype html>', 1)[0], 'staff authentication PHP remains byte-for-byte unchanged')
 js = (ROOT / PREFIX / 'public-presentation.js').read_text()

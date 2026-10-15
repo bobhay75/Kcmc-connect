@@ -1,6 +1,7 @@
 ---
 deployment:
   tasks:
+    - python3 -I -B tools/check-deployment-divergence.py || exit 1
     - export DEPLOYPATH=/home/bobsome1/public_html/kcmc-connect/
     - /bin/mkdir -p $DEPLOYPATH
     - /usr/bin/rsync -a --delete --exclude='config.php' --exclude='data/content.json' --exclude='data/private/' --exclude='backups/' --exclude='SETUP-CREDENTIALS.txt' KCMC-Connect-Phase6-Recreated/ $DEPLOYPATH

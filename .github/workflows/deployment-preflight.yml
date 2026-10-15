@@ -1,0 +1,31 @@
+name: KCMC deployment divergence preflight
+on:
+  pull_request:
+    paths:
+      - '.cpanel.yml'
+      - 'tools/check-deployment-divergence.py'
+      - 'tests/deployment-divergence.py'
+      - 'tests/fixtures/deployment-preflight-reviewed.json'
+      - 'tests/installed-reconciliation-source.py'
+      - '.github/workflows/deployment-preflight.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  protected-file-interlock:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          persist-credentials: false
+      - name: Read-only files, unsafe metadata, privacy and task flow
+        run: python3 -B tests/deployment-divergence.py
+      - name: Actual host-compatible Python 3.6
+        run: |
+          docker run --rm --network none --user "$(id -u):$(id -g)" \
+            --mount "type=bind,src=$PWD,dst=/source,readonly" \
+            -w /source \
+            python@sha256:f8652afaf88c25f0d22354d547d892591067aa4026a7fa9a6819df9f300af6fc \
+            python3 -B tests/deployment-divergence.py
