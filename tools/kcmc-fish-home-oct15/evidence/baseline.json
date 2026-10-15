@@ -1,0 +1,59 @@
+{
+  "live154/index.php": {
+    "commit": "154b779a0ea3d27a11300bfe0454f8a7c4aca355",
+    "sha256": "fa828f80c7f3c3b5ec47d815933f7df247f6ba4e542f9e5261182fb006b83723",
+    "bytes": 32695
+  },
+  "live154/public-presentation.css": {
+    "commit": "154b779a0ea3d27a11300bfe0454f8a7c4aca355",
+    "sha256": "05f0b5527d2df49c77a96162362e732397706469c97733fa859c93e89b3f601f",
+    "bytes": 16638
+  },
+  "live154/sw.js": {
+    "commit": "154b779a0ea3d27a11300bfe0454f8a7c4aca355",
+    "sha256": "cc8fefeec21f97d279e80472a76edfd0023392c2ad65e74c4bf56b192e657faf",
+    "bytes": 5914
+  },
+  "main130/index.php": {
+    "commit": "1af697ac828724a74ba15f9c7167f09b45e35f89",
+    "sha256": "a8c37ed43cce13f3e5b9fdad27023975e781255e8fadafe649cc75fb60958eac",
+    "bytes": 33553
+  },
+  "main130/public-presentation.css": {
+    "commit": "1af697ac828724a74ba15f9c7167f09b45e35f89",
+    "sha256": "103fa3629a140ecd4c87dfcecbd30fda9aefb34f541c6cbaab4b7858f3533a33",
+    "bytes": 16534
+  },
+  "main130/sw.js": {
+    "commit": "1af697ac828724a74ba15f9c7167f09b45e35f89",
+    "sha256": "f2db90a518578ebbc4491991f29a9ef8c50f902081ec48c209c0f3c8a2521eab",
+    "bytes": 5915
+  },
+  "livecalendar/index.php": {
+    "source": "approved154+frozen-calendar-index-patch",
+    "sha256": "745bdc1f31824b8962ef49440a83e313dbdea70e4a8e0620ff746049f656df3d",
+    "bytes": 33550,
+    "observed_mode": "0644",
+    "observed_uid": 2162,
+    "observed_gid": 2147,
+    "observed_nlink": 1
+  },
+  "livecalendar/public-presentation.css": {
+    "source": "exact-approved154",
+    "sha256": "05f0b5527d2df49c77a96162362e732397706469c97733fa859c93e89b3f601f",
+    "bytes": 16638,
+    "observed_mode": "0644",
+    "observed_uid": 2162,
+    "observed_gid": 2147,
+    "observed_nlink": 1
+  },
+  "livecalendar/sw.js": {
+    "source": "exact-approved154",
+    "sha256": "cc8fefeec21f97d279e80472a76edfd0023392c2ad65e74c4bf56b192e657faf",
+    "bytes": 5914,
+    "observed_mode": "0644",
+    "observed_uid": 2162,
+    "observed_gid": 2147,
+    "observed_nlink": 1
+  }
+}

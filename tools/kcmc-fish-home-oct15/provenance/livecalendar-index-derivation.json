@@ -1,0 +1,20 @@
+{
+  "base_path": "evidence/live154/index.php",
+  "base_commit": "154b779a0ea3d27a11300bfe0454f8a7c4aca355",
+  "base_sha256": "fa828f80c7f3c3b5ec47d815933f7df247f6ba4e542f9e5261182fb006b83723",
+  "base_bytes": 32695,
+  "patch_path": "provenance/event-calendar-reviewed.json",
+  "patch_sha256": "a26b9938efc2e4edcabb4d33ad902b33e1b34bf46809715d04b94c0d1c1f1f92",
+  "replacement_count": 3,
+  "after_path": "evidence/livecalendar/index.php",
+  "after_sha256": "745bdc1f31824b8962ef49440a83e313dbdea70e4a8e0620ff746049f656df3d",
+  "after_bytes": 33550,
+  "host_observation": {
+    "mode": "0644",
+    "uid": 2162,
+    "gid": 2147,
+    "nlink": 1,
+    "bytes": 33550,
+    "sha256": "745bdc1f31824b8962ef49440a83e313dbdea70e4a8e0620ff746049f656df3d"
+  }
+}
