@@ -326,3 +326,13 @@ body:has([data-view="home"].active) .phase6-bulletin-fab{display:none}
   }
 }
 /* KCMC_HOME_OPTION_B_20261013 END */
+
+/* KCMC_FISH_ONLY_HOME_20261014: navigation lives inside the fish dropdown. */
+[data-view="home"] > .section:not([aria-label="KCMC kids and family photos"]):not([data-family-welcome]),
+[data-view="home"] .family-welcome-copy,
+body:has([data-view="home"].active) > .footer{display:none}
+[data-view="home"] .family-welcome-grid{grid-template-columns:minmax(0,1fr);max-width:760px}
+.home-worship-strip-inner{grid-template-columns:auto minmax(0,1fr)}
+.footer{padding-bottom:44px}
+@media(max-width:1100px){.home-worship-strip-inner{grid-template-columns:1fr}}
+/* KCMC_FISH_ONLY_HOME_20261014 END */

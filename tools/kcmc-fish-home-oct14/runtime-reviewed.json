@@ -1,0 +1,150 @@
+{
+  "live154": {
+    "index.php": {
+      "after_bytes": 31771,
+      "after_sha256": "dd0a649ea474782af9bd78735b607bcfcf200b00184a3da6def5f696495873af",
+      "before_bytes": 32695,
+      "before_sha256": "fa828f80c7f3c3b5ec47d815933f7df247f6ba4e542f9e5261182fb006b83723",
+      "replacements": [
+        [
+          "<link rel=\"stylesheet\" href=\"public-presentation.css?v=home-audit-20261013\">\n",
+          "<link rel=\"stylesheet\" href=\"public-presentation.css?v=fish-only-home-20261014\">\n"
+        ],
+        [
+          "<?php if (!empty($kcmcAnnouncements)): $top=$kcmcAnnouncements[0]; ?>\n<div class=\"phase6-announcement\" role=\"status\"><div class=\"shell\"><strong><?=kcmc_h((string)($top['title']??''))?></strong><span><?=kcmc_h((string)($top['body']??''))?></span></div></div>\n<?php endif; ?>\n",
+          ""
+        ],
+        [
+          "        <a href=\"#news\" data-route=\"news\">Church updates</a>\n",
+          "        <a href=\"#news\" data-route=\"news\">Announcements &amp; church updates</a>\n"
+        ],
+        [
+          "        <a href=\"#partner\" data-route=\"partner\">Get connected</a>\n",
+          "        <a href=\"#partner\" data-route=\"partner\">Get connected</a>\n        <a href=\"https://www.kimberlingcitymethodist.com/youth\" target=\"_blank\" rel=\"noopener\">Kids &amp; youth</a>\n        <a href=\"<?=kcmc_h($kcmcPhoneHref)?>\">Call the church office</a>\n        <a href=\"<?=kcmc_h($kcmcEmailHref)?>\">Email the church office</a>\n        <a href=\"https://www.facebook.com/KimberlingCityMethodistChurch\" target=\"_blank\" rel=\"noopener\">KCMC on Facebook</a>\n        <button type=\"button\" data-share-app data-share-visit>Invite someone this Sunday</button>\n"
+        ],
+        [
+          "        <div class=\"actions home-cover-actions\">\n          <a class=\"action\" href=\"#watch\" data-route=\"watch\"><b>Watch</b><span>Live &amp; recent worship</span></a>\n          <a class=\"action\" href=\"https://www.simplechurchgiving.net/app/giving/umckc\" target=\"_blank\" rel=\"noopener\"><b>Give</b><span>Secure online giving</span></a>\n          <a class=\"action\" href=\"#visit\" data-route=\"visit\"><b>Visit</b><span>Plan your first Sunday</span></a>\n        </div>\n",
+          ""
+        ],
+        [
+          "      <a class=\"btn secondary home-bulletin-link\" href=\"bulletin.php\">Latest Bulletin \u2192</a>\n",
+          ""
+        ],
+        [
+          "<footer class=\"footer\"><div class=\"wrap footer-grid\"><div><strong>KCMC CONNECT</strong><p>Kimberling City Methodist Church<br><?=kcmc_h($kcmcAddress)?></p></div><div><p><?=kcmc_h($kcmcPhone)?><br><a href=\"<?=kcmc_h($kcmcEmailHref)?>\"><?=kcmc_h($kcmcEmail)?></a><br><a href=\"https://www.facebook.com/KimberlingCityMethodistChurch\" target=\"_blank\" rel=\"noopener\">KCMC on Facebook</a></p><p class=\"fine\">Leading people to become deeply committed followers of Jesus Christ.</p></div></div></footer>\n",
+          "<footer class=\"footer\"><div class=\"wrap footer-grid\"><div><strong>KCMC CONNECT</strong><p>Kimberling City Methodist Church<br><?=kcmc_h($kcmcAddress)?></p></div><div><p><?=kcmc_h($kcmcPhone)?><br><?=kcmc_h($kcmcEmail)?></p><p class=\"fine\">Leading people to become deeply committed followers of Jesus Christ.</p></div></div></footer>\n"
+        ],
+        [
+          "<nav class=\"mobile-nav\" aria-label=\"Mobile navigation\"><a href=\"#home\" data-route=\"home\"><span>\u2302</span>Home</a><a href=\"#visit\" data-route=\"visit\"><span>\u25ce</span>Visit</a><a href=\"#watch\" data-route=\"watch\"><span>\u25b6</span>Watch</a><a href=\"#events\" data-route=\"events\"><span>\u25c7</span>Events</a><a href=\"#partner\" data-route=\"partner\"><span>\u2726</span>Connect</a></nav>\n",
+          ""
+        ],
+        [
+          "<a class=\"phase6-bulletin-fab\" href=\"bulletin.php\">Latest Bulletin</a>\n",
+          ""
+        ]
+      ]
+    },
+    "public-presentation.css": {
+      "after_bytes": 17233,
+      "after_sha256": "b08824180406891f3ff784967dc507e62488b4cb9b12f3a81347731be61a5acb",
+      "before_bytes": 16638,
+      "before_sha256": "05f0b5527d2df49c77a96162362e732397706469c97733fa859c93e89b3f601f",
+      "replacements": [
+        [
+          "/* KCMC_HOME_OPTION_B_20261013 END */\n",
+          "/* KCMC_HOME_OPTION_B_20261013 END */\n\n/* KCMC_FISH_ONLY_HOME_20261014: navigation lives inside the fish dropdown. */\n[data-view=\"home\"] > .section:not([aria-label=\"KCMC kids and family photos\"]):not([data-family-welcome]),\n[data-view=\"home\"] .family-welcome-copy,\nbody:has([data-view=\"home\"].active) > .footer{display:none}\n[data-view=\"home\"] .family-welcome-grid{grid-template-columns:minmax(0,1fr);max-width:760px}\n.home-worship-strip-inner{grid-template-columns:auto minmax(0,1fr)}\n.footer{padding-bottom:44px}\n@media(max-width:1100px){.home-worship-strip-inner{grid-template-columns:1fr}}\n/* KCMC_FISH_ONLY_HOME_20261014 END */\n"
+        ]
+      ]
+    },
+    "sw.js": {
+      "after_bytes": 5917,
+      "after_sha256": "547e555f9e9bd85bf290e6887eccfbeaceacb37c9b8905f3c74113e876f643a4",
+      "before_bytes": 5914,
+      "before_sha256": "cc8fefeec21f97d279e80472a76edfd0023392c2ad65e74c4bf56b192e657faf",
+      "replacements": [
+        [
+          "const CACHE='kcmc-connect-v3.0.3-public-only-home-audit-20261013';\n",
+          "const CACHE='kcmc-connect-v3.0.3-public-only-fish-home-20261014';\n"
+        ],
+        [
+          "  './','./styles.css?v=3.0.3','./public-presentation.css?v=home-audit-20261013','./public-presentation.js?v=blue-fish-menu-20261009','./app.js?v=visitor-welcome-20261008','./manifest.webmanifest?v=3.0.1',\n",
+          "  './','./styles.css?v=3.0.3','./public-presentation.css?v=fish-only-home-20261014','./public-presentation.js?v=blue-fish-menu-20261009','./app.js?v=visitor-welcome-20261008','./manifest.webmanifest?v=3.0.1',\n"
+        ]
+      ]
+    }
+  },
+  "main130": {
+    "index.php": {
+      "after_bytes": 32626,
+      "after_sha256": "44b4d8d79ee0c1a7ea0206ac3a599b0d2bbbd10bfe9827ee93bb654c79b7af23",
+      "before_bytes": 33553,
+      "before_sha256": "a8c37ed43cce13f3e5b9fdad27023975e781255e8fadafe649cc75fb60958eac",
+      "replacements": [
+        [
+          "<link rel=\"stylesheet\" href=\"public-presentation.css?v=home-option-b-20261013\">\n",
+          "<link rel=\"stylesheet\" href=\"public-presentation.css?v=fish-only-home-20261014\">\n"
+        ],
+        [
+          "<?php if (!empty($kcmcAnnouncements)): $top=$kcmcAnnouncements[0]; ?>\n<div class=\"phase6-announcement\" role=\"status\"><div class=\"shell\"><strong><?=kcmc_h((string)($top['title']??''))?></strong><span><?=kcmc_h((string)($top['body']??''))?></span></div></div>\n<?php endif; ?>\n",
+          ""
+        ],
+        [
+          "        <a href=\"#news\" data-route=\"news\">Church updates</a>\n",
+          "        <a href=\"#news\" data-route=\"news\">Announcements &amp; church updates</a>\n"
+        ],
+        [
+          "        <a href=\"#partner\" data-route=\"partner\">Get connected</a>\n",
+          "        <a href=\"#partner\" data-route=\"partner\">Get connected</a>\n        <a href=\"https://www.kimberlingcitymethodist.com/youth\" target=\"_blank\" rel=\"noopener\">Kids &amp; youth</a>\n        <a href=\"<?=kcmc_h($kcmcPhoneHref)?>\">Call the church office</a>\n        <a href=\"<?=kcmc_h($kcmcEmailHref)?>\">Email the church office</a>\n        <a href=\"https://www.facebook.com/KimberlingCityMethodistChurch\" target=\"_blank\" rel=\"noopener\">KCMC on Facebook</a>\n        <button type=\"button\" data-share-app data-share-visit>Invite someone this Sunday</button>\n"
+        ],
+        [
+          "        <div class=\"actions home-cover-actions\">\n          <a class=\"action\" href=\"#watch\" data-route=\"watch\"><b>Watch</b><span>Live &amp; recent worship</span></a>\n          <a class=\"action\" href=\"https://www.simplechurchgiving.net/app/giving/umckc\" target=\"_blank\" rel=\"noopener\"><b>Give</b><span>Secure online giving</span></a>\n          <a class=\"action\" href=\"#visit\" data-route=\"visit\"><b>Visit</b><span>Plan your first Sunday</span></a>\n        </div>\n",
+          ""
+        ],
+        [
+          "      <a class=\"btn secondary home-bulletin-link\" href=\"bulletin.php\">Latest Bulletin \u2192</a>\n",
+          ""
+        ],
+        [
+          "<footer class=\"footer\"><div class=\"wrap footer-grid\"><div><strong>KCMC CONNECT</strong><p>Kimberling City Methodist Church<br><?=kcmc_h($kcmcAddress)?></p></div><div><p><?=kcmc_h($kcmcPhone)?><br><a href=\"<?=kcmc_h($kcmcEmailHref)?>\"><?=kcmc_h($kcmcEmail)?></a><br><a href=\"https://www.facebook.com/KimberlingCityMethodistChurch\" target=\"_blank\" rel=\"noopener\">KCMC on Facebook</a></p><p class=\"fine\">Leading people to become deeply committed followers of Jesus Christ.</p></div></div></footer>\n",
+          "<footer class=\"footer\"><div class=\"wrap footer-grid\"><div><strong>KCMC CONNECT</strong><p>Kimberling City Methodist Church<br><?=kcmc_h($kcmcAddress)?></p></div><div><p><?=kcmc_h($kcmcPhone)?><br><?=kcmc_h($kcmcEmail)?></p><p class=\"fine\">Leading people to become deeply committed followers of Jesus Christ.</p></div></div></footer>\n"
+        ],
+        [
+          "<nav class=\"mobile-nav\" aria-label=\"Mobile navigation\"><a href=\"#home\" data-route=\"home\"><span>\u2302</span>Home</a><a href=\"#visit\" data-route=\"visit\"><span>\u25ce</span>Visit</a><a href=\"#watch\" data-route=\"watch\"><span>\u25b6</span>Watch</a><a href=\"#events\" data-route=\"events\"><span>\u25c7</span>Events</a><a href=\"#partner\" data-route=\"partner\"><span>\u2726</span>Connect</a></nav>\n",
+          ""
+        ],
+        [
+          "<a class=\"phase6-bulletin-fab\" href=\"bulletin.php\">Latest Bulletin</a>\n",
+          ""
+        ]
+      ]
+    },
+    "public-presentation.css": {
+      "after_bytes": 17129,
+      "after_sha256": "640ba99c997867e7d3fec3a36d08f9992bfc295d224523f2a980f0bc57bdc4e2",
+      "before_bytes": 16534,
+      "before_sha256": "103fa3629a140ecd4c87dfcecbd30fda9aefb34f541c6cbaab4b7858f3533a33",
+      "replacements": [
+        [
+          "/* KCMC_HOME_OPTION_B_20261013 END */\n",
+          "/* KCMC_HOME_OPTION_B_20261013 END */\n\n/* KCMC_FISH_ONLY_HOME_20261014: navigation lives inside the fish dropdown. */\n[data-view=\"home\"] > .section:not([aria-label=\"KCMC kids and family photos\"]):not([data-family-welcome]),\n[data-view=\"home\"] .family-welcome-copy,\nbody:has([data-view=\"home\"].active) > .footer{display:none}\n[data-view=\"home\"] .family-welcome-grid{grid-template-columns:minmax(0,1fr);max-width:760px}\n.home-worship-strip-inner{grid-template-columns:auto minmax(0,1fr)}\n.footer{padding-bottom:44px}\n@media(max-width:1100px){.home-worship-strip-inner{grid-template-columns:1fr}}\n/* KCMC_FISH_ONLY_HOME_20261014 END */\n"
+        ]
+      ]
+    },
+    "sw.js": {
+      "after_bytes": 5917,
+      "after_sha256": "547e555f9e9bd85bf290e6887eccfbeaceacb37c9b8905f3c74113e876f643a4",
+      "before_bytes": 5915,
+      "before_sha256": "f2db90a518578ebbc4491991f29a9ef8c50f902081ec48c209c0f3c8a2521eab",
+      "replacements": [
+        [
+          "const CACHE='kcmc-connect-v3.0.3-public-only-option-b-20261013';\n",
+          "const CACHE='kcmc-connect-v3.0.3-public-only-fish-home-20261014';\n"
+        ],
+        [
+          "  './','./styles.css?v=3.0.3','./public-presentation.css?v=home-option-b-20261013','./public-presentation.js?v=blue-fish-menu-20261009','./app.js?v=visitor-welcome-20261008','./manifest.webmanifest?v=3.0.1',\n",
+          "  './','./styles.css?v=3.0.3','./public-presentation.css?v=fish-only-home-20261014','./public-presentation.js?v=blue-fish-menu-20261009','./app.js?v=visitor-welcome-20261008','./manifest.webmanifest?v=3.0.1',\n"
+        ]
+      ]
+    }
+  }
+}
