@@ -40,5 +40,5 @@ jobs:
         run: |
           set -euo pipefail
           docker pull php:8.2-cli
-          docker run --rm --network none -v "$PWD:/source:ro" -w /source php:8.2-cli php tests/payroll-automation-contract.php
-          docker run --rm --network none -v "$PWD:/source:ro" -w /source php:8.2-cli php tests/timeclock-employee-workflow-contract.php
+          docker run --rm --user "$(id -u):$(id -g)" --network none -v "$PWD:/source:ro" -w /source php:8.2-cli php tests/payroll-automation-contract.php
+          docker run --rm --user "$(id -u):$(id -g)" --network none -v "$PWD:/source:ro" -w /source php:8.2-cli php tests/timeclock-employee-workflow-contract.php

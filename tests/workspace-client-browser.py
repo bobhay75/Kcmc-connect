@@ -105,10 +105,15 @@ def main():
         assert page.locator('#work-new').is_hidden() and page.locator('#work-publication-context').is_hidden()
         selected(page);assert page.locator('#work-edit').is_hidden() and page.locator('#work-editor').is_hidden()
         assert page.get_by_role('link',name='← My account').count()==1 and page.get_by_role('link',name='Home',exact=True).count()==1
-        page.get_by_label('View',exact=True).select_option('board');assert page.locator('.work-board').count()==1 and api.count('preferences')==0
-        page.get_by_label('Show',exact=True).select_option('done');assert page.locator('.work-task').count()==1
+        # Match computed accessible names, not wrapping-label textContent,
+        # which also contains the select's option labels. This still requires
+        # the real label association and the expected native control role.
+        for label in ['View', 'Show', 'Sort']:
+            assert page.get_by_role('combobox',name=label,exact=True).count()==1
+        page.get_by_role('combobox',name='View',exact=True).select_option('board');assert page.locator('.work-board').count()==1 and api.count('preferences')==0
+        page.get_by_role('combobox',name='Show',exact=True).select_option('done');assert page.locator('.work-task').count()==1
         page.get_by_role('button',name='Save choices').click();wait_text(page,'#work-preference-status','Choices saved');assert api.preferences['view']=='board' and api.preferences['statusfilter']=='done'
-        page.get_by_label('View',exact=True).select_option('timeline');assert page.locator('.work-schedule').count()==1
+        page.get_by_role('combobox',name='View',exact=True).select_option('timeline');assert page.locator('.work-schedule').count()==1
         evidence.append('ordinary UI, immediate list/board/schedule/filter changes, explicit per-user preference save and Back/Home')
         page.close()
         # Plain-text rendering and context-preserved drafts across task/publication switches.
@@ -116,25 +121,25 @@ def main():
         api.comments=[dict(id='teamcomment_'+'e'*24,body='<img src=x onerror=window.__xss=1>',parent_id='',author_id='alice',author_name='<svg onload=window.__xss=1>',created_at=1792000000)]
         page.evaluate("document.dispatchEvent(new Event('visibilitychange'))");page.wait_for_function("document.querySelector('.work-task-title').textContent.startsWith('<script>')")
         selected(page);assert page.locator('#work-comments img,#work-comments svg').count()==0 and page.evaluate('window.__xss === undefined')
-        page.get_by_label('Add a comment',exact=True).fill('Draft stays with this task')
-        page.get_by_label('Publication conversation',exact=True).select_option(PUB_ID);page.wait_for_function("document.getElementById('work-thread-title').textContent.includes('Sunday bulletin')")
-        assert page.get_by_label('Add a comment',exact=True).input_value()==''
-        page.get_by_label('Add a comment',exact=True).fill('Publication draft')
-        page.locator('[data-task-id="'+TASK_ID+'"]').click();assert page.get_by_label('Add a comment',exact=True).input_value()=='Draft stays with this task'
+        page.get_by_role('textbox',name='Add a comment',exact=True).fill('Draft stays with this task')
+        page.get_by_role('combobox',name='Publication conversation',exact=True).select_option(PUB_ID);page.wait_for_function("document.getElementById('work-thread-title').textContent.includes('Sunday bulletin')")
+        assert page.get_by_role('textbox',name='Add a comment',exact=True).input_value()==''
+        page.get_by_role('textbox',name='Add a comment',exact=True).fill('Publication draft')
+        page.locator('[data-task-id="'+TASK_ID+'"]').click();assert page.get_by_role('textbox',name='Add a comment',exact=True).input_value()=='Draft stays with this task'
         api.failures['comment']=[503];page.get_by_role('button',name='Post comment',exact=True).click();wait_text(page,'#work-comment-status','draft is kept')
-        assert page.get_by_label('Add a comment',exact=True).input_value()=='Draft stays with this task'
+        assert page.get_by_role('textbox',name='Add a comment',exact=True).input_value()=='Draft stays with this task'
         first_nonce=next(c['nonce'] for c in api.calls if c['action']=='comment')
         page.get_by_role('button',name='Post comment',exact=True).click();wait_text(page,'#work-comment-status','Comment posted')
         assert [c for c in api.calls if c['action']=='comment'][-1]['nonce']==first_nonce
-        assert page.get_by_label('Add a comment',exact=True).input_value()==''
+        assert page.get_by_role('textbox',name='Add a comment',exact=True).input_value()==''
         evidence.append('plain-text task/name/comment rendering, separate task/publication drafts, failed comment retention and stable retry nonce')
         page.close()
         # Publisher edit CAS conflict loads latest details while preserving the exact draft.
         page,api=open_page();selected(page);page.get_by_role('button',name='Edit task',exact=True).click()
-        page.get_by_label('Title',exact=True).fill('My unchanged conflict draft');page.get_by_label('Details',exact=True).fill('My long draft details')
+        page.get_by_role('textbox',name='Title',exact=True).fill('My unchanged conflict draft');page.get_by_role('textbox',name='Details',exact=True).fill('My long draft details')
         api.conflict=True;page.get_by_role('button',name='Save task',exact=True).click();wait_text(page,'#work-editor-note','your draft below is unchanged')
-        assert page.get_by_label('Title',exact=True).input_value()=='My unchanged conflict draft'
-        assert page.get_by_label('Details',exact=True).input_value()=='My long draft details'
+        assert page.get_by_role('textbox',name='Title',exact=True).input_value()=='My unchanged conflict draft'
+        assert page.get_by_role('textbox',name='Details',exact=True).input_value()=='My long draft details'
         assert page.locator('#work-context-title').inner_text()=='Latest task from another editor'
         assert api.count('update')==1
         page.get_by_role('button',name='Save task',exact=True).click();wait_text(page,'#work-notice','Task saved.')
@@ -143,10 +148,10 @@ def main():
         page.close()
         # Polling never overwrites dirty editor/comment/status, never overlaps, pauses hidden, backs off and stops on 401.
         page,api=open_page();selected(page);page.get_by_role('button',name='Edit task',exact=True).click()
-        page.get_by_label('Title',exact=True).fill('Unsaved editor words');page.get_by_label('Add a comment',exact=True).fill('Unsaved conversation words')
+        page.get_by_role('textbox',name='Title',exact=True).fill('Unsaved editor words');page.get_by_role('textbox',name='Add a comment',exact=True).fill('Unsaved conversation words')
         page.locator('#work-status').select_option('in_progress');api.tasks[0]['title']='Fresh remote task';api.tasks[0]['revision']=2;api.revision+=1
         page.clock.fast_forward(10000);page.wait_for_function("document.getElementById('work-context-title').textContent === 'Fresh remote task'")
-        assert page.get_by_label('Title',exact=True).input_value()=='Unsaved editor words' and page.get_by_label('Add a comment',exact=True).input_value()=='Unsaved conversation words'
+        assert page.get_by_role('textbox',name='Title',exact=True).input_value()=='Unsaved editor words' and page.get_by_role('textbox',name='Add a comment',exact=True).input_value()=='Unsaved conversation words'
         assert page.locator('#work-status').input_value()=='in_progress'
         assert page.evaluate('document.activeElement.id')=='work-status'
         before=api.count('list');page.evaluate("window.__hidden=true;document.dispatchEvent(new Event('visibilitychange'))");page.clock.fast_forward(60000);page.wait_for_timeout(30);assert api.count('list')==before
@@ -157,11 +162,11 @@ def main():
         page.clock.fast_forward(10000);page.wait_for_timeout(30);assert api.count('list')==before+1
         page.clock.fast_forward(10000);page.wait_for_function('window.__active === 0');assert api.count('list')==before+2
         api.failures['list']=[401];page.clock.fast_forward(10000);wait_text(page,'#work-notice','Your session ended');before=api.count('list');page.clock.fast_forward(120000);page.wait_for_timeout(30);assert api.count('list')==before
-        assert page.get_by_label('Title',exact=True).input_value()=='Unsaved editor words' and page.get_by_label('Add a comment',exact=True).input_value()=='Unsaved conversation words'
+        assert page.get_by_role('textbox',name='Title',exact=True).input_value()=='Unsaved editor words' and page.get_by_role('textbox',name='Add a comment',exact=True).input_value()=='Unsaved conversation words'
         evidence.append('10-second visible-only serialized polling, focus and dirty drafts/status kept, hidden pause, failure backoff and 401 stop')
         page.close()
         # A disappearing assignment closes the context but keeps an unsent draft out of new contexts.
-        page,api=open_page(False);selected(page);page.get_by_label('Add a comment',exact=True).fill('Unsent private assignment draft')
+        page,api=open_page(False);selected(page);page.get_by_role('textbox',name='Add a comment',exact=True).fill('Unsent private assignment draft')
         api.tasks=[api.tasks[1]];api.revision+=1;page.clock.fast_forward(10000);wait_text(page,'#work-notice','no longer available')
         assert page.locator('#work-detail').is_hidden() and page.locator('#work-thread').is_hidden()
         evidence.append('assignment removal closes former task/thread without showing old draft in another context')
@@ -169,7 +174,7 @@ def main():
         # Phone and desktop layout and keyboard reachability using the actual shell and styles.
         for width in [320,390,1365]:
             page,api=open_page(width=width);selected(page);page.get_by_role('button',name='Edit task',exact=True).click()
-            page.get_by_label('View',exact=True).select_option('board')
+            page.get_by_role('combobox',name='View',exact=True).select_option('board')
             assert page.evaluate('document.documentElement.scrollWidth <= innerWidth'),width
             page.get_by_role('link',name='Home',exact=True).focus();assert page.evaluate('document.activeElement.textContent')=='Home'
             out=os.environ.get('KCMC_WORKSPACE_SCREENSHOT')

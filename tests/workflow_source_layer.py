@@ -28,6 +28,7 @@ FIXTURE = 'tests/fixtures/workflow-journeys-reviewed.json'
 FIXTURE_SHA256 = 'ff2f8054a00563bd96c9cf754e4c6cf1d8809eae9aa5b42c88317776dc6dae62'
 HISTORICAL_PASSWORD_CONTRACT_SHA256 = '0008d242a8da3a80a7bf0a54f2e42c9a5c77ce77de7068c36fa88cffdabcc59d'
 HISTORICAL_TIMECLOCK_CONTRACTS = {
+    'timeclock-adjustment-contract.php': '70c126137f92a3b98f6390f1e7710a59bde3530c0c2ffe3096cf3e8624065ebb',
     'timeclock-mvp-contract.php': 'f11c9ef2e723a7996788f5feb15f8665cd546fcc26f6e138e94c67cc4b964400',
     'timeclock-correction-contract.php': 'ae46a392540c334dfe3ae7453c34db0c9035dad049a1f257f17c59e1bc7a9aff',
 }
