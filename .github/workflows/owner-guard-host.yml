@@ -1,0 +1,69 @@
+name: KCMC scoped owner account and UI hosting repair
+on:
+  pull_request:
+    paths:
+      - 'tools/kcmc-owner-guard-oct15/**'
+      - 'KCMC-Connect-Phase6-Recreated/lib/password-lifecycle.php'
+      - 'KCMC-Connect-Phase6-Recreated/admin/users.php'
+      - 'KCMC-Connect-Phase6-Recreated/admin/password-resets.php'
+      - 'KCMC-Connect-Phase6-Recreated/member/notifications.php'
+      - 'KCMC-Connect-Phase6-Recreated/lib/bootstrap.php'
+      - '.github/workflows/owner-guard-host.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  current-python-php:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          persist-credentials: false
+      - name: Fetch only exact approved source objects
+        run: git fetch --no-tags origin 93c72f4fc430d311e01108d3a30d0561bb701c9d
+      - name: Exact generation, source membership and transactions
+        run: |
+          set -euo pipefail
+          cd tools/kcmc-owner-guard-oct15
+          sha256sum -c CHECKSUMS.sha256
+          python3 -B derive_installer.py
+          git diff --exit-code -- installer.py provenance.json
+          python3 -B test_installer.py --runtime-root ../../KCMC-Connect-Phase6-Recreated --git-root ../..
+          python3 -B test_inherited_safety.py
+      - name: Real PHP8.2 temporary four-file transaction
+        run: |
+          set -euo pipefail
+          docker pull php@sha256:118ef4fb1db5e866fb604f2f260da81f819a0a1eac87a4083f9194f48e00beee
+          kcmc_owner_ci_php=$(mktemp -d)
+          trap 'rm -f -- "$kcmc_owner_ci_php/php"; rmdir -- "$kcmc_owner_ci_php"' EXIT
+          cat > "$kcmc_owner_ci_php/php" <<'SH'
+          #!/usr/bin/env bash
+          set -euo pipefail
+          if [ "$#" -eq 3 ] && [ "$1" = '-n' ] && [ "$2" = '-l' ]; then
+            kcmc_session_ci_stage=$(dirname -- "$3")
+            exec docker run --rm --network none --user "$(id -u):$(id -g)" \
+              --mount "type=bind,src=$kcmc_session_ci_stage,dst=$kcmc_session_ci_stage,readonly" \
+              php@sha256:118ef4fb1db5e866fb604f2f260da81f819a0a1eac87a4083f9194f48e00beee php "$@"
+          fi
+          exec docker run --rm --network none --user "$(id -u):$(id -g)" \
+            php@sha256:118ef4fb1db5e866fb604f2f260da81f819a0a1eac87a4083f9194f48e00beee php "$@"
+          SH
+          chmod 0700 "$kcmc_owner_ci_php/php"
+          python3 -B tools/kcmc-owner-guard-oct15/verify-stage.py --php "$kcmc_owner_ci_php/php"
+  python36:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          persist-credentials: false
+      - name: Actual Python3.6 exact source and temporary transactions
+        run: |
+          docker run --rm --network none --user "$(id -u):$(id -g)" \
+            --mount "type=bind,src=$PWD,dst=/source,readonly" \
+            -w /source/tools/kcmc-owner-guard-oct15 \
+            python@sha256:f8652afaf88c25f0d22354d547d892591067aa4026a7fa9a6819df9f300af6fc \
+            bash -c 'set -e; python3 -B test_installer.py --runtime-root ../../KCMC-Connect-Phase6-Recreated; python3 -B test_inherited_safety.py'

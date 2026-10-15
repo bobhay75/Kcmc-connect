@@ -1,0 +1,28 @@
+{
+  "frozen_engine_sha256": "4df2cdef03853c80c96350398b6a5b92cb78722e202debd3279d535fb9e757d7",
+  "reviewed_delta_sha256": {
+    "owner-account-guard-reviewed.json": "d872e4deb60baca4cade936412c9706294a3e8a5a2e671acddc59493ca52e527",
+    "push-owner-link-reviewed.json": "b6ca2c3e1e218627643aa9d5962ccc11b535242bb7e4e5c25303afd776f32042"
+  },
+  "session_prerequisite_delta_sha256": "85acda478e90d091f46f290018ab4eca65283e380b0eefa87752b1d27a8128c8",
+  "embedded_engines": {
+    "main93": "d2d18525ed3f17e0c5962ef5e84ebd4075bf318f8811fa25e1287a5e730bb444"
+  },
+  "installer_sha256": "c9f63defe59e98b825b57e18a24205c08cca5f62061d88e13ec75477ac995395",
+  "scope": [
+    "lib/password-lifecycle.php",
+    "admin/users.php",
+    "admin/password-resets.php",
+    "member/notifications.php"
+  ],
+  "canonical_source_commit": "93c72f4fc430d311e01108d3a30d0561bb701c9d",
+  "read_only_prerequisite": {
+    "path": "lib/bootstrap.php",
+    "sha256": "d4eecc7375f6e678632b8b88fb8c64faaba6ac43513a59bae42fe673505bc263",
+    "bytes": 24274,
+    "source_commit": "93c72f4fc430d311e01108d3a30d0561bb701c9d",
+    "canonical_before_sha256": "96590431ef787a6a689a3c9e1655cdb4cac10c7c86e5cde8f579cd0b3571c518",
+    "session_fixture_sha256": "85acda478e90d091f46f290018ab4eca65283e380b0eefa87752b1d27a8128c8"
+  },
+  "transaction_policy": "All frozen engine functions/classes unchanged except exact stage-byte syntax lint and .code staging suffix; wrapper composes existing lease callback with bootstrap lease."
+}

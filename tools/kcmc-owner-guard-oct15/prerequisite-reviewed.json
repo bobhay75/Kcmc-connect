@@ -1,0 +1,8 @@
+{
+  "path": "lib/bootstrap.php",
+  "sha256": "d4eecc7375f6e678632b8b88fb8c64faaba6ac43513a59bae42fe673505bc263",
+  "bytes": 24274,
+  "source_commit": "93c72f4fc430d311e01108d3a30d0561bb701c9d",
+  "canonical_before_sha256": "96590431ef787a6a689a3c9e1655cdb4cac10c7c86e5cde8f579cd0b3571c518",
+  "session_fixture_sha256": "85acda478e90d091f46f290018ab4eca65283e380b0eefa87752b1d27a8128c8"
+}
