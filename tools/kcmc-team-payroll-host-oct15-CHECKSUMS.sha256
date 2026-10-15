@@ -1,0 +1,7 @@
+ae08f104fe59fd7d93df2b2d42498f43e87b1625523cdb61d84a3f15d1b8f7c4  .github/workflows/team-payroll-host-repair.yml
+ab5c6303530b006f6a59eb759e7514c6b83f4bb9a9cfdc50c217be5f5fffef22  tools/kcmc-team-payroll-host-coordinator-oct15.py
+b756d6d062f16528a91572fa3ed18ae67ffbe200099bf40f715bfe008d773c8a  tools/test-team-payroll-host-coordinator-oct15.py
+5fdcc5033c282722d26684c00fbaae4b5d222fbe6ab6bf12a139bbba25c3748d  tools/verify-team-payroll-host-coordinator-oct15.py
+2e257e8ff9397fb05ace0df3c1161616033d40ff62ecef314c874254a7e5b48f  tools/kcmc-team-payroll-host-oct15-README.md
+a968690ed84b9e45c7975570be8d368da8a403008f3b82ccc0c2c935ac2c5f0f  tools/kcmc-team-payroll-repair-oct15/installer.py
+dd83356bb84e29bc8e9f871820d268861cfd58df83d7707519e4171c9f79b711  tools/kcmc-workflows-repair-v2-oct15/installer.py

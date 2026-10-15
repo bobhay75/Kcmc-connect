@@ -1,0 +1,86 @@
+{
+  "lib/password-lifecycle.php": {
+    "sha256": "80f49fd1de0a073c5d8a2bb224831e57ba85ad89c2e3e3d2a44db2cb64fa9692",
+    "bytes": 6103
+  },
+  "admin/users.php": {
+    "sha256": "66f3871c779251bc35b0d96b40df2fc36a7d6e357e701f164f50cf06cd848555",
+    "bytes": 15783
+  },
+  "admin/password-resets.php": {
+    "sha256": "263a233c57c4413378c7839736af4131850dc84f8dac82a6268f829e19107157",
+    "bytes": 8206
+  },
+  "lib/timeclock.php": {
+    "sha256": "41abfa115120faf46487c38449261536553319653dc531331f2f0297dd135636",
+    "bytes": 26832
+  },
+  "lib/push-subscriptions.php": {
+    "sha256": "ad69b69567d4aad246ba3bb99ea385ecc7c0b4aea2b1b079195ea06cb4923958",
+    "bytes": 15515
+  },
+  "member/push-settings.js": {
+    "sha256": "f92ede20083b580ddce13f16c2ce0d3b17238774a5cd56b82d2690766a1a4c99",
+    "bytes": 5512
+  },
+  "admin/prayer-care.php": {
+    "sha256": "8ff07b0388da607eab9d0f5978cbca3fccfd672f18f71aba69840fb174287a85",
+    "bytes": 246
+  },
+  "admin/prayer-inbox.php": {
+    "sha256": "1761b8b4d702695325a81384267441dac2b3a8dad447ba6f23939775093db93d",
+    "bytes": 2044
+  },
+  "member/prayers.php": {
+    "sha256": "ad6f55fda7925e8369e59e314760e38432af410b8525d84ca076ef5b3ba9e52e",
+    "bytes": 4755
+  },
+  "admin/timeclock-period-close.php": {
+    "sha256": "2c5926c43dce2b38c00b9d76cf965537dd30af6153d269c6d16d25fdc81dde01",
+    "bytes": 631
+  },
+  "admin/home.php": {
+    "sha256": "aea64b933fbc5a3abf5acd75e2812fe98011ea673d77990f7ea7ca8a32a85911",
+    "bytes": 3052
+  },
+  "admin/prayers.php": {
+    "sha256": "b0f86d582c6318e5d18991939767514a63f73049208bc778d584c30a6f30306d",
+    "bytes": 4065
+  },
+  "member/prayer-care.php": {
+    "sha256": "fc0d6e95228e1dbd716eda34ac742f054f7822c88526c799de4c5941b79000a1",
+    "bytes": 13652
+  },
+  "member/prayer-team.php": {
+    "sha256": "a04546e73e0ba35a67032f6d252070b7b665eff76f1a7d71626a690a05ebb65d",
+    "bytes": 434
+  },
+  "member/submit-prayer.php": {
+    "sha256": "715eb60841dd450e98a8e21129d1af9c659ea01a73611f6774df656abaf3f1ab",
+    "bytes": 1551
+  },
+  "member/timeclock.php": {
+    "sha256": "83c40fec83941f52fab10569a7ce503e70fcdcdb67ca46d1d008fb7bdda37529",
+    "bytes": 13078
+  },
+  "admin/timecards.php": {
+    "sha256": "2576d0b02dcfd5abf84f90e57e46102ba8cdeb01fdc2829cff5b94fdd27b5bf1",
+    "bytes": 21356
+  },
+  "admin/push.php": {
+    "sha256": "4d227e4c3799b822d86ecf6a7d1827882154c492a30ec024c5fca55e475d3089",
+    "bytes": 7680
+  },
+  "member/notifications.php": {
+    "sha256": "3e426c87454fbcd90603b08d027d93c4ca2d4c827fa313271e2978aabfaaeae1",
+    "bytes": 2217
+  },
+  "admin/index.php": {
+    "sha256": "1c9df6db3d15913d64291b3d4594f77a378702ec59e840777762539bcf95ac29",
+    "bytes": 10608
+  },
+  "member/index.php": {
+    "sha256": "b8073e15d0cc85bb62fc830d2752ce5d87f7672d9469ebd6df44aad64d2a6b15",
+    "bytes": 3904
+  }
+}

@@ -1,0 +1,132 @@
+{
+  "baseline_commit": "3317aed0c4b6a1619f8f68cced6a73fc4a245055",
+  "source_commit": "131071542f7985eb5d483d8123764df9319a7e37",
+  "core_source_commit": "ba7b5df314e1be604d46443025d41b1c8fe732a4",
+  "frozen_engine_sha256": "4df2cdef03853c80c96350398b6a5b92cb78722e202debd3279d535fb9e757d7",
+  "frozen_previous_extension_sha256": "78eb5ffa7cb36ce34dfa6cdf8af80bc11c304f0b7b25bcf75536f893952d0648",
+  "finite_extension_sha256": "a09f1d2e69f20a057be712b7c21bae3ec174e2faea60c9eb1dcbf2fca985d6c2",
+  "extension_revision_functions": [
+    "provider_needed",
+    "restore_owned"
+  ],
+  "input_sha256": {
+    "wrapper.py.in": "7ff2ca7dbc19a8a0ef5d480928248f205500bfaa99b60664694f81672f11683b",
+    "extension.py": "a09f1d2e69f20a057be712b7c21bae3ec174e2faea60c9eb1dcbf2fca985d6c2",
+    "frozen-workflows-extension.py": "78eb5ffa7cb36ce34dfa6cdf8af80bc11c304f0b7b25bcf75536f893952d0648",
+    "runtime-reviewed.json": "c0aaf002e6e45c7cf5a9d711dd26d28376949eb1688af3eb8fd7a6eb3d64e5a5",
+    "source-runtime-reviewed.json": "3a86a5bdab7a1bad85ab56a572973da9474fa13ad3ec88732f322954d3530fa5",
+    "prerequisites-reviewed.json": "acd213f2bbf57e54f0e2e03635423aadbbb62750d6221a2f0025949a84e13c11",
+    "core-after-reviewed.json": "5815a392c8cf255e47e4adb25663d32a3139ffeb559ec0f6851e8a2e7cb1a3a8"
+  },
+  "engine_sha256": "75da7224f90b8a1e4af26f688365120118cf3c2c11d35d0da354e578952e90df",
+  "installer_sha256": "a968690ed84b9e45c7975570be8d368da8a403008f3b82ccc0c2c935ac2c5f0f",
+  "paths": [
+    "lib/bootstrap.php",
+    "lib/operations-owner.php",
+    "lib/publication-drafts.php",
+    "lib/team-workspace.php",
+    "lib/payroll.php",
+    "member/workspace.css",
+    "member/workspace.js",
+    "admin/publishing-desk.js",
+    "admin/event-descriptions.js",
+    "api/team-workspace.php",
+    "admin/publication-projects.php",
+    "admin/save.php",
+    "admin/payroll-setup.php",
+    "admin/timeclock-period-close.php",
+    "admin/timecards-export.php",
+    "admin/timecards-print.php",
+    "admin/timecards.php",
+    "admin/publication-designer.php",
+    "admin/index.php",
+    "member/prayer-care.php",
+    "member/work.php",
+    "admin/home.php",
+    "member/index.php"
+  ],
+  "new_paths": [
+    "lib/publication-drafts.php",
+    "lib/team-workspace.php",
+    "lib/payroll.php",
+    "member/workspace.css",
+    "member/workspace.js",
+    "admin/publishing-desk.js",
+    "api/team-workspace.php",
+    "admin/payroll-setup.php",
+    "member/work.php"
+  ],
+  "read_only_prerequisites": {
+    "lib/password-lifecycle.php": {
+      "sha256": "80f49fd1de0a073c5d8a2bb224831e57ba85ad89c2e3e3d2a44db2cb64fa9692",
+      "bytes": 6103
+    },
+    "admin/users.php": {
+      "sha256": "66f3871c779251bc35b0d96b40df2fc36a7d6e357e701f164f50cf06cd848555",
+      "bytes": 15783
+    },
+    "admin/password-resets.php": {
+      "sha256": "263a233c57c4413378c7839736af4131850dc84f8dac82a6268f829e19107157",
+      "bytes": 8206
+    },
+    "lib/timeclock.php": {
+      "sha256": "41abfa115120faf46487c38449261536553319653dc531331f2f0297dd135636",
+      "bytes": 26832
+    },
+    "lib/push-subscriptions.php": {
+      "sha256": "ad69b69567d4aad246ba3bb99ea385ecc7c0b4aea2b1b079195ea06cb4923958",
+      "bytes": 15515
+    },
+    "member/push-settings.js": {
+      "sha256": "f92ede20083b580ddce13f16c2ce0d3b17238774a5cd56b82d2690766a1a4c99",
+      "bytes": 5512
+    },
+    "admin/prayer-care.php": {
+      "sha256": "8ff07b0388da607eab9d0f5978cbca3fccfd672f18f71aba69840fb174287a85",
+      "bytes": 246
+    },
+    "admin/prayer-inbox.php": {
+      "sha256": "1761b8b4d702695325a81384267441dac2b3a8dad447ba6f23939775093db93d",
+      "bytes": 2044
+    },
+    "member/prayers.php": {
+      "sha256": "ad6f55fda7925e8369e59e314760e38432af410b8525d84ca076ef5b3ba9e52e",
+      "bytes": 4755
+    },
+    "admin/prayers.php": {
+      "sha256": "b0f86d582c6318e5d18991939767514a63f73049208bc778d584c30a6f30306d",
+      "bytes": 4065
+    },
+    "member/prayer-team.php": {
+      "sha256": "a04546e73e0ba35a67032f6d252070b7b665eff76f1a7d71626a690a05ebb65d",
+      "bytes": 434
+    },
+    "member/submit-prayer.php": {
+      "sha256": "715eb60841dd450e98a8e21129d1af9c659ea01a73611f6774df656abaf3f1ab",
+      "bytes": 1551
+    },
+    "member/timeclock.php": {
+      "sha256": "83c40fec83941f52fab10569a7ce503e70fcdcdb67ca46d1d008fb7bdda37529",
+      "bytes": 13078
+    },
+    "admin/push.php": {
+      "sha256": "4d227e4c3799b822d86ecf6a7d1827882154c492a30ec024c5fca55e475d3089",
+      "bytes": 7680
+    },
+    "member/notifications.php": {
+      "sha256": "3e426c87454fbcd90603b08d027d93c4ca2d4c827fa313271e2978aabfaaeae1",
+      "bytes": 2217
+    }
+  },
+  "core_overlap": [
+    "admin/timeclock-period-close.php",
+    "admin/timecards.php",
+    "admin/index.php",
+    "member/prayer-care.php",
+    "admin/home.php",
+    "member/index.php"
+  ],
+  "bootstrap_policy": "Known existing target, normal installed/original lease, provider installed first; never a fixed read-only prerequisite.",
+  "transaction_policy": "One complete bundle. Frozen existing-file mover and finite ten-function absence/dependency extension; explicit two-function recovery revision checks dependent original/installed/absent leases through provider rollback boundaries.",
+  "prerequisite_policy": "15 unaffected core-after paths retain captured full identity/metadata leases through transaction, recovery and result boundaries. Six overlapping paths require exact core-after preimages."
+}

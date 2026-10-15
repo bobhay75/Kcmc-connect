@@ -1,0 +1,57 @@
+{
+  "frozen_engine_sha256": "4df2cdef03853c80c96350398b6a5b92cb78722e202debd3279d535fb9e757d7",
+  "baseline_commit": "00fdd469482564a3511a29a27a99502c24a32845",
+  "source_commit": "ba7b5df314e1be604d46443025d41b1c8fe732a4",
+  "input_sha256": {
+    "owner-dependency-extension.py": "748dc5de1d3f3d03c5a1e929ff65d640acfba3a09072846f09e4005f76745ae5",
+    "wrapper.py.in": "ac9cb75aa8ac8263446557633eecdb4151c77b12c91be19c8c66787b2e9c108c",
+    "extension.py": "a09f1d2e69f20a057be712b7c21bae3ec174e2faea60c9eb1dcbf2fca985d6c2",
+    "source-runtime-reviewed.json": "9775522457d5f77b7dc8f5cc6d37a9d95ab3888adf04ceed2490fe13bad3b9e8",
+    "runtime-reviewed.json": "e52f907a256e501e881c68ce790e6260ed9bddb2af911f44d401cafb8ed7c46f",
+    "owner-runtime-reviewed.json": "817ded563dde8678b75e33993cad163410d09401833162b67f183e3f32cf1eea",
+    "prerequisite-reviewed.json": "2b05802509a335d3dd5af320224c408d7d7cacc38821ede2b9ad18f98775f33e"
+  },
+  "embedded_engines": {
+    "owner": "4febd0a80881b4d8608047f39a40c14fa44c3327f689b26eb722996a7a444018",
+    "pre_a7": "3ac445119df87b917fcdb4661c0b16eafc1d21860b6d76c5b7b4dc751461696e",
+    "owner_a7": "380f5eda298cd24159257f7af1a657efb190ebacd2704a19fe5d3a597f64b583"
+  },
+  "installer_sha256": "dd83356bb84e29bc8e9f871820d268861cfd58df83d7707519e4171c9f79b711",
+  "groups": {
+    "owner": [
+      "lib/password-lifecycle.php",
+      "admin/users.php",
+      "admin/password-resets.php"
+    ],
+    "workflows": [
+      "lib/timeclock.php",
+      "lib/push-subscriptions.php",
+      "member/push-settings.js",
+      "admin/prayer-care.php",
+      "admin/prayer-inbox.php",
+      "member/prayers.php",
+      "admin/timeclock-period-close.php",
+      "admin/home.php",
+      "admin/prayers.php",
+      "member/prayer-care.php",
+      "member/prayer-team.php",
+      "member/submit-prayer.php",
+      "member/timeclock.php",
+      "admin/timecards.php",
+      "admin/push.php",
+      "member/notifications.php",
+      "admin/index.php",
+      "member/index.php"
+    ]
+  },
+  "read_only_prerequisite": {
+    "path": "lib/bootstrap.php",
+    "sha256": "d4eecc7375f6e678632b8b88fb8c64faaba6ac43513a59bae42fe673505bc263",
+    "bytes": 24274
+  },
+  "owner_policy": "Frozen existing-file engine with metadata, .code stage suffix, pinned stage lint, and explicit existing-only provider_needed/restore_owned recovery revision; unchanged mover and journal schema.",
+  "workflows_policy": "Explicit finite ten-function absence/dependency extension; frozen existing-file mover retained unchanged. Revised provider_needed/restore_owned revalidate completed consumer leases before each provider rollback and final callback.",
+  "original_package_checksums_sha256": "0d74e36e21b117ebbd4bdd73bc60778036b6d416d0cc372c7a129803d6448ee3",
+  "result_policy": "Preserve initially captured common-after leases across no-op; verify journal leases and result files after context exit and at final two-group boundary.",
+  "coordination": "Preflight both independent groups before apply; owner then workflows; preserve/report prior verified group success on a later failure; common after tuple coalesced."
+}
