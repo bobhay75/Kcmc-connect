@@ -9,6 +9,7 @@ import os
 from pathlib import Path
 import shutil
 import tempfile
+from unittest import mock
 
 
 def sha(data):
@@ -35,8 +36,6 @@ def main():
             engine = engines[group]
             engine.APP, engine.BACKUPS = app, root / ('private-' + group)
             engine.UID, engine.GID = os.getuid(), os.getgid()
-            if group == 'php':
-                engine.PHP = php
             for index, path in enumerate(engine.PATHS):
                 item = engine.FILES[path]
                 after = (args.runtime_root / path).read_bytes()
@@ -54,13 +53,22 @@ def main():
         sentinel = app / 'untouched-synthetic-content.json'
         sentinel.write_bytes(b'{"synthetic":"never read by the runner"}\n')
         sentinel.chmod(0o600)
-        assert runner.apply_groups(engines) == 0
+        # Force the ordinary PATH fallback in this temporary fixture only. The
+        # released command has no argument or environment path override.
+        with mock.patch.object(runner, 'PHP82_LOCATIONS', (str(root / 'absent-cpanel-php82'),
+                                                         str(root / 'absent-cloudlinux-php82'))):
+            results = runner.preflight(engines)
+            assert all(result[0] == 'before' for result in results.values())
+            assert engines['php'].PHP == os.path.abspath(php)
+            assert all(not engine.BACKUPS.exists() for engine in engines.values())
+            assert runner.apply_groups(engines) == 0
         for group in runner.GROUPS:
             engine = engines[group]
             for path in engine.PATHS:
                 assert sha((app / path).read_bytes()) == engine.FILES[path]['after_sha256']
         stats = {path: (app / path).stat() for path in before}
-        assert runner.apply_groups(engines) == 0
+        with mock.patch.object(runner, 'choose_php82_cli', side_effect=AssertionError('No runtime needed for no-op')):
+            assert runner.apply_groups(engines) == 0
         for path, stat in stats.items():
             current = (app / path).stat()
             assert (current.st_ino,current.st_mtime_ns,current.st_ctime_ns,current.st_mode) == (stat.st_ino,stat.st_mtime_ns,stat.st_ctime_ns,stat.st_mode)
@@ -75,7 +83,7 @@ def main():
             for path in engine.PATHS:
                 assert (app / path).read_bytes() == before[path]
         assert sentinel.read_bytes() == b'{"synthetic":"never read by the runner"}\n'
-    print('PASS: actual PHP 8.2 syntax-only staging; four-file apply, no-op and independent rollback in temporary copies')
+    print('PASS: actual PHP 8.2 PATH fallback and syntax-only staging; four-file apply, runtime-free no-op and independent rollback in temporary copies')
 
 
 if __name__ == '__main__':
