@@ -1,0 +1,24 @@
+name: KCMC pinned fish repository alignment
+on:
+  pull_request:
+    paths:
+      - 'tools/kcmc-repository-align-oct15/**'
+      - '.github/workflows/repository-fish-alignment.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  real-git-clean-fast-forward:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          persist-credentials: false
+      - name: Exact helper checksums and isolated real-Git safety checks
+        run: |
+          set -euo pipefail
+          cd tools/kcmc-repository-align-oct15
+          sha256sum -c CHECKSUMS.sha256
+          python3 -B test_align_repository.py
