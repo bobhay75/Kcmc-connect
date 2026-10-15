@@ -89,24 +89,8 @@ usort($kcmcAnnouncements, fn($a,$b)=>(int)($b['priority']??0)<=>(int)($a['priori
 
 <main id="mainContent">
 <section class="view active" data-view="home">
-  <section class="hero hero-imagery home-cover" data-hero-gallery aria-label="Welcome to KCMC">
-    <img class="home-cover-photo hero-photo is-current" data-hero-photo src="./assets/visuals/kcmc-building-retouched-20261009.jpg" alt="Kimberling City Methodist Church exterior; foreground weeds retouched" loading="eager" decoding="async" fetchpriority="high" width="1402" height="1122">
-    <img class="home-cover-photo hero-photo" data-hero-photo src="./assets/visuals/kcmc-worship-2017.webp" alt="People gathered for worship at KCMC, photographed in 2017" loading="lazy" decoding="async" width="640" height="344" hidden>
-    <img class="home-cover-photo hero-photo" data-hero-photo src="./assets/visuals/kcmc-congregation-gathering.jpg" alt="People seated around tables facing the KCMC worship stage" loading="lazy" decoding="async" width="2048" height="1105" hidden>
-    <img class="home-cover-photo hero-photo" data-hero-photo src="./assets/visuals/kcmc-family-outdoor-event.jpg" alt="Children and adults enjoying balloons and an inflatable slide at a Kimberling City outdoor event" loading="lazy" decoding="async" width="2048" height="1536" hidden>
-    <div class="wrap home-cover-layout">
-      <div class="home-cover-card">
-        <div class="eyebrow">Welcome to Kimberling City Methodist Church</div>
-        <h1>Come as you are.<br>Find your people.</h1>
-        <p class="lead">Join us for worship, get to know our church, and find your next step. There’s a place for you at KCMC.</p>
-        <div class="hero-photo-controls" data-hero-controls hidden>
-          <button type="button" data-hero-previous aria-label="Previous church photo">←</button>
-          <button type="button" data-hero-toggle>Pause photos</button>
-          <button type="button" data-hero-next aria-label="Next church photo">→</button>
-        </div>
-        <p class="sr-only" data-hero-status role="status" aria-live="polite"></p>
-      </div>
-    </div>
+  <section class="hero hero-imagery home-cover" aria-label="Kimberling City Methodist Church">
+    <img class="home-cover-photo" src="./assets/visuals/kcmc-building-retouched-20261009.jpg" alt="Kimberling City Methodist Church building" loading="eager" decoding="async" fetchpriority="high" width="1402" height="1122">
   </section>
 
   <section class="home-worship-strip" aria-label="Sunday worship at KCMC">
@@ -119,14 +103,6 @@ usort($kcmcAnnouncements, fn($a,$b)=>(int)($b['priority']??0)<=>(int)($a['priori
         <b>Three expressions. One church.</b>
         <span>Front Porch Gospel, Traditional Worship, and Contemporary Worship each offer a distinct style with a common mission.</span>
       </div>
-    </div>
-  </section>
-
-  <section class="section" aria-label="KCMC kids and family photos">
-    <div class="wrap grid3" data-kcmc-photo-gallery>
-      <div><img style="display:block;width:100%;height:auto;border-radius:18px" src="./assets/visuals/kcmc-family-outdoor-event.jpg" alt="Children and adults enjoying balloons and an inflatable slide at a Kimberling City outdoor event" loading="lazy" decoding="async" width="2048" height="1536"></div>
-      <div><img style="display:block;width:100%;height:auto;border-radius:18px" src="./assets/visuals/kcmc-kids-safari.jpg" alt="Children seated in a decorated safari cart inside KCMC" loading="lazy" decoding="async" width="2048" height="1536"></div>
-      <div><img style="display:block;width:100%;height:auto;border-radius:18px" src="./assets/visuals/kcmc-kids-game-room.jpg" alt="Children playing foosball and other table games in the KCMC game room" loading="lazy" decoding="async" width="2048" height="1289"></div>
     </div>
   </section>
 
