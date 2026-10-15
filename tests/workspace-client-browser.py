@@ -93,6 +93,21 @@ def ready(page):page.wait_for_function("document.getElementById('work-tasks').ge
 def selected(page):page.locator('[data-task-id="'+TASK_ID+'"]').click();page.wait_for_function("document.getElementById('work-thread-notice').textContent !== 'Loading conversation…'")
 def wait_text(page, selector, text):page.wait_for_function('(v) => document.querySelector(v[0]).textContent.includes(v[1])',arg=[selector,text])
 
+def watch_poll_cycles(page):
+    # Observe the actual end-of-cycle reschedule, after list AND thread work.
+    # Install after the virtual clock so the wrapper delegates to its timers.
+    page.evaluate('''() => {
+        const original = window.setTimeout;
+        window.__pollSchedules = 0; window.__pollDelay = null;
+        window.setTimeout = function(callback, delay, ...args) {
+            if (callback.name === 'poll') { window.__pollSchedules++; window.__pollDelay = delay; }
+            return original(callback, delay, ...args);
+        };
+    }''')
+
+def poll_cycle(page):return page.evaluate('window.__pollSchedules')
+def wait_poll_cycle(page, previous):page.wait_for_function('(n) => window.__pollSchedules > n && window.__active === 0',arg=previous)
+
 def main():
     evidence=[]
     with sync_playwright() as p:
@@ -149,19 +164,31 @@ def main():
         # Polling never overwrites dirty editor/comment/status, never overlaps, pauses hidden, backs off and stops on 401.
         page,api=open_page();selected(page);page.get_by_role('button',name='Edit task',exact=True).click()
         page.get_by_role('textbox',name='Title',exact=True).fill('Unsaved editor words');page.get_by_role('textbox',name='Add a comment',exact=True).fill('Unsaved conversation words')
-        page.locator('#work-status').select_option('in_progress');api.tasks[0]['title']='Fresh remote task';api.tasks[0]['revision']=2;api.revision+=1
-        page.clock.fast_forward(10000);page.wait_for_function("document.getElementById('work-context-title').textContent === 'Fresh remote task'")
+        watch_poll_cycles(page)
+        page.locator('#work-status').focus();page.locator('#work-status').select_option('in_progress')
+        assert page.evaluate('document.activeElement.id')=='work-status'
+        api.tasks[0]['title']='Fresh remote task';api.tasks[0]['revision']=2;api.revision+=1
+        cycle=poll_cycle(page);page.clock.fast_forward(10000);wait_poll_cycle(page,cycle)
+        assert page.locator('#work-context-title').inner_text()=='Fresh remote task'
         assert page.get_by_role('textbox',name='Title',exact=True).input_value()=='Unsaved editor words' and page.get_by_role('textbox',name='Add a comment',exact=True).input_value()=='Unsaved conversation words'
         assert page.locator('#work-status').input_value()=='in_progress'
         assert page.evaluate('document.activeElement.id')=='work-status'
         before=api.count('list');page.evaluate("window.__hidden=true;document.dispatchEvent(new Event('visibilitychange'))");page.clock.fast_forward(60000);page.wait_for_timeout(30);assert api.count('list')==before
-        page.evaluate("window.__holdAction='list';window.__hidden=false;document.dispatchEvent(new Event('visibilitychange'))");page.wait_for_function('window.__held !== null');page.clock.fast_forward(60000)
-        assert page.evaluate('window.__maxActive')==1
-        page.evaluate('window.__held();window.__held=null');page.wait_for_function('window.__active === 0')
-        api.failures['list']=[503];before=api.count('list');page.clock.fast_forward(10000);page.wait_for_function("document.getElementById('work-notice').textContent.includes('could not connect')");assert api.count('list')==before+1
-        page.clock.fast_forward(10000);page.wait_for_timeout(30);assert api.count('list')==before+1
-        page.clock.fast_forward(10000);page.wait_for_function('window.__active === 0');assert api.count('list')==before+2
-        api.failures['list']=[401];page.clock.fast_forward(10000);wait_text(page,'#work-notice','Your session ended');before=api.count('list');page.clock.fast_forward(120000);page.wait_for_timeout(30);assert api.count('list')==before
+        cycle=poll_cycle(page)
+        page.evaluate("window.__holdAction='list';window.__hidden=false;document.dispatchEvent(new Event('visibilitychange'))");page.wait_for_function('window.__held !== null')
+        # Keep the hold below the real 20-second request-abort deadline. Repeated
+        # visible events exercise refresh single-flight while that request waits.
+        page.evaluate("document.dispatchEvent(new Event('visibilitychange'));document.dispatchEvent(new Event('visibilitychange'))")
+        page.clock.fast_forward(15000);assert page.evaluate('window.__maxActive')==1
+        page.evaluate('window.__held();window.__held=null');wait_poll_cycle(page,cycle)
+        api.failures['list']=[503];before=api.count('list');cycle=poll_cycle(page)
+        page.clock.fast_forward(10000);wait_poll_cycle(page,cycle);wait_text(page,'#work-notice','could not connect')
+        assert api.count('list')==before+1 and page.evaluate('window.__pollDelay')==20000
+        cycle=poll_cycle(page);page.clock.fast_forward(10000);page.wait_for_timeout(30);assert api.count('list')==before+1
+        page.clock.fast_forward(10000);wait_poll_cycle(page,cycle)
+        assert api.count('list')==before+2 and page.evaluate('window.__pollDelay')==10000
+        api.failures['list']=[401];page.clock.fast_forward(10000);wait_text(page,'#work-notice','Your session ended');page.wait_for_function('window.__active === 0')
+        before=api.count('list');page.clock.fast_forward(120000);page.wait_for_timeout(30);assert api.count('list')==before
         assert page.get_by_role('textbox',name='Title',exact=True).input_value()=='Unsaved editor words' and page.get_by_role('textbox',name='Add a comment',exact=True).input_value()=='Unsaved conversation words'
         evidence.append('10-second visible-only serialized polling, focus and dirty drafts/status kept, hidden pause, failure backoff and 401 stop')
         page.close()
