@@ -3,6 +3,7 @@
 from __future__ import print_function
 
 import hashlib
+import json
 from pathlib import Path
 
 HERE = Path(__file__).resolve().parent
@@ -19,10 +20,20 @@ from __future__ import print_function
 
 import argparse
 import hashlib
+import os
+import re
+import shutil
+import subprocess
 import sys
 import types
 
 GROUPS = ('php', 'skip')
+PHP82_LOCATIONS = (
+    '/opt/cpanel/ea-php82/root/usr/bin/php',
+    '/opt/alt/php82/usr/bin/php',
+    '/opt/alt/php82/usr/bin/php-cli',
+    '/usr/local/bin/ea-php82',
+)
 '''
 
 RUNTIME = '''
@@ -59,6 +70,31 @@ def safe_message(error, engines):
     return str(error) if isinstance(error, known) else 'Unexpected failure; refused safely'
 
 
+def php82_candidates():
+    paths=list(PHP82_LOCATIONS)
+    # The hosting account's ordinary PHP command is a final compatibility fallback.
+    found=shutil.which('php')
+    if found:
+        paths.append(os.path.abspath(found))
+    unique=[]
+    for path in paths:
+        if path not in unique:
+            unique.append(path)
+    return unique
+
+def choose_php82_cli():
+    """Version-only checks, before any private backup creation or staging."""
+    for path in php82_candidates():
+        try:
+            output=subprocess.check_output([path,'-n','-v'],stderr=subprocess.STDOUT,timeout=8)
+        except (OSError, subprocess.SubprocessError):
+            continue
+        match=re.match(br'\\APHP (8\\.2\\.[0-9]+) \\(cli\\)(?:\\s|\\Z)',output)
+        if match is not None:
+            return path,match.group(1).decode('ascii')
+    raise Refusal('No compatible PHP 8.2 CLI found; no backup or live replacement made')
+
+
 def preflight(engines):
     """Both bundles and both private journals pass before either apply starts."""
     results = {}
@@ -70,6 +106,11 @@ def preflight(engines):
         except BaseException as error:
             raise Refusal('GROUP ' + group + ' PREFLIGHT_REFUSED ' + safe_message(error, engines))
         results[group] = (state, files)
+    # A repaired PHP group, including a JS-only retry, needs no runtime probe.
+    if results['php'][0] == 'before':
+        php, version = choose_php82_cli()
+        engines['php'].PHP = php
+        print('PHP_CLI ' + php + ' PHP ' + version)
     return results
 
 
@@ -205,6 +246,13 @@ def generate():
     path = HERE / 'installer.py'
     path.write_bytes(output)
     path.chmod(0o600)
+    (HERE / 'provenance.json').write_text(json.dumps({
+        'wrapper_only_parent_sha256': '11c33dbd438c614353074cdd8193d5b6fb54d3728baa77dbeef0cebf67e4938a',
+        'embedded_engines': {group: expected for group, unused_path, expected in ENGINE_FILES},
+        'installer_sha256': hashlib.sha256(output).hexdigest(),
+        'php_discovery_sha256': hashlib.sha256(RUNTIME[RUNTIME.index('def php82_candidates():'):RUNTIME.index('def preflight(')].rstrip().encode('utf-8')).hexdigest(),
+        'scope': ['lib/timeclock.php', 'member/activate.php', 'member/reset-password.php', 'app.js'],
+    }, indent=2, sort_keys=True) + '\n')
     print('GENERATED ' + str(path))
     print('SHA256 ' + hashlib.sha256(output).hexdigest())
     return path

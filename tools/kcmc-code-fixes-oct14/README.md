@@ -24,8 +24,17 @@ does not provide a kernel compare-and-swap against an uncooperative writer in
 the final syscall gap. Unknown or interrupted renames retain manual-review
 journals. Do not delete a journal to bypass this refusal.
 
-PHP syntax is checked using the fixed cPanel PHP 8.2 binary with `-n -v` and
-`-n -l` against staged code only. JavaScript staging verifies the reviewed bytes;
+When the PHP group needs repair, the wrapper selects and verifies a PHP 8.2 CLI
+before printing either group's `READY` result or creating a backup/staged file.
+It tries the reviewed cPanel and CloudLinux locations, then the account's ordinary
+`php` command on PATH. Each candidate must return success and begin with a PHP
+8.2 CLI version banner from `-n -v`; other versions, CGI/FPM, errors and timeouts
+are refused. The selected path/version is printed as `PHP_CLI`. There is no
+`--php` or arbitrary environment path override. Syntax is checked using that
+verified CLI with `-n -v` and `-n -l` against staged code only. A PHP group already
+repaired requires no runtime probe, including a JavaScript-only retry or a full
+no-op. Rollback restores only the original owned, verified backup bytes and
+requires no PHP runtime. JavaScript staging verifies the reviewed bytes;
 its syntax and keyboard behavior are checked before release using Node and
 Chromium. The host does not claim a JavaScript syntax test when Node is absent.
 
@@ -38,11 +47,14 @@ temporary script after execution. Rollback requires one explicit group and its
 exact private session basename. Uncertain sessions require review.
 
 `generate_runner.py` reproduces the standalone file from the exact sibling
-engines. `test_composition.py` checks default-read-only behavior, all old/repaired
+engines, which remain byte-for-byte unchanged. `provenance.json` records both
+engine hashes and the prior standalone runner hash; `CHECKSUMS.sha256` covers the
+release package. `test_composition.py` checks default-read-only behavior, all old/repaired
 combinations, actual reviewed source reconstruction, independent rollback,
 unknown/mixed inputs, failures and diagnostics with private/content sentinels.
 The skip engine has 49 additional transaction/provenance cases. The real-stage
-fixture uses actual PHP 8.2 on new temporary copies and performs no app execution.
+fixture forces missing fixed locations and discovers actual PHP 8.2 through PATH
+on new temporary copies and performs no app execution.
 
 The user's sole-owner/master-administrator direction remains in effect. Code
 installation and printed hashes must be verified from the owner terminal output;
