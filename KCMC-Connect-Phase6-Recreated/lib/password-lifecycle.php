@@ -16,6 +16,7 @@ function kcmc_can_issue_password_reset(array $actor, array $target): bool {
     $actorId = (string)($actor['id'] ?? '');
     $targetId = (string)($target['id'] ?? '');
     if ($actorId === '' || $targetId === '' || hash_equals($actorId, $targetId)) return false;
+    if (kcmc_is_designated_owner($target)) return false;
     $actorRole = kcmc_role($actor);
     $targetRole = kcmc_role($target);
     if ($actorRole === 'recovery_admin') return true;
