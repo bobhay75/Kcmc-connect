@@ -4,12 +4,14 @@ on:
     paths:
       - 'KCMC-Connect-Phase6-Recreated/**'
       - 'tests/app-theme-browser.py'
+      - 'tests/app-navigation-vm.cjs'
       - '.github/workflows/app-theme.yml'
   push:
     branches: [main]
     paths:
       - 'KCMC-Connect-Phase6-Recreated/**'
       - 'tests/app-theme-browser.py'
+      - 'tests/app-navigation-vm.cjs'
       - '.github/workflows/app-theme.yml'
   workflow_dispatch:
 permissions:
@@ -28,6 +30,7 @@ jobs:
           python3 -m py_compile tests/app-theme-browser.py
           find KCMC-Connect-Phase6-Recreated -name '*.php' -print0 | xargs -0 -n1 php -l
           node --check KCMC-Connect-Phase6-Recreated/app-navigation.js
+          node tests/app-navigation-vm.cjs
           git diff --check
           python3 tests/app-theme-browser.py --http-only
       - name: Browser dependencies

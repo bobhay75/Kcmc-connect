@@ -506,9 +506,10 @@ def workspace_colors(page, width):
 def history_and_clock(contexts, base, output, failures):
     snapshots = []
     script_errors = []
+    native_state_journey(contexts["member"], base, output, failures)
     def snapshot(page, phase):
         value = page.evaluate("""() => {
-            const nav=window.navigation, entry=e=>e?{key:e.key,index:e.index,url:e.url}:null;
+            const nav=window.navigation, entry=e=>e?{key:e.key,index:e.index,url:e.url,marker:typeof e.getState==='function'?e.getState()?.kcmcAppScreenV1??null:null}:null;
             let state={type:typeof nav,canGoBack:null,current:null,entries:[]};
             try{if(nav)state={type:typeof nav,canGoBack:nav.canGoBack??null,current:entry(nav.currentEntry),entries:typeof nav.entries==='function'?nav.entries().map(entry):[]}}catch(error){state.error=String(error)}
             const script=document.querySelector('script[src*="/app-navigation.js"]'),resources=performance.getEntriesByType('resource').filter(r=>r.name.includes('/app-navigation.js'));
@@ -570,6 +571,78 @@ def history_and_clock(contexts, base, output, failures):
             check(True, "Back has a working fallback without JavaScript")
     finally:
         context.close()
+
+
+def native_state_journey(context, base, output, failures):
+    """Real native-entry state survives private reload and browser traversal."""
+    seed = """(() => {
+        const classic={unrelatedClassic:{exact:['keep',7]}};
+        if(history.state===null)history.replaceState(classic,'',location.href);
+        const nav=window.navigation;
+        if(nav?.currentEntry&&typeof nav.currentEntry.getState==='function'&&typeof nav.updateCurrentEntry==='function'){
+            const state=nav.currentEntry.getState();
+            if(state===undefined||state===null)nav.updateCurrentEntry({state:{unrelatedNavigation:{exact:['keep',9]}}});
+            window.__beforeKcmcApp={historyLength:history.length,entryCount:nav.entries().length};
+        }
+    })();"""
+    observations = []
+    def state(page, phase, freshly_loaded=True):
+        page.wait_for_function("document.documentElement.dataset.kcmcNavigationReady === 'true'")
+        value = page.evaluate("""() => {
+            const nav=window.navigation,current=nav.currentEntry,entryState=current.getState();
+            return {url:location.href,path:location.pathname,referrer:document.referrer,
+                entryKey:current.key,entryIndex:current.index,entryCount:nav.entries().length,
+                historyLength:history.length,beforeApp:window.__beforeKcmcApp,
+                marker:entryState?.kcmcAppScreenV1??null,unrelatedNavigation:entryState?.unrelatedNavigation??null,
+                classicState:history.state};
+        }""")
+        value["phase"] = phase; observations.append(value)
+        (output / "native-navigation-state.json").write_text(json.dumps(observations, indent=2) + "\n")
+        expected_marker = dict(version=1, base=urlparse(base).path + "/", origin=urlparse(base).scheme + "://" + urlparse(base).netloc,
+                               path=value["path"], key=value["entryKey"], index=value["entryIndex"])
+        check(value["marker"] == expected_marker,
+              phase + " native marker stores only the exact app boundary, path and native entry identity")
+        check(value["unrelatedNavigation"] == dict(exact=["keep", 9])
+              and value["classicState"] == dict(unrelatedClassic=dict(exact=["keep", 7])),
+              phase + " preserves unrelated Navigation API and classic History state")
+        if freshly_loaded:
+            check(value["beforeApp"] == dict(historyLength=value["historyLength"], entryCount=value["entryCount"]),
+                  phase + " adds no native or classic history entries")
+        return value
+    with diagnostic_page(context, output, "native-entry-state-and-traversal", failures) as page:
+        page.add_init_script(seed)
+        account = base + "/member/?fixture_context=synthetic-private#personal-test"
+        clock = base + "/member/timeclock.php?fixture_context=synthetic-private#shift-test"
+        notifications = base + "/member/notifications.php?fixture_context=synthetic-private#device-test"
+        page.goto(account)
+        initial = state(page, "account-initial")
+        page.reload()
+        reloaded = state(page, "account-reloaded")
+        check(initial["historyLength"] == reloaded["historyLength"] and initial["entryCount"] == reloaded["entryCount"],
+              "reloading a marked private screen adds no history entry")
+        page.goto(clock)
+        state(page, "clock-before-next-screen")
+        page.goto(notifications)
+        total = state(page, "notifications-before-native-back")
+        check(total["referrer"] == "", "native state journey keeps private referrers hidden")
+        page.locator("[data-kcmc-back]").click()
+        page.wait_for_url(clock, timeout=10000)
+        returned = state(page, "clock-after-native-back", freshly_loaded=False)
+        check(returned["historyLength"] == total["historyLength"] and returned["entryCount"] == total["entryCount"],
+              "private Back traverses an existing entry and preserves its exact private query and fragment")
+        page.go_forward()
+        page.wait_for_url(notifications)
+        state(page, "notifications-after-browser-forward", freshly_loaded=False)
+        page.locator("[data-kcmc-back]").click()
+        page.wait_for_url(clock, timeout=10000)
+        state(page, "clock-after-back-again", freshly_loaded=False)
+        same_path = base + "/member/timeclock.php?fixture_context=second-private#another-shift-test"
+        page.goto(same_path)
+        state(page, "same-path-distinct-private-entry")
+        page.locator("[data-kcmc-back]").click()
+        page.wait_for_url(clock, timeout=10000)
+        state(page, "same-path-private-back", freshly_loaded=False)
+        check(True, "different private entries at the same path can return through actual native history")
 
 
 if __name__ == "__main__":

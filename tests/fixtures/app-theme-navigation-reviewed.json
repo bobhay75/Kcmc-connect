@@ -467,8 +467,8 @@
   },
   "new_files": {
     "app-navigation.js": {
-      "sha256": "3d9834c9993ac261a9cf3f5173c948d17d9b251e9fa0cff4b7921224389b371d",
-      "bytes": 2628,
+      "sha256": "9c4ea42155c3758afe216b2206b3a8d30b98714bc082c45cf8bea0384c545af2",
+      "bytes": 5861,
       "mode": "100644"
     },
     "app-theme.css": {
