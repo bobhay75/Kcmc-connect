@@ -4,8 +4,9 @@ require_once __DIR__ . '/../lib/bootstrap.php';
 kcmc_private_headers();
 $user = kcmc_require_login();
 ?><!doctype html>
-<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="robots" content="noindex,nofollow"><title>Work • KCMC Connect</title><link rel="stylesheet" href="<?=kcmc_h(kcmc_url('styles.css?v=3.0.0'))?>"><link rel="stylesheet" href="<?=kcmc_h(kcmc_url('member/workspace.css?v=1'))?>"><script src="<?=kcmc_h(kcmc_url('member/workspace.js?v=1'))?>" defer></script></head>
-<body class="portal-body"><main class="portal-shell work-shell" id="workspace" data-api="<?=kcmc_h(kcmc_url('api/team-workspace.php'))?>" data-csrf="<?=kcmc_h(kcmc_csrf())?>">
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="robots" content="noindex,nofollow"><title>Work • KCMC Connect</title><link rel="stylesheet" href="<?=kcmc_h(kcmc_url('styles.css?v=3.0.0'))?>"><link rel="stylesheet" href="<?=kcmc_h(kcmc_url('member/workspace.css?v=1'))?>"><script src="<?=kcmc_h(kcmc_url('member/workspace.js?v=1'))?>" defer></script><?php require_once __DIR__ . '/../lib/screen-navigation.php'; echo kcmc_screen_assets(); ?>
+</head>
+<body class="portal-body"><?php echo kcmc_screen_navigation('member/', true); ?><main class="portal-shell work-shell" id="workspace" data-api="<?=kcmc_h(kcmc_url('api/team-workspace.php'))?>" data-csrf="<?=kcmc_h(kcmc_csrf())?>">
 <header class="work-header"><div><nav class="work-back" aria-label="Return links"><a class="portal-back" href="<?=kcmc_h(kcmc_url('member/'))?>">← My account</a><a href="<?=kcmc_h(kcmc_url())?>">Home</a></nav><p class="eyebrow">KCMC WORK</p><h1>Work</h1><p id="work-intro">Your assignments and the conversation around them.</p></div><button type="button" class="btn gold" id="work-new" hidden>New task</button></header>
 <noscript><p class="portal-alert warning">Enable JavaScript to use assignments and conversations. Your account and Home links remain available above.</p></noscript>
 <p class="portal-alert work-notice" id="work-notice" role="status" aria-live="polite">Loading your work…</p>

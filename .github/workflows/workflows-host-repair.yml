@@ -8,6 +8,8 @@ on:
       - 'KCMC-Connect-Phase6-Recreated/member/**'
       - 'tests/workflow_source_layer.py'
       - 'tests/phase_two_source_layer.py'
+      - 'tests/visual_source_layer.py'
+      - 'tests/fixtures/app-theme-navigation-reviewed.json'
       - 'tests/fixtures/phase-two-workflows-reviewed.json'
       - '.github/workflows/workflows-host-repair.yml'
   workflow_dispatch:
@@ -23,7 +25,7 @@ jobs:
           ref: ${{ github.event.pull_request.head.sha || github.sha }}
           persist-credentials: false
       - name: Fetch only the exact baseline and reviewed source objects
-        run: git fetch --no-tags origin 00fdd469482564a3511a29a27a99502c24a32845 ba7b5df314e1be604d46443025d41b1c8fe732a4 9cf2087ebc1608ea4fbf2f2a7cd68553de004964
+        run: git fetch --no-tags origin 00fdd469482564a3511a29a27a99502c24a32845 ba7b5df314e1be604d46443025d41b1c8fe732a4 9cf2087ebc1608ea4fbf2f2a7cd68553de004964 b0c257edb8a42fc89fd6371c1bce7ee3efbd5ed9
       - name: Exact generation, canonical source membership and transactions
         run: |
           set -euo pipefail
@@ -69,7 +71,7 @@ jobs:
       - name: Actual Python3.6 exact source and temporary transactions
         run: |
           set -euo pipefail
-          git fetch --no-tags origin 00fdd469482564a3511a29a27a99502c24a32845 9cf2087ebc1608ea4fbf2f2a7cd68553de004964
+          git fetch --no-tags origin 00fdd469482564a3511a29a27a99502c24a32845 9cf2087ebc1608ea4fbf2f2a7cd68553de004964 b0c257edb8a42fc89fd6371c1bce7ee3efbd5ed9
           kcmc_workflows_historical=$(mktemp -d)
           trap 'rm -rf -- "$kcmc_workflows_historical"' EXIT
           python3 tests/workflow_source_layer.py --phase-one-output "$kcmc_workflows_historical/app"

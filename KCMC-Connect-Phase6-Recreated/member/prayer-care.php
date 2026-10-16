@@ -1,21 +1,22 @@
 <?php
 require_once __DIR__ . '/../lib/prayer-care.php';
+require_once __DIR__ . '/../lib/screen-navigation.php';
 kcmc_private_headers();
 $user = kcmc_require_role(KCMC_CARE_ROLES);
 $leader = kcmc_care_leader($user);
 $careAdmin = defined('KCMC_CARE_ADMIN_PAGE') && KCMC_CARE_ADMIN_PAGE === true;
-if ($careAdmin && !$leader) { http_response_code(403); exit('Access denied.'); }
+if ($careAdmin && !$leader) { kcmc_screen_error('Access denied.', 403); }
 $carePath = $careAdmin ? 'admin/prayer-care.php' : 'member/prayer-care.php';
 $view = is_string($_GET['view'] ?? null) ? $_GET['view'] : ($careAdmin ? 'review' : 'needs');
 if (!in_array($view, ['needs','praise','mine','review'], true)) $view = 'needs';
-if ($view === 'review' && !$leader) { http_response_code(403); exit('Access denied.'); }
+if ($view === 'review' && !$leader) { kcmc_screen_error('Access denied.', 403); }
 if (!$careAdmin && $view === 'review' && ($_SERVER['REQUEST_METHOD'] ?? 'GET') !== 'POST') {
     header('Location: ' . kcmc_url('admin/prayer-care.php?view=review'), true, 303);
     exit;
 }
 $error = '';
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    if (!kcmc_verify_csrf(is_string($_POST['csrf'] ?? null) ? $_POST['csrf'] : null)) { http_response_code(403); exit('Invalid request.'); }
+    if (!kcmc_verify_csrf(is_string($_POST['csrf'] ?? null) ? $_POST['csrf'] : null)) { kcmc_screen_error('Invalid request.', 403, $carePath); }
     try {
         $revision = filter_var($_POST['revision'] ?? null, FILTER_VALIDATE_INT);
         if ($revision === false || $revision === null || $revision < 0) throw new DomainException('Reload this page before saving.');
@@ -42,7 +43,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
       catch (Throwable $e) { http_response_code(503); $error = 'Prayer & Care could not save. Please contact the church office or try again later.'; }
 }
 try { $state = kcmc_care_read(); }
-catch (Throwable $e) { http_response_code(503); exit('Prayer & Care is temporarily unavailable. Please contact the church office.'); }
+catch (Throwable $e) { kcmc_screen_error('Prayer & Care is temporarily unavailable. Please contact the church office.', 503); }
 $now = time();
 $warrior = kcmc_care_warrior($state, $user);
 $signup = $state['warriors'][$user['id']]['status'] ?? '';
@@ -59,8 +60,9 @@ $display = array_filter($entries, function($e) use($view,$state,$user,$now) {
     return $e['kind'] === ($view === 'praise' ? 'praise' : 'need') && kcmc_care_shared($e,$state,$user,$now);
 });
 ?><!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="robots" content="noindex,nofollow,noarchive"><title><?= $careAdmin ? 'Prayer &amp; Care Review' : 'Prayer &amp; Care' ?> • KCMC Connect</title><link rel="stylesheet" href="<?=kcmc_h(kcmc_url('styles.css?v=3.0.3'))?>">
-<style>.care-nav{display:flex;gap:8px;flex-wrap:wrap;margin:20px 0}.care-nav a[aria-current]{background:#d8b267;color:#102638}.care-section{margin:20px 0}.care-section summary{cursor:pointer;font-weight:800;padding:10px 0}.care-note{font-size:.95rem;line-height:1.6}.care-card{overflow-wrap:anywhere}.care-card textarea{width:100%;box-sizing:border-box}.care-card .portal-actions{flex-wrap:wrap}.care-status{font-size:.9rem}.care-review{margin:18px 0;border-bottom:1px solid #567080;padding-bottom:16px}@media(max-width:480px){.care-nav a{flex:1 1 auto;text-align:center}.care-card .portal-actions .btn{max-width:100%;white-space:normal}.portal-shell{width:calc(100% - 24px)}.portal-card{padding:20px}}</style></head>
-<body class="portal-body"><main class="portal-shell portal-narrow">
+<style>.care-nav{display:flex;gap:8px;flex-wrap:wrap;margin:20px 0}.care-nav a[aria-current]{background:#d8b267;color:#102638}.care-section{margin:20px 0}.care-section summary{cursor:pointer;font-weight:800;padding:10px 0}.care-note{font-size:.95rem;line-height:1.6}.care-card{overflow-wrap:anywhere}.care-card textarea{width:100%;box-sizing:border-box}.care-card .portal-actions{flex-wrap:wrap}.care-status{font-size:.9rem}.care-review{margin:18px 0;border-bottom:1px solid #567080;padding-bottom:16px}@media(max-width:480px){.care-nav a{flex:1 1 auto;text-align:center}.care-card .portal-actions .btn{max-width:100%;white-space:normal}.portal-shell{width:calc(100% - 24px)}.portal-card{padding:20px}}</style><?php require_once __DIR__ . '/../lib/screen-navigation.php'; echo kcmc_screen_assets(); ?>
+</head>
+<body class="portal-body"><?php echo kcmc_screen_navigation($careAdmin ? 'admin/home.php' : 'member/', true); ?><main class="portal-shell portal-narrow">
 <a class="portal-back" href="<?=kcmc_h(kcmc_url($careAdmin ? 'admin/home.php' : 'member/'))?>"><?= $careAdmin ? '← Administration' : '← Account home' ?></a>
 <header><p class="eyebrow">MEMBERS ONLY</p><h1><?= $careAdmin ? 'Prayer &amp; Care review' : 'Prayer &amp; Care' ?></h1><p class="portal-lead">Pray together. Share hope. Celebrate answered prayers.</p><p class="care-note">Keep requests confidential. Share only your own details or details you have permission to share. Nothing here is public.</p></header>
 <?php if ($error): ?><p class="portal-alert" role="alert"><?=kcmc_h($error)?></p><?php elseif(isset($_GET['saved'])): ?><p class="portal-alert success" role="status">Saved securely.</p><?php endif; ?>

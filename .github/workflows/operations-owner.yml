@@ -8,6 +8,8 @@ on:
       - 'tools/release-operations-owner.py'
       - 'tests/workflow_source_layer.py'
       - 'tests/phase_two_source_layer.py'
+      - 'tests/visual_source_layer.py'
+      - 'tests/fixtures/app-theme-navigation-reviewed.json'
       - 'tests/fixtures/phase-two-workflows-reviewed.json'
       - '.github/workflows/operations-owner.yml'
   workflow_dispatch:
@@ -28,7 +30,7 @@ jobs:
         with:
           persist-credentials: false
       - name: Fetch exact phase-one artifact source and older workflow baseline
-        run: git fetch --no-tags origin 00fdd469482564a3511a29a27a99502c24a32845 9cf2087ebc1608ea4fbf2f2a7cd68553de004964
+        run: git fetch --no-tags origin 00fdd469482564a3511a29a27a99502c24a32845 9cf2087ebc1608ea4fbf2f2a7cd68553de004964 b0c257edb8a42fc89fd6371c1bce7ee3efbd5ed9
       - name: Original owner release and HTTP artifact proofs on exact phase-one source
         run: |
           set -euo pipefail

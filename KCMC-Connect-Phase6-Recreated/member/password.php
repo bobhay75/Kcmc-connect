@@ -50,8 +50,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 }
 ?><!doctype html>
-<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="robots" content="noindex,nofollow"><meta name="referrer" content="no-referrer"><title>Account Security • KCMC Connect</title><link rel="stylesheet" href="<?=kcmc_h(kcmc_url('styles.css?v=3.0.0'))?>"></head>
-<body class="portal-body"><main class="portal-shell portal-narrow">
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="robots" content="noindex,nofollow"><meta name="referrer" content="no-referrer"><title>Account Security • KCMC Connect</title><link rel="stylesheet" href="<?=kcmc_h(kcmc_url('styles.css?v=3.0.0'))?>"><?php require_once __DIR__ . '/../lib/screen-navigation.php'; echo kcmc_screen_assets(); ?>
+</head>
+<body class="portal-body"><?php echo kcmc_screen_navigation('member/', true); ?><main class="portal-shell portal-narrow">
 <a class="portal-back" href="<?=kcmc_h(kcmc_url('member/'))?>">← Member home</a>
 <section class="portal-card"><p class="eyebrow">ACCOUNT SECURITY</p><h1>Change your password</h1><p>Confirm your current password, then choose a new password with at least 12 characters.</p>
 <?php if ($error): ?><p class="portal-alert error" role="alert"><?=kcmc_h($error)?></p><?php endif; ?>

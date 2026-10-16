@@ -6,6 +6,8 @@ on:
       - 'KCMC-Connect-Phase6-Recreated/index.php'
       - 'KCMC-Connect-Phase6-Recreated/public-presentation.css'
       - 'KCMC-Connect-Phase6-Recreated/sw.js'
+      - 'tests/visual_source_layer.py'
+      - 'tests/fixtures/app-theme-navigation-reviewed.json'
       - '.github/workflows/fish-home-live-host.yml'
   workflow_dispatch:
 permissions:
@@ -22,12 +24,16 @@ jobs:
       - name: Exact generation, worker syntax, source and transaction checks
         run: |
           set -euo pipefail
+          git fetch --no-tags origin b0c257edb8a42fc89fd6371c1bce7ee3efbd5ed9
+          kcmc_fish_installed=$(mktemp -d)
+          trap 'rm -rf -- "$kcmc_fish_installed"' EXIT
+          python3 tests/visual_source_layer.py --baseline-output "$kcmc_fish_installed/app"
           cd tools/kcmc-fish-home-oct15
           sha256sum -c CHECKSUMS.sha256
           python3 -B derive_installer.py
           git diff --exit-code -- installer.py provenance.json
           node --check ../../KCMC-Connect-Phase6-Recreated/sw.js
-          python3 -B test_installer.py --runtime-root ../../KCMC-Connect-Phase6-Recreated
+          python3 -B test_installer.py --runtime-root "$kcmc_fish_installed/app"
           python3 -B test_inherited_safety.py
       - name: Real PHP 8.2 temporary transaction
         run: |
@@ -59,8 +65,14 @@ jobs:
           persist-credentials: false
       - name: Actual Python 3.6 exact variants and temporary transactions
         run: |
+          set -euo pipefail
+          git fetch --no-tags origin b0c257edb8a42fc89fd6371c1bce7ee3efbd5ed9
+          kcmc_fish_installed=$(mktemp -d)
+          trap 'rm -rf -- "$kcmc_fish_installed"' EXIT
+          python3 tests/visual_source_layer.py --baseline-output "$kcmc_fish_installed/app"
           docker run --rm --network none --user "$(id -u):$(id -g)" \
             --mount "type=bind,src=$PWD,dst=/source,readonly" \
+            --mount "type=bind,src=$kcmc_fish_installed/app,dst=/installed-runtime,readonly" \
             -w /source/tools/kcmc-fish-home-oct15 \
             python@sha256:f8652afaf88c25f0d22354d547d892591067aa4026a7fa9a6819df9f300af6fc \
-            bash -c 'set -e; python3 -B test_installer.py --runtime-root ../../KCMC-Connect-Phase6-Recreated; python3 -B test_inherited_safety.py'
+            bash -c 'set -e; python3 -B test_installer.py --runtime-root /installed-runtime; python3 -B test_inherited_safety.py'

@@ -61,8 +61,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $reset && $target) {
     }
 }
 ?><!doctype html>
-<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="robots" content="noindex,nofollow"><meta name="referrer" content="no-referrer"><title>Reset Password • KCMC Connect</title><link rel="stylesheet" href="<?=kcmc_h(kcmc_url('styles.css?v=3.0.0'))?>"></head>
-<body class="portal-body"><main class="portal-shell portal-narrow"><a class="portal-back" href="<?=kcmc_h(kcmc_url('member/login.php'))?>">← Member sign in</a><section class="portal-card">
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="robots" content="noindex,nofollow"><meta name="referrer" content="no-referrer"><title>Reset Password • KCMC Connect</title><link rel="stylesheet" href="<?=kcmc_h(kcmc_url('styles.css?v=3.0.0'))?>"><?php require_once __DIR__ . '/../lib/screen-navigation.php'; echo kcmc_screen_assets(); ?>
+</head>
+<body class="portal-body"><?php echo kcmc_screen_navigation('member/login.php', false); ?><main class="portal-shell portal-narrow"><a class="portal-back" href="<?=kcmc_h(kcmc_url('member/login.php'))?>">← Member sign in</a><section class="portal-card">
 <?php if (!$reset || !$target): ?>
 <p class="eyebrow">RESET LINK UNAVAILABLE</p><h1>This link is no longer valid.</h1><p>Ask a KCMC Connect administrator for a new password-reset link.</p>
 <?php else: ?>

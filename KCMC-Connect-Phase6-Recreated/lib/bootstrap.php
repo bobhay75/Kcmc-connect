@@ -520,11 +520,10 @@ function kcmc_access_denied(string $message = 'Access denied.'): never {
     http_response_code(403);
     kcmc_private_headers();
     header('Content-Type: text/html; charset=utf-8');
-    $home = kcmc_h(kcmc_url());
-    $account = kcmc_h(kcmc_url('member/'));
     $style = kcmc_h(kcmc_url('styles.css?v=3.0.0'));
     $text = kcmc_h($message);
-    echo '<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="robots" content="noindex,nofollow"><title>Access denied • KCMC Connect</title><link rel="stylesheet" href="' . $style . '"></head><body class="portal-body"><main class="portal-shell portal-narrow"><section class="portal-card"><h1>Unable to open this page</h1><p role="alert">' . $text . '</p><nav class="portal-actions" aria-label="Page navigation"><a class="btn secondary" href="' . $home . '">Home</a><a class="btn secondary" href="' . $account . '">My account</a></nav></section></main></body></html>';
+    require_once __DIR__ . '/screen-navigation.php';
+    echo '<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="robots" content="noindex,nofollow"><title>Access denied • KCMC Connect</title><link rel="stylesheet" href="' . $style . '">' . kcmc_screen_assets() . '</head><body class="portal-body">' . kcmc_screen_navigation('member/', true) . '<main class="portal-shell portal-narrow"><section class="portal-card"><h1>Unable to open this page</h1><p role="alert">' . $text . '</p></section></main></body></html>';
     exit;
 }
 

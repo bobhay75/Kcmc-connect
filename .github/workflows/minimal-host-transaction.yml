@@ -8,6 +8,8 @@ on:
       - 'KCMC-Connect-Phase6-Recreated/member/reset-password.php'
       - 'tests/workflow_source_layer.py'
       - 'tests/phase_two_source_layer.py'
+      - 'tests/visual_source_layer.py'
+      - 'tests/fixtures/app-theme-navigation-reviewed.json'
       - 'tests/fixtures/phase-two-workflows-reviewed.json'
       - 'tests/fixtures/workflow-journeys-reviewed.json'
       - '.github/workflows/minimal-host-transaction.yml'
@@ -22,7 +24,7 @@ jobs:
         with:
           persist-credentials: false
       - name: Fetch exact historical workflow baseline
-        run: git fetch --no-tags origin 00fdd469482564a3511a29a27a99502c24a32845 9cf2087ebc1608ea4fbf2f2a7cd68553de004964
+        run: git fetch --no-tags origin 00fdd469482564a3511a29a27a99502c24a32845 9cf2087ebc1608ea4fbf2f2a7cd68553de004964 b0c257edb8a42fc89fd6371c1bce7ee3efbd5ed9
       - name: Historical transaction and independent failure fixtures
         run: |
           set -euo pipefail
@@ -61,7 +63,7 @@ jobs:
       - name: Actual Python 3.6 historical transaction fixtures
         run: |
           set -euo pipefail
-          git fetch --no-tags origin 00fdd469482564a3511a29a27a99502c24a32845 9cf2087ebc1608ea4fbf2f2a7cd68553de004964
+          git fetch --no-tags origin 00fdd469482564a3511a29a27a99502c24a32845 9cf2087ebc1608ea4fbf2f2a7cd68553de004964 b0c257edb8a42fc89fd6371c1bce7ee3efbd5ed9
           kcmc_minimal_historical=$(mktemp -d)
           trap 'rm -rf -- "$kcmc_minimal_historical"' EXIT
           python3 tests/workflow_source_layer.py --baseline-output "$kcmc_minimal_historical/app"

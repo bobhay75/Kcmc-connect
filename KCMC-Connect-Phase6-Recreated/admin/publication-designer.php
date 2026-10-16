@@ -27,8 +27,9 @@ button,input,select,textarea{font:inherit}.shell{min-height:100vh;display:grid;g
 @media(max-width:900px){.workspace{grid-template-columns:1fr}.panel.right{border-left:0;border-top:1px solid var(--line)}.panel{border-right:0;border-bottom:1px solid var(--line)}}
 @media print{body{background:#fff}.topbar,.panel,.canvas-wrap{display:none!important}.workspace{display:block}.print-pages{display:block}.print-pages .page{box-shadow:none;margin:0 auto;transform:none!important;break-after:page;page-break-after:always}.print-pages .page:last-child{break-after:auto;page-break-after:auto}}
 </style>
+<?php require_once __DIR__ . '/../lib/screen-navigation.php'; echo kcmc_screen_assets(); ?>
 </head>
-<body>
+<body class="publication-designer"><?php echo kcmc_screen_navigation('admin/home.php', true); ?>
 <div class="shell">
 <header class="topbar">
   <div class="brand"><a href="<?=kcmc_h(kcmc_url('admin/'))?>" class="btn">← Publishing Desk</a><strong>Publication Designer</strong><span class="status" id="status" role="status" aria-live="polite" aria-atomic="true">Ready</span></div>

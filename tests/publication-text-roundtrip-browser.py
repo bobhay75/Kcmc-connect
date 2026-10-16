@@ -20,6 +20,10 @@ DEFAULT_SOURCE = ROOT / 'KCMC-Connect-Phase6-Recreated/admin/publication-designe
 
 def fixture_html(source):
     source = re.sub(r'\A<\?php.*?\?>', '', source, count=1, flags=re.S)
+    # Shared document chrome is exercised through actual PHP/HTTP in
+    # app-theme-browser.py; keep this text round-trip fixture strict otherwise.
+    source = re.sub(r"<\?php require_once __DIR__ \. '/../lib/screen-navigation\.php'; echo kcmc_screen_assets\(\); \?>", '', source)
+    source = re.sub(r"<\?php echo kcmc_screen_navigation\('admin/home.php', true\); \?>", '', source)
 
     def replace(match):
         expr = match.group(1)

@@ -30,6 +30,12 @@ SECOND_TEXT = 'Second page\n\nScripture  \n\nGrace • peace ✝'
 
 def fixture_html(source):
     source = re.sub(r'\A<\?php.*?\?>', '', source, count=1, flags=re.S)
+    # This editor-state harness intentionally replaces only the explicit shared
+    # document chrome. Real PHP rendering, its linked assets, Back behavior and
+    # authored screen/print colors are covered by app-theme-browser.py. Keep
+    # rejecting any other unexpected executable PHP below.
+    source = re.sub(r"<\?php require_once __DIR__ \. '/../lib/screen-navigation\.php'; echo kcmc_screen_assets\(\); \?>", '', source)
+    source = re.sub(r"<\?php echo kcmc_screen_navigation\('admin/home.php', true\); \?>", '', source)
 
     def replace(match):
         expr = match.group(1)

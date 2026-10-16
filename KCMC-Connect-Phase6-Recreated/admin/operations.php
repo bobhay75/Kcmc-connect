@@ -60,10 +60,11 @@ $tools = [
 <title>Operations • KCMC Connect</title>
 <link rel="stylesheet" href="<?=kcmc_h(kcmc_url('styles.css'))?>">
 <style>
-body{background:#eef2f4;color:#17324c;color-scheme:light}.ops{width:min(1040px,calc(100% - 28px));margin:28px auto 80px}.ops-top{display:flex;align-items:flex-start;justify-content:space-between;gap:20px;margin-bottom:20px}.ops-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px}.ops-card{display:flex;flex-direction:column;min-height:220px;background:#fff;border:1px solid #dce3e7;border-radius:18px;padding:22px}.ops-card h2{margin:.25rem 0 .6rem}.ops-card p{line-height:1.55}.ops-card .tool-link{margin-top:auto;align-self:flex-start;font-weight:800}.ops-card.warning{border-color:#d6b86a;background:#fffdf5}.muted{color:#607080}.ops :is(a,button):focus-visible{outline:3px solid #174d75;outline-offset:3px}@media(max-width:720px){.ops{width:min(100% - 18px,1040px);margin-top:16px}.ops-top{display:block}.ops-grid{grid-template-columns:1fr}.ops-card{min-height:0;padding:18px}}
+body{background:var(--kcmc-panel-muted, #eef2f4);color:var(--kcmc-text, #17324c);color-scheme:light}.ops{width:min(1040px,calc(100% - 28px));margin:28px auto 80px}.ops-top{display:flex;align-items:flex-start;justify-content:space-between;gap:20px;margin-bottom:20px}.ops-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px}.ops-card{display:flex;flex-direction:column;min-height:220px;background:var(--kcmc-panel, #fff);border:1px solid var(--kcmc-line, #dce3e7);border-radius:18px;padding:22px}.ops-card h2{margin:.25rem 0 .6rem}.ops-card p{line-height:1.55}.ops-card .tool-link{margin-top:auto;align-self:flex-start;font-weight:800}.ops-card.warning{border-color:#d6b86a;background:var(--kcmc-panel-muted, #fffdf5)}.muted{color:var(--kcmc-muted, #607080)}.ops :is(a,button):focus-visible{outline:3px solid var(--kcmc-gold, #174d75);outline-offset:3px}@media(max-width:720px){.ops{width:min(100% - 18px,1040px);margin-top:16px}.ops-top{display:block}.ops-grid{grid-template-columns:1fr}.ops-card{min-height:0;padding:18px}}
 </style>
+<?php require_once __DIR__ . '/../lib/screen-navigation.php'; echo kcmc_screen_assets(); ?>
 </head>
-<body><main class="ops">
+<body><?php echo kcmc_screen_navigation('admin/home.php', true); ?><main class="ops">
 <div class="ops-top"><div><a href="<?=kcmc_h(kcmc_url('admin/'))?>">← Publishing Desk</a><p class="eyebrow">KCMC OPERATIONS</p><h1>Release, recovery and system tools</h1><p class="muted">Administrative controls for verifying the app, reviewing activity, testing notifications, employee time, and recovering public content.</p></div><a href="<?=kcmc_h(kcmc_url())?>">View public site</a></div>
 <div class="ops-grid">
 <?php foreach ($tools as $tool): ?>

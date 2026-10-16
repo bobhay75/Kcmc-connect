@@ -1,15 +1,14 @@
 <?php
 require_once __DIR__ . '/../lib/bootstrap.php';
+require_once __DIR__ . '/../lib/screen-navigation.php';
 kcmc_private_headers();
 $user = kcmc_require_role(['member', 'prayer_team', 'pastor_admin']);
 if ($_SERVER['REQUEST_METHOD'] !== 'POST' || !kcmc_verify_csrf($_POST['csrf'] ?? null)) {
-    http_response_code(403);
-    exit('Invalid request.');
+    kcmc_screen_error('Invalid request.', 403, 'member/prayers.php');
 }
 $message = trim((string)($_POST['message'] ?? ''));
 if (kcmc_text_length($message) < 10 || kcmc_text_length($message) > 2000) {
-    http_response_code(422);
-    exit('Prayer requests must be between 10 and 2,000 characters.');
+    kcmc_screen_error('Prayer requests must be between 10 and 2,000 characters.', 422, 'member/prayers.php');
 }
 $shareWithMembers = (string)($_POST['share_with_members'] ?? '') === '1';
 $display = (string)($_POST['name_display'] ?? '') === 'first_name' ? 'first_name' : 'anonymous';
