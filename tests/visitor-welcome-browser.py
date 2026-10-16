@@ -81,6 +81,10 @@ with tempfile.TemporaryDirectory(prefix='kcmc-visitor-review-') as td:
                 check(page.locator('[data-view="visit"]').is_visible() and page.locator('#siteMenu').get_attribute('open') is None,'Plan a visit stays reachable through the fish menu')
                 service_options=page.locator('[data-view="visit"] .expect-list').inner_text()
                 check(all(value in service_options for value in ('8:00 AM Front Porch Gospel','9:15 AM Traditional','10:30 AM Contemporary')),'service times and worship styles remain available on the visit screen')
+                page.locator('#siteMenu summary').click()
+                page.locator('#siteMenu a[data-route="home"]').click()
+                page.wait_for_function("document.querySelector('[data-view=home]').classList.contains('active')")
+                check(page.locator('[data-view="home"]').is_visible() and page.locator('#siteMenu').get_attribute('open') is None,'fish Home restores the photo screen before the next scenario')
                 if width==390:
                     page.goto(base+'?token=synthetic#home',wait_until='networkidle')
                     page.locator('#siteMenu summary').click()

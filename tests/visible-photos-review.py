@@ -32,7 +32,7 @@ def export_preview(html: str, photos: dict[str, bytes]) -> None:
     # Export actual public markup/styles. No app.js, service worker, API writes or working forms.
     html = re.sub(r'<script\b[^>]*\bsrc=[^>]*>\s*</script>', '', html, flags=re.I)
     html = re.sub(r'<link\b[^>]*>', '', html, flags=re.I)
-    css = (APP / 'styles.css').read_text() + '\n' + (APP / 'public-presentation.css').read_text()
+    css = '\n'.join((APP / name).read_text() for name in ('styles.css', 'public-presentation.css', 'app-theme.css'))
     js = (APP / 'public-presentation.js').read_text()
     def uri(blob: bytes, mime: str) -> str:
         return 'data:' + mime + ';base64,' + base64.b64encode(blob).decode()
@@ -165,8 +165,11 @@ with tempfile.TemporaryDirectory(prefix='kcmc-photos-review-') as td:
                 for url in photo_bytes:
                     page.route('**/' + url.removeprefix('./'), lambda route: route.abort())
                 page.goto(base, wait_until='networkidle')
-                page.locator('[data-family-welcome]').scroll_into_view_if_needed()
+                # Trigger the lazy photo request without scrolling a section
+                # that deliberately disappears as soon as its image fails.
+                page.locator('.family-photo').evaluate("img => { img.loading = 'eager'; }")
                 page.wait_for_function("document.querySelector('.family-photo-frame')?.hidden === true")
+                check(page.locator('[data-family-welcome]').is_hidden(), 'failed family photo leaves no empty homepage section')
                 check(page.locator('.hero-church-window').count() == 0, 'failed remote hero does not replace the local fallback')
                 check('kcmc-building-retouched-20261009.jpg' in page.locator('[data-hero-photo]').first.get_attribute('src'), 'local retouched building photo retained on family photo failure')
                 check(page.locator('[data-hero-caption]').is_hidden(), 'failed remote hero keeps the local source caption hidden')
