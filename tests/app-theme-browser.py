@@ -7,6 +7,7 @@ that local server; no production account, message, payroll or push is used.
 from __future__ import annotations
 
 import argparse
+from contextlib import contextmanager
 from html import unescape
 from html.parser import HTMLParser
 import importlib.util
@@ -86,9 +87,14 @@ def controls(page, base, label, public_home=False):
         page.keyboard.press("Escape")
 
 
-def theme(page, label):
+def theme(page, label, public_home=False):
     body = page.locator("body").evaluate(PALETTE)
-    check("gradient" in body["image"] and max(body["foreground"][:3]) >= 230,
+    background_ok = "gradient" in body["image"]
+    if public_home:
+        # The approved photo homepage intentionally retains its solid navy
+        # backdrop beneath the fish menu and full-bleed church photographs.
+        background_ok = background_ok or (body["ownBackground"][3] == 1 and max(body["ownBackground"][:3]) < 80)
+    check(background_ok and max(body["foreground"][:3]) >= 230,
           label + " uses the dark shell with soft-white text")
     # Evaluate representative real UI surfaces instead of merely checking that
     # a stylesheet tag exists. Publication page/items intentionally keep their
@@ -130,11 +136,35 @@ def sign_in(context, base, uid):
     page.close()
 
 
+@contextmanager
+def diagnostic_page(context, output, label, failures=None):
+    """Retain the actual failed rendering before the browser context closes."""
+    page = context.new_page()
+    try:
+        yield page
+    except Exception as failure:
+        stem = "failure-" + re.sub(r"[^a-zA-Z0-9_-]+", "-", label).strip("-")
+        metadata = dict(case=label, error=str(failure), url=page.url)
+        try:
+            page.screenshot(path=str(output / (stem + ".png")), full_page=True, timeout=5000)
+            metadata["body_style"] = page.locator("body").evaluate(PALETTE)
+        except Exception as capture_failure:
+            metadata["capture_error"] = str(capture_failure)
+        (output / (stem + ".json")).write_text(json.dumps(metadata, indent=2) + "\n")
+        if failures is None:
+            raise
+        failures.append(metadata)
+        print("FAIL: " + label + ": " + str(failure), flush=True)
+    finally:
+        page.close()
+
+
 def run(app, output, http_only=False):
     f = accounts.Fixture(app)
     server = None
     output.mkdir(parents=True, exist_ok=True)
     evidence = []
+    route_failures = []
     try:
         task_id = "teamtask_" + "a" * 24
         comment_id = "teamcomment_" + "b" * 24
@@ -208,35 +238,35 @@ def run(app, output, http_only=False):
                     "member/work.php": "assigned-workspace"}
                 for width, height in [(390, 844), (1365, 900)]:
                     for actor, route, expected_status in cases:
-                        page = contexts[actor].new_page()
-                        page.set_viewport_size(dict(width=width, height=height))
-                        page.on("pageerror", lambda error: errors.append(str(error)))
-                        response = page.goto(base + "/" + route, wait_until="networkidle")
-                        label = actor + " " + route.split("?")[0]
-                        check(response.status == expected_status, label + " retains its HTTP status")
-                        controls(page, base, label, route == "index.php")
-                        fit(page, label, width)
-                        theme(page, label)
-                        if route == "admin/home.php" and actor == "owner":
-                            dropdowns(page, width)
-                        if route == "member/timeclock.php":
-                            check(page.get_by_role("button", name="Clock In", exact=True).is_visible(), "Clock In remains immediately available")
-                        if route == "member/work.php":
-                            workspace_colors(page, width)
-                        if route == "admin/publication-designer.php":
-                            designer_colors(page)
-                        if route.startswith("admin/timecards-print.php") and expected_status == 200:
-                            page.emulate_media(media="print")
-                            check(page.locator("[data-kcmc-back]").is_hidden(), "print output excludes page controls")
-                            body = page.locator("body").evaluate(PALETTE)
-                            check(max(body["foreground"][:3]) < 70 and body["image"] == "none", "printed time card retains dark text on paper")
-                            page.emulate_media(media="screen")
-                        if actor != "member" or route != "admin/home.php":
-                            filename = screenshot_routes.get(route)
-                            if filename and expected_status == 200:
-                                page.screenshot(path=str(output / (filename + "-" + str(width) + ".png")), full_page=True)
-                        evidence.append(dict(actor=actor, route=route.split("?")[0], width=width, status=response.status))
-                        page.close()
+                        case_label = actor + "-" + route.split("?")[0] + "-" + str(width) + "-status-" + str(expected_status)
+                        with diagnostic_page(contexts[actor], output, case_label, route_failures) as page:
+                            page.set_viewport_size(dict(width=width, height=height))
+                            page.on("pageerror", lambda error: errors.append(str(error)))
+                            response = page.goto(base + "/" + route, wait_until="networkidle")
+                            label = actor + " " + route.split("?")[0]
+                            check(response.status == expected_status, label + " retains its HTTP status")
+                            controls(page, base, label, route == "index.php")
+                            fit(page, label, width)
+                            theme(page, label, route == "index.php")
+                            if route == "admin/home.php" and actor == "owner":
+                                dropdowns(page, width)
+                            if route == "member/timeclock.php":
+                                check(page.get_by_role("button", name="Clock In", exact=True).is_visible(), "Clock In remains immediately available")
+                            if route == "member/work.php":
+                                workspace_colors(page, width)
+                            if route == "admin/publication-designer.php":
+                                designer_colors(page)
+                            if route.startswith("admin/timecards-print.php") and expected_status == 200:
+                                page.emulate_media(media="print")
+                                check(page.locator("[data-kcmc-back]").is_hidden(), "print output excludes page controls")
+                                body = page.locator("body").evaluate(PALETTE)
+                                check(max(body["foreground"][:3]) < 70 and body["image"] == "none", "printed time card retains dark text on paper")
+                                page.emulate_media(media="screen")
+                            if actor != "member" or route != "admin/home.php":
+                                filename = screenshot_routes.get(route)
+                                if filename and expected_status == 200:
+                                    page.screenshot(path=str(output / (filename + "-" + str(width) + ".png")), full_page=True)
+                            evidence.append(dict(actor=actor, route=route.split("?")[0], width=width, status=response.status))
                 # Setup has a separate unconfigured state. Restore users before
                 # any signed-in request; no account is created by this test.
                 users = (f.private / "users.json").read_bytes()
@@ -251,7 +281,11 @@ def run(app, output, http_only=False):
                 finally:
                     (f.private / "users.json").write_bytes(users)
                 history_and_clock(contexts, base)
+                (output / "results.json").write_text(json.dumps(dict(cases=evidence, failures=route_failures,
+                    production=False, delivery=False), indent=2) + "\n")
                 check(not errors, "rendered pages have no uncaught JavaScript errors: " + "; ".join(errors))
+                check(not route_failures, "all rendered routes pass: " + "; ".join(
+                    failure["case"] + ": " + failure["error"] for failure in route_failures))
                 browser.close()
         (output / "results.json").write_text(json.dumps(dict(cases=evidence, production=False, delivery=False), indent=2) + "\n")
     finally:

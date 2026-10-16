@@ -61,7 +61,9 @@ class WorkspaceEntries(unittest.TestCase):
                 groups=re.findall(r'<nav class="admin-links" aria-label="([^"]+)">',page)
                 self.assertLessEqual(len(groups),3);self.assertEqual(len(groups),len(set(groups)))
                 self.assertNotIn('class="portal-card admin-tool"',page)
-                self.assertIn('href="/app/member/">← Account home',page);self.assertIn('href="/app/">Home',page)
+                self.assertEqual(routes.page_control_links(page), [
+                    ('← Back', '/app/member/'), ('Home', '/app/'),
+                    ('My account', '/app/member/'), ('Time clock', '/app/member/timeclock.php')])
                 if actor=='prayer':self.assertEqual(groups,['People &amp; care'])
     def test_authenticated_work_shell_and_no_embedded_private_state(self):
         path=self.workspace();before=path.read_bytes()
