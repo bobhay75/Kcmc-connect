@@ -1,0 +1,69 @@
+name: KCMC manual time clock without approvals
+on:
+  pull_request:
+    paths:
+      - 'KCMC-Connect-Phase6-Recreated/**'
+      - 'tests/manual*'
+      - 'tests/fixtures/manual-clock-no-approvals-reviewed.json'
+      - 'tests/timeclock-*'
+      - 'tests/payroll-*'
+      - 'tests/app-theme-browser.py'
+      - 'tests/signed-in-workflows-browser.py'
+      - '.github/workflows/manual-timeclock.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'KCMC-Connect-Phase6-Recreated/**'
+      - 'tests/manual*'
+      - 'tests/fixtures/manual-clock-no-approvals-reviewed.json'
+      - 'tests/timeclock-*'
+      - 'tests/payroll-*'
+      - 'tests/app-theme-browser.py'
+      - 'tests/signed-in-workflows-browser.py'
+      - '.github/workflows/manual-timeclock.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  protected-recorded-time:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          persist-credentials: false
+      - name: Exact functional source and rejection tests
+        run: |
+          set -euo pipefail
+          git fetch --no-tags origin b0c257edb8a42fc89fd6371c1bce7ee3efbd5ed9
+          python3 tests/manual_clock_source_layer.py
+          python3 tests/manual-clock-source-negative.py
+          python3 -m py_compile tests/timeclock-route-workflow-contract.py tests/payroll-route-contract.py tests/app-theme-browser.py tests/signed-in-workflows-browser.py
+          git diff --check
+      - name: Actual PHP 8.2 store and correction behavior
+        run: |
+          set -euo pipefail
+          docker pull php@sha256:118ef4fb1db5e866fb604f2f260da81f819a0a1eac87a4083f9194f48e00beee
+          docker run --rm --user "$(id -u):$(id -g)" --network none -v "$PWD:/source:ro" -w /source php@sha256:118ef4fb1db5e866fb604f2f260da81f819a0a1eac87a4083f9194f48e00beee php tests/manual-timeclock-contract.php
+          docker run --rm --user "$(id -u):$(id -g)" --network none -v "$PWD:/source:ro" -w /source php@sha256:118ef4fb1db5e866fb604f2f260da81f819a0a1eac87a4083f9194f48e00beee php tests/timeclock-employee-workflow-contract.php
+          docker run --rm --user "$(id -u):$(id -g)" --network none -v "$PWD:/source:ro" -w /source php@sha256:118ef4fb1db5e866fb604f2f260da81f819a0a1eac87a4083f9194f48e00beee php tests/payroll-automation-contract.php
+      - name: Current protected routes and actual HTTP boundaries
+        run: |
+          set -euo pipefail
+          python3 tests/timeclock-route-workflow-contract.py
+          python3 tests/payroll-route-contract.py
+          python3 tests/app-theme-browser.py --http-only
+      - name: Browser dependencies
+        run: |
+          python3 -m pip install --disable-pip-version-check playwright==1.55.0
+          python3 -m playwright install --with-deps chromium
+      - name: Manual punches, reasoned correction, and direct CSV and print
+        run: python3 tests/signed-in-workflows-browser.py
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        if: always()
+        with:
+          name: kcmc-manual-timeclock-renders
+          path: test-artifacts/signed-in-workflows/
+          retention-days: 7
+          if-no-files-found: ignore

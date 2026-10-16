@@ -26,7 +26,7 @@ tca_check(str_contains($lib, 'new_net_minutes'), 'adjustment history preserves c
 tca_check(str_contains($lib, "'reason'=>\$reason"), 'adjustment history stores required private reason');
 tca_check(str_contains($lib, "'adjusted_by'=>\$reviewerId"), 'adjustment history records supervisor identity');
 tca_check(str_contains($lib, 'A reviewer cannot adjust their own time entry.'), 'supervisor cannot adjust own time');
-tca_check(str_contains($lib, 'Approved time is locked.'), 'approved time cannot be adjusted');
+tca_check(!str_contains($lib, 'Approved time is locked.'), 'historical approvals do not prevent reasoned time adjustments');
 tca_check(str_contains($lib, "(\$entry['status']??'')==='open'"), 'open shifts cannot be adjusted');
 tca_check(str_contains($lib, "\$s['adjustments'][]=\$record"), 'adjustment history is append-only');
 tca_check(str_contains($admin, 'kcmc_require_payroll_reviewer()'), 'adjustment UI requires the owner-selected payroll review capability');

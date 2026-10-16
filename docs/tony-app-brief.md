@@ -5,7 +5,7 @@ Reviewed October 7, 2026. Implemented source, public observations, and productio
 ## Implemented in source
 - Public PWA, Publishing Desk review-before-publish, individual authentication and invitation lifecycle.
 - Private RSVP/visit/serve/groups intake, staff follow-up, CSV exports, Release Health, Operations, audit history and backup/restore tooling.
-- Employee Time Clock, pay-period submission and supervisor approval, print/CSV output, auditable adjustments, and employee-requested corrections with administrator review.
+- Manual Employee Time Clock, recorded pay-period totals without submission or approval, print/CSV output, auditable adjustments, and employee-requested corrections with reasons.
 - Web Push subscription and signed-in-device self-test implementation; physical-device acceptance remains open in issue #20.
 - Staff Sign In wording, private-page readability repair, seven-minute carousel with no visible photo captions, single hero image plane, and multi-page Publication Designer with shared projects, media and preserved paragraphs.
 - The reviewed bright Contemporary Worship panel is integrated by this repair. Its existing church photograph, visitor route and official Facebook message destination are retained.

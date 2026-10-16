@@ -29,18 +29,18 @@ $memberHome = file_get_contents($root . '/KCMC-Connect-Phase6-Recreated/member/i
 $operations = file_get_contents($root . '/KCMC-Connect-Phase6-Recreated/admin/operations.php');
 
 tc_check(str_contains($lib, "KCMC_PRIVATE_DATA . '/timeclock.json'"), 'time clock data lives in protected private storage');
-tc_check(str_contains($lib, 'Approved time is locked.'), 'approved shift adjustment remains locked server-side');
+tc_check(!str_contains($lib, 'Approved time is locked.'), 'historical approval does not lock recorded time corrections');
 tc_check(str_contains($lib, 'kcmc_timeclock_now()'), 'punch mutations use server-generated timestamps');
 tc_check(str_contains($member, 'kcmc_require_login()'), 'employee time clock requires authentication');
 tc_check(str_contains($member, 'kcmc_verify_csrf'), 'employee mutations require CSRF');
 tc_check(str_contains($member, "(string)\$user['id']"), 'employee page scopes reads and writes to signed-in user');
-tc_check(!str_contains($member, 'name="certify"') && str_contains($admin, 'value="submit_period"'), 'pay-period preparation belongs to administrator review');
+tc_check(!str_contains($member, 'name="certify"') && !str_contains($admin, 'value="submit_period"'), 'time cards need no employee or administrator turn-in');
 tc_check(str_contains($admin, 'kcmc_require_payroll_reviewer()'), 'time-card review requires the owner or explicitly selected payroll reviewer');
-tc_check(str_contains($admin, 'cannot approve or return their own time card'), 'reviewer self-approval is blocked');
-tc_check(str_contains($csv, "!== 'approved'"), 'CSV export is restricted to approved periods');
-tc_check(str_contains($print, "!== 'approved'"), 'print/PDF view is restricted to approved periods');
+tc_check(!str_contains($admin, 'value="approve"') && !str_contains($admin, 'value="return"'), 'administrator has no time-card approval or return controls');
+tc_check(str_contains($csv, 'kcmc_timeclock_period_report') && !str_contains($csv, "!== 'approved'"), 'CSV uses recorded time without an approval gate');
+tc_check(str_contains($print, 'kcmc_timeclock_period_report') && !str_contains($print, "!== 'approved'"), 'print/PDF uses recorded time without an approval gate');
 tc_check(str_contains($csv, 'kcmc_csv_download'), 'accounting export uses spreadsheet-safe private CSV helper');
-tc_check(str_contains($print, 'Print / Save PDF'), 'approved time card has print/PDF workflow');
+tc_check(str_contains($print, 'Print / Save PDF'), 'recorded time card has print/PDF workflow');
 tc_check(str_contains($memberHome, 'member/timeclock.php'), 'member home links to Time Clock');
 tc_check(str_contains($operations, 'admin/timecards.php'), 'Operations hub links to Time Cards');
 foreach ([$lib,$member,$admin,$csv,$print] as $source) tc_check(!str_contains(strtolower($source), 'gps'), 'time clock MVP contains no GPS tracking');
