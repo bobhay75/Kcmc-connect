@@ -241,6 +241,61 @@
     outline-offset: -3px;
   }
 
+  /* Public home keeps its photos and controls; church information stays in the fish menu. */
+  body[data-office-email] [data-view="home"] .home-cover.hero.hero-imagery {
+    display: block;
+    min-height: 0;
+    padding: 0;
+    background: var(--kcmc-night);
+    color: var(--kcmc-text);
+    color-scheme: dark;
+  }
+  body[data-office-email] [data-view="home"] .home-cover .home-cover-photo {
+    position: relative;
+    inset: auto;
+    display: block;
+    width: 100%;
+    height: auto;
+    max-height: min(760px, 75svh);
+    aspect-ratio: 1402 / 1122;
+    object-fit: contain;
+  }
+  body[data-office-email] [data-view="home"] .home-cover-layout {
+    width: 100%;
+    margin: 0;
+    padding: 12px 16px;
+    justify-content: center;
+  }
+  body[data-office-email] [data-view="home"] .home-cover-card {
+    width: auto;
+    padding: 0;
+    border: 0;
+    border-radius: 0;
+    background: transparent;
+    box-shadow: none;
+    backdrop-filter: none;
+  }
+  body[data-office-email] [data-view="home"] .home-cover-card > :not([data-hero-controls]):not([data-hero-status]),
+  body[data-office-email] [data-view="home"] > .home-worship-strip {
+    display: none;
+  }
+  body[data-office-email] [data-view="home"] .hero-photo-controls {
+    justify-content: center;
+    margin: 0;
+  }
+  body[data-office-email] [data-view="home"] .hero-photo-controls button:focus-visible {
+    outline: 3px solid var(--kcmc-gold-hover);
+    outline-offset: 4px;
+  }
+  body[data-office-email] [data-view="home"] > :is(.section[aria-label="KCMC kids and family photos"], .section[data-family-welcome]) {
+    padding: 24px 0;
+  }
+  body[data-office-email] [data-view="home"] .family-welcome-grid { gap: 0; }
+  body[data-office-email] [data-view="home"] .family-welcome-copy,
+  body[data-office-email] [data-view="home"] > [data-family-welcome]:has(.family-photo-frame[hidden]) {
+    display: none;
+  }
+
   /* Designer chrome uses the app palette; .page and its items remain authored artwork. */
   body.publication-designer { --ink: var(--kcmc-text); --bg: var(--kcmc-night); }
   body.publication-designer :is(.topbar, .panel) {

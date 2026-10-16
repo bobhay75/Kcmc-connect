@@ -39,6 +39,15 @@ ADMIN = ["admin/home.php", "admin/index.php", "admin/audit.php", "admin/connecti
 PASTOR = ["admin/prayer-care.php", "admin/prayer-inbox.php", "admin/prayers.php"]
 PRINT_QUERY = urlencode(dict(user="owner", start="2026-08-23", end="2026-09-22"))
 
+# Capture the real seven-minute gallery timer so its existing callback can be
+# exercised without waiting seven minutes or changing the application script.
+PHOTO_TIMER = """(() => {
+    const nativeSet=window.setTimeout.bind(window),nativeClear=window.clearTimeout.bind(window),timers=new Map();let serial=0;
+    window.setTimeout=(fn,delay,...args)=>{if(delay!==420000)return nativeSet(fn,delay,...args);const id='app-theme-photo-'+(++serial);timers.set(id,{fn,delay,args});return id};
+    window.clearTimeout=id=>{if(timers.has(id))timers.delete(id);else nativeClear(id)};
+    window.kcmcPhotoReview={delays:()=>[...timers.values()].map(t=>t.delay),advance:()=>{const next=timers.entries().next().value;if(!next)throw Error('No photo timer scheduled');const[id,timer]=next;timers.delete(id);timer.fn(...timer.args)}};
+})();"""
+
 
 def check(condition, label):
     if not condition:
@@ -252,6 +261,8 @@ def run(app, output, http_only=False):
                     for actor, route, expected_status in cases:
                         case_label = actor + "-" + route.split("?")[0] + "-" + str(width) + "-status-" + str(expected_status)
                         with diagnostic_page(contexts[actor], output, case_label, route_failures) as page:
+                            if route == "index.php":
+                                page.add_init_script(PHOTO_TIMER)
                             page.set_viewport_size(dict(width=width, height=height))
                             page.on("pageerror", lambda error: errors.append(str(error)))
                             response = page.goto(base + "/" + route, wait_until="networkidle")
@@ -260,6 +271,8 @@ def run(app, output, http_only=False):
                             controls(page, base, label, route == "index.php")
                             fit(page, label, width)
                             theme(page, label, route == "index.php")
+                            if route == "index.php":
+                                public_home(page, width)
                             if route == "admin/home.php" and actor == "owner":
                                 dropdowns(page, width)
                             if route == "member/timeclock.php":
@@ -458,6 +471,82 @@ def dropdowns(page, width):
     check(operations.get_by_role("link", name="Open Employee time cards", exact=True).is_visible(), "Operations reveals employee time cards")
     fit(page, "expanded Administration", width)
     operations.locator("summary").click()
+
+
+def public_home(page, width):
+    """No welcome-copy clutter or empty lazy-photo shells on the current home."""
+    home = page.locator('[data-view="home"]')
+    menu = page.locator("#siteMenu")
+    check(menu.get_attribute("open") is None, "public home keeps the fish dropdown closed")
+    for element in home.locator(".home-cover-card > .eyebrow,.home-cover-card h1,.home-cover-card > .lead,.home-worship-strip,.family-welcome-copy").all():
+        check(element.is_hidden(), "welcome copy, service strip and family prose stay off the photo homepage")
+    check(home.locator("[data-hero-previous]:visible,[data-hero-toggle]:visible,[data-hero-next]:visible").count() == 3,
+          "the three compact photo controls remain available")
+    for shell in home.locator(".home-cover-card,.home-cover-layout").all():
+        color = shell.evaluate(PALETTE)["ownBackground"]
+        check(color[3] == 0 or max(color[:3]) < 100, "photo controls have a navy or transparent shell without a cream card")
+    outside_actions = page.locator("body a:visible,body button:visible").evaluate_all("""elements=>elements.filter(el=>
+        !el.closest('#siteMenu')&&!el.matches('.skip-link,[data-hero-previous],[data-hero-toggle],[data-hero-next]')).map(el=>el.textContent.trim())""")
+    check(outside_actions == [], "homepage destination actions stay inside the fish menu")
+    check(home.locator('[data-hero-photo]').count() == 4 and home.locator('[data-hero-photo]:visible').count() == 1,
+          "the approved four-photo carousel keeps one visible image plane")
+    gallery = home.locator('[aria-label="KCMC kids and family photos"]')
+    family = home.locator('[data-family-welcome]')
+    check(gallery.is_visible() and gallery.locator('img:visible').count() == 3
+          and family.is_visible() and family.locator('img:visible').count() == 1,
+          "the three supplied gallery photos and family photo remain on the homepage")
+    # Simulate reaching each photo before a full-page capture. A full-page
+    # screenshot alone does not trigger native below-the-fold lazy loading.
+    for photo in home.locator('img:visible').all():
+        photo.scroll_into_view_if_needed()
+        page.wait_for_function("img=>img.complete&&img.naturalWidth>0", arg=photo.element_handle(), timeout=10000)
+    page.evaluate("window.scrollTo({top:0,behavior:'instant'})")
+    page.wait_for_function("window.scrollY===0")
+    photo = home.locator('[data-hero-photo]:visible')
+    check(photo.evaluate("el=>getComputedStyle(el).objectFit==='contain'&&el.naturalWidth>0"),
+          "the authentic church photograph remains fully contained and decoded")
+    hero_box = home.locator('[data-hero-gallery]').bounding_box()
+    photo_box = photo.bounding_box()
+    control_box = home.locator('[data-hero-controls]').bounding_box()
+    check(hero_box['height'] <= photo_box['height'] + control_box['height'] + 64,
+          "the photo cover has no reserved welcome-card space")
+    sections = home.locator(':scope > .section:visible')
+    check(sections.count() == 2, "only the retained gallery and family photo sections follow the cover")
+    for section in sections.all():
+        bounds = [image.bounding_box() for image in section.locator('img:visible').all()]
+        check(bool(bounds), "each visible homepage section contains a real photograph")
+        photo_span = max(box['y'] + box['height'] for box in bounds) - min(box['y'] for box in bounds)
+        check(section.bounding_box()['height'] <= photo_span + 96,
+              "a photo section has no large empty text shell beneath its images")
+    # Exercise the actual scheduled callback, followed by the manual controls.
+    page.mouse.move(width - 1, 10)
+    check(page.evaluate("window.kcmcPhotoReview.delays()")==[420000], "public photo rotation retains the seven-minute interval")
+    first = photo.get_attribute('src')
+    page.evaluate("window.kcmcPhotoReview.advance()")
+    check(home.locator('[data-hero-photo]:visible').get_attribute('src') != first,
+          "the existing automatic photo callback still advances the carousel")
+    home.locator('[data-hero-previous]').click()
+    check(home.locator('[data-hero-photo]:visible').get_attribute('src') == first, "Previous photo still works")
+    home.locator('[data-hero-next]').click()
+    check(home.locator('[data-hero-photo]:visible').get_attribute('src') != first, "Next photo still works")
+    home.locator('[data-hero-previous]').click()
+    check(page.evaluate("window.kcmcPhotoReview.delays()")==[], "manual photo selection pauses automatic changes")
+    home.locator('[data-hero-toggle]').click()
+    page.mouse.move(width - 1, 10)
+    check(page.evaluate("window.kcmcPhotoReview.delays()")==[420000], "Play photos restores automatic rotation")
+    for route in ['visit', 'watch', 'news', 'events', 'serve', 'partner']:
+        menu.locator('summary').click()
+        menu.locator('a[data-route="'+route+'"]').click()
+        page.wait_for_function("route=>document.querySelector('[data-view=\"'+route+'\"]').classList.contains('active')", arg=route)
+        view = page.locator('[data-view="'+route+'"]')
+        check(view.is_visible() and len(view.inner_text().strip()) > 10, route + " content remains reachable through the fish")
+        check(menu.get_attribute('open') is None, route + " selection closes the fish dropdown")
+        fit(page, 'public '+route, width)
+        menu.locator('summary').click()
+        menu.get_by_role('link', name='Home', exact=True).click()
+        page.wait_for_function("document.querySelector('[data-view=home]').classList.contains('active')")
+    page.evaluate("window.scrollTo({top:0,behavior:'instant'})")
+    fit(page, 'photo homepage after fish navigation', width)
 
 
 def designer_colors(page):

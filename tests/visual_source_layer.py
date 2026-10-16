@@ -20,7 +20,7 @@ PREFIX = 'KCMC-Connect-Phase6-Recreated/'
 BASE = 'b0c257edb8a42fc89fd6371c1bce7ee3efbd5ed9'
 BASE_TREE = '01decb86c93cf48862c6de7c0dbff4ba514f32cf'
 FIXTURE = 'tests/fixtures/app-theme-navigation-reviewed.json'
-FIXTURE_SHA256 = '7e8f54ce6ca9424f138fc0095e60933c438ed8ade9dcec40fc9ed1b37988a74b'
+FIXTURE_SHA256 = '2793614adc95f4b0119d0b1fd0a85872aca5a7bcdd9bf54ba66c3617e13d93f8'
 MODIFIED = frozenset(['admin/audit.php', 'admin/connections.php', 'admin/event-create.php', 'admin/health.php', 'admin/home.php', 'admin/index.php', 'admin/operations.php', 'admin/password-resets.php', 'admin/payroll-setup.php', 'admin/posts.php', 'admin/prayer-inbox.php', 'admin/prayers.php', 'admin/publication-designer.php', 'admin/push.php', 'admin/restore.php', 'admin/rsvps.php', 'admin/save.php', 'admin/setup.php', 'admin/timecards-print.php', 'admin/timecards.php', 'admin/users.php', 'backpack-blessing.php', 'bulletin.php', 'care.php', 'connect.php', 'events.php', 'index.php', 'lib/bootstrap.php', 'lib/payroll.php', 'member/activate.php', 'member/first-login.php', 'member/index.php', 'member/login.php', 'member/logout.php', 'member/notifications.php', 'member/password.php', 'member/prayer-care.php', 'member/prayer-team.php', 'member/prayers.php', 'member/reset-password.php', 'member/submit-prayer.php', 'member/timeclock.php', 'member/work.php'])
 NEW_FILES = frozenset(['app-navigation.js', 'app-theme.css', 'lib/screen-navigation.php'])
 
