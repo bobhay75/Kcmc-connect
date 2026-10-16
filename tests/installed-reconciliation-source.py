@@ -38,7 +38,8 @@ def check(ok, message):
 # signed 00fdd baseline. Recover it before every historical assertion below;
 # current journeys and roles are tested separately on the current application.
 workflow_layer = Layer(ROOT)
-workflow_paths = set(workflow_layer.paths) | set(workflow_layer.phase_two.paths)
+workflow_paths = (set(workflow_layer.paths) | set(workflow_layer.phase_two.paths)
+                  | set(workflow_layer.phase_two.visual.paths))
 def before_workflows(name):
     return workflow_layer.before(name)
 

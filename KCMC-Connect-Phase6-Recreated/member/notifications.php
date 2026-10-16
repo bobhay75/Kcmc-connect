@@ -7,8 +7,9 @@ $user = kcmc_require_login();
 $enabled = kcmc_push_enabled();
 $activeCount = kcmc_push_active_for_user((string)($user['id'] ?? ''));
 ?><!doctype html>
-<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="robots" content="noindex,nofollow"><title>Notifications • KCMC Connect</title><link rel="stylesheet" href="<?=kcmc_h(kcmc_url('styles.css?v=3.0.0'))?>"><script src="<?=kcmc_h(kcmc_url('member/push-settings.js?v=2'))?>" defer></script></head>
-<body class="portal-body"><main class="portal-shell portal-narrow">
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="robots" content="noindex,nofollow"><title>Notifications • KCMC Connect</title><link rel="stylesheet" href="<?=kcmc_h(kcmc_url('styles.css?v=3.0.0'))?>"><script src="<?=kcmc_h(kcmc_url('member/push-settings.js?v=2'))?>" defer></script><?php require_once __DIR__ . '/../lib/screen-navigation.php'; echo kcmc_screen_assets(); ?>
+</head>
+<body class="portal-body"><?php echo kcmc_screen_navigation('member/', true); ?><main class="portal-shell portal-narrow">
 <a class="portal-back" href="<?=kcmc_h(kcmc_url('member/'))?>">← Member home</a>
 <section class="portal-card" id="push-settings" data-enabled="<?=$enabled ? '1' : '0'?>" data-public-key="<?=kcmc_h(kcmc_push_public_key())?>" data-api="<?=kcmc_h(kcmc_url('api/push-subscription.php'))?>" data-csrf="<?=kcmc_h(kcmc_csrf())?>">
 <p class="eyebrow">NOTIFICATIONS</p><h1>Church updates on this device</h1>

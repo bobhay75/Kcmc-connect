@@ -14,10 +14,11 @@ $events = $calendar['events'];
   <title>Events • KCMC Connect</title>
   <link rel="stylesheet" href="styles.css?v=3.0.0">
   <style>
-    .page{width:min(900px,calc(100% - 30px));margin:45px auto 80px}.eventx{background:#fff;color:#18232c;border:1px solid #dfe5e8;border-radius:18px;margin:18px 0;overflow:hidden;box-shadow:0 10px 32px rgba(0,0,0,.12)}.eventx img{display:block;width:100%;height:auto}.eventx-copy{padding:22px}.eventx small{font-weight:800;color:#476477}.eventx h2{margin:.3em 0}.eventx p{color:#41515b;margin:.45em 0}.eventx .detail{font-weight:750}.eventx .label{display:inline-block;margin-bottom:8px;padding:5px 9px;border-radius:999px;background:#fff0d1;color:#744d10;font-size:.76rem;font-weight:850;text-transform:uppercase;letter-spacing:.06em}
+    .page{width:min(900px,calc(100% - 30px));margin:45px auto 80px}.eventx{background:var(--kcmc-panel, #fff);color:var(--kcmc-text, #18232c);border:1px solid var(--kcmc-line, #dfe5e8);border-radius:18px;margin:18px 0;overflow:hidden;box-shadow:0 10px 32px rgba(0,0,0,.12)}.eventx img{display:block;width:100%;height:auto}.eventx-copy{padding:22px}.eventx small{font-weight:800;color:var(--kcmc-muted, #476477)}.eventx h2{margin:.3em 0}.eventx p{color:var(--kcmc-muted, #41515b);margin:.45em 0}.eventx .detail{font-weight:750}.eventx .label{display:inline-block;margin-bottom:8px;padding:5px 9px;border-radius:999px;background:var(--kcmc-warning-bg, #fff0d1);color:var(--kcmc-warning, #744d10);font-size:.76rem;font-weight:850;text-transform:uppercase;letter-spacing:.06em}
   </style>
+<?php require_once __DIR__ . '/lib/screen-navigation.php'; echo kcmc_screen_assets(); ?>
 </head>
-<body>
+<body><?php echo kcmc_screen_navigation('', false); ?>
 <main class="page" id="events">
   <a href="./#events">← KCMC Connect</a>
   <p class="eyebrow">WHAT’S HAPPENING</p>

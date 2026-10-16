@@ -14,8 +14,9 @@ $myRequests = array_values(array_filter($allPrayers, fn(array $prayer): bool => 
 usort($myRequests, fn($a, $b) => strcmp((string)($b['created_at'] ?? ''), (string)($a['created_at'] ?? '')));
 $firstName = trim(explode(' ', (string)$user['display_name'])[0]);
 ?><!doctype html>
-<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="robots" content="noindex,nofollow"><title>Your Prayer Requests • KCMC Connect</title><link rel="stylesheet" href="<?=kcmc_h(kcmc_url('styles.css?v=3.0.0'))?>"></head>
-<body class="portal-body"><main class="portal-shell">
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="robots" content="noindex,nofollow"><title>Your Prayer Requests • KCMC Connect</title><link rel="stylesheet" href="<?=kcmc_h(kcmc_url('styles.css?v=3.0.0'))?>"><?php require_once __DIR__ . '/../lib/screen-navigation.php'; echo kcmc_screen_assets(); ?>
+</head>
+<body class="portal-body"><?php echo kcmc_screen_navigation('member/', true); ?><main class="portal-shell">
   <header class="portal-top"><div><a class="portal-back" href="<?=kcmc_h(kcmc_url('member/'))?>">← Account home</a><p class="eyebrow">MEMBER PRAYERS</p><h1>Your prayer requests</h1><p class="portal-lead">Prayer stays inside the KCMC family and under pastoral care.</p></div><a class="btn secondary" href="<?=kcmc_h(kcmc_url('member/prayer-care.php'))?>">Prayer &amp; Care</a></header>
   <?php if (!$prayerAccess): ?>
   <section class="portal-card portal-section"><p class="eyebrow">RECOVERY ACCESS</p><h2>Prayer content is intentionally unavailable.</h2><p>This account can maintain member access and publish public church information, but it cannot read, submit or moderate prayer requests.</p></section>

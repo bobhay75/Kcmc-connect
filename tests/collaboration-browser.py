@@ -114,15 +114,16 @@ def main():
             for width in [390,1365]:
                 hubpage=browser.new_page(viewport={'width':width,'height':900},service_workers='block')
                 def hub_asset(route):
-                    if urlparse(route.request.url).path=='/app/styles.css':route.fulfill(status=200,content_type='text/css',body=(APP/'styles.css').read_text())
+                    path=urlparse(route.request.url).path
+                    if path in ['/app/styles.css','/app/app-theme.css']:route.fulfill(status=200,content_type='text/css',body=(APP/path.removeprefix('/app/')).read_text())
                     else:route.abort()
                 hubpage.route('**/*',hub_asset)
                 hubpage.set_content(hub.replace('<head>','<head><base href="https://kcmc-fixture.invalid/">',1))
                 check(hubpage.evaluate('document.documentElement.scrollWidth <= innerWidth'),'grouped hub fits viewport '+str(width))
                 check(hubpage.locator('.admin-group').count()==3,'compact owner hub has three authorized groups')
                 if width==1365:check(hubpage.evaluate('document.documentElement.scrollHeight < 1100'),'desktop hub avoids the previous wall of tall tool cards')
-                hubpage.get_by_role('link',name='← Account home',exact=True).focus();hubpage.keyboard.press('Tab')
-                check(hubpage.get_by_role('link',name='Home',exact=True).evaluate('(el)=>el===document.activeElement'),'Home is reachable by keyboard after Back')
+                hubpage.locator('[data-kcmc-back]').focus();hubpage.keyboard.press('Tab')
+                check(hubpage.get_by_role('navigation',name='Page controls').get_by_role('link',name='Home',exact=True).evaluate('(el)=>el===document.activeElement'),'Home is reachable by keyboard after Back')
                 hubpage.screenshot(path=str(OUTPUT/('administration-'+str(width)+'.png')),full_page=True);hubpage.close()
         finally:fixture.close()
         check(not errors,'offline browser has no uncaught client errors')

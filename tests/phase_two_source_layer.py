@@ -1,9 +1,10 @@
 #!/usr/bin/env python3
 """Exact collaboration/payroll runtime layer over the signed phase-one release.
 
-The full current application must equal the exact reviewed delta over 9cf.
-Recovering this layer preserves the first workflow fixture and every older
-source/route proof. Current collaboration and payroll tests run separately.
+After the separately pinned visual/navigation layer is reversed, the complete
+installed application must equal the exact reviewed delta over 9cf. Recovering
+this layer preserves the first workflow fixture and every older source/route
+proof. Current collaboration and payroll tests run separately.
 No hosting, Git mutation, production delivery or private-record access occurs.
 """
 from __future__ import print_function
@@ -11,9 +12,9 @@ from __future__ import print_function
 import hashlib
 import json
 from pathlib import Path
-import shutil
-import stat
 import subprocess
+
+from visual_source_layer import VisualLayer
 
 ROOT = Path(__file__).resolve().parents[1]
 PREFIX = 'KCMC-Connect-Phase6-Recreated/'
@@ -66,14 +67,10 @@ class PhaseTwoLayer:
             tree[path[len(PREFIX):]] = (mode.decode('ascii'), oid.decode('ascii'))
         require(MODIFIED <= set(tree) and not (NEW_FILES & set(tree)),
                 'Modified and new phase-two files must have exact baseline membership')
-        actual_paths = set()
-        for path in self.app.rglob('*'):
-            info = path.lstat()
-            require(not stat.S_ISLNK(info.st_mode), 'Application source may not add symbolic links')
-            if stat.S_ISDIR(info.st_mode):
-                continue
-            require(stat.S_ISREG(info.st_mode), 'Application source must contain ordinary files')
-            actual_paths.add(path.relative_to(self.app).as_posix())
+        # Validate and reverse only the separately pinned visual/navigation
+        # layer before applying the unchanged collaboration/payroll fixture.
+        self.visual = VisualLayer(self.root, self.git_source)
+        actual_paths = set(self.visual.baseline_tree)
         require(actual_paths == set(tree) | NEW_FILES,
                 'Current application membership must be the exact phase-one baseline plus reviewed phase-two files')
 
@@ -88,7 +85,7 @@ class PhaseTwoLayer:
                 old, new = old.encode('utf-8'), new.encode('utf-8')
                 require(old and new and expected.count(old) == 1, name + ': one exact forward phase-two anchor required')
                 expected = expected.replace(old, new, 1)
-            actual = (self.app / name).read_bytes()
+            actual = self.visual.before(name)
             require(actual == expected and sha256(actual) == record['after_sha256'],
                     name + ': only exact reviewed phase-two target bytes permitted')
             recovered = actual
@@ -100,12 +97,12 @@ class PhaseTwoLayer:
             self.preimages[name] = recovered
         for name, record in fixture['new_files'].items():
             require(set(record) == {'sha256', 'bytes'}, name + ': exact new-file byte-pin schema required')
-            actual = (self.app / name).read_bytes()
+            actual = self.visual.before(name)
             require(len(actual) == record['bytes'] and sha256(actual) == record['sha256'],
                     name + ': exact reviewed new phase-two file required')
         for name, (_, oid) in tree.items():
             if name not in MODIFIED:
-                require(blob((self.app / name).read_bytes()) == oid,
+                require(blob(self.visual.before(name)) == oid,
                         name + ': all runtime bytes outside the reviewed phase-two delta must remain phase-one canonical')
         self.paths = frozenset(PREFIX + name for name in MODIFIED | NEW_FILES)
         self.baseline_tree = tree
@@ -115,13 +112,13 @@ class PhaseTwoLayer:
 
     def before(self, name):
         require(name not in NEW_FILES, name + ': a new phase-two file has no historical preimage')
-        return self.preimages[name] if name in self.preimages else (self.app / name).read_bytes()
+        return self.preimages[name] if name in self.preimages else self.visual.before(name)
 
     def copy_phase_one(self, destination):
         """Write a new isolated historical test application; never overwrite a path."""
         destination = Path(destination)
         require(not destination.exists(), 'Historical fixture destination must not already exist')
-        shutil.copytree(str(self.app), str(destination))
+        self.visual.copy_baseline(destination)
         for name, data in self.preimages.items():
             (destination / name).write_bytes(data)
         for name in NEW_FILES:

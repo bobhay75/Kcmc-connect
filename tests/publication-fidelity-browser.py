@@ -40,6 +40,10 @@ PNG = png_fixture()
 
 def fixture_html(source):
     source = re.sub(r'\A<\?php.*?\?>', '', source, count=1, flags=re.S)
+    # Shared document chrome is exercised through actual PHP/HTTP in
+    # app-theme-browser.py; keep this canvas-fidelity fixture strict otherwise.
+    source = re.sub(r"<\?php require_once __DIR__ \. '/../lib/screen-navigation\.php'; echo kcmc_screen_assets\(\); \?>", '', source)
+    source = re.sub(r"<\?php echo kcmc_screen_navigation\('admin/home.php', true\); \?>", '', source)
 
     def replace(match):
         expression = match.group(1)

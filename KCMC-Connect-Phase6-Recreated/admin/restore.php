@@ -45,8 +45,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 }
 ?><!doctype html>
-<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="robots" content="noindex,nofollow"><title>Restore Content • KCMC Connect</title><link rel="stylesheet" href="<?=kcmc_h(kcmc_url('styles.css?v=3.0.0'))?>"></head>
-<body class="portal-body"><main class="portal-shell portal-narrow">
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="robots" content="noindex,nofollow"><title>Restore Content • KCMC Connect</title><link rel="stylesheet" href="<?=kcmc_h(kcmc_url('styles.css?v=3.0.0'))?>"><?php require_once __DIR__ . '/../lib/screen-navigation.php'; echo kcmc_screen_assets(); ?>
+</head>
+<body class="portal-body"><?php echo kcmc_screen_navigation('admin/home.php', true); ?><main class="portal-shell portal-narrow">
 <a class="portal-back" href="<?=kcmc_h(kcmc_url('admin/'))?>">← Publishing desk</a>
 <section class="portal-card"><p class="eyebrow">CONTENT RECOVERY</p><h1>Restore a KCMC public-content backup</h1><p>Use a JSON file downloaded from the KCMC Publishing Desk backup control. Restoring writes only the public content store. Member accounts, invitations, prayer requests, audit history and push subscriptions are separate private data and are not part of this recovery path.</p>
 <p class="portal-alert warning">Before the uploaded backup replaces public content, KCMC automatically copies the current live content into backup storage.</p>

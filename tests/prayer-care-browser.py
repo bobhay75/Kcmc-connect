@@ -55,6 +55,7 @@ with tempfile.TemporaryDirectory(prefix='kcmc-care-browser-') as tmp:
             assert owner.url==base+'/admin/prayer-inbox.php'
             assert owner.goto(base+'/admin/home.php').status==200
             assert team.goto(base+'/admin/home.php').status==200
+            team.locator('details.admin-group > summary').filter(has_text='People & care').click()
             assert team.get_by_role('link',name='Open Confidential prayer inbox',exact=True).count()==1
             assert team.get_by_role('link',name='Open Prayer & Care review',exact=True).count()==0
             assert recovery.goto(url+'?view=review').status==403

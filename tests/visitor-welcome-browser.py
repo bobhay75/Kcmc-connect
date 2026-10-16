@@ -52,13 +52,19 @@ with tempfile.TemporaryDirectory(prefix='kcmc-visitor-review-') as td:
                 check(page.locator('[data-hero-photo]:visible').count()==1,'one hero photo plane')
                 check(page.locator('.hero-church-photo,.hero-church-window,[data-hero-caption]').count()==0,'no nested hero image or source subtitle')
                 check(page.locator('[data-hero-toggle]').inner_text()=='Play photos','reduced-motion preference preserved')
-                for selector in ('.hero', '.invite-neighbor', '.cw-section', '.family-welcome'):
-                    check(page.locator(selector).evaluate("el=>getComputedStyle(el).backgroundColor")=='rgb(13, 34, 53)', selector+' uses the same blue background')
+                for selector, expected in [('.hero','rgb(7, 18, 28)'),('.invite-neighbor','rgb(13, 34, 53)'),('.cw-section','rgb(13, 34, 53)'),('.family-welcome','rgb(13, 34, 53)')]:
+                    check(page.locator(selector).evaluate("el=>getComputedStyle(el).backgroundColor")==expected, selector+' retains the requested navy palette')
                 for selector in ('.invite-neighbor-card', '.cw-feature'):
                     check(page.locator(selector).evaluate("el=>getComputedStyle(el).backgroundColor")=='rgb(20, 51, 75)', selector+' uses a blue card surface')
-                check(page.locator('.home-cover-card').count()==1 and page.locator('.hero-card').count()==0,'single approved welcome card replaces the old service card')
-                expected_card='rgb(249, 246, 239)' if width<=1100 else 'rgba(250, 247, 239, 0.96)'
-                check(page.locator('.home-cover-card').evaluate("el=>getComputedStyle(el).backgroundColor")==expected_card,'welcome card uses the approved cream surface')
+                check(page.locator('.home-cover-card').count()==1 and page.locator('.hero-card').count()==0,'single compact controls shell replaces the old welcome and service cards')
+                check(page.locator('.home-cover-card').evaluate("el=>{const s=getComputedStyle(el);return s.backgroundColor==='rgba(0, 0, 0, 0)'&&s.boxShadow==='none'&&parseFloat(s.padding)===0}"),'photo controls use a transparent shell without a cream card')
+                for selector in ('.home-cover-card > .eyebrow','.hero h1','.home-cover-card > .lead','.home-worship-strip','.family-welcome-copy'):
+                    check(page.locator(selector).is_hidden(),selector+' stays behind navigation rather than cluttering the photo homepage')
+                check(page.locator('[data-hero-controls] button:visible').count()==3,'all three carousel controls remain available')
+                photo_box=page.locator('[data-hero-photo]:visible').bounding_box()
+                controls_box=page.locator('[data-hero-controls]').bounding_box()
+                cover_box=page.locator('[data-hero-gallery]').bounding_box()
+                check(controls_box['y']>=photo_box['y']+photo_box['height']-1 and cover_box['height']<=photo_box['height']+controls_box['height']+64,'compact controls follow the photograph without reserved welcome-card space')
                 check(page.locator('[data-hero-photo][src*="ministry-group"],[data-hero-photo][src*="bridge-"]').count()==0,'photographed poster and layered logo artwork are absent')
                 check(page.locator('.hero-photo').first.evaluate("el=>getComputedStyle(el).filter")=='none','hero photo is not darkened by a filter')
                 check(page.evaluate('document.documentElement.scrollWidth<=innerWidth'),f'{width}px no horizontal overflow')
@@ -69,6 +75,16 @@ with tempfile.TemporaryDirectory(prefix='kcmc-visitor-review-') as td:
                 shared=page.evaluate('window.sharedInvitation')
                 check(shared['url']==base+'#visit','member invitation points directly to the visit page')
                 check('8:00, 9:15 or 10:30' in shared['text'],'member invitation names the three Sunday options')
+                page.locator('#siteMenu summary').click()
+                page.locator('#siteMenu a[data-route="visit"]').click()
+                page.wait_for_function("document.querySelector('[data-view=visit]').classList.contains('active')")
+                check(page.locator('[data-view="visit"]').is_visible() and page.locator('#siteMenu').get_attribute('open') is None,'Plan a visit stays reachable through the fish menu')
+                service_options=page.locator('[data-view="visit"] .expect-list').inner_text()
+                check(all(value in service_options for value in ('8:00 AM Front Porch Gospel','9:15 AM Traditional','10:30 AM Contemporary')),'service times and worship styles remain available on the visit screen')
+                page.locator('#siteMenu summary').click()
+                page.locator('#siteMenu a[data-route="home"]').click()
+                page.wait_for_function("document.querySelector('[data-view=home]').classList.contains('active')")
+                check(page.locator('[data-view="home"]').is_visible() and page.locator('#siteMenu').get_attribute('open') is None,'fish Home restores the photo screen before the next scenario')
                 if width==390:
                     page.goto(base+'?token=synthetic#home',wait_until='networkidle')
                     page.locator('#siteMenu summary').click()

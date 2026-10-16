@@ -7,6 +7,7 @@ transport and device push acceptance remain separate from this CLI harness.
 import argparse
 import copy
 import importlib.util
+from html.parser import HTMLParser
 import json
 import os
 from pathlib import Path
@@ -37,6 +38,24 @@ if ($argv[5] !== '-') {
 }
 require $argv[1] . '/' . $argv[3];
 '''
+
+def page_control_links(html):
+    """Read names and destinations from the shared, visible navigation landmark."""
+    class Controls(HTMLParser):
+        def __init__(self):
+            super().__init__(); self.active = False; self.link = None; self.links = []
+        def handle_starttag(self, tag, attrs):
+            attrs = dict(attrs)
+            if tag == 'nav': self.active = attrs.get('aria-label') == 'Page controls'
+            if tag == 'a' and self.active: self.link = [attrs.get('href'), []]
+        def handle_data(self, text):
+            if self.link is not None: self.link[1].append(text)
+        def handle_endtag(self, tag):
+            if tag == 'a' and self.link is not None:
+                self.links.append((' '.join(''.join(self.link[1]).split()), self.link[0])); self.link = None
+            if tag == 'nav': self.active = False
+    controls = Controls(); controls.feed(html)
+    return controls.links
 
 class Fixture:
     def __init__(self, app):
@@ -105,7 +124,7 @@ class MemberAccountRoutes(unittest.TestCase):
                     self.assertNotIn(tool,page)
                 admin_links=re.findall(r'href="/app/admin/[^"]*"',page)
                 self.assertEqual(admin_links,['href="/app/admin/home.php"'] if actor in ['owner','pastor','recovery','prayer'] else [])
-                self.assertIn('href="/app/">← Home',page)
+                self.assertIn(('Home','/app/'),page_control_links(page))
                 self.assertIn('method="post" action="/app/member/logout.php"',page)
     def test_personal_information_is_escaped(self):
         users=self.f.read('users.json');users['users'][3]['display_name']='Name <script>bad()</script>';users['users'][3]['email']='bad<svg>@example.invalid'
@@ -120,7 +139,7 @@ class MemberAccountRoutes(unittest.TestCase):
                 for route,yes in [('admin/"',publish),('admin/users.php',publish),('admin/prayer-inbox.php',prayers),('admin/operations.php',owner),('admin/timecards.php',owner),('admin/push.php',owner)]:
                     self.assertEqual(('href="/app/'+route) in page,yes,route)
                 self.assertEqual('admin/prayer-care.php' in page,actor in ['owner','pastor'])
-                self.assertIn('href="/app/member/">← Account home',page)
+                self.assertIn(('My account','/app/member/'),page_control_links(page))
         self.assertEqual(self.f.route('admin/home.php','member')[0],403)
         self.assertEqual(self.f.route('admin/home.php','owner',configured='')[0],200)
         self.assertNotIn('admin/operations.php',self.f.route('admin/home.php','owner',configured='')[1])

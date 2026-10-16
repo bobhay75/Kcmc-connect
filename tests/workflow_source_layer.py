@@ -159,7 +159,7 @@ def main():
     parser.add_argument('--historical-timeclock-contracts', action='store_true')
     args = parser.parse_args()
     layer = Layer(args.root, args.git_source)
-    print('PASS: exact phase-two and workflow fixtures, canonical tree memberships and reversible runtime bytes')
+    print('PASS: exact visual, phase-two and workflow fixtures, canonical tree memberships and reversible runtime bytes')
     if args.phase_one_output:
         layer.phase_two.copy_phase_one(args.phase_one_output)
         print('PASS: exact phase-one application reconstructed; current source unchanged')

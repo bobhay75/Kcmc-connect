@@ -139,8 +139,12 @@ def main() -> int:
                     die("the account overview repeated the private prayer form")
                 page.get_by_role("link", name="Administration", exact=True).click()
                 assert_title(page, "Administration", "Administration opens from the account")
-                if page.get_by_role("link", name="Open Employee time cards", exact=True).count() != 1:
+                operations = page.locator('details.admin-group > summary').filter(has_text='Operations')
+                operations.click()
+                if not page.get_by_role("link", name="Open Employee time cards", exact=True).is_visible():
                     die("owner Administration did not expose employee review")
+                operations.click()
+                page.locator('details.admin-group > summary').filter(has_text='Work & publishing').click()
                 page.get_by_role("link", name="Open Publishing", exact=True).click()
 
                 assert_title(page, "KCMC Publishing Desk", "Publishing Desk loads for pastor admin")
@@ -181,6 +185,7 @@ def main() -> int:
                     page.screenshot(path=str(screenshots / ("timeclock-" + str(width) + ".png")), full_page=True)
 
                 page.goto(BASE + "/admin/home.php", wait_until="domcontentloaded")
+                page.locator('details.admin-group > summary').filter(has_text='Operations').click()
                 page.get_by_role("link", name="Open Employee time cards", exact=True).click()
                 page.get_by_role("button", name="Prepare for review", exact=True).click()
                 page.get_by_role("button", name="Approve", exact=True).click()
@@ -188,7 +193,7 @@ def main() -> int:
                 if own_period["status"] != "approved" or own_period.get("approved_by") != "test_admin":
                     die("designated owner could not approve their own test time card")
                 print("PASS: administrator controls are separate and the designated owner can approve their own test card")
-                page.get_by_role("link", name="Home", exact=True).click()
+                page.get_by_role("navigation", name="Page controls").get_by_role("link", name="Home", exact=True).click()
                 assert_title(page, "KCMC", "time-card Home returns to the public site")
                 page.goto(BASE + "/member/timeclock.php", wait_until="domcontentloaded")
                 page.get_by_role("button", name="Clock In", exact=True).click()

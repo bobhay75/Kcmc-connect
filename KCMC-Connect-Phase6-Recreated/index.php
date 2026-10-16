@@ -51,6 +51,7 @@ usort($kcmcAnnouncements, fn($a,$b)=>(int)($b['priority']??0)<=>(int)($a['priori
 <link rel="stylesheet" href="public-presentation.css?v=fish-only-home-20261014">
 <link rel="icon" href="assets/icons/icon-192.png?v=3.0.1">
 <link rel="apple-touch-icon" href="assets/icons/icon-192.png?v=3.0.1">
+<?php require_once __DIR__ . '/lib/screen-navigation.php'; echo kcmc_screen_assets(); ?>
 </head>
 <body data-office-email="<?=kcmc_h($kcmcEmail)?>">
 <a class="skip-link" href="#mainContent">Skip to content</a>
@@ -63,7 +64,8 @@ usort($kcmcAnnouncements, fn($a,$b)=>(int)($b['priority']??0)<=>(int)($a['priori
         <img src="./assets/icons/icon-192.png" alt="" aria-hidden="true" width="56" height="56">
       </summary>
       <nav id="siteMenuLinks" aria-label="KCMC Connect navigation">
-        <a class="menu-home" href="#home" data-route="home"><strong>KCMC CONNECT</strong><small>Kimberling City Methodist Church</small></a>
+        <?=kcmc_screen_back($member ? 'member/' : '')?>
+        <a class="menu-home" href="#home" data-route="home" aria-label="Home"><strong>KCMC CONNECT</strong><small>Kimberling City Methodist Church</small></a>
         <a href="#visit" data-route="visit">Plan a visit</a>
         <a href="#watch" data-route="watch">Watch messages</a>
         <a href="#news" data-route="news">Announcements &amp; church updates</a>
@@ -81,6 +83,7 @@ usort($kcmcAnnouncements, fn($a,$b)=>(int)($b['priority']??0)<=>(int)($a['priori
         <button type="button" data-install-app>Save app</button>
         <button type="button" data-share-app>Share KCMC Connect</button>
         <a class="menu-account" href="<?=kcmc_h(kcmc_url($member ? 'member/' : 'admin/login.php'))?>"><?=$member ? 'My account' : 'Staff Sign In'?></a>
+        <?php if($member): ?><a href="<?=kcmc_h(kcmc_url('member/timeclock.php'))?>">Time clock</a><?php endif; ?>
         <?php if($member && kcmc_has_role(['pastor_admin', 'recovery_admin'], $member)): ?><a href="<?=kcmc_h(kcmc_url('admin/'))?>">Administration</a><?php endif; ?>
       </nav>
     </details>

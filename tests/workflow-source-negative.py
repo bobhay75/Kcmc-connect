@@ -8,6 +8,7 @@ import unittest
 
 from workflow_source_layer import FIXTURE, Layer, PREFIX, ROOT
 from phase_two_source_layer import FIXTURE as PHASE_TWO_FIXTURE
+from visual_source_layer import FIXTURE as VISUAL_FIXTURE
 
 
 class ExactWorkflowSource(unittest.TestCase):
@@ -19,6 +20,7 @@ class ExactWorkflowSource(unittest.TestCase):
         (self.root / FIXTURE).parent.mkdir(parents=True)
         shutil.copyfile(ROOT / FIXTURE, self.root / FIXTURE)
         shutil.copyfile(ROOT / PHASE_TWO_FIXTURE, self.root / PHASE_TWO_FIXTURE)
+        shutil.copyfile(ROOT / VISUAL_FIXTURE, self.root / VISUAL_FIXTURE)
 
     def tearDown(self):
         self.directory.cleanup()
@@ -28,30 +30,30 @@ class ExactWorkflowSource(unittest.TestCase):
 
     def test_undeclared_runtime_file_cannot_hide_outside_git_diff(self):
         (self.app / 'member/undeclared-owner-shortcut.php').write_text('<?php echo "undeclared";')
-        with self.assertRaisesRegex(AssertionError, 'exact phase-one baseline plus reviewed phase-two files'):
+        with self.assertRaisesRegex(AssertionError, 'exact installed baseline plus reviewed visual/navigation files'):
             self.verify()
 
     def test_undeclared_bootstrap_change_cannot_hide_behind_workflow_preimages(self):
         path = self.app / 'lib/bootstrap.php'
         path.write_bytes(path.read_bytes() + b'\n// undeclared authorization change\n')
-        with self.assertRaisesRegex(AssertionError, 'only exact reviewed phase-two target bytes'):
+        with self.assertRaisesRegex(AssertionError, 'lib/bootstrap.php:.*visual/navigation'):
             self.verify()
 
     def test_extra_change_inside_reviewed_route_is_rejected(self):
         path = self.app / 'admin/push.php'
         path.write_bytes(path.read_bytes() + b'\n<!-- undeclared sender change -->\n')
-        with self.assertRaisesRegex(AssertionError, 'outside the reviewed phase-two delta'):
+        with self.assertRaisesRegex(AssertionError, 'admin/push.php:.*visual/navigation'):
             self.verify()
 
     def test_changed_new_admin_route_is_rejected(self):
         path = self.app / 'admin/prayer-care.php'
         path.write_bytes(path.read_bytes() + b'\n// undeclared route change\n')
-        with self.assertRaisesRegex(AssertionError, 'outside the reviewed phase-two delta'):
+        with self.assertRaisesRegex(AssertionError, 'admin/prayer-care.php:.*visual/navigation'):
             self.verify()
 
     def test_missing_new_route_is_rejected(self):
         (self.app / 'admin/home.php').unlink()
-        with self.assertRaisesRegex(AssertionError, 'exact phase-one baseline plus reviewed phase-two files'):
+        with self.assertRaisesRegex(AssertionError, 'exact installed baseline plus reviewed visual/navigation files'):
             self.verify()
 
     def test_fixture_cannot_be_silently_rewritten(self):

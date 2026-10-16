@@ -11,6 +11,7 @@ import os
 import re
 import shutil
 from pathlib import Path
+from urllib.parse import urlparse
 from playwright.sync_api import sync_playwright
 
 ROOT=Path(__file__).resolve().parents[1]
@@ -20,7 +21,11 @@ p=argparse.ArgumentParser();p.add_argument('--app',type=Path,default=routes.APP)
 args.output.mkdir(parents=True,exist_ok=True)
 f=routes.Fixture(args.app.resolve());evidence=[]
 try:
-    css=(f.app/'styles.css').read_text()
+    def inline_css(match):
+        href=re.search(r'href="([^"]+)"',match.group(0)).group(1)
+        path=urlparse(href).path.removeprefix('/app/')
+        css=(f.app/path).read_text()
+        return '<style'+(' media="screen"' if 'media="screen"' in match.group(0) else '')+'>'+css+'</style>'
     with sync_playwright() as browser_tool:
         browser=browser_tool.chromium.launch(executable_path=os.environ.get('KCMC_TEST_CHROMIUM') or shutil.which('chromium') or browser_tool.chromium.executable_path,headless=True,args=['--no-sandbox'])
         for width,height in [(390,844),(1365,900)]:
@@ -29,12 +34,15 @@ try:
             for actor,route,label in [('owner','member/index.php','owner-account'),('member','member/index.php','member-account'),('owner','admin/home.php','owner-administration')]:
                 status,html=f.route(route,actor)
                 assert status==200
-                html=re.sub(r'<link rel="stylesheet"[^>]*>',lambda match: '<style>'+css+'</style>',html)
+                html=re.sub(r'<link rel="stylesheet"[^>]*>',inline_css,html)
                 page.set_content(html,wait_until='domcontentloaded')
                 assert page.locator('h1').count()==1
                 assert page.evaluate('document.documentElement.scrollWidth <= innerWidth'),(width,label,'horizontal overflow')
                 for element in page.locator('a,button').all():
-                    box=element.bounding_box();assert box is not None
+                    box=element.bounding_box()
+                    if box is None:
+                        assert element.locator('xpath=ancestor::details[not(@open)]').count(), 'only collapsed group links may be hidden'
+                        continue
                     assert box['x']>=-1 and box['x']+box['width']<=width+1,(width,label,element.inner_text(),box)
                 if route=='member/index.php':
                     assert page.get_by_role('navigation',name='Personal settings').count()==1
@@ -44,7 +52,7 @@ try:
                     assert page.get_by_role('button',name='Sign out').count()==1
                     page.keyboard.press('Tab')
                     assert page.evaluate('document.activeElement.tagName')=='A'
-                    assert 'Home' in page.evaluate('document.activeElement.textContent')
+                    assert page.locator('[data-kcmc-back]').evaluate('(el)=>el===document.activeElement')
                 path=args.output/(label+'-'+str(width)+'.png');page.screenshot(path=str(path),full_page=True)
                 evidence.append(dict(route=route,actor=actor,width=width,height=height,screenshot=str(path.resolve()),horizontal_overflow=False))
             page.close()

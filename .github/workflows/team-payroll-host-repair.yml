@@ -12,6 +12,9 @@ on:
       - 'KCMC-Connect-Phase6-Recreated/admin/**'
       - 'KCMC-Connect-Phase6-Recreated/member/**'
       - 'KCMC-Connect-Phase6-Recreated/api/**'
+      - 'tests/visual_source_layer.py'
+      - 'tests/historical-team-release-checksums.py'
+      - 'tests/fixtures/app-theme-navigation-reviewed.json'
       - '.github/workflows/team-payroll-host-repair.yml'
   workflow_dispatch:
 permissions:
@@ -26,15 +29,18 @@ jobs:
           ref: ${{ github.event.pull_request.head.sha || github.sha }}
           persist-credentials: false
       - name: Fetch only exact reviewed source objects
-        run: git fetch --no-tags origin 3317aed0c4b6a1619f8f68cced6a73fc4a245055 131071542f7985eb5d483d8123764df9319a7e37 00fdd469482564a3511a29a27a99502c24a32845 ba7b5df314e1be604d46443025d41b1c8fe732a4
+        run: git fetch --no-tags origin b0c257edb8a42fc89fd6371c1bce7ee3efbd5ed9 3317aed0c4b6a1619f8f68cced6a73fc4a245055 131071542f7985eb5d483d8123764df9319a7e37 00fdd469482564a3511a29a27a99502c24a32845 ba7b5df314e1be604d46443025d41b1c8fe732a4
       - name: Exact derivation, canonical Git membership and transaction safety
         run: |
           set -euo pipefail
+          kcmc_team_installed=$(mktemp -d)
+          trap 'rm -rf -- "$kcmc_team_installed"' EXIT
+          python3 tests/visual_source_layer.py --baseline-output "$kcmc_team_installed/app"
           cd tools/kcmc-team-payroll-repair-oct15
           sha256sum -c CHECKSUMS.sha256
           python3 -B derive_installer.py
           git diff --exit-code -- installer.py provenance.json
-          python3 -B test_installer.py --runtime-root ../../KCMC-Connect-Phase6-Recreated --git-root ../..
+          python3 -B test_installer.py --runtime-root "$kcmc_team_installed/app" --git-root ../..
           python3 -B test_existing_safety.py
           python3 -B test_policy_safety.py
           node --check evidence/after/member/workspace.js
@@ -43,7 +49,7 @@ jobs:
       - name: Corrected core artifact and exact two-release coordination
         run: |
           set -euo pipefail
-          sha256sum -c tools/kcmc-team-payroll-host-oct15-CHECKSUMS.sha256
+          python3 -B tests/historical-team-release-checksums.py
           cd tools/kcmc-workflows-repair-v2-oct15
           sha256sum -c CHECKSUMS.sha256
           python3 -B derive_installer.py
@@ -87,8 +93,13 @@ jobs:
       - name: Actual Python3.6 temporary transactions from read-only package
         run: |
           set -euo pipefail
+          git fetch --no-tags origin b0c257edb8a42fc89fd6371c1bce7ee3efbd5ed9
+          kcmc_team_installed=$(mktemp -d)
+          trap 'rm -rf -- "$kcmc_team_installed"' EXIT
+          python3 tests/visual_source_layer.py --baseline-output "$kcmc_team_installed/app"
           docker run --rm --network none --user "$(id -u):$(id -g)" \
             --mount "type=bind,src=$PWD,dst=/source,readonly" \
+            --mount "type=bind,src=$kcmc_team_installed/app,dst=/installed-runtime,readonly" \
             -w /source \
             python@sha256:f8652afaf88c25f0d22354d547d892591067aa4026a7fa9a6819df9f300af6fc \
-            bash -c 'set -e; sha256sum -c tools/kcmc-team-payroll-host-oct15-CHECKSUMS.sha256; cd tools/kcmc-team-payroll-repair-oct15; sha256sum -c CHECKSUMS.sha256; python3 -B test_installer.py --runtime-root ../../KCMC-Connect-Phase6-Recreated; python3 -B test_existing_safety.py; python3 -B test_policy_safety.py; cd ../kcmc-workflows-repair-v2-oct15; sha256sum -c CHECKSUMS.sha256; python3 -B test_installer.py; python3 -B test_existing_safety.py; python3 -B test_policy_safety.py; python3 -B test_v2_safety.py; cd ../..; python3 -B tools/test-team-payroll-host-coordinator-oct15.py'
+            bash -c 'set -e; python3 -B tests/historical-team-release-checksums.py; cd tools/kcmc-team-payroll-repair-oct15; sha256sum -c CHECKSUMS.sha256; python3 -B test_installer.py --runtime-root /installed-runtime; python3 -B test_existing_safety.py; python3 -B test_policy_safety.py; cd ../kcmc-workflows-repair-v2-oct15; sha256sum -c CHECKSUMS.sha256; python3 -B test_installer.py; python3 -B test_existing_safety.py; python3 -B test_policy_safety.py; python3 -B test_v2_safety.py; cd ../..; python3 -B tools/test-team-payroll-host-coordinator-oct15.py'

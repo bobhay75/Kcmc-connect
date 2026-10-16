@@ -11,7 +11,8 @@ function kcmc_publish_fail(string $message, int $status): never {
     } else {
         header('Content-Type: text/html; charset=utf-8');
         $copy = $_POST; unset($copy['csrf']);
-        echo '<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Publishing • KCMC Connect</title></head><body><main><h1>Changes were not published</h1><p role="alert">' . kcmc_h($message) . '</p><p><a href="' . kcmc_h(kcmc_url('admin/')) . '">Back to Publishing</a> · <a href="' . kcmc_h(kcmc_url()) . '">Home</a></p><details><summary>Copy your unsaved input before reloading</summary><textarea readonly rows="18" cols="70">' . kcmc_h(json_encode($copy, JSON_PRETTY_PRINT|JSON_UNESCAPED_UNICODE|JSON_UNESCAPED_SLASHES) ?: '') . '</textarea></details></main></body></html>';
+        require_once __DIR__ . '/../lib/screen-navigation.php';
+        echo '<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Publishing • KCMC Connect</title><link rel="stylesheet" href="' . kcmc_h(kcmc_url('styles.css?v=3.0.0')) . '">' . kcmc_screen_assets() . '</head><body class="portal-body">' . kcmc_screen_navigation('admin/', true) . '<main class="portal-shell portal-narrow"><h1>Changes were not published</h1><p role="alert">' . kcmc_h($message) . '</p><details><summary>Copy your unsaved input before reloading</summary><textarea readonly rows="18" cols="70">' . kcmc_h(json_encode($copy, JSON_PRETTY_PRINT|JSON_UNESCAPED_UNICODE|JSON_UNESCAPED_SLASHES) ?: '') . '</textarea></details></main></body></html>';
     }
     exit;
 }

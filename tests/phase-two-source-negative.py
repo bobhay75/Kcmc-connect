@@ -8,6 +8,7 @@ import unittest
 
 from phase_two_source_layer import FIXTURE, PhaseTwoLayer, PREFIX, ROOT
 from workflow_source_layer import FIXTURE as FIRST_FIXTURE, Layer
+from visual_source_layer import FIXTURE as VISUAL_FIXTURE
 
 
 class ExactPhaseTwoSource(unittest.TestCase):
@@ -16,7 +17,7 @@ class ExactPhaseTwoSource(unittest.TestCase):
         self.root = Path(self.directory.name) / 'source'
         self.app = self.root / PREFIX
         shutil.copytree(ROOT / PREFIX, self.app)
-        for name in [FIXTURE, FIRST_FIXTURE]:
+        for name in [FIXTURE, FIRST_FIXTURE, VISUAL_FIXTURE]:
             target = self.root / name
             target.parent.mkdir(parents=True, exist_ok=True)
             shutil.copyfile(ROOT / name, target)
@@ -29,36 +30,36 @@ class ExactPhaseTwoSource(unittest.TestCase):
 
     def test_untracked_public_route_cannot_hide_outside_historical_git_scope(self):
         (self.app / 'owner-bypass.php').write_text('<?php echo "undeclared";')
-        with self.assertRaisesRegex(AssertionError, 'exact phase-one baseline plus reviewed phase-two files'):
+        with self.assertRaisesRegex(AssertionError, 'exact installed baseline plus reviewed visual/navigation files'):
             self.verify()
 
     def test_public_homepage_is_protected_outside_collaboration_payroll_scope(self):
         path = self.app / 'index.php'
         path.write_bytes(path.read_bytes() + b'\n<!-- undeclared homepage banner -->\n')
-        with self.assertRaisesRegex(AssertionError, 'outside the reviewed phase-two delta'):
+        with self.assertRaisesRegex(AssertionError, 'index.php:.*visual/navigation'):
             self.verify()
 
     def test_undeclared_owner_authorization_edit_cannot_hide_in_reviewed_403_markup(self):
         path = self.app / 'lib/operations-owner.php'
         path.write_bytes(path.read_bytes() + b'\n// undeclared authorization edit\n')
-        with self.assertRaisesRegex(AssertionError, 'only exact reviewed phase-two target bytes'):
+        with self.assertRaisesRegex(AssertionError, 'lib/operations-owner.php:.*visual/navigation'):
             self.verify()
 
     def test_undeclared_task_permission_edit_is_rejected(self):
         path = self.app / 'lib/team-workspace.php'
         path.write_bytes(path.read_bytes() + b'\n// undeclared task permission edit\n')
-        with self.assertRaisesRegex(AssertionError, 'exact reviewed new phase-two file'):
+        with self.assertRaisesRegex(AssertionError, 'lib/team-workspace.php:.*visual/navigation'):
             self.verify()
 
     def test_undeclared_payroll_recipient_edit_is_rejected(self):
         path = self.app / 'lib/payroll.php'
         path.write_bytes(path.read_bytes() + b'\n// undeclared recipient edit\n')
-        with self.assertRaisesRegex(AssertionError, 'exact reviewed new phase-two file'):
+        with self.assertRaisesRegex(AssertionError, 'lib/payroll.php:.*visual/navigation'):
             self.verify()
 
     def test_missing_new_owner_payroll_setup_route_is_rejected(self):
         (self.app / 'admin/payroll-setup.php').unlink()
-        with self.assertRaisesRegex(AssertionError, 'exact phase-one baseline plus reviewed phase-two files'):
+        with self.assertRaisesRegex(AssertionError, 'exact installed baseline plus reviewed visual/navigation files'):
             self.verify()
 
     def test_second_fixture_cannot_be_silently_rewritten(self):

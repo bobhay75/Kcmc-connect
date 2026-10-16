@@ -72,8 +72,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
 $active = count($allSubscriptions);
 $myActive = count($mySubscriptions);
-?><!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="robots" content="noindex,nofollow"><title>Push Updates • KCMC Connect</title><link rel="stylesheet" href="<?=kcmc_h(kcmc_url('styles.css?v=3.0.0'))?>"><style>.push-actions{display:grid;gap:18px}.push-action{border:1px solid #d8e0e5;border-radius:14px;padding:16px}.push-action h2{margin-top:0}.push-checklist{padding-left:1.25rem}.push-checklist li{margin:.45rem 0}</style></head>
-<body class="portal-body"><main class="portal-shell portal-narrow"><a class="portal-back" href="<?=kcmc_h(kcmc_url('admin/home.php'))?>">← Administration</a>
+?><!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="robots" content="noindex,nofollow"><title>Push Updates • KCMC Connect</title><link rel="stylesheet" href="<?=kcmc_h(kcmc_url('styles.css?v=3.0.0'))?>"><style>.push-actions{display:grid;gap:18px}.push-action{border:1px solid #d8e0e5;border-radius:14px;padding:16px}.push-action h2{margin-top:0}.push-checklist{padding-left:1.25rem}.push-checklist li{margin:.45rem 0}</style><?php require_once __DIR__ . '/../lib/screen-navigation.php'; echo kcmc_screen_assets(); ?>
+</head>
+<body class="portal-body"><?php echo kcmc_screen_navigation('admin/home.php', true); ?><main class="portal-shell portal-narrow"><a class="portal-back" href="<?=kcmc_h(kcmc_url('admin/home.php'))?>">← Administration</a>
 <section class="portal-card"><p class="eyebrow">PUSH UPDATES</p><h1>Notify subscribed devices</h1>
 <p>Send a brief KCMC Connect update to devices that have chosen to receive notifications.</p>
 <p class="portal-fine">Subscribed devices: <?=kcmc_h((string)$active)?>. Devices for your account: <?=kcmc_h((string)$myActive)?>.</p>

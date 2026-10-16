@@ -31,9 +31,7 @@ function kcmc_can_review_payroll(array $user): bool {
 function kcmc_require_payroll_reviewer(): array {
     $user = kcmc_require_login();
     if (!kcmc_can_review_payroll($user)) {
-        kcmc_private_headers(); http_response_code(403);
-        echo '<!doctype html><html lang="en"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Payroll access</title><h1>Payroll review access is restricted.</h1><p><a href="'.kcmc_h(kcmc_url('member/')).'">Back to my account</a> · <a href="'.kcmc_h(kcmc_url()).'">Home</a></p></html>';
-        exit;
+        kcmc_access_denied('Payroll review access is restricted.');
     }
     return $user;
 }
