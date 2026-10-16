@@ -62,4 +62,5 @@
       history.back();
     });
   });
+  document.documentElement.dataset.kcmcNavigationReady = 'true';
 })();

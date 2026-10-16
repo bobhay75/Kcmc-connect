@@ -148,6 +148,10 @@ def diagnostic_page(context, output, label, failures=None):
         try:
             page.screenshot(path=str(output / (stem + ".png")), full_page=True, timeout=5000)
             metadata["body_style"] = page.locator("body").evaluate(PALETTE)
+            metadata["overflowing_elements"] = page.evaluate("""() => [...document.querySelectorAll('body *')]
+                .map(el=>({tag:el.tagName,id:el.id,classes:String(el.className),text:(el.textContent||'').slice(0,100),
+                    x:el.getBoundingClientRect().x,right:el.getBoundingClientRect().right,width:el.getBoundingClientRect().width}))
+                .filter(el=>el.width>0 && (el.x < -1 || el.right > innerWidth+1)).slice(0,20)""")
         except Exception as capture_failure:
             metadata["capture_error"] = str(capture_failure)
         (output / (stem + ".json")).write_text(json.dumps(metadata, indent=2) + "\n")
@@ -225,6 +229,14 @@ def run(app, output, http_only=False):
                     if actor != "anonymous":
                         sign_in(context, base, actor)
                     contexts[actor] = context
+                # Exercise the private Back path first so an actual history
+                # failure produces its diagnostic evidence without waiting for
+                # the complete viewport matrix. Both clock actions finish out.
+                history_and_clock(contexts, base, output, route_failures)
+                (output / "results.json").write_text(json.dumps(dict(cases=evidence, failures=route_failures,
+                    production=False, delivery=False), indent=2) + "\n")
+                check(not route_failures, "Back and clock journeys pass before the full route matrix: " + "; ".join(
+                    failure["case"] + ": " + failure["error"] for failure in route_failures))
                 cases = [("anonymous", route, 410 if route.endswith("first-login.php") else 200) for route in PUBLIC]
                 cases += [("member", route, 200) for route in MEMBER]
                 cases += [("owner", route, 200) for route in ADMIN]
@@ -256,11 +268,26 @@ def run(app, output, http_only=False):
                                 workspace_colors(page, width)
                             if route == "admin/publication-designer.php":
                                 designer_colors(page)
+                            if route == "admin/payroll-setup.php":
+                                fingerprint = page.locator(".payroll-shell code")
+                                check(fingerprint.count() == 1 and fingerprint.evaluate("el=>[...el.getClientRects()].every(r=>r.left>=0&&r.right<=innerWidth+1)"),
+                                      "the complete payroll store fingerprint wraps within the phone card")
                             if route.startswith("admin/timecards-print.php") and expected_status == 200:
+                                table_region = page.get_by_role("region", name="Approved shift details", exact=True)
+                                check(table_region.is_visible(), "approved time card provides a named shift-details region")
+                                table_region.focus()
+                                check(table_region.evaluate("el=>el===document.activeElement"), "shift-details region is keyboard focusable")
+                                if table_region.evaluate("el=>el.scrollWidth>el.clientWidth+1"):
+                                    page.keyboard.press("ArrowRight")
+                                    page.wait_for_function("document.querySelector('.timecard-table').scrollLeft>0", timeout=2000)
+                                    check(True, "narrow-screen shift details can be scrolled with the keyboard")
                                 page.emulate_media(media="print")
                                 check(page.locator("[data-kcmc-back]").is_hidden(), "print output excludes page controls")
                                 body = page.locator("body").evaluate(PALETTE)
                                 check(max(body["foreground"][:3]) < 70 and body["image"] == "none", "printed time card retains dark text on paper")
+                                check(table_region.evaluate("el=>getComputedStyle(el).overflowX==='visible'")
+                                      and table_region.locator("thead th").count() == 7,
+                                      "printed shift details retain the full seven-column table without a screen scrollbox")
                                 page.emulate_media(media="screen")
                             if actor != "member" or route != "admin/home.php":
                                 filename = screenshot_routes.get(route)
@@ -272,22 +299,21 @@ def run(app, output, http_only=False):
                 users = (f.private / "users.json").read_bytes()
                 f.write("users.json", dict(version=1, users=[]))
                 try:
-                    page = contexts["anonymous"].new_page()
-                    page.goto(base + "/admin/setup.php")
-                    controls(page, base, "unconfigured secure setup")
-                    theme(page, "unconfigured secure setup")
-                    fit(page, "unconfigured secure setup", 390)
-                    page.close()
+                    with diagnostic_page(contexts["anonymous"], output, "secure-setup", route_failures) as page:
+                        page.goto(base + "/admin/setup.php")
+                        controls(page, base, "unconfigured secure setup")
+                        theme(page, "unconfigured secure setup")
+                        fit(page, "unconfigured secure setup", 390)
                 finally:
                     (f.private / "users.json").write_bytes(users)
-                history_and_clock(contexts, base)
                 (output / "results.json").write_text(json.dumps(dict(cases=evidence, failures=route_failures,
                     production=False, delivery=False), indent=2) + "\n")
                 check(not errors, "rendered pages have no uncaught JavaScript errors: " + "; ".join(errors))
                 check(not route_failures, "all rendered routes pass: " + "; ".join(
                     failure["case"] + ": " + failure["error"] for failure in route_failures))
                 browser.close()
-        (output / "results.json").write_text(json.dumps(dict(cases=evidence, production=False, delivery=False), indent=2) + "\n")
+        (output / "results.json").write_text(json.dumps(dict(cases=evidence, failures=route_failures,
+            production=False, delivery=False), indent=2) + "\n")
     finally:
         if server is not None:
             server.terminate()
@@ -477,44 +503,73 @@ def workspace_colors(page, width):
     check(page.locator(".work-comment").count() == 1, "assigned task conversation appears in the same workspace")
 
 
-def history_and_clock(contexts, base):
-    page = contexts["member"].new_page()
-    page.goto(base + "/member/")
-    page.locator('.screen-navigation a[href$="/member/timeclock.php"]').click()
-    page.wait_for_url("**/member/timeclock.php")
-    page.locator("[data-kcmc-back]").click()
-    page.wait_for_url("**/member/")
-    check(True, "Back returns to the previous same-app screen")
-    page.locator('.screen-navigation a[href$="/member/timeclock.php"]').click()
-    page.wait_for_url("**/member/timeclock.php")
-    page.evaluate("url=>location.assign(url)", base + "/member/notifications.php")
-    page.wait_for_url("**/member/notifications.php")
-    check(page.evaluate("document.referrer === ''"), "private document keeps no-referrer policy")
-    page.locator("[data-kcmc-back]").click()
-    page.wait_for_url("**/member/timeclock.php")
-    check(True, "private Back uses same-app history despite an empty referrer")
-    page.close()
+def history_and_clock(contexts, base, output, failures):
+    snapshots = []
+    script_errors = []
+    def snapshot(page, phase):
+        value = page.evaluate("""() => {
+            const nav=window.navigation, entry=e=>e?{key:e.key,index:e.index,url:e.url}:null;
+            let state={type:typeof nav,canGoBack:null,current:null,entries:[]};
+            try{if(nav)state={type:typeof nav,canGoBack:nav.canGoBack??null,current:entry(nav.currentEntry),entries:typeof nav.entries==='function'?nav.entries().map(entry):[]}}catch(error){state.error=String(error)}
+            const script=document.querySelector('script[src*="/app-navigation.js"]'),resources=performance.getEntriesByType('resource').filter(r=>r.name.includes('/app-navigation.js'));
+            return {url:location.href,hash:location.hash,appBase:document.querySelector('[data-kcmc-back]')?.dataset.kcmcAppBase??null,
+                isSecureContext:window.isSecureContext,referrer:document.referrer,readyState:document.readyState,historyLength:history.length,navigation:state,
+                scriptReady:document.documentElement.dataset.kcmcNavigationReady==='true',
+                scripts:[...document.scripts].filter(s=>s.src.includes('/app-navigation.js')).map(s=>({src:s.src,defer:s.defer})),
+                scriptResources:resources.map(r=>({url:r.name,startTime:r.startTime,responseEnd:r.responseEnd,duration:r.duration,responseStatus:r.responseStatus??null}))};
+        }""")
+        value.update(phase=phase, script_errors=list(script_errors))
+        snapshots.append(value)
+        (output / "private-back-history.json").write_text(json.dumps(snapshots, indent=2) + "\n")
+    with diagnostic_page(contexts["member"], output, "private-back-history", failures) as page:
+        page.on("pageerror", lambda error: script_errors.append(str(error)))
+        page.on("requestfailed", lambda request: script_errors.append(request.url + ": " + str(request.failure))
+                if "/app-navigation.js" in request.url else None)
+        try:
+            page.goto(base + "/member/")
+            page.locator('.screen-navigation a[href$="/member/timeclock.php"]').click()
+            page.wait_for_url("**/member/timeclock.php")
+            page.wait_for_function("document.documentElement.dataset.kcmcNavigationReady === 'true'")
+            snapshot(page, "initial-clock-before-back")
+            page.locator("[data-kcmc-back]").click()
+            page.wait_for_url("**/member/")
+            check(True, "Back returns to the previous same-app screen")
+            page.locator('.screen-navigation a[href$="/member/timeclock.php"]').click()
+            page.wait_for_url("**/member/timeclock.php")
+            page.evaluate("url=>location.assign(url)", base + "/member/notifications.php")
+            page.wait_for_url("**/member/notifications.php")
+            check(page.evaluate("document.referrer === ''"), "private document keeps no-referrer policy")
+            page.wait_for_function("document.documentElement.dataset.kcmcNavigationReady === 'true'")
+            snapshot(page, "notifications-before-back")
+            page.locator("[data-kcmc-back]").click()
+            snapshot(page, "notifications-back-after-click")
+            page.wait_for_url("**/member/timeclock.php", timeout=10000)
+            check(True, "private Back uses same-app history despite an empty referrer")
+            check(not script_errors, "private Back navigation has no script load or execution errors")
+        finally:
+            snapshot(page, "private-history-final-url")
     # New-page history has no previous app entry. Its real fallback is useful.
-    page = contexts["member"].new_page()
-    page.goto(base + "/member/timeclock.php", referer="https://external.example.invalid/elsewhere")
-    expected = urljoin(page.url, page.locator("[data-kcmc-back]").get_attribute("href"))
-    page.locator("[data-kcmc-back]").click()
-    page.wait_for_url(expected)
-    check(page.url.startswith(base + "/"), "Back from external entry uses its local fallback")
-    page.goto(base + "/member/timeclock.php")
-    page.get_by_role("button", name="Clock In", exact=True).click()
-    check(page.get_by_role("button", name="Clock Out", exact=True).is_visible(), "a member can still clock in without opening a menu")
-    page.get_by_role("button", name="Clock Out", exact=True).click()
-    check(page.get_by_role("button", name="Clock In", exact=True).is_visible(), "a member can still clock out without opening a menu")
-    page.close()
+    with diagnostic_page(contexts["member"], output, "direct-entry-back-and-clock", failures) as page:
+        page.goto(base + "/member/timeclock.php", referer="https://external.example.invalid/elsewhere")
+        expected = urljoin(page.url, page.locator("[data-kcmc-back]").get_attribute("href"))
+        page.locator("[data-kcmc-back]").click()
+        page.wait_for_url(expected)
+        check(page.url.startswith(base + "/"), "Back from external entry uses its local fallback")
+        page.goto(base + "/member/timeclock.php")
+        page.get_by_role("button", name="Clock In", exact=True).click()
+        check(page.get_by_role("button", name="Clock Out", exact=True).is_visible(), "a member can still clock in without opening a menu")
+        page.get_by_role("button", name="Clock Out", exact=True).click()
+        check(page.get_by_role("button", name="Clock In", exact=True).is_visible(), "a member can still clock out without opening a menu")
     context = contexts["anonymous"].browser.new_context(java_script_enabled=False)
-    page = context.new_page()
-    page.goto(base + "/member/reset-password.php")
-    expected = urljoin(page.url, page.locator("[data-kcmc-back]").get_attribute("href"))
-    page.locator("[data-kcmc-back]").click()
-    page.wait_for_url(expected)
-    check(True, "Back has a working fallback without JavaScript")
-    context.close()
+    try:
+        with diagnostic_page(context, output, "back-without-javascript", failures) as page:
+            page.goto(base + "/member/reset-password.php")
+            expected = urljoin(page.url, page.locator("[data-kcmc-back]").get_attribute("href"))
+            page.locator("[data-kcmc-back]").click()
+            page.wait_for_url(expected)
+            check(True, "Back has a working fallback without JavaScript")
+    finally:
+        context.close()
 
 
 if __name__ == "__main__":

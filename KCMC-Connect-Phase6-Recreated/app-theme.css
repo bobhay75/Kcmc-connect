@@ -229,6 +229,18 @@
   body .admin-group[open] > summary::after { content: "−"; }
   body .admin-group > summary:hover { color: var(--kcmc-text); }
 
+  body .payroll-shell code { overflow-wrap: anywhere; }
+  body .payroll-form,
+  body .payroll-form label { min-width: 0; }
+  body.timecard-print .timecard-table {
+    max-width: 100%;
+    overflow-x: auto;
+  }
+  body.timecard-print .timecard-table:focus-visible {
+    outline: 3px solid var(--kcmc-gold-hover);
+    outline-offset: -3px;
+  }
+
   /* Designer chrome uses the app palette; .page and its items remain authored artwork. */
   body.publication-designer { --ink: var(--kcmc-text); --bg: var(--kcmc-night); }
   body.publication-designer :is(.topbar, .panel) {
