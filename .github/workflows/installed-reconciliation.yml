@@ -40,7 +40,15 @@ jobs:
           node --check KCMC-Connect-Phase6-Recreated/public-presentation.js
           node tests/public-photo-offline-source.cjs | tee reconciliation-artifacts/public-photo-offline-source.txt
           node tests/publication-fidelity-source.cjs | tee reconciliation-artifacts/publication-fidelity-source.txt
-          for f in tests/*contract.php; do php "$f"; done | tee reconciliation-artifacts/php-contracts.txt
+          # Current contracts run current code; retain the immutable review
+          # contract against its exact historical themed service instead.
+          for f in tests/*contract.php; do
+            if [ "$f" = tests/timeclock-own-review-contract.php ]; then
+              python3 tests/historical-timeclock-review.py
+            else
+              php "$f"
+            fi
+          done | tee reconciliation-artifacts/php-contracts.txt
       - name: Install browser dependencies
         run: |
           python3 -m pip install --disable-pip-version-check --no-cache-dir playwright pillow
