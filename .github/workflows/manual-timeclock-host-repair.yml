@@ -1,0 +1,69 @@
+name: KCMC manual time clock scoped hosting repair
+on:
+  pull_request:
+    paths:
+      - 'tools/kcmc-manual-timeclock-oct16/**'
+      - '.github/workflows/manual-timeclock-host-repair.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  current-python-php:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          persist-credentials: false
+      - name: Fetch only exact reviewed source objects
+        run: |
+          set -euo pipefail
+          kcmc_manual_source=$(python3 -B -c 'import ast,pathlib,re; t=ast.parse(pathlib.Path("tools/kcmc-manual-timeclock-oct16/derive_installer.py").read_text()); v=next(ast.literal_eval(n.value) for n in t.body if isinstance(n,ast.Assign) and any(isinstance(k,ast.Name) and k.id=="SOURCE_COMMIT" for k in n.targets)); assert isinstance(v,str) and re.fullmatch("[0-9a-f]{40}",v); print(v)')
+          git fetch --no-tags origin b0321c38d9750314c7d56896d3a818b6d7680228 "$kcmc_manual_source"
+      - name: Exact reproducible payload, canonical Git membership and safe transactions
+        run: |
+          set -euo pipefail
+          cd tools/kcmc-manual-timeclock-oct16
+          sha256sum -c CHECKSUMS.sha256
+          python3 -B derive_installer.py
+          git diff --exit-code -- installer.py coordinator.py provenance.json
+          python3 -B test_installer.py --git-root ../..
+          cd ../..
+          python3 -B tools/kcmc-team-payroll-repair-oct15/test_existing_safety.py
+          python3 -B tools/kcmc-team-payroll-repair-oct15/test_policy_safety.py
+      - name: Real PHP8.2 staged syntax and compatible release sequences
+        run: |
+          set -euo pipefail
+          docker pull php@sha256:118ef4fb1db5e866fb604f2f260da81f819a0a1eac87a4083f9194f48e00beee
+          kcmc_manual_php=$(mktemp -d)
+          trap 'rm -f -- "$kcmc_manual_php/php"; rmdir -- "$kcmc_manual_php"' EXIT
+          cat > "$kcmc_manual_php/php" <<'SH'
+          #!/usr/bin/env bash
+          set -euo pipefail
+          if [ "$#" -eq 3 ] && [ "$1" = '-n' ] && [ "$2" = '-l' ]; then
+            kcmc_manual_stage=$(dirname -- "$3")
+            exec docker run --rm --network none --user "$(id -u):$(id -g)" \
+              --mount "type=bind,src=$kcmc_manual_stage,dst=$kcmc_manual_stage,readonly" \
+              php@sha256:118ef4fb1db5e866fb604f2f260da81f819a0a1eac87a4083f9194f48e00beee php "$@"
+          fi
+          exec docker run --rm --network none --user "$(id -u):$(id -g)" \
+            php@sha256:118ef4fb1db5e866fb604f2f260da81f819a0a1eac87a4083f9194f48e00beee php "$@"
+          SH
+          chmod 0700 "$kcmc_manual_php/php"
+          python3 -B tools/kcmc-manual-timeclock-oct16/verify-stage.py --php "$kcmc_manual_php/php"
+  python36:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          persist-credentials: false
+      - name: Actual Python3.6 from a read-only package
+        run: |
+          set -euo pipefail
+          docker run --rm --network none --user "$(id -u):$(id -g)" \
+            --mount "type=bind,src=$PWD,dst=/source,readonly" -w /source \
+            python@sha256:f8652afaf88c25f0d22354d547d892591067aa4026a7fa9a6819df9f300af6fc \
+            bash -c 'set -e; cd tools/kcmc-manual-timeclock-oct16; sha256sum -c CHECKSUMS.sha256; python3 -B test_installer.py; cd ../..; python3 -B tools/kcmc-team-payroll-repair-oct15/test_existing_safety.py; python3 -B tools/kcmc-team-payroll-repair-oct15/test_policy_safety.py'

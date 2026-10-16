@@ -1,0 +1,43 @@
+{
+  "baseline_commit": "b0321c38d9750314c7d56896d3a818b6d7680228",
+  "source_commit": "05cb55e87f3157c9f0cdf0051da19bd5361e7c99",
+  "paths": [
+    "lib/timeclock.php",
+    "member/timeclock.php",
+    "admin/timecards.php",
+    "admin/timecards-export.php",
+    "admin/timecards-print.php"
+  ],
+  "files": {
+    "lib/timeclock.php": {
+      "before_sha256": "41abfa115120faf46487c38449261536553319653dc531331f2f0297dd135636",
+      "before_bytes": 26832,
+      "after_sha256": "261a911a191ec2b4413226b655162cee1855f81a86de36b7cf1faf11163317c9",
+      "after_bytes": 24147
+    },
+    "member/timeclock.php": {
+      "before_sha256": "75c5cb63a933ff5c1d2294611a05f54e2c563fa0935a85915d1ff6df56cab39a",
+      "before_bytes": 13714,
+      "after_sha256": "7b47cf6512f55fa539ec8b5122635b249e020382fdc9788ecccea44d32707c19",
+      "after_bytes": 13552
+    },
+    "admin/timecards.php": {
+      "before_sha256": "200b7dfa694735cccfd3aa54240210cbb3405ce9ce6c57be15e3146dab994eba",
+      "before_bytes": 22285,
+      "after_sha256": "2facb333eb08be8bbdced3da95f821e0a837393123fcee1efb70e2b1ab094015",
+      "after_bytes": 19515
+    },
+    "admin/timecards-export.php": {
+      "before_sha256": "7a6aa28899309aa27fce207fa9632490adc6b24b74f2fdbcc9c3bfd77c082775",
+      "before_bytes": 1975,
+      "after_sha256": "579dcfa079d2a595269a3aa8aea967d4d438e289502314faec7d059819ab47ce",
+      "after_bytes": 1936
+    },
+    "admin/timecards-print.php": {
+      "before_sha256": "cfea1dca5c167a587dc604e1a62a4648f5456124d6ab61082435ec9fd6b1d5f6",
+      "before_bytes": 4424,
+      "after_sha256": "e890b71f554a30d58e0cbc99e837d67b9b6974840930122f41d0fb0f1d979e1e",
+      "after_bytes": 4670
+    }
+  }
+}
