@@ -1,0 +1,22 @@
+{
+  "lib/timeclock.php": {
+    "sha256": "41abfa115120faf46487c38449261536553319653dc531331f2f0297dd135636",
+    "bytes": 26832
+  },
+  "member/timeclock.php": {
+    "sha256": "83c40fec83941f52fab10569a7ce503e70fcdcdb67ca46d1d008fb7bdda37529",
+    "bytes": 13078
+  },
+  "admin/timecards.php": {
+    "sha256": "e5d84a3b6268672f567f2826b3de2df722ee7b72be16bb452665f9fdd8456736",
+    "bytes": 21497
+  },
+  "admin/timecards-export.php": {
+    "sha256": "7a6aa28899309aa27fce207fa9632490adc6b24b74f2fdbcc9c3bfd77c082775",
+    "bytes": 1975
+  },
+  "admin/timecards-print.php": {
+    "sha256": "6936d1327d6b94b8fc6061aad0f56ff49a2a2a1764c863bbead424367a480c67",
+    "bytes": 4074
+  }
+}

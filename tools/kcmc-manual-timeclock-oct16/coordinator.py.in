@@ -1,0 +1,151 @@
+#!/usr/bin/env python3
+"""Pinned theme-to-manual-clock coordinator; offline code transactions only."""
+from __future__ import print_function
+import argparse
+import hashlib
+import os
+from pathlib import Path
+import stat
+import sys
+import types
+
+THEME_SHA256 = '5a180d96ed045ea3a1bca541865ba0b2d3ae2e4175fde14ecd02dba7a72d3f7b'
+# MANUAL_INSTALLER_SHA256
+MAX_HELPER_BYTES = 4194304
+OUTSIDE_THEME = ('lib/timeclock.php', 'admin/timecards-export.php')
+
+
+class Refusal(RuntimeError): pass
+
+
+def require(ok, message):
+    if not ok: raise Refusal(message)
+
+
+def helper_bytes(path, expected):
+    require(isinstance(expected, str) and len(expected) == 64,
+            'Coordinator helpers are not frozen; no action authorized')
+    fd = os.open(str(path), os.O_RDONLY | os.O_NOFOLLOW | os.O_NONBLOCK)
+    try:
+        first = os.fstat(fd)
+        require(stat.S_ISREG(first.st_mode) and first.st_nlink == 1 and first.st_uid == os.geteuid() and
+                0 < first.st_size <= MAX_HELPER_BYTES, 'Downloaded helper metadata refused')
+        parts = []; size = 0
+        while True:
+            part = os.read(fd, 65536)
+            if not part: break
+            parts.append(part); size += len(part)
+            require(size <= MAX_HELPER_BYTES, 'Downloaded helper is oversized')
+        content = b''.join(parts); last = os.fstat(fd); visible = os.stat(str(path), follow_symlinks=False)
+        keys = ('st_dev', 'st_ino', 'st_mode', 'st_uid', 'st_gid', 'st_nlink', 'st_size', 'st_mtime_ns', 'st_ctime_ns')
+        require(all(getattr(first, key) == getattr(last, key) == getattr(visible, key) for key in keys) and
+                len(content) == first.st_size, 'Downloaded helper changed during verification')
+        require(hashlib.sha256(content).hexdigest() == expected, 'Downloaded helper checksum refused')
+        return content
+    finally: os.close(fd)
+
+
+def load_helpers(theme_path, manual_path):
+    # Verify both complete images before executing either helper's definitions.
+    images = [helper_bytes(theme_path, THEME_SHA256), helper_bytes(manual_path, MANUAL_SHA256)]
+    helpers = []
+    for name, content in zip(('verified_theme', 'verified_manual_timeclock'), images):
+        module = types.ModuleType(name); module.__file__ = '<' + name + '>'
+        exec(compile(content, module.__file__, 'exec'), module.__dict__); helpers.append(module)
+    return helpers
+
+
+def run_action(helper, action):
+    previous = sys.argv
+    try:
+        sys.argv = ['verified-installer.py', action]
+        require(helper.main() == 0, 'Verified ' + action + ' refused; see helper diagnostics above')
+    finally: sys.argv = previous
+
+
+def theme_journals_clear(theme):
+    # An unfinished transaction in either previously recognized public variant
+    # must not be hidden by the final five-file no-op shortcut.
+    for variant in ('main', 'livecalendar'):
+        module = theme.load_engine(variant)
+        module.caller(); module.inventory(); module.unfinished()
+
+
+def verify_records(module, records):
+    for path, row in records.items():
+        module.verify_parent(path, row[2]); module.verify_lease(path, row[1])
+
+
+def verify_final(theme, manual, module, files, guards):
+    theme_journals_clear(theme)
+    manual.verify_files(module, files); manual.verify_prerequisites(module, guards)
+    module.unfinished()
+
+
+def coordinate(theme, manual):
+    # Classification is strict and separate from either old/new release preflight.
+    # No unknown-state exception is caught and reinterpreted as permission to apply.
+    candidate = manual.load_engine('main')
+    image, found = manual.classify_targets(candidate)
+    print('MANUAL_CLOCK_IMAGE ' + image)
+    theme_journals_clear(theme)
+    if image == 'after':
+        module = manual.load_engine(); state, files, guards = manual.preflight(module)
+        require(state == 'after', 'Complete final manual clock bundle required')
+        verify_records(candidate, found)
+        for action in ('check', 'apply', 'check'):
+            verify_final(theme, manual, module, files, guards)
+            run_action(manual, action)
+            verify_final(theme, manual, module, files, guards)
+        print('COMPLETE_ALREADY_REPAIRED; obsolete theme installer skipped; no replacement or new backup.')
+        return
+
+    previous = theme.load_engine()
+    state, theme_files, theme_guards = theme.preflight(previous)
+    require((image == 'pretheme' and state == 'before') or (image == 'before' and state == 'after'),
+            'Whole manual and theme release states do not match; no repair authorized')
+    require(set(candidate.PATHS) - set(previous.PATHS) == set(OUTSIDE_THEME) and
+            set(OUTSIDE_THEME).issubset(set(theme.prerequisites(previous))), 'Fixed release composition changed')
+    projected = {path: found[path] for path in OUTSIDE_THEME}
+    verify_records(candidate, found)
+    theme.verify_files(previous, theme_files); theme.verify_prerequisites(previous, theme_guards)
+    completed = False
+    try:
+        for action in ('check', 'apply', 'check'):
+            theme_journals_clear(theme); verify_records(candidate, projected)
+            run_action(theme, action)
+            verify_records(candidate, projected); theme_journals_clear(theme)
+        completed = True
+        print('PRIOR_VERIFIED_RELEASE theme46; code remains installed if the next repair refuses.')
+        module = manual.load_engine(); state, files, guards = manual.preflight(module)
+        require(state == 'before', 'Complete manual preimage required after theme verification')
+        verify_records(candidate, projected); manual.verify_files(module, files)
+        manual.verify_prerequisites(module, guards); theme_journals_clear(theme)
+        for action in ('check', 'apply', 'check'):
+            theme_journals_clear(theme); run_action(manual, action); theme_journals_clear(theme)
+        state, final_files, final_guards = manual.preflight(module)
+        require(state == 'after', 'Final manual clock tuple verification failed')
+        verify_final(theme, manual, module, final_files, final_guards)
+        print('COMPLETE_REPAIRED; manual clock code verified. No punch, private-record, configuration, payroll or repository operation.')
+    except BaseException:
+        if completed:
+            print('PRIOR_VERIFIED_RELEASE theme46 retained; no automatic downgrade attempted.', file=sys.stderr)
+        raise
+
+
+def main():
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument('theme_installer'); parser.add_argument('manual_installer'); args = parser.parse_args(); helpers = []
+    try:
+        helpers = load_helpers(Path(args.theme_installer), Path(args.manual_installer))
+        coordinate(*helpers); return 0
+    except BaseException as error:
+        known = (Refusal,)
+        for helper in helpers: known += (helper.Refusal,)
+        message = str(error) if isinstance(error, known) else 'Unexpected coordinator failure; stopped safely'
+        print('REFUSED ' + message, file=sys.stderr)
+        print('Recorded journals and private rollback sessions are retained; do not force or mix code.', file=sys.stderr)
+        return 1
+
+
+if __name__ == '__main__': sys.exit(main())
