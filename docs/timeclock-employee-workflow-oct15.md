@@ -1,35 +1,27 @@
-# Employee time clock and administrator payroll review
+# Manual employee time clock
 
-Employees clock in and out using KCMC server timestamps. Work notes and categories are optional. Clock Out also ends a running unpaid break at that same timestamp. The screen shows the current-period completed-hour total and the latest 50 shifts, including correction requests with reasons. It has My account and Home links. Employee POSTs cannot submit or approve a pay period.
+Employees clock in and out using KCMC server timestamps. Work notes and categories are optional. Clock Out ends a running unpaid break at the same timestamp. The employee screen shows completed hours for the current pay period, recent shifts, and correction requests with reasons. Back, Home, My account, and Time clock links remain available.
 
-A current period submitted or approved early no longer disables the clock. A successful new punch reopens that period for administrator review, retains the prior submission/approval attribution in `review_history`, and keeps all original shifts and correction evidence. A duplicate or invalid punch changes no records. Existing completed historical shifts cannot be edited by punch actions.
+Time cards do not require submission, certification, approval, or return. Recorded shifts supply the totals directly. Old submission and approval requests are rejected before any record is written. Historical submission, approval, return, and correction evidence remains in the private store; its former status does not restrict current punching or reporting.
 
-The configured active administrator identified by the existing `KCMC_OPERATIONS_OWNER_USER_ID` may review their own time card and correction requests. This uses the existing owner helper and real account lookup. A supplied POST `reviewer_id` does not grant authority; routes use the signed-in account. Other reviewers retain the self-review restriction. Reasons and before/after evidence remain required for corrections. Approved entries remain unavailable to the duration-adjustment action; their documented correction workflow remains available.
+## Totals and corrections
 
-Administrator Time Cards shows current cards as well as closed periods. Prepare for review, approve, return, adjustment, and correction-review actions live here. Period preparation no longer requires employee work descriptions. An open shift prevents preparation or approval; its clock-out time is never invented. Return means administrator follow-up; employees continue to use the correction-request form rather than submission controls.
+Authorized payroll staff can view current and closed periods, download CSV, and print time cards from recorded entries, including periods that have no stored summary. Report bounds must match a valid America/Chicago pay period. Completed shifts contribute their recorded net minutes. An unfinished shift is identified and contributes no unfinished time; the app does not invent its clock-out time.
 
-## Period-end queue
+Employees can request a correction with a reason. Authorized administrators can apply a correction or adjust recorded duration with a reason and before/after history. The existing designated-owner exception permits the owner to correct their own entries. Other administrators retain the existing restriction on changing their own time. A historical approval does not lock an otherwise valid correction or adjustment.
 
-`kcmc_timeclock_close_due_periods()` groups shifts by their existing America/Chicago work date, using the existing 23rd–22nd pay-period rule. At local midnight after the 22nd, completed periods receive summed minutes, completed-shift counts, and submitted status. A still-open or overnight shift produces `needs_attention`; only completed-shift minutes are included until the employee clocks out. All actual minutes of an overnight shift stay assigned to its original work date, as in the existing model. It does not split shifts, fabricate punches, move dates, or send money.
+## Period-end totals
 
-The function recomputes under the existing private-store lock. Retries do not duplicate periods or replace unchanged records. Corrected and adjusted totals are recomputed under the same lock; applied correction markers and rejected-request states are persisted. Approved historical cards remain approved, and returned cards require explicit administrator preparation rather than automatic resubmission.
+The existing pay-period rule runs from the 23rd through the 22nd in America/Chicago. After a period closes, `kcmc_timeclock_close_due_periods()` prepares a neutral recorded summary, or an unfinished-shift warning when needed. It recomputes totals under the private-store lock and avoids duplicate or unchanged writes. It preserves historical approval attribution and does not change completed shifts into submitted records.
 
-Opening administrator Time Cards runs this idempotent queue as a fallback. `admin/timeclock-period-close.php` provides the same operation for a hosting cron task. It refuses HTTP execution before loading the application, and resolves the live application's bootstrap, config, and private store. It prints only a count and success/failure marker, never account names, hours, reasons, or private records.
+Opening administrator Time Cards runs this operation as a fallback. The existing CLI runner uses the same live store. A hosting schedule remains a separate configuration step; a runner receipt alone does not establish an active cPanel cron task.
 
-## Hosting schedule contract
+## Payroll handoff
 
-The source and installer do not activate a schedule or send a payroll message. After live installation, a reviewed cPanel cron should run the **live** script (not a repository copy), for example every 15 minutes:
+The configured payroll handoff already uses completed recorded hours without requiring approval. Its selected recipient, delivery channel, revision deduplication, transport claims, and live-store fingerprint checks are unchanged. Delivery to Mike Cahill requires his configured account and the chosen enabled channel. This clock does not transfer money, store bank details, or issue advances.
 
-```text
-/opt/alt/php82/usr/bin/php -n /home/bobsome1/public_html/kcmc-connect/admin/timeclock-period-close.php
-```
-
-The CLI environment must resolve the same `KCMC_PRIVATE_DATA_DIR` as the web SAPI. This is an environment override in bootstrap, so a web-only Apache SetEnv value must be passed explicitly to cron when present. A host acceptance check must verify the mapping before enabling the task. The app computes Chicago cutoff dates itself; the schedule does not need a fixed UTC cutoff hour or a daylight-saving edit. Configure output handling in a private location and verify an actual cron receipt before claiming scheduled execution.
-
-The resulting cards are prepared in the private administrator queue. This is not evidence of delivery to Mike Cahill. His approved recipient/account, delivery channel, and payroll-provider integration remain separate configuration decisions. This change stores no banking details, sends no email, submits no payroll, and implements no advance disbursement.
+Smart-clock scheduling, location tracking, device-idle monitoring, and automatic punches were cancelled by the owner. Clock In and Clock Out remain manual.
 
 ## Validation
 
-`tests/timeclock-employee-workflow-contract.php` runs 35 real PHP service assertions on temporary synthetic private data. It covers early submitted/approved cards, optional notes, open breaks, duplicate rejection, correction ownership/reasons/persistence, designated-owner self-review, ordinary/inactive/member refusal, no approval of open shifts, added totals, exact Chicago cutoff and daylight-saving transition, overnight completion, corrected-total retry, historical approval/return preservation, and year rollover.
-
-`tests/timeclock-route-workflow-contract.py` executes seven real protected-route scenarios using synthetic credential-bound sessions and isolated private stores. It checks visible controls and actual route mutations, forged actor IDs, forbidden employee submissions, bad CSRF, owner self-approval attribution, unauthorized administrator routes, adjustment eligibility, and shared live-store use by the admin fallback and CLI runner. Existing time-clock service and UI checks remain in place with the employee-certification assertion updated to the user’s new admin-only preparation rule.
+Current service, protected-route, and real-browser checks cover manual punches; periods with no stored summary and with historical submission/approval/return metadata; completed versus unfinished totals; CSV and print access without approval; rejected legacy actions without writes; authorized correction and adjustment history; private headers, CSRF and role boundaries; and the existing period-end payroll handoff.

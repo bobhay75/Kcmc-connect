@@ -6,6 +6,10 @@ on:
       - 'KCMC-Connect-Phase6-Recreated/member/activate.php'
       - 'KCMC-Connect-Phase6-Recreated/member/reset-password.php'
       - 'tests/timeclock-own-review-contract.php'
+      - 'tests/manual-timeclock-contract.php'
+      - 'tests/historical-timeclock-review.py'
+      - 'tests/manual_clock_source_layer.py'
+      - 'tests/fixtures/manual-clock-no-approvals-reviewed.json'
       - 'tests/token-session-http.py'
       - 'tests/fixtures/minimal-repair-reviewed.json'
       - '.github/workflows/minimal-repair.yml'
@@ -20,14 +24,20 @@ jobs:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
         with:
           persist-credentials: false
-      - name: Syntax and real PHP behavior
+      - name: Current manual time without approvals and repaired token sessions
         run: |
           set -euo pipefail
           php -l KCMC-Connect-Phase6-Recreated/lib/timeclock.php
           php -l KCMC-Connect-Phase6-Recreated/member/activate.php
           php -l KCMC-Connect-Phase6-Recreated/member/reset-password.php
-          php tests/timeclock-own-review-contract.php
+          # Current owner policy retires all time-card submission and approval actions.
+          php tests/manual-timeclock-contract.php
           python3 tests/token-session-http.py --app KCMC-Connect-Phase6-Recreated
+      - name: Retain historical approval-service coverage on exact reviewed source
+        run: |
+          set -euo pipefail
+          git fetch --no-tags origin b0c257edb8a42fc89fd6371c1bce7ee3efbd5ed9
+          python3 tests/historical-timeclock-review.py
       - name: Reproduce the defects on the immutable previous source
         run: |
           git fetch --no-tags origin 4e7ddeb82c498aab0183a9e500ffa4289091e5aa

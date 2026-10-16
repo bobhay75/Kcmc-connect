@@ -23,6 +23,21 @@ function kcmc_timeclock_open_entry(string $userId): ?array { foreach(array_rever
 function kcmc_timeclock_period_entries(string $userId,string $start,string $end): array { return array_values(array_filter(kcmc_timeclock_entries_for($userId),fn($e)=>($e['work_date']??'')>=$start&&($e['work_date']??'')<=$end)); }
 function kcmc_timeclock_period_record(string $userId,string $start,string $end): ?array { foreach(kcmc_timeclock_store()['periods']??[] as $p)if(is_array($p)&&($p['user_id']??'')===$userId&&($p['start']??'')===$start&&($p['end']??'')===$end)return $p; return null; }
 function kcmc_timeclock_period_total(string $userId,string $start,string $end): int { return array_sum(array_map(fn($e)=>(int)($e['net_minutes']??0),kcmc_timeclock_period_entries($userId,$start,$end))); }
+/** A read-only report of recorded time; historical approval labels do not gate it. */
+function kcmc_timeclock_period_report(string $userId,string $start,string $end): ?array {
+ if(trim($userId)==='')return null;
+ try{kcmc_timeclock_validate_period($start,$end);}catch(RuntimeException|ValueError $error){return null;}
+ $entries=kcmc_timeclock_period_entries($userId,$start,$end);
+ if(!$entries)return null;
+ usort($entries,static function(array $a,array $b):int{
+  $aTime=strtotime((string)($a['clock_in_at']??''));$bTime=strtotime((string)($b['clock_in_at']??''));
+  if($aTime!==false&&$bTime!==false&&$aTime!==$bTime)return $aTime<=>$bTime;
+  $order=strcmp((string)($a['clock_in_at']??''),(string)($b['clock_in_at']??''));
+  return $order!==0?$order:strcmp((string)($a['id']??''),(string)($b['id']??''));
+ });
+ $completed=array_values(array_filter($entries,static fn(array $entry):bool=>($entry['status']??'')!=='open'&&!empty($entry['clock_out_at'])));
+ return ['user_id'=>$userId,'start'=>$start,'end'=>$end,'entries'=>$entries,'completed_entries'=>$completed,'total_minutes'=>array_sum(array_map(static fn(array $entry):int=>(int)($entry['net_minutes']??0),$completed)),'completed_shifts'=>count($completed),'open_shifts'=>count($entries)-count($completed)];
+}
 function kcmc_timeclock_adjustments_for_entry(string $entryId): array { $rows=array_values(array_filter(kcmc_timeclock_store()['adjustments']??[],fn($a)=>is_array($a)&&($a['entry_id']??'')===$entryId));usort($rows,fn($a,$b)=>strcmp((string)($b['adjusted_at']??''),(string)($a['adjusted_at']??'')));return $rows; }
 function kcmc_timeclock_entry_correction_count(array $entry): int { return count(array_filter($entry['corrections']??[],'is_array')); }
 
@@ -41,15 +56,11 @@ function kcmc_timeclock_remember_review(array &$period,string $now,string $reaso
  $period['review_history']=is_array($period['review_history']??null)?$period['review_history']:[];
  $period['review_history'][]=['status'=>(string)($period['status']??''),'submitted_at'=>$period['submitted_at']??null,'approved_at'=>$period['approved_at']??null,'approved_by'=>$period['approved_by']??null,'returned_at'=>$period['returned_at']??null,'return_reason'=>$period['return_reason']??null,'superseded_at'=>$now,'reason'=>$reason];
 }
-/** A submitted snapshot must never prevent a real server-time punch. */
+/** Refresh actual totals without invalidating historical approval attribution. */
 function kcmc_timeclock_reconcile_punch(array &$store,string $userId,string $workDate,string $now): void {
  foreach($store['periods'] as &$period){
   if(!is_array($period)||($period['user_id']??'')!==$userId||$workDate<(string)($period['start']??'')||$workDate>(string)($period['end']??''))continue;
-  if(in_array((string)($period['status']??''),['submitted','approved'],true)){
-   kcmc_timeclock_remember_review($period,$now,'New server-time punch after review snapshot');
-   $period['status']='in_progress';$period['review_required']=true;$period['reopened_at']=$now;
-   $period['approved_at']=null;$period['approved_by']=null;
-  }
+  $period['review_required']=false;
  }unset($period);
  kcmc_timeclock_refresh_totals($store,$userId,[$workDate]);
 }
@@ -88,36 +99,12 @@ function kcmc_timeclock_mutate(string $userId,string $action,array $input=[]): a
   $e['updated_at']=$now;$result=$e;unset($e);kcmc_timeclock_reconcile_punch($s,$userId,(string)$result['work_date'],$now);return $result;
  });
 }
-/** Called only from the administrator route or period-end closure, never employee UI. */
+/** Compatibility failure: recorded time no longer requires submission or approval. */
 function kcmc_timeclock_submit_period(string $userId,string $start,string $end): array {
- kcmc_timeclock_validate_period($start,$end);
- return kcmc_update_json_store(KCMC_TIMECLOCK,kcmc_timeclock_default_store(),function(array &$s)use($userId,$start,$end):array{
-  $entries=[];$minutes=0;foreach(($s['entries']??[]) as $i=>$e){
-   if(!is_array($e)||($e['user_id']??'')!==$userId||($e['work_date']??'')<$start||($e['work_date']??'')>$end)continue;
-   if(($e['status']??'')==='open'||empty($e['clock_out_at']))throw new RuntimeException('Clock out before submitting this period.');
-   $entries[]=$i;$minutes+=(int)($e['net_minutes']??0);
-  }
-  if(!$entries)throw new RuntimeException('There are no completed shifts in this pay period.');
-  $now=kcmc_timeclock_now();$found=null;foreach(($s['periods']??[]) as $i=>$p)if(is_array($p)&&($p['user_id']??'')===$userId&&($p['start']??'')===$start&&($p['end']??'')===$end)$found=$i;
-  if($found!==null&&in_array((string)($s['periods'][$found]['status']??''),['submitted','approved'],true))throw new RuntimeException('This pay period is already submitted or approved.');
-  $record=['user_id'=>$userId,'start'=>$start,'end'=>$end,'status'=>'submitted','submitted_at'=>$now,'approved_at'=>null,'approved_by'=>null,'returned_at'=>null,'return_reason'=>null,'total_minutes'=>$minutes,'completed_shifts'=>count($entries),'open_shifts'=>0,'review_required'=>false,'submission_source'=>'administrator'];
-  if($found===null)$s['periods'][]=$record;else$s['periods'][$found]=array_replace($s['periods'][$found],$record);
-  foreach($entries as $i)$s['entries'][$i]['status']='submitted';return $record;
- });
+ throw new RuntimeException('Time cards do not need submission or approval. Recorded time is available directly.');
 }
 function kcmc_timeclock_review_period(string $userId,string $start,string $end,string $reviewerId,string $action,string $reason=''): array {
- if($userId===$reviewerId&&!kcmc_timeclock_may_review_own($reviewerId))throw new RuntimeException('A reviewer cannot approve or return their own time card.');
- kcmc_timeclock_validate_period($start,$end);
- return kcmc_update_json_store(KCMC_TIMECLOCK,kcmc_timeclock_default_store(),function(array &$s)use($userId,$start,$end,$reviewerId,$action,$reason):array{
-  if(!is_array($s['entries']??null))throw new RuntimeException('Stored time entries require review.');
-  $idx=null;foreach(($s['periods']??[]) as $i=>$p)if(is_array($p)&&($p['user_id']??'')===$userId&&($p['start']??'')===$start&&($p['end']??'')===$end)$idx=$i;
-  if($idx===null||($s['periods'][$idx]['status']??'')!=='submitted')throw new RuntimeException('That pay period is not awaiting review.');
-  foreach($s['entries'] as $entry)if(is_array($entry)&&($entry['user_id']??'')===$userId&&($entry['work_date']??'')>=$start&&($entry['work_date']??'')<=$end&&(($entry['status']??'')==='open'||empty($entry['clock_out_at'])))throw new RuntimeException('Clock out before reviewing this period.');
-  $now=kcmc_timeclock_now();if($action==='approve'){$s['periods'][$idx]['status']='approved';$s['periods'][$idx]['approved_at']=$now;$s['periods'][$idx]['approved_by']=$reviewerId;}
-  elseif($action==='return'){$reason=trim($reason);if($reason===''||kcmc_text_length($reason)>500)throw new RuntimeException('Enter a return reason up to 500 characters.');$s['periods'][$idx]['status']='returned';$s['periods'][$idx]['returned_at']=$now;$s['periods'][$idx]['return_reason']=$reason;}
-  else throw new RuntimeException('Unsupported review action.');
-  foreach($s['entries'] as &$e)if(is_array($e)&&($e['user_id']??'')===$userId&&($e['work_date']??'')>=$start&&($e['work_date']??'')<=$end)$e['status']=$s['periods'][$idx]['status']==='approved'?'approved':'completed';unset($e);return $s['periods'][$idx];
- });
+ throw new RuntimeException('Time cards do not need submission or approval. Recorded time is available directly.');
 }
 /** Aggregate closed local periods without inventing clock-out times or sending mail. */
 function kcmc_timeclock_rollup_due(array &$store,string $today,string $now): int {
@@ -137,15 +124,14 @@ function kcmc_timeclock_rollup_due(array &$store,string $today,string $now): int
  foreach($groups as $group){
   $idx=null;foreach($store['periods'] as $i=>$period)if(is_array($period)&&($period['user_id']??'')===$group['user_id']&&($period['start']??'')===$group['start']&&($period['end']??'')===$group['end'])$idx=$i;
   $period=$idx===null?[]:$store['periods'][$idx];$old=$period;$status=(string)($period['status']??'');
-  // A returned card stays returned until an administrator explicitly resubmits it.
-  if($status==='approved'||$status==='returned')continue;
-  $next=$group['open_shifts']>0?'needs_attention':'submitted';
-  $period=array_replace($period,['user_id'=>$group['user_id'],'start'=>$group['start'],'end'=>$group['end'],'status'=>$next,'total_minutes'=>$group['total_minutes'],'completed_shifts'=>$group['completed_shifts'],'open_shifts'=>$group['open_shifts']]);
-  if(empty($period['queued_at'])){$period['queued_at']=$now;$period['submission_source']='period_end';}
-  if($next==='submitted'&&$status!=='submitted'){$period['submitted_at']=$now;$period['review_required']=false;}
+  $next=$group['open_shifts']>0?'needs_attention':'recorded';
+  $period=array_replace($period,['user_id'=>$group['user_id'],'start'=>$group['start'],'end'=>$group['end'],'total_minutes'=>$group['total_minutes'],'completed_shifts'=>$group['completed_shifts'],'open_shifts'=>$group['open_shifts']]);
+  // Keep legacy labels and their attribution as evidence; they no longer gate time.
+  if(!in_array($status,['submitted','approved','returned'],true))$period['status']=$next;
+  if($idx===null){$period['queued_at']=$now;$period['summary_source']='period_end';$period['review_required']=false;}
+  elseif(array_key_exists('review_required',$period))$period['review_required']=false;
   if($period===$old)continue;
   if($idx===null)$store['periods'][]=$period;else$store['periods'][$idx]=$period;
-  if($next==='submitted')foreach($group['indices'] as $i)$store['entries'][$i]['status']='submitted';
   $changed++;
  }
  return $changed;
@@ -159,7 +145,7 @@ function kcmc_timeclock_close_due_periods(?DateTimeImmutable $asOf=null): int {
 function kcmc_timeclock_adjust_entry(string $entryId,string $reviewerId,int $newMinutes,string $reason): array {
  $entryId=trim($entryId);$reviewerId=trim($reviewerId);$reason=trim($reason);if($entryId===''||$reviewerId==='')throw new RuntimeException('The time entry could not be identified.');if($newMinutes<0||$newMinutes>1440)throw new RuntimeException('Adjusted time must be between 0 and 24 hours.');if($reason===''||kcmc_text_length($reason)>500)throw new RuntimeException('Enter an adjustment reason up to 500 characters.');
  return kcmc_update_json_store(KCMC_TIMECLOCK,kcmc_timeclock_default_store(),function(array &$s)use($entryId,$reviewerId,$newMinutes,$reason):array{
-  $s['entries']=is_array($s['entries']??null)?$s['entries']:[];$s['periods']=is_array($s['periods']??null)?$s['periods']:[];$s['adjustments']=is_array($s['adjustments']??null)?$s['adjustments']:[];$idx=null;foreach($s['entries'] as $i=>$entry)if(is_array($entry)&&($entry['id']??'')===$entryId){$idx=$i;break;}if($idx===null)throw new RuntimeException('Time entry not found.');$entry=&$s['entries'][$idx];$userId=(string)($entry['user_id']??'');if($userId===$reviewerId&&!kcmc_timeclock_may_review_own($reviewerId))throw new RuntimeException('A reviewer cannot adjust their own time entry.');if(($entry['status']??'')==='open')throw new RuntimeException('An open shift cannot be adjusted.');if(($entry['status']??'')==='approved')throw new RuntimeException('Approved time is locked.');$workDate=(string)($entry['work_date']??'');foreach($s['periods'] as $period){if(!is_array($period)||($period['user_id']??'')!==$userId)continue;if($workDate<(string)($period['start']??'')||$workDate>(string)($period['end']??''))continue;if(($period['status']??'')==='approved')throw new RuntimeException('Approved time is locked.');}$previous=(int)($entry['net_minutes']??0);if($previous===$newMinutes)throw new RuntimeException('The adjusted time is unchanged.');$now=kcmc_timeclock_now();$record=['id'=>kcmc_random_id('adjustment'),'entry_id'=>$entryId,'user_id'=>$userId,'previous_net_minutes'=>$previous,'new_net_minutes'=>$newMinutes,'reason'=>$reason,'adjusted_at'=>$now,'adjusted_by'=>$reviewerId];$s['adjustments'][]=$record;$entry['net_minutes']=$newMinutes;$entry['adjusted_at']=$now;$entry['adjusted_by']=$reviewerId;$entry['adjustment_count']=max(0,(int)($entry['adjustment_count']??0))+1;$entry['updated_at']=$now;unset($entry);kcmc_timeclock_refresh_totals($s,$userId,[$workDate]);return $record;
+  $s['entries']=is_array($s['entries']??null)?$s['entries']:[];$s['periods']=is_array($s['periods']??null)?$s['periods']:[];$s['adjustments']=is_array($s['adjustments']??null)?$s['adjustments']:[];$idx=null;foreach($s['entries'] as $i=>$entry)if(is_array($entry)&&($entry['id']??'')===$entryId){$idx=$i;break;}if($idx===null)throw new RuntimeException('Time entry not found.');$entry=&$s['entries'][$idx];$userId=(string)($entry['user_id']??'');if($userId===$reviewerId&&!kcmc_timeclock_may_review_own($reviewerId))throw new RuntimeException('A reviewer cannot adjust their own time entry.');if(($entry['status']??'')==='open')throw new RuntimeException('An open shift cannot be adjusted.');$workDate=(string)($entry['work_date']??'');$previous=(int)($entry['net_minutes']??0);if($previous===$newMinutes)throw new RuntimeException('The adjusted time is unchanged.');$now=kcmc_timeclock_now();$record=['id'=>kcmc_random_id('adjustment'),'entry_id'=>$entryId,'user_id'=>$userId,'previous_net_minutes'=>$previous,'new_net_minutes'=>$newMinutes,'reason'=>$reason,'adjusted_at'=>$now,'adjusted_by'=>$reviewerId];$s['adjustments'][]=$record;$entry['net_minutes']=$newMinutes;$entry['adjusted_at']=$now;$entry['adjusted_by']=$reviewerId;$entry['adjustment_count']=max(0,(int)($entry['adjustment_count']??0))+1;$entry['updated_at']=$now;unset($entry);kcmc_timeclock_refresh_totals($s,$userId,[$workDate]);return $record;
  });
 }
 

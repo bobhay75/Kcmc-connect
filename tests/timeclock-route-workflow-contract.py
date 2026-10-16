@@ -1,6 +1,8 @@
 #!/usr/bin/env python3
 """Execute real protected PHP routes with synthetic account/session/private files only."""
+import csv
 import datetime
+import io
 import json
 import os
 from pathlib import Path
@@ -24,6 +26,7 @@ require $case['app'].'/lib/bootstrap.php';
 ini_set('session.save_path',$case['private']);
 $user=kcmc_find_user_by_id($case['login']);
 if($user)kcmc_login_user($user);
+$_GET=$case['query']??[];
 $_POST=$case['post'];
 $_POST['csrf']=$case['bad_csrf']?'forged-token':kcmc_csrf();
 require $case['app'].'/'.$case['route'];
@@ -61,9 +64,9 @@ class TimeclockRoutes(unittest.TestCase):
     def stored(self):
         return json.loads((self.private/'timeclock.json').read_text())
 
-    def route(self, post=None, route='member/timeclock.php', login='owner', bad_csrf=False):
+    def route(self, post=None, route='member/timeclock.php', login='owner', bad_csrf=False, query=None):
         fixture=self.private/'case.json'
-        fixture.write_text(json.dumps({'private':str(self.private),'app':str(APP),'route':route,'login':login,'method':'POST' if post is not None else 'GET','post':post or {},'bad_csrf':bad_csrf}))
+        fixture.write_text(json.dumps({'private':str(self.private),'app':str(APP),'route':route,'login':login,'method':'POST' if post is not None else 'GET','post':post or {},'bad_csrf':bad_csrf,'query':query or {}}))
         proc=subprocess.run([PHP,'-n',str(self.wrapper),str(fixture)],text=True,capture_output=True)
         self.assertEqual(proc.returncode,0,proc.stderr + proc.stdout[:2000])
         self.assertEqual(proc.stderr,'')
@@ -83,7 +86,12 @@ class TimeclockRoutes(unittest.TestCase):
                 self.assertNotEqual(stored['entries'][-1]['clock_in_at'],'1999-01-01T00:00:00Z')
                 self.assertEqual(stored['entries'][0],self.entry)
                 self.assertEqual(stored['periods'][0],self.historical)
-                self.assertEqual(stored['periods'][1]['status'],'in_progress')
+                self.assertEqual(stored['periods'][1]['status'],status)
+                self.assertFalse(stored['periods'][1]['review_required'])
+                self.assertEqual(stored['periods'][1]['open_shifts'],1)
+                if status=='approved':
+                    self.assertEqual(stored['periods'][1]['approved_by'],'owner')
+                    self.assertEqual(stored['periods'][1]['approved_at'],'2026-10-01T12:00:00Z')
                 html=self.route({'action':'clock_out','user_id':'employee'})
                 self.assertIn('>Clock In</button>',html)
                 self.assertEqual(self.stored()['entries'][-1]['status'],'completed')
@@ -108,14 +116,21 @@ class TimeclockRoutes(unittest.TestCase):
                 before=(self.private/'timeclock.json').read_bytes()
                 html=self.route(post,bad_csrf=bad_csrf)
                 self.assertEqual((self.private/'timeclock.json').read_bytes(),before)
-                self.assertTrue('administrator time-card review' in html or 'session expired' in html)
+                self.assertTrue('approvals are no longer used' in html or 'session expired' in html)
 
-    def test_owner_self_review_ignores_forged_actor(self):
-        self.seed(status='submitted')
-        self.route({'action':'approve','user_id':'owner','reviewer_id':'employee','start':self.start,'end':self.end},route='admin/timecards.php')
-        self.assertEqual(self.stored()['periods'][1]['status'],'approved')
-        self.assertEqual(self.stored()['periods'][1]['approved_by'],'owner')
-        self.assertEqual(self.stored()['periods'][0],self.historical)
+    def test_stale_approval_posts_do_not_write_for_owner_or_member(self):
+        for route in ('member/timeclock.php','admin/timecards.php'):
+            for action in ('submit_period','approve','return'):
+                with self.subTest(route=route,action=action):
+                    self.seed(status='submitted')
+                    path=self.private/'timeclock.json'
+                    before, inode=path.read_bytes(),path.stat().st_ino
+                    html=self.route({'action':action,'user_id':'owner','reviewer_id':'employee','start':self.start,'end':self.end,'reason':'Legacy action.'},route=route)
+                    self.assertIn('approvals are no longer used',html)
+                    self.assertEqual(path.read_bytes(),before)
+                    self.assertEqual(path.stat().st_ino,inode)
+                    for name in ('submit_period','approve','return'):
+                        self.assertNotIn('value="'+name+'"',html)
 
     def test_non_owner_cannot_use_admin_review_route(self):
         self.seed(status='submitted')
@@ -124,24 +139,73 @@ class TimeclockRoutes(unittest.TestCase):
         self.assertIn('Payroll review access is restricted.',html)
         self.assertEqual((self.private/'timeclock.json').read_bytes(),before)
 
-    def test_open_and_previously_approved_entries_have_no_adjustment_form(self):
-        for status,running in [('in_progress',True),('approved',False)]:
-            with self.subTest(status=status,running=running):
-                self.seed(status=status,running=running)
-                html=self.route(route='admin/timecards.php')
-                self.assertNotIn('class="adjust-form" method="post"',html)
+    def test_open_shift_cannot_be_adjusted_but_legacy_approval_does_not_lock_closed_time(self):
+        self.seed(status='in_progress',running=True)
+        self.assertNotIn('class="adjust-form" method="post"',self.route(route='admin/timecards.php'))
+        self.seed(status='approved')
+        html=self.route(route='admin/timecards.php')
+        self.assertIn('class="adjust-form" method="post"',html)
+        self.route({'action':'adjust_entry','entry_id':'recorded','adjusted_hours':'2.50','reviewer_id':'employee','reason':'Actual work ended thirty minutes later.'},route='admin/timecards.php')
+        stored=self.stored()
+        self.assertEqual(stored['entries'][0]['net_minutes'],150)
+        self.assertEqual(stored['adjustments'][0]['adjusted_by'],'owner')
+        self.assertEqual(stored['periods'][1]['approved_at'],'2026-10-01T12:00:00Z')
+        self.assertEqual(stored['periods'][1]['approved_by'],'owner')
 
-    def test_admin_fallback_and_cli_use_same_live_private_store(self):
+    def test_current_and_legacy_cards_export_without_approval_or_store_writes(self):
+        for status in (None,'in_progress','submitted','approved','returned'):
+            with self.subTest(status=status):
+                self.seed(status=status)
+                value=self.stored()
+                # An unfinished shift with stale cached minutes must never inflate a report.
+                value['entries'].append(dict(self.entry,id='unfinished',clock_out_at=None,status='open',net_minutes=9999))
+                self.write_store(value)
+                path=self.private/'timeclock.json'
+                before,inode=path.read_bytes(),path.stat().st_ino
+                html=self.route(route='admin/timecards.php')
+                self.assertIn('Download CSV',html)
+                self.assertIn('Print time card',html)
+                self.assertIn('Unfinished',html)
+                for action in ('submit_period','approve','return'):
+                    self.assertNotIn('value="'+action+'"',html)
+                query={'user':'owner','start':self.start,'end':self.end}
+                csv_text=self.route(route='admin/timecards-export.php',query=query)
+                rows=list(csv.DictReader(io.StringIO(csv_text.lstrip('\ufeff'))))
+                self.assertEqual(rows[0]['Net Hours'],'2.00')
+                self.assertEqual(rows[1]['Net Hours'],'')
+                self.assertIn('Unfinished',rows[1]['Status'])
+                self.assertEqual(rows[-1]['Work Date'],'TOTAL')
+                self.assertEqual(rows[-1]['Net Hours'],'2.00')
+                printed=self.route(route='admin/timecards-print.php',query=query)
+                self.assertIn('Recorded Employee Time Card',printed)
+                self.assertIn('Recorded shift details',printed)
+                self.assertIn('Unfinished',printed)
+                self.assertNotIn('Employee certification:',printed)
+                self.assertNotIn('Reviewer approval:',printed)
+                self.assertEqual(path.read_bytes(),before)
+                self.assertEqual(path.stat().st_ino,inode)
+
+    def test_report_rejects_invalid_period_empty_user_and_unknown_card(self):
+        for query in ({'user':'owner','start':'2026-09-24','end':'2026-10-22'},
+                      {'user':'','start':self.start,'end':self.end},
+                      {'user':'absent','start':self.start,'end':self.end}):
+            for route in ('admin/timecards-export.php','admin/timecards-print.php'):
+                with self.subTest(route=route,query=query):
+                    before=(self.private/'timeclock.json').read_bytes()
+                    self.assertIn('Recorded time card not found.',self.route(route=route,query=query))
+                    self.assertEqual((self.private/'timeclock.json').read_bytes(),before)
+
+    def test_admin_period_end_fallback_records_totals_and_explicit_cli_is_idempotent(self):
         old=self.stored()
         old['entries']=[dict(self.entry,work_date='2026-08-22')]
         old['periods']=[]
         self.write_store(old)
         html=self.route(route='admin/timecards.php')
         self.assertIn('2026-07-23 through 2026-08-22',html)
-        queued=self.stored()
-        self.assertEqual(queued['periods'][0]['status'],'submitted')
-        self.assertEqual(queued['periods'][0]['total_minutes'],120)
-        before=(self.private/'timeclock.json').read_bytes()
+        recorded=self.stored()
+        self.assertEqual(recorded['periods'][0]['status'],'recorded')
+        self.assertEqual(recorded['periods'][0]['total_minutes'],120)
+        self.assertEqual(recorded['entries'],old['entries'])
         env=dict(os.environ,KCMC_PRIVATE_DATA_DIR=str(self.private))
         diagnose=subprocess.run([PHP,'-n',str(APP/'admin/timeclock-period-close.php'),'--diagnose'],text=True,capture_output=True,env=env)
         self.assertEqual(diagnose.returncode,0,diagnose.stderr)
@@ -149,7 +213,15 @@ class TimeclockRoutes(unittest.TestCase):
         proc=subprocess.run([PHP,'-n',str(APP/'admin/timeclock-period-close.php'),'--run','--expect-store',fingerprint],text=True,capture_output=True,env=env)
         self.assertEqual(proc.returncode,0,proc.stderr + proc.stdout[:2000])
         self.assertIn('updated=0 channel=off mail_accepted=0',proc.stdout)
-        self.assertEqual((self.private/'timeclock.json').read_bytes(),before)
+        recorded=self.stored()
+        self.assertEqual(recorded['periods'][0]['status'],'recorded')
+        self.assertEqual(recorded['periods'][0]['total_minutes'],120)
+        self.assertEqual(recorded['entries'],old['entries'])
+        raw=(self.private/'timeclock.json').read_bytes()
+        again=subprocess.run([PHP,'-n',str(APP/'admin/timeclock-period-close.php'),'--run','--expect-store',fingerprint],text=True,capture_output=True,env=env)
+        self.assertEqual(again.returncode,0,again.stderr)
+        self.assertIn('updated=0 channel=off mail_accepted=0',again.stdout)
+        self.assertEqual((self.private/'timeclock.json').read_bytes(),raw)
 
 if __name__=='__main__':
     unittest.main()

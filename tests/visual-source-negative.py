@@ -7,6 +7,7 @@ import tempfile
 import unittest
 
 from visual_source_layer import FIXTURE, NEW_FILES, PREFIX, ROOT, VisualLayer
+from manual_clock_source_layer import FIXTURE as MANUAL_FIXTURE
 
 
 class ExactVisualSource(unittest.TestCase):
@@ -15,9 +16,10 @@ class ExactVisualSource(unittest.TestCase):
         self.root = Path(self.directory.name) / 'source'
         self.app = self.root / PREFIX
         shutil.copytree(ROOT / PREFIX, self.app)
-        target = self.root / FIXTURE
-        target.parent.mkdir(parents=True)
-        shutil.copyfile(ROOT / FIXTURE, target)
+        for name in [FIXTURE, MANUAL_FIXTURE]:
+            target = self.root / name
+            target.parent.mkdir(parents=True, exist_ok=True)
+            shutil.copyfile(ROOT / name, target)
 
     def tearDown(self):
         self.directory.cleanup()
@@ -27,25 +29,25 @@ class ExactVisualSource(unittest.TestCase):
 
     def test_undeclared_public_route_cannot_hide_outside_git_diff(self):
         (self.app / 'unreviewed-route.php').write_text('<?php echo "not approved";')
-        with self.assertRaisesRegex(AssertionError, 'exact installed baseline plus reviewed visual/navigation files'):
+        with self.assertRaisesRegex(AssertionError, 'membership must equal the exact themed baseline'):
             self.verify()
 
     def test_undeclared_homepage_content_cannot_hide_inside_navigation_update(self):
         path = self.app / 'index.php'
         path.write_bytes(path.read_bytes() + b'\n<!-- unreviewed public banner -->\n')
-        with self.assertRaisesRegex(AssertionError, 'index.php: only exact reviewed visual/navigation target bytes'):
+        with self.assertRaisesRegex(AssertionError, 'index.php: all runtime bytes outside the reviewed manual-clock delta'):
             self.verify()
 
     def test_admin_role_change_cannot_hide_inside_ui_helper_loading(self):
         path = self.app / 'lib/bootstrap.php'
         path.write_bytes(path.read_bytes() + b'\n// unreviewed role or owner change\n')
-        with self.assertRaisesRegex(AssertionError, 'lib/bootstrap.php:.*visual/navigation'):
+        with self.assertRaisesRegex(AssertionError, 'lib/bootstrap.php: all runtime bytes outside the reviewed manual-clock delta'):
             self.verify()
 
     def test_payroll_data_change_cannot_hide_inside_denied_page_rendering(self):
         path = self.app / 'lib/payroll.php'
         path.write_bytes(path.read_bytes() + b'\n// unreviewed recipient or transport change\n')
-        with self.assertRaisesRegex(AssertionError, 'lib/payroll.php: only exact reviewed visual/navigation target bytes'):
+        with self.assertRaisesRegex(AssertionError, 'lib/payroll.php: all runtime bytes outside the reviewed manual-clock delta'):
             self.verify()
 
     def test_each_new_provider_is_pinned_and_required(self):
@@ -60,7 +62,7 @@ class ExactVisualSource(unittest.TestCase):
                 path.write_bytes(raw)
             with self.subTest(path=name, condition='missing'):
                 path.unlink()
-                with self.assertRaisesRegex(AssertionError, 'exact installed baseline plus reviewed visual/navigation files'):
+                with self.assertRaisesRegex(AssertionError, 'membership must equal the exact themed baseline'):
                     self.verify()
                 path.write_bytes(raw)
 
@@ -77,7 +79,7 @@ class ExactVisualSource(unittest.TestCase):
     def test_executable_change_cannot_hide_behind_equal_bytes(self):
         path = self.app / 'lib/payroll.php'
         path.chmod(path.stat().st_mode | 0o100)
-        with self.assertRaisesRegex(AssertionError, 'canonical application executable mode required'):
+        with self.assertRaisesRegex(AssertionError, 'canonical manual-clock application executable mode required'):
             self.verify()
 
     def test_fixture_cannot_be_rewritten_to_allow_a_local_edit(self):

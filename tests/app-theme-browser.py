@@ -190,11 +190,10 @@ def run(app, output, http_only=False):
             comments={comment_id: dict(id=comment_id, context=dict(kind="task", id=task_id), author_id="owner",
                 parent_id="", body="Synthetic task conversation stays readable.", created_at=now)}, preferences={}, nonces={}))
         (f.private / "team-workspace.json").chmod(0o640)
-        f.write("timeclock.json", dict(version=1, entries=[dict(id="synthetic_approved_shift", user_id="owner",
+        f.write("timeclock.json", dict(version=1, entries=[dict(id="synthetic_recorded_shift", user_id="owner",
             work_date="2026-09-01", clock_in_at="2026-09-01T14:00:00+00:00", clock_out_at="2026-09-01T15:00:00+00:00",
-            breaks=[], net_minutes=60, category="Media", description="Synthetic approved shift", status="closed")],
-            adjustments=[], correction_requests=[], periods=[dict(user_id="owner", start="2026-08-23", end="2026-09-22",
-                status="approved", submitted_at="2026-09-23T00:00:00Z", approved_at="2026-09-23T01:00:00Z", approved_by="owner")]))
+            breaks=[], net_minutes=60, category="Media", description="Synthetic recorded shift", status="completed")],
+            adjustments=[], correction_requests=[], periods=[]))
         with socket.socket() as sock:
             sock.bind(("127.0.0.1", 0)); port = sock.getsockname()[1]
         origin = "http://127.0.0.1:" + str(port)
@@ -286,8 +285,8 @@ def run(app, output, http_only=False):
                                 check(fingerprint.count() == 1 and fingerprint.evaluate("el=>[...el.getClientRects()].every(r=>r.left>=0&&r.right<=innerWidth+1)"),
                                       "the complete payroll store fingerprint wraps within the phone card")
                             if route.startswith("admin/timecards-print.php") and expected_status == 200:
-                                table_region = page.get_by_role("region", name="Approved shift details", exact=True)
-                                check(table_region.is_visible(), "approved time card provides a named shift-details region")
+                                table_region = page.get_by_role("region", name="Recorded shift details", exact=True)
+                                check(table_region.is_visible(), "recorded time card provides a named shift-details region without approval")
                                 table_region.focus()
                                 check(table_region.evaluate("el=>el===document.activeElement"), "shift-details region is keyboard focusable")
                                 if table_region.evaluate("el=>el.scrollWidth>el.clientWidth+1"):
@@ -299,8 +298,8 @@ def run(app, output, http_only=False):
                                 body = page.locator("body").evaluate(PALETTE)
                                 check(max(body["foreground"][:3]) < 70 and body["image"] == "none", "printed time card retains dark text on paper")
                                 check(table_region.evaluate("el=>getComputedStyle(el).overflowX==='visible'")
-                                      and table_region.locator("thead th").count() == 7,
-                                      "printed shift details retain the full seven-column table without a screen scrollbox")
+                                      and table_region.locator("thead th").count() == 8,
+                                      "printed shift details retain the full eight-column table without a screen scrollbox")
                                 page.emulate_media(media="screen")
                             if actor != "member" or route != "admin/home.php":
                                 filename = screenshot_routes.get(route)
@@ -417,7 +416,7 @@ def error_navigation(f, base, request, owner, no_redirect):
         check(status == 302, "synthetic rejected-request sign-in " + actor)
         clients[actor] = client
     tokens = {}
-    for actor, route in [("member", "member/prayers.php"), ("pastor", "admin/prayers.php")]:
+    for actor, route in [("member", "member/prayers.php"), ("pastor", "admin/prayers.php"), ("owner", "member/timeclock.php")]:
         status, _, body = request(clients[actor], route)
         check(status == 200, "rejected-request fixture opens permitted form " + actor)
         tokens[actor] = unescape(re.search(r'name="csrf" value="([^"]+)"', body).group(1))
@@ -437,10 +436,20 @@ def error_navigation(f, base, request, owner, no_redirect):
         ("pastor", "admin/prayers.php", dict(csrf="invalid", action="approve"), 403, None),
         ("pastor", "admin/prayers.php", dict(csrf=tokens["pastor"], action="invalid"), 422, None),
     ]
+    # Old tabs cannot turn in, approve, or return a time card. CSRF is still
+    # checked first; all rejected requests retain navigation and private headers.
+    for actor, route in [("owner", "admin/timecards.php"), ("owner", "member/timeclock.php"), ("member", "member/timeclock.php")]:
+        for action in ["submit_period", "approve", "return"]:
+            cases.append((actor, route, dict(csrf=tokens[actor], action=action,
+                user_id="owner", reviewer_id="owner", start="2026-08-23", end="2026-09-22"), 400, None))
+        cases.append((actor, route, dict(csrf="invalid", action="approve"), 403, None))
     for actor, route, data, expected, allow in cases:
         status, headers, body = request(clients[actor], route, data=data)
         label = actor + " " + route + " " + str(expected)
         check(status == expected and "no-store" in headers.get("Cache-Control", ""), label + " retains rejection and private headers")
+        if expected == 400 and route in ["admin/timecards.php", "member/timeclock.php"]:
+            check("Time-card approvals are no longer used. No time records were changed." in body,
+                  label + " rejects the retired workflow explicitly")
         if allow is not None:
             check(headers.get("Allow") == allow, label + " retains allowed methods")
         parsed = Links(); parsed.feed(body)

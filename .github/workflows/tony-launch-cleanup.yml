@@ -33,11 +33,20 @@ jobs:
         run: |
           set -euo pipefail
           mkdir -p review-artifacts
+          git fetch --no-tags origin b0c257edb8a42fc89fd6371c1bce7ee3efbd5ed9
           bash tests/security-contract.sh | tee review-artifacts/security.txt
           bash tests/production-smoke-contract.sh | tee review-artifacts/production-contract.txt
           node --check KCMC-Connect-Phase6-Recreated/public-presentation.js
           python3 -m py_compile tests/tony-launch-cleanup-browser.py
-          for f in tests/*contract.php; do php "$f"; done | tee review-artifacts/php-contracts.txt
+          # Current contracts run current code; retain the immutable review
+          # contract against its exact historical themed service instead.
+          for f in tests/*contract.php; do
+            if [ "$f" = tests/timeclock-own-review-contract.php ]; then
+              python3 tests/historical-timeclock-review.py
+            else
+              php "$f"
+            fi
+          done | tee review-artifacts/php-contracts.txt
           git diff --check
       - name: Install browser acceptance dependencies
         run: |

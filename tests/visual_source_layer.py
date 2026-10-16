@@ -11,9 +11,10 @@ import argparse
 import hashlib
 import json
 from pathlib import Path
-import shutil
 import stat
 import subprocess
+
+from manual_clock_source_layer import ManualClockLayer
 
 ROOT = Path(__file__).resolve().parents[1]
 PREFIX = 'KCMC-Connect-Phase6-Recreated/'
@@ -43,6 +44,10 @@ class VisualLayer:
         self.root = Path(root).resolve()
         self.app = self.root / PREFIX
         self.git_source = Path(git_source or self.root).resolve()
+        # Reverse only the separately pinned five-file functional layer. The
+        # immutable visual/navigation fixture continues to describe its exact
+        # original bytes; no unchecked current runtime source reaches it.
+        self.manual_clock = ManualClockLayer(self.root, self.git_source)
         raw = (self.root / FIXTURE).read_bytes()
         require(sha256(raw) == FIXTURE_SHA256, 'Exact immutable visual/navigation fixture required')
         fixture = json.loads(raw)
@@ -92,7 +97,7 @@ class VisualLayer:
                 require(old and new and old != new and expected.count(old) == 1,
                         name + ': one exact forward visual/navigation anchor required')
                 expected = expected.replace(old, new, 1)
-            actual = (self.app / name).read_bytes()
+            actual = self.manual_clock.before(name)
             require(actual == expected and sha256(actual) == record['after_sha256'],
                     name + ': only exact reviewed visual/navigation target bytes permitted')
             recovered = actual
@@ -104,14 +109,14 @@ class VisualLayer:
             self.preimages[name] = recovered
         for name, record in fixture['new_files'].items():
             require(set(record) == {'sha256', 'bytes', 'mode'}, name + ': exact new visual/navigation file schema required')
-            actual = (self.app / name).read_bytes()
+            actual = self.manual_clock.before(name)
             require(record['mode'] in ('100644', '100755') and len(actual) == record['bytes'] and sha256(actual) == record['sha256'],
                     name + ': exact reviewed new visual/navigation file required')
         for name, (mode, oid) in tree.items():
             require(bool((self.app / name).stat().st_mode & 0o111) == (mode == '100755'),
                     name + ': canonical application executable mode required')
             if name not in MODIFIED:
-                require(blob((self.app / name).read_bytes()) == oid,
+                require(blob(self.manual_clock.before(name)) == oid,
                         name + ': all runtime bytes outside the reviewed visual/navigation delta must remain installed canonical')
         for name, record in fixture['new_files'].items():
             require(bool((self.app / name).stat().st_mode & 0o111) == (record['mode'] == '100755'),
@@ -124,13 +129,13 @@ class VisualLayer:
 
     def before(self, name):
         require(name not in NEW_FILES, name + ': a new visual/navigation file has no installed preimage')
-        return self.preimages[name] if name in self.preimages else (self.app / name).read_bytes()
+        return self.preimages[name] if name in self.preimages else self.manual_clock.before(name)
 
     def copy_baseline(self, destination):
         """Write a new exact historical application; never overwrite a path."""
         destination = Path(destination)
         require(not destination.exists(), 'Historical fixture destination must not already exist')
-        shutil.copytree(str(self.app), str(destination))
+        self.manual_clock.copy_baseline(destination)
         for name, data in self.preimages.items():
             (destination / name).write_bytes(data)
         for name in NEW_FILES:

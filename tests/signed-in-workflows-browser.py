@@ -8,6 +8,8 @@ Time Clock path before live owner-controlled acceptance.
 """
 from __future__ import annotations
 
+import csv
+import io
 import json
 import os
 import pathlib
@@ -187,20 +189,46 @@ def main() -> int:
                 page.goto(BASE + "/admin/home.php", wait_until="domcontentloaded")
                 page.locator('details.admin-group > summary').filter(has_text='Operations').click()
                 page.get_by_role("link", name="Open Employee time cards", exact=True).click()
-                page.get_by_role("button", name="Prepare for review", exact=True).click()
-                page.get_by_role("button", name="Approve", exact=True).click()
-                own_period = next(row for row in json.loads((private / "timeclock.json").read_text())["periods"] if row["user_id"] == "test_admin")
-                if own_period["status"] != "approved" or own_period.get("approved_by") != "test_admin":
-                    die("designated owner could not approve their own test time card")
-                print("PASS: administrator controls are separate and the designated owner can approve their own test card")
+                for action in ("Prepare for review", "Approve", "Return"):
+                    if page.get_by_role("button", name=action, exact=True).count():
+                        die("time-card page exposed the removed " + action + " action")
+                # Correct the owner's own recorded punches without preparing or
+                # approving the card, preserving reason and before/after history.
+                current = json.loads((private / "timeclock.json").read_text())
+                shift = current["entries"][0]
+                form = page.locator("form.correction-form")
+                form.get_by_label("Corrected clock in", exact=True).fill(shift["work_date"] + "T08:00")
+                form.get_by_label("Corrected clock out", exact=True).fill(shift["work_date"] + "T10:30")
+                form.get_by_label("Unpaid break minutes", exact=True).fill("10")
+                form.get_by_label("Administrator correction reason", exact=True).fill("Synthetic owner correction with recorded actual time.")
+                form.get_by_role("button", name="Apply correction", exact=True).click()
+                stored = json.loads((private / "timeclock.json").read_text())
+                if stored["entries"][0]["net_minutes"] != 140 or stored["correction_requests"][0]["status"] != "applied":
+                    die("reasoned owner correction did not update actual recorded time")
+                own_period = next(row for row in stored["periods"] if row["user_id"] == "test_admin")
+                if own_period["status"] != "submitted" or own_period.get("approved_at") or own_period.get("approved_by"):
+                    die("manual punching or correction changed historical submission into an approval")
+                before_report = (private / "timeclock.json").read_bytes()
+                with page.expect_download() as downloaded:
+                    page.get_by_role("link", name="Download CSV", exact=True).click()
+                download = downloaded.value
+                rows = list(csv.DictReader(io.StringIO(pathlib.Path(download.path()).read_text(encoding="utf-8-sig"))))
+                if not rows or rows[-1]["Work Date"] != "TOTAL" or rows[-1]["Net Hours"] != "2.33":
+                    die("direct recorded-time CSV did not include corrected completed hours")
+                page.get_by_role("link", name="Print time card", exact=True).click()
+                if "Recorded Employee Time Card" not in page.locator("body").inner_text() or "2.33 hours" not in page.locator("body").inner_text():
+                    die("direct recorded-time print report did not include corrected hours")
+                if (private / "timeclock.json").read_bytes() != before_report:
+                    die("exporting or printing recorded time changed the time-clock store")
+                print("PASS: manual punches, reasoned owner correction, CSV, and print work without preparation or approval")
                 page.get_by_role("navigation", name="Page controls").get_by_role("link", name="Home", exact=True).click()
                 assert_title(page, "KCMC", "time-card Home returns to the public site")
                 page.goto(BASE + "/member/timeclock.php", wait_until="domcontentloaded")
                 page.get_by_role("button", name="Clock In", exact=True).click()
                 page.get_by_role("button", name="Clock Out", exact=True).click()
                 if "You are clocked out" not in page.locator("body").inner_text():
-                    die("an approved current time card prevented the next shift")
-                print("PASS: an approved current card also permits the next shift without required work details")
+                    die("a recorded current time card prevented the next shift")
+                print("PASS: recorded current time also permits the next manual shift without required work details")
 
                 page.goto(BASE + "/admin/rsvps.php", wait_until="domcontentloaded")
                 assert_title(page, "Event RSVPs", "authenticated RSVP inbox loads")

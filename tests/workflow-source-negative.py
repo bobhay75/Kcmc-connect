@@ -9,6 +9,7 @@ import unittest
 from workflow_source_layer import FIXTURE, Layer, PREFIX, ROOT
 from phase_two_source_layer import FIXTURE as PHASE_TWO_FIXTURE
 from visual_source_layer import FIXTURE as VISUAL_FIXTURE
+from manual_clock_source_layer import FIXTURE as MANUAL_FIXTURE
 
 
 class ExactWorkflowSource(unittest.TestCase):
@@ -21,6 +22,7 @@ class ExactWorkflowSource(unittest.TestCase):
         shutil.copyfile(ROOT / FIXTURE, self.root / FIXTURE)
         shutil.copyfile(ROOT / PHASE_TWO_FIXTURE, self.root / PHASE_TWO_FIXTURE)
         shutil.copyfile(ROOT / VISUAL_FIXTURE, self.root / VISUAL_FIXTURE)
+        shutil.copyfile(ROOT / MANUAL_FIXTURE, self.root / MANUAL_FIXTURE)
 
     def tearDown(self):
         self.directory.cleanup()
@@ -30,30 +32,30 @@ class ExactWorkflowSource(unittest.TestCase):
 
     def test_undeclared_runtime_file_cannot_hide_outside_git_diff(self):
         (self.app / 'member/undeclared-owner-shortcut.php').write_text('<?php echo "undeclared";')
-        with self.assertRaisesRegex(AssertionError, 'exact installed baseline plus reviewed visual/navigation files'):
+        with self.assertRaisesRegex(AssertionError, 'membership must equal the exact themed baseline'):
             self.verify()
 
     def test_undeclared_bootstrap_change_cannot_hide_behind_workflow_preimages(self):
         path = self.app / 'lib/bootstrap.php'
         path.write_bytes(path.read_bytes() + b'\n// undeclared authorization change\n')
-        with self.assertRaisesRegex(AssertionError, 'lib/bootstrap.php:.*visual/navigation'):
+        with self.assertRaisesRegex(AssertionError, 'lib/bootstrap.php: all runtime bytes outside the reviewed manual-clock delta'):
             self.verify()
 
     def test_extra_change_inside_reviewed_route_is_rejected(self):
         path = self.app / 'admin/push.php'
         path.write_bytes(path.read_bytes() + b'\n<!-- undeclared sender change -->\n')
-        with self.assertRaisesRegex(AssertionError, 'admin/push.php:.*visual/navigation'):
+        with self.assertRaisesRegex(AssertionError, 'admin/push.php: all runtime bytes outside the reviewed manual-clock delta'):
             self.verify()
 
     def test_changed_new_admin_route_is_rejected(self):
         path = self.app / 'admin/prayer-care.php'
         path.write_bytes(path.read_bytes() + b'\n// undeclared route change\n')
-        with self.assertRaisesRegex(AssertionError, 'admin/prayer-care.php:.*visual/navigation'):
+        with self.assertRaisesRegex(AssertionError, 'admin/prayer-care.php: all runtime bytes outside the reviewed manual-clock delta'):
             self.verify()
 
     def test_missing_new_route_is_rejected(self):
         (self.app / 'admin/home.php').unlink()
-        with self.assertRaisesRegex(AssertionError, 'exact installed baseline plus reviewed visual/navigation files'):
+        with self.assertRaisesRegex(AssertionError, 'membership must equal the exact themed baseline'):
             self.verify()
 
     def test_fixture_cannot_be_silently_rewritten(self):

@@ -49,47 +49,40 @@ class PayrollRoutes(unittest.TestCase):
         html=self.route(route='admin/index.php',login='employee')
         self.assertIn('Access denied.',html)
 
-    def test_selected_payroll_member_can_approve_other_card_with_own_actor_id(self):
-        self.seed(status='submitted')
-        self.save_queue()
-        self.route({'action':'approve','user_id':'owner','reviewer_id':'owner','start':self.start,'end':self.end},route='admin/timecards.php',login='employee')
-        self.assertEqual(self.stored()['periods'][1]['status'],'approved')
-        self.assertEqual(self.stored()['periods'][1]['approved_by'],'employee')
-
-    def test_selected_payroll_member_cannot_approve_own_or_configure_capabilities(self):
-        self.seed(status='submitted')
-        stored=self.stored()
-        stored['entries'][0]['user_id']='employee'
-        stored['periods'][1]['user_id']='employee'
-        self.write_store(stored)
-        self.save_queue()
-        before=(self.private/'timeclock.json').read_bytes()
-        html=self.route({'action':'approve','user_id':'employee','reviewer_id':'owner','start':self.start,'end':self.end},route='admin/timecards.php',login='employee')
-        self.assertIn('A reviewer cannot approve or return their own time card.',html)
-        self.assertEqual((self.private/'timeclock.json').read_bytes(),before)
+    def test_selected_payroll_member_cannot_revive_removed_approval_actions(self):
+        for subject in ('owner','employee'):
+            for action in ('submit_period','approve','return'):
+                with self.subTest(subject=subject,action=action):
+                    self.seed(status='submitted')
+                    value=self.stored()
+                    value['entries'][0]['user_id']=subject
+                    value['periods'][1]['user_id']=subject
+                    self.write_store(value)
+                    self.save_queue()
+                    before=(self.private/'timeclock.json').read_bytes()
+                    html=self.route({'action':action,'user_id':subject,'reviewer_id':'owner','start':self.start,'end':self.end},route='admin/timecards.php',login='employee')
+                    self.assertIn('approvals are no longer used',html)
+                    self.assertEqual((self.private/'timeclock.json').read_bytes(),before)
+                    self.assertNotIn('value="'+action+'"',html)
         settings=(self.private/'payroll-settings.json').read_bytes()
         html=self.route({'action':'save','channel':'email','reviewer_id':'employee','php_cli':PHP},route='admin/payroll-setup.php',login='employee')
         self.assertIn('Access denied.',html)
         self.assertEqual((self.private/'payroll-settings.json').read_bytes(),settings)
 
-    def test_recipient_can_export_approved_totals_but_disabled_channel_revokes_access(self):
-        self.seed(status='approved')
+    def test_recipient_can_export_current_unapproved_totals_but_revocation_blocks_all_routes(self):
+        self.seed()
         self.save_queue()
-        # The wrapper preserves ordinary GET query handling used by these routes.
-        original=CLOCK.WRAPPER
-        try:
-            CLOCK.WRAPPER=original.replace("$_POST=$case['post'];", "$_GET=['user'=>'owner','start'=>'"+self.start+"','end'=>'"+self.end+"'];\n$_POST=$case['post'];")
-            self.wrapper.write_text(CLOCK.WRAPPER)
-            csv=self.route(route='admin/timecards-export.php',login='employee')
-            self.assertIn('TOTAL',csv)
-            self.assertIn('2.00',csv)
-            html=self.route(route='admin/timecards-print.php',login='employee')
-            self.assertIn('Approved Employee Time Card',html)
-        finally:
-            CLOCK.WRAPPER=original
-            self.wrapper.write_text(original)
+        query={'user':'owner','start':self.start,'end':self.end}
+        before=(self.private/'timeclock.json').read_bytes()
+        csv=self.route(route='admin/timecards-export.php',login='employee',query=query)
+        self.assertIn('TOTAL',csv)
+        self.assertIn('2.00',csv)
+        html=self.route(route='admin/timecards-print.php',login='employee',query=query)
+        self.assertIn('Recorded Employee Time Card',html)
+        self.assertEqual((self.private/'timeclock.json').read_bytes(),before)
         self.route({'action':'save','channel':'off','php_cli':PHP},route='admin/payroll-setup.php')
-        self.assertIn('Payroll review access is restricted.',self.route(route='admin/timecards.php',login='employee'))
+        for route in ('admin/timecards.php','admin/timecards-export.php','admin/timecards-print.php'):
+            self.assertIn('Payroll review access is restricted.',self.route(route=route,login='employee',query=query))
         self.assertIn('Employee Time Cards',self.route(route='admin/timecards.php',login='owner'))
 
     def test_diagnose_is_read_only_and_missing_or_wrong_expectation_prevents_any_run(self):
