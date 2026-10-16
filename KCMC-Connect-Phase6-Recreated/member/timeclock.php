@@ -72,7 +72,7 @@ body.portal-body .audit-toolbar .audit-time {color:#c5d4dc}
 /* KCMC_READABILITY_FIX_V1_20261001 END */
 </style><?php require_once __DIR__ . '/../lib/screen-navigation.php'; echo kcmc_screen_assets(); ?>
 </head><body class="portal-body"><?php echo kcmc_screen_navigation('member/', true); ?><main class="tc-shell">
-<nav class="tc-actions" aria-label="Page navigation"><a class="portal-back" href="<?=kcmc_h(kcmc_url('member/'))?>">← My account</a><a class="portal-back" href="<?=kcmc_h(kcmc_url('index.php'))?>">Home</a></nav><p class="eyebrow">STAFF TIME CLOCK</p><h1>Clock In / Clock Out</h1><p class="portal-lead">Pay period <?=kcmc_h($periodStart)?> through <?=kcmc_h($periodEnd)?>. Punch times are recorded by the KCMC server.</p>
+<p class="eyebrow">STAFF TIME CLOCK</p><h1>Clock In / Clock Out</h1><p class="portal-lead">Pay period <?=kcmc_h($periodStart)?> through <?=kcmc_h($periodEnd)?>. Punch times are recorded by the KCMC server.</p>
 <?php if ($error): ?><p class="portal-alert error" role="alert"><?=kcmc_h($error)?></p><?php endif; ?>
 <?php if ($message): ?><p class="portal-alert success" role="status"><?=kcmc_h($message)?></p><?php endif; ?>
 <section class="tc-card"><p class="eyebrow">CURRENT STATUS</p>

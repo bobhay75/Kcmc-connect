@@ -13,6 +13,12 @@ on:
       - 'tests/session-credential-http.py'
       - 'tests/token-session-http.py'
       - 'tests/fixtures/session-credential-reviewed.json'
+      - 'tests/workflow_source_layer.py'
+      - 'tests/phase_two_source_layer.py'
+      - 'tests/visual_source_layer.py'
+      - 'tests/fixtures/workflow-journeys-reviewed.json'
+      - 'tests/fixtures/phase-two-workflows-reviewed.json'
+      - 'tests/fixtures/app-theme-navigation-reviewed.json'
       - '.github/workflows/session-lifetime.yml'
   push:
     branches: [main]
@@ -27,6 +33,12 @@ on:
       - 'tests/session-credential-http.py'
       - 'tests/token-session-http.py'
       - 'tests/fixtures/session-credential-reviewed.json'
+      - 'tests/workflow_source_layer.py'
+      - 'tests/phase_two_source_layer.py'
+      - 'tests/visual_source_layer.py'
+      - 'tests/fixtures/workflow-journeys-reviewed.json'
+      - 'tests/fixtures/phase-two-workflows-reviewed.json'
+      - 'tests/fixtures/app-theme-navigation-reviewed.json'
       - '.github/workflows/session-lifetime.yml'
 
 permissions:
@@ -37,6 +49,11 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          persist-credentials: false
+      - name: Fetch exact historical source proof objects
+        run: git fetch --no-tags origin 00fdd469482564a3511a29a27a99502c24a32845 9cf2087ebc1608ea4fbf2f2a7cd68553de004964 b0c257edb8a42fc89fd6371c1bce7ee3efbd5ed9
       - name: PHP syntax
         run: |
           php -l KCMC-Connect-Phase6-Recreated/lib/session-lifetime.php
@@ -56,20 +73,27 @@ jobs:
         run: |
           python3 - <<'PY'
           import json
+          import hashlib
           from pathlib import Path
-          import shutil
           import subprocess
+          import sys
           import tempfile
           root = Path.cwd()
-          fixture = json.loads((root / 'tests/fixtures/session-credential-reviewed.json').read_text())
+          sys.path.insert(0, str(root / 'tests'))
+          from workflow_source_layer import Layer
+          raw = (root / 'tests/fixtures/session-credential-reviewed.json').read_bytes()
+          assert hashlib.sha256(raw).hexdigest() == '85acda478e90d091f46f290018ab4eca65283e380b0eefa87752b1d27a8128c8'
+          fixture = json.loads(raw)
           with tempfile.TemporaryDirectory(prefix='kcmc-session-negative-') as directory:
               app = Path(directory) / 'app'
-              shutil.copytree(root / 'KCMC-Connect-Phase6-Recreated', app)
+              Layer(root).copy_baseline(app)
               for name, record in fixture['files'].items():
                   content = (app / name).read_bytes()
+                  assert hashlib.sha256(content).hexdigest() == record['after_sha256'], name + ': exact reviewed credential target required'
                   for old, new in reversed(record['replacements']):
                       assert content.count(new.encode()) == 1
                       content = content.replace(new.encode(), old.encode(), 1)
+                  assert hashlib.sha256(content).hexdigest() == record['before_sha256'], name + ': exact historical credential preimage required'
                   (app / name).write_bytes(content)
               command = ['python3', str(root / 'tests/session-credential-http.py'), '--app', str(app), '--case', 'reset_revokes_both_existing_sessions']
               result = subprocess.run(command, text=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)

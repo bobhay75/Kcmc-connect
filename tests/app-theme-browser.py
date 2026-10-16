@@ -278,11 +278,14 @@ def http_checks(f, base):
             response = error
         return response.status, response.headers, response.read().decode()
     client = urllib.request.build_opener(urllib.request.HTTPCookieProcessor(http.cookiejar.CookieJar()), NoRedirect())
-    for route in ["api/team-workspace.php", "api/push-subscription.php", "admin/publication-projects.php", "admin/publication-media.php"]:
+    for route in ["api/team-workspace.php", "admin/publication-projects.php?watch=1"]:
         status, headers, body = request(client, route)
         check(status == 401 and "application/json" in headers.get("Content-Type", "") and isinstance(json.loads(body), dict),
               "anonymous " + route + " remains a pure JSON 401 without navigation markup")
-    for route in ["member/", "admin/home.php", "admin/timecards.php", "admin/timecards-print.php"]:
+    # The established interactive endpoints use ordinary login redirects;
+    # passive polling endpoints return JSON 401. Preserve both transports.
+    for route in ["member/", "admin/home.php", "admin/timecards.php", "admin/timecards-print.php",
+                  "api/push-subscription.php", "admin/publication-projects.php", "admin/publication-media.php"]:
         status, headers, body = request(client, route)
         check(status == 302 and "member/login.php" in headers.get("Location", "") and "data-kcmc-back" not in body,
               "private redirect " + route + " is not decorated")
@@ -298,9 +301,11 @@ def http_checks(f, base):
     except urllib.error.HTTPError as error:
         check(error.code == 302, "synthetic owner HTTP sign-in succeeds")
     for route, content_type in [("admin/save.php", "application/json"), ("admin/backup.php", "application/json"),
+                                ("api/push-subscription.php", "application/json"),
                                 ("admin/timecards-export.php?" + PRINT_QUERY, "text/csv")]:
         status, headers, body = request(client, route, "application/json" if "save.php" in route else None)
-        check(status == (403 if "save.php" in route else 200) and content_type in headers.get("Content-Type", ""),
+        expected = 403 if "save.php" in route else 405 if "push-subscription.php" in route else 200
+        check(status == expected and content_type in headers.get("Content-Type", ""),
               route.split("?")[0] + " retains machine-readable transport")
         check("data-kcmc-back" not in body and "<html" not in body.lower(), route.split("?")[0] + " has no injected HTML")
         if content_type == "application/json":

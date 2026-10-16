@@ -139,8 +139,11 @@ def main() -> int:
                     die("the account overview repeated the private prayer form")
                 page.get_by_role("link", name="Administration", exact=True).click()
                 assert_title(page, "Administration", "Administration opens from the account")
-                if page.get_by_role("link", name="Open Employee time cards", exact=True).count() != 1:
+                operations = page.locator('details.admin-group > summary').filter(has_text='Operations')
+                operations.click()
+                if not page.get_by_role("link", name="Open Employee time cards", exact=True).is_visible():
                     die("owner Administration did not expose employee review")
+                operations.click()
                 page.locator('details.admin-group > summary').filter(has_text='Work & publishing').click()
                 page.get_by_role("link", name="Open Publishing", exact=True).click()
 

@@ -8,7 +8,6 @@ kcmc_private_headers();
 $reviewer = kcmc_require_payroll_reviewer();
 $workHome = kcmc_can_publish($reviewer) || kcmc_can_view_private_prayers($reviewer);
 $backPath = $workHome ? 'admin/home.php' : 'member/';
-$backLabel = $workHome ? '← Admin home' : '← Account home';
 $error = '';
 $message = '';
 try {
@@ -98,8 +97,8 @@ body.portal-body :is(.health-stat,.health-check,.audit-row,.audit-empty,.tc-card
 body.portal-body .audit-toolbar .audit-time {color:#c5d4dc}
 /* KCMC_READABILITY_FIX_V1_20261001 END */
 </style><?php require_once __DIR__ . '/../lib/screen-navigation.php'; echo kcmc_screen_assets(); ?>
-</head><body class="portal-body"><?php echo kcmc_screen_navigation('admin/home.php', true); ?><main class="tc-admin">
-<nav class="tc-actions" aria-label="Page navigation"><a class="portal-back" href="<?=kcmc_h(kcmc_url($backPath))?>"><?=kcmc_h($backLabel)?></a><a class="portal-back" href="<?=kcmc_h(kcmc_url('index.php'))?>">Home</a></nav><p class="eyebrow">PAYROLL TURN-IN</p><h1>Employee Time Cards</h1><p class="portal-lead">Review employee totals, prepare or approve time cards, and handle correction requests. Closed pay periods enter this private review queue automatically when this screen or the scheduled period-end task runs. No payroll email is sent from this screen.</p>
+</head><body class="portal-body"><?php echo kcmc_screen_navigation($backPath, true); ?><main class="tc-admin">
+<p class="eyebrow">PAYROLL TURN-IN</p><h1>Employee Time Cards</h1><p class="portal-lead">Review employee totals, prepare or approve time cards, and handle correction requests. Closed pay periods enter this private review queue automatically when this screen or the scheduled period-end task runs. No payroll email is sent from this screen.</p>
 <?php if ($error): ?><p class="portal-alert error" role="alert"><?=kcmc_h($error)?></p><?php endif; ?><?php if ($message): ?><p class="portal-alert success" role="status"><?=kcmc_h($message)?></p><?php endif; ?>
 
 <?php if($pendingCorrections): ?><section class="tc-card"><p class="eyebrow">CORRECTION REQUESTS</p><h2>Pending employee corrections</h2><div class="correction-list"><?php foreach($pendingCorrections as $request): $entry=tca_entry($store,(string)($request['entry_id']??'')); if(!$entry)continue; $uid=(string)($request['user_id']??''); ?>

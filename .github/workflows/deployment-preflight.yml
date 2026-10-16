@@ -7,6 +7,12 @@ on:
       - 'tests/deployment-divergence.py'
       - 'tests/fixtures/deployment-preflight-reviewed.json'
       - 'tests/installed-reconciliation-source.py'
+      - 'tests/visual_source_layer.py'
+      - 'tests/fixtures/app-theme-navigation-reviewed.json'
+      - 'KCMC-Connect-Phase6-Recreated/index.php'
+      - 'KCMC-Connect-Phase6-Recreated/public-presentation.css'
+      - 'KCMC-Connect-Phase6-Recreated/sw.js'
+      - 'KCMC-Connect-Phase6-Recreated/.htaccess'
       - '.github/workflows/deployment-preflight.yml'
   workflow_dispatch:
 permissions:

@@ -17,6 +17,8 @@ import tempfile
 import unittest
 from unittest import mock
 
+from visual_source_layer import FIXTURE as VISUAL_FIXTURE, FIXTURE_SHA256 as VISUAL_FIXTURE_SHA256
+
 ROOT = Path(__file__).resolve().parents[1]
 HELPER = ROOT / 'tools/check-deployment-divergence.py'
 TASK = '    - python3 -I -B tools/check-deployment-divergence.py || exit 1\n'
@@ -100,20 +102,42 @@ class DeploymentGuardTests(unittest.TestCase):
                 self.assertNotIn(hashlib.sha256(p.read_bytes()).hexdigest(), text)
                 p.write_bytes(original)
 
-    def test_known_installed_calendar_fish_bundle_refuses_against_canonical_source(self):
-        reviewed = json.loads((ROOT / 'tools/kcmc-fish-home-oct15/runtime-reviewed.json').read_text())
+    def reviewed_fish_bundle(self, variant):
+        raw = (ROOT / 'tools/kcmc-fish-home-oct15/runtime-reviewed.json').read_bytes()
+        self.assertEqual(hashlib.sha256(raw).hexdigest(), '5746e5f5c97cee32c0380ddae1de763c4b5bcd6f20da7c18c4e13325d6bfec3c')
+        reviewed = json.loads(raw)
+        bundle = {}
         for name in ('index.php', 'public-presentation.css', 'sw.js'):
-            canonical = (ROOT / 'KCMC-Connect-Phase6-Recreated' / name).read_bytes()
-            self.assertEqual(hashlib.sha256(canonical).hexdigest(), reviewed['main130'][name]['after_sha256'])
-            installed = (ROOT / 'tools/kcmc-fish-home-oct15/evidence/livecalendar' / name).read_bytes()
-            record = reviewed['livecalendar'][name]
-            self.assertEqual(hashlib.sha256(installed).hexdigest(), record['before_sha256'])
+            content = (ROOT / 'tools/kcmc-fish-home-oct15/evidence' / variant / name).read_bytes()
+            record = reviewed[variant][name]
+            self.assertEqual(hashlib.sha256(content).hexdigest(), record['before_sha256'])
             for old, new in record['replacements']:
-                self.assertEqual(installed.count(old.encode()), 1)
-                installed = installed.replace(old.encode(), new.encode(), 1)
-            self.assertEqual(hashlib.sha256(installed).hexdigest(), record['after_sha256'])
+                self.assertEqual(content.count(old.encode()), 1)
+                content = content.replace(old.encode(), new.encode(), 1)
+            self.assertEqual(hashlib.sha256(content).hexdigest(), record['after_sha256'])
+            bundle[name] = content
+        return bundle
+
+    def test_known_installed_calendar_fish_bundle_refuses_against_historical_canonical_source(self):
+        canonical_bundle = self.reviewed_fish_bundle('main130')
+        installed_bundle = self.reviewed_fish_bundle('livecalendar')
+        for name, canonical in canonical_bundle.items():
             (self.source / name).write_bytes(canonical)
-            (self.live / name).write_bytes(installed)
+            (self.live / name).write_bytes(installed_bundle[name])
+        self.refused_unchanged()
+
+    def test_known_installed_calendar_fish_bundle_refuses_against_current_themed_source(self):
+        raw = (ROOT / VISUAL_FIXTURE).read_bytes()
+        self.assertEqual(hashlib.sha256(raw).hexdigest(), VISUAL_FIXTURE_SHA256)
+        visual = json.loads(raw)
+        canonical_bundle = self.reviewed_fish_bundle('main130')
+        installed_bundle = self.reviewed_fish_bundle('livecalendar')
+        for name, historical in canonical_bundle.items():
+            canonical = (ROOT / 'KCMC-Connect-Phase6-Recreated' / name).read_bytes()
+            expected_sha = visual['modified'][name]['after_sha256'] if name in visual['modified'] else hashlib.sha256(historical).hexdigest()
+            self.assertEqual(hashlib.sha256(canonical).hexdigest(), expected_sha)
+            (self.source / name).write_bytes(canonical)
+            (self.live / name).write_bytes(installed_bundle[name])
         self.refused_unchanged()
 
     def test_private_owner_setting_alone_blocks_broad_deployment(self):
