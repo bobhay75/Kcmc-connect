@@ -1,0 +1,569 @@
+{
+  "baseline_commit": "b0c257edb8a42fc89fd6371c1bce7ee3efbd5ed9",
+  "source_commit": "091fdc0fab45654037a4ed09ce90c3443cb88db5",
+  "paths": [
+    "app-theme.css",
+    "app-navigation.js",
+    "lib/screen-navigation.php",
+    "admin/audit.php",
+    "admin/connections.php",
+    "admin/event-create.php",
+    "admin/health.php",
+    "admin/home.php",
+    "admin/index.php",
+    "admin/operations.php",
+    "admin/password-resets.php",
+    "admin/payroll-setup.php",
+    "admin/posts.php",
+    "admin/prayer-inbox.php",
+    "admin/prayers.php",
+    "admin/publication-designer.php",
+    "admin/push.php",
+    "admin/restore.php",
+    "admin/rsvps.php",
+    "admin/save.php",
+    "admin/setup.php",
+    "admin/timecards-print.php",
+    "admin/timecards.php",
+    "admin/users.php",
+    "backpack-blessing.php",
+    "bulletin.php",
+    "care.php",
+    "connect.php",
+    "events.php",
+    "index.php",
+    "lib/bootstrap.php",
+    "lib/payroll.php",
+    "member/activate.php",
+    "member/first-login.php",
+    "member/index.php",
+    "member/login.php",
+    "member/logout.php",
+    "member/notifications.php",
+    "member/password.php",
+    "member/prayer-care.php",
+    "member/prayer-team.php",
+    "member/prayers.php",
+    "member/reset-password.php",
+    "member/submit-prayer.php",
+    "member/timeclock.php",
+    "member/work.php"
+  ],
+  "files": {
+    "app-theme.css": {
+      "before_sha256": null,
+      "before_bytes": 0,
+      "after_sha256": "168aaeb92bef5e6f341848dd5649064d306838ec52da48fe9bff95030a633776",
+      "after_bytes": 12537
+    },
+    "app-navigation.js": {
+      "before_sha256": null,
+      "before_bytes": 0,
+      "after_sha256": "9c4ea42155c3758afe216b2206b3a8d30b98714bc082c45cf8bea0384c545af2",
+      "after_bytes": 5861
+    },
+    "lib/screen-navigation.php": {
+      "before_sha256": null,
+      "before_bytes": 0,
+      "after_sha256": "e614e218d17e53c687d994b33415a7991d80ed56b3148521c7fc6ea2a66bf0f0",
+      "after_bytes": 2664
+    },
+    "admin/audit.php": {
+      "before_sha256": "7145f23b1ee984a318554b69f7f35514e836ab2c687d2fb708b369943d286260",
+      "before_bytes": 5371,
+      "after_sha256": "8f2113f8a7ed59906eb24e9f1f5191fcbc9c84db84800ffe6761940351e673c9",
+      "after_bytes": 6215
+    },
+    "admin/connections.php": {
+      "before_sha256": "088061c08fec011480bb41e8045e5ccc7294d6789333f0f45173ec2df87fb0ce",
+      "before_bytes": 9088,
+      "after_sha256": "4d2203f54b3b3b4726b7c98ab906ff3d4e9ed1984247cba9aa417dd198ce6066",
+      "after_bytes": 9714
+    },
+    "admin/event-create.php": {
+      "before_sha256": "2fd421c705d2a367bc3b2d73c53dd78300e986e24e5200bd2f56a58ad6ea4940",
+      "before_bytes": 5878,
+      "after_sha256": "0ad6dda06c11196c08d9e6701dee6df073609c4d0b1554e54529fd931e3a625e",
+      "after_bytes": 6355
+    },
+    "admin/health.php": {
+      "before_sha256": "656619a8c8ac3a3052fe91c3fa95cd16e0d3f1829a340fa68a6d0e92ef4bc5f3",
+      "before_bytes": 8407,
+      "after_sha256": "600c22ea31fc8cd340d819e3356ca5eef42e3d8bd64897500a92aa988364e5a9",
+      "after_bytes": 9368
+    },
+    "admin/home.php": {
+      "before_sha256": "1a2aa55a8ad09254166ddee8da28f8b44e7d5730d11fcafceff3afecb7cac051",
+      "before_bytes": 4596,
+      "after_sha256": "3080c5cb157ed174a9c90b8b2d0a5a59c37f8b8a8f50585dcb48e44be7e496c3",
+      "after_bytes": 4610
+    },
+    "admin/index.php": {
+      "before_sha256": "259cdff8104abc40d0d798262b55ac2dddd467d49f28c2a838ae0b4f62359912",
+      "before_bytes": 11039,
+      "after_sha256": "e457c1d32b018b1020008e3f66a35f2bcb727ae3f082e6ca090ec24b4b2f9b76",
+      "after_bytes": 11540
+    },
+    "admin/operations.php": {
+      "before_sha256": "f0f4b3bed4d2cb07616680dfbe43cb409066f859dfc81eaaf25f3c632c9ef298",
+      "before_bytes": 4230,
+      "after_sha256": "7528f1248d510df17a28449805a310234d48e7dbd89caf2d684792bd99f16ccc",
+      "after_bytes": 4525
+    },
+    "admin/password-resets.php": {
+      "before_sha256": "263a233c57c4413378c7839736af4131850dc84f8dac82a6268f829e19107157",
+      "before_bytes": 8206,
+      "after_sha256": "d9191de3c015fec4916fad0b24b616aa75fe7e5cfccf5afab1e68d4552da9bb2",
+      "after_bytes": 8359
+    },
+    "admin/payroll-setup.php": {
+      "before_sha256": "beedeed45403dcc835f2608c341d521ce703e15bcbdd6f2213e3a952c77f99f6",
+      "before_bytes": 7715,
+      "after_sha256": "a12b6fa304281346b25ae644af8ea78b63aed2ab48f8e98151d27a8f5d4572aa",
+      "after_bytes": 7868
+    },
+    "admin/posts.php": {
+      "before_sha256": "be714513abf5627416b57956223f0da110f2fbb911eda564edbcc297e4e32d82",
+      "before_bytes": 6729,
+      "after_sha256": "c0dfbe03ba6818887129555f97bf2b98fafafd12d5fd572c7c3ea9b4be6c6d0e",
+      "after_bytes": 7062
+    },
+    "admin/prayer-inbox.php": {
+      "before_sha256": "1761b8b4d702695325a81384267441dac2b3a8dad447ba6f23939775093db93d",
+      "before_bytes": 2044,
+      "after_sha256": "7a66e0f90d7c8681448b164f3e4344f4b69f65a1dad1f6403c949992ed1fdbb6",
+      "after_bytes": 2197
+    },
+    "admin/prayers.php": {
+      "before_sha256": "b0f86d582c6318e5d18991939767514a63f73049208bc778d584c30a6f30306d",
+      "before_bytes": 4065,
+      "after_sha256": "2eed2b11629de87e02213dacf2462e19bc1377c6bbb9ccc6cf774be7f5175908",
+      "after_bytes": 4302
+    },
+    "admin/publication-designer.php": {
+      "before_sha256": "f889441556ae8a861d08bf2a1306272efc6b5fd7f4861407a9c2fc816d851881",
+      "before_bytes": 43618,
+      "after_sha256": "9d49fd029b254639629252914156c4548123ac97a33045e99414e9531be25b88",
+      "after_bytes": 43800
+    },
+    "admin/push.php": {
+      "before_sha256": "4d227e4c3799b822d86ecf6a7d1827882154c492a30ec024c5fca55e475d3089",
+      "before_bytes": 7680,
+      "after_sha256": "f4e73fc165a37417f54dc1e072a2f95955f7813da1618a7cf4c0d1a87c1fbd84",
+      "after_bytes": 7833
+    },
+    "admin/restore.php": {
+      "before_sha256": "1c145600a97f52f08558eedca5295c342a1f52b24273095c1ad6c180d1fd357f",
+      "before_bytes": 4438,
+      "after_sha256": "6ec1467db6de059a40064b4f65685267fc222549dc3cd422ea771e2d25265052",
+      "after_bytes": 4591
+    },
+    "admin/rsvps.php": {
+      "before_sha256": "51f6cf94ee5469eb6d69909e8661a72b6e6d6885b2aedee2e5d936cae8b5cadf",
+      "before_bytes": 8369,
+      "after_sha256": "4841142ace3fbd7bfdb6f31dd1945eeef7dbf0ee4424c7529109736bd3a0fc83",
+      "after_bytes": 8995
+    },
+    "admin/save.php": {
+      "before_sha256": "b0126586ade9d983dca656acb77934fdef6ad4faba8e1ed1af3f3de3183ff6b3",
+      "before_bytes": 7194,
+      "after_sha256": "8ae55d7ed9c6acc59a90a4be16297ce20bfaf36df6d4538df88efb2ab8d6f629",
+      "after_bytes": 7341
+    },
+    "admin/setup.php": {
+      "before_sha256": "9299a4ca045e36973bdc06d6661c9aba42fbfc4c2178333b5a2000f48c63a4d1",
+      "before_bytes": 3989,
+      "after_sha256": "6a26dabdaf6ec72c12bc2d3ebb2bf32d5b18daa9f430ad2420d404aa36721ca7",
+      "after_bytes": 4129
+    },
+    "admin/timecards-print.php": {
+      "before_sha256": "6936d1327d6b94b8fc6061aad0f56ff49a2a2a1764c863bbead424367a480c67",
+      "before_bytes": 4074,
+      "after_sha256": "cfea1dca5c167a587dc604e1a62a4648f5456124d6ab61082435ec9fd6b1d5f6",
+      "after_bytes": 4424
+    },
+    "admin/timecards.php": {
+      "before_sha256": "e5d84a3b6268672f567f2826b3de2df722ee7b72be16bb452665f9fdd8456736",
+      "before_bytes": 21497,
+      "after_sha256": "200b7dfa694735cccfd3aa54240210cbb3405ce9ce6c57be15e3146dab994eba",
+      "after_bytes": 22285
+    },
+    "admin/users.php": {
+      "before_sha256": "66f3871c779251bc35b0d96b40df2fc36a7d6e357e701f164f50cf06cd848555",
+      "before_bytes": 15783,
+      "after_sha256": "829d9ae63b16a8d4c5ab81eba79481a3043af6e4440a4747ea822e118ad6514a",
+      "after_bytes": 15936
+    },
+    "backpack-blessing.php": {
+      "before_sha256": "d91af3acc281aa98e8022f01bee15b5f3d653e140c8633d94f5d55663b56734e",
+      "before_bytes": 8483,
+      "after_sha256": "816e9c8b2fd5d06e0d9bfa41abab18b90594c8df10cbc9ca19f70dddf0ca0ba2",
+      "after_bytes": 8620
+    },
+    "bulletin.php": {
+      "before_sha256": "1ccad95c4c9a2cf0b76dea5cf276f48920f76181987750c9bc3751e9b1cdc47b",
+      "before_bytes": 4287,
+      "after_sha256": "f524d48e6b59b482c150223b5ee15885a2c7178db89c343167f09a05a770269d",
+      "after_bytes": 4702
+    },
+    "care.php": {
+      "before_sha256": "07c2914807fd209dc10e97875aa56376cd020c8d56df8d44a0674ca6b471d203",
+      "before_bytes": 2222,
+      "after_sha256": "e7055519d6efed05c363e75e27f14c4a4d570bc811a6ca2f65ec98a239987442",
+      "after_bytes": 2359
+    },
+    "connect.php": {
+      "before_sha256": "02ff7e3e57270ca05fa76941a7398e26af0b0a4e49823fff9b9236d39e5c6d57",
+      "before_bytes": 1395,
+      "after_sha256": "79fd62dc9d827a882fe3d524ba55ca6e2e3e21889827a8794608c599fc575847",
+      "after_bytes": 1569
+    },
+    "events.php": {
+      "before_sha256": "cf2262a227c15c4e63175da35ca6642b1107f34c8c00c9ee20a07cb34f9e19c2",
+      "before_bytes": 3547,
+      "after_sha256": "b77c7e84a01c7a588a772fce0628fabff6b1a5b91a3598220535f6913f8811f9",
+      "after_bytes": 3822
+    },
+    "index.php": {
+      "before_sha256": "44b4d8d79ee0c1a7ea0206ac3a599b0d2bbbd10bfe9827ee93bb654c79b7af23",
+      "before_bytes": 32626,
+      "after_sha256": "6e6070b6bc2faeda02c64cf0bf225a37110aba38287b5be0c0c2e0f45b7eab1c",
+      "after_bytes": 32904
+    },
+    "lib/bootstrap.php": {
+      "before_sha256": "fc1193ac15e46cbacdc2d8ba7cc1300478a424f8893c628250e72c9ce67420e7",
+      "before_bytes": 26316,
+      "after_sha256": "19a932424250b6bc33a5e844bfb942fb33a8194aa8bf912bf4494f1e27ba354e",
+      "after_bytes": 26188
+    },
+    "lib/payroll.php": {
+      "before_sha256": "710edf2c74cc74dfd972a77b2f24b3e5e11280959ea771732e73258fd77ba670",
+      "before_bytes": 18729,
+      "after_sha256": "cf51ec5abb06d91aa7c6a97525554771a5661eccc4bc69c1ed2aea102aa35874",
+      "after_bytes": 18392
+    },
+    "member/activate.php": {
+      "before_sha256": "c04f33489530ee92a61a4ab99f232bdc87e0eb7f6c7ca3c9013b1f123bb8b592",
+      "before_bytes": 5314,
+      "after_sha256": "f707d19696bfe12d0d4b2f53abe8afeb2c33a3e0db3a8abb48d1727d383d5638",
+      "after_bytes": 5470
+    },
+    "member/first-login.php": {
+      "before_sha256": "e2941c37a2106dba44cd24cc0da4794bb7cdf9f25272ee0825b083ea48a74828",
+      "before_bytes": 1294,
+      "after_sha256": "373afef6959a8fb702a3f7f5a168265e5731c80f19eb87e0dffdd64fdb4b1d47",
+      "after_bytes": 1450
+    },
+    "member/index.php": {
+      "before_sha256": "6165173ece50bc22ad562e467381adc99962eb705c9369ad065e586e69b55d33",
+      "before_bytes": 4367,
+      "after_sha256": "cf9f30ceb9943c576b1241d1639da8624f16ffdbbcc2ac608d27d806fadeb3f3",
+      "after_bytes": 4440
+    },
+    "member/login.php": {
+      "before_sha256": "e94a975e0a7aaffd381e032f42f9a155c5fe5d1acd8119773277428ba008f4bb",
+      "before_bytes": 4452,
+      "after_sha256": "c3a0b359d97be1ff0ba03660e114a426ee6a3ac8d51f53c7bd7449c69d5fcc91",
+      "after_bytes": 4592
+    },
+    "member/logout.php": {
+      "before_sha256": "8e8493dcdeea99417aba73ea82a0ed6057c77e0b7ae5476a6eaa4d1f7a15857e",
+      "before_bytes": 474,
+      "after_sha256": "51b9b7fda37ac7ab06cfa1aff53c52ee7dd1c87b4d96d9cd562db1db6ef92a93",
+      "after_bytes": 544
+    },
+    "member/notifications.php": {
+      "before_sha256": "3e426c87454fbcd90603b08d027d93c4ca2d4c827fa313271e2978aabfaaeae1",
+      "before_bytes": 2217,
+      "after_sha256": "f0a86dbe7ec5c5994b14d657791dc35fe55e75bc420f7d5b2e8b6703f17e5ffc",
+      "after_bytes": 2363
+    },
+    "member/password.php": {
+      "before_sha256": "2faa3fb20ff436afc518d2c5463435d1761abd084c6bcfc520cf21587563ee80",
+      "before_bytes": 4269,
+      "after_sha256": "e8aa36138df4f1f78325ab8490aa8ef9b440de80ac026a3061d53ca242863836",
+      "after_bytes": 4415
+    },
+    "member/prayer-care.php": {
+      "before_sha256": "d4f3ac6dfbca784f305dfd857ce92b169b0c80a69f3fa3dba81f6c9994d0767d",
+      "before_bytes": 13787,
+      "after_sha256": "d69907ca8a6bbde9e9c339ca252eb41b6bca62ed8eb9b3eeef1c013a0863d094",
+      "after_bytes": 14004
+    },
+    "member/prayer-team.php": {
+      "before_sha256": "a04546e73e0ba35a67032f6d252070b7b665eff76f1a7d71626a690a05ebb65d",
+      "before_bytes": 434,
+      "after_sha256": "4d63492705acc33bf1e31161965b360c319a8796610d8cd7e3d2abe0c761216b",
+      "after_bytes": 505
+    },
+    "member/prayers.php": {
+      "before_sha256": "ad6f55fda7925e8369e59e314760e38432af410b8525d84ca076ef5b3ba9e52e",
+      "before_bytes": 4755,
+      "after_sha256": "d4fe78b691395e4295b62a9117a970e66539cbe6d32f9085ba6551adc53f1a0b",
+      "after_bytes": 4901
+    },
+    "member/reset-password.php": {
+      "before_sha256": "43eec998663a5c3a2e822d43bcab53e044c7ff819ad0a201579d2751a95ffe45",
+      "before_bytes": 4642,
+      "after_sha256": "1b0be9a16895cd617384db9626959746ca5e734fe2f0a2fb9b635e370e44844b",
+      "after_bytes": 4798
+    },
+    "member/submit-prayer.php": {
+      "before_sha256": "715eb60841dd450e98a8e21129d1af9c659ea01a73611f6774df656abaf3f1ab",
+      "before_bytes": 1551,
+      "after_sha256": "19a780a02553f93b26b9d39d7aa13cd1b8db68bcc3dc95438b9d316c35127f27",
+      "after_bytes": 1629
+    },
+    "member/timeclock.php": {
+      "before_sha256": "83c40fec83941f52fab10569a7ce503e70fcdcdb67ca46d1d008fb7bdda37529",
+      "before_bytes": 13078,
+      "after_sha256": "75c5cb63a933ff5c1d2294611a05f54e2c563fa0935a85915d1ff6df56cab39a",
+      "after_bytes": 13714
+    },
+    "member/work.php": {
+      "before_sha256": "fad28f0df05c766d883773dfa51af15ce0864a6af6054f99f8e4e9c85a113873",
+      "before_bytes": 5510,
+      "after_sha256": "27b7b68f2d475a15a6db4b42da716bf38fcf0e1f1e9ee11f4f8612f6a3325a58",
+      "after_bytes": 5656
+    }
+  },
+  "dependencies": {
+    "lib/screen-navigation.php": [
+      "app-theme.css",
+      "app-navigation.js"
+    ],
+    "admin/audit.php": [
+      "app-theme.css",
+      "app-navigation.js",
+      "lib/screen-navigation.php"
+    ],
+    "admin/connections.php": [
+      "app-theme.css",
+      "app-navigation.js",
+      "lib/screen-navigation.php"
+    ],
+    "admin/event-create.php": [
+      "app-theme.css",
+      "app-navigation.js",
+      "lib/screen-navigation.php"
+    ],
+    "admin/health.php": [
+      "app-theme.css",
+      "app-navigation.js",
+      "lib/screen-navigation.php"
+    ],
+    "admin/home.php": [
+      "app-theme.css",
+      "app-navigation.js",
+      "lib/screen-navigation.php"
+    ],
+    "admin/index.php": [
+      "app-theme.css",
+      "app-navigation.js",
+      "lib/screen-navigation.php"
+    ],
+    "admin/operations.php": [
+      "app-theme.css",
+      "app-navigation.js",
+      "lib/screen-navigation.php"
+    ],
+    "admin/password-resets.php": [
+      "app-theme.css",
+      "app-navigation.js",
+      "lib/screen-navigation.php"
+    ],
+    "admin/payroll-setup.php": [
+      "app-theme.css",
+      "app-navigation.js",
+      "lib/screen-navigation.php"
+    ],
+    "admin/posts.php": [
+      "app-theme.css",
+      "app-navigation.js",
+      "lib/screen-navigation.php"
+    ],
+    "admin/prayer-inbox.php": [
+      "app-theme.css",
+      "app-navigation.js",
+      "lib/screen-navigation.php"
+    ],
+    "admin/prayers.php": [
+      "app-theme.css",
+      "app-navigation.js",
+      "lib/screen-navigation.php"
+    ],
+    "admin/publication-designer.php": [
+      "app-theme.css",
+      "app-navigation.js",
+      "lib/screen-navigation.php"
+    ],
+    "admin/push.php": [
+      "app-theme.css",
+      "app-navigation.js",
+      "lib/screen-navigation.php"
+    ],
+    "admin/restore.php": [
+      "app-theme.css",
+      "app-navigation.js",
+      "lib/screen-navigation.php"
+    ],
+    "admin/rsvps.php": [
+      "app-theme.css",
+      "app-navigation.js",
+      "lib/screen-navigation.php"
+    ],
+    "admin/save.php": [
+      "app-theme.css",
+      "app-navigation.js",
+      "lib/screen-navigation.php"
+    ],
+    "admin/setup.php": [
+      "app-theme.css",
+      "app-navigation.js",
+      "lib/screen-navigation.php"
+    ],
+    "admin/timecards-print.php": [
+      "app-theme.css",
+      "app-navigation.js",
+      "lib/screen-navigation.php"
+    ],
+    "admin/timecards.php": [
+      "app-theme.css",
+      "app-navigation.js",
+      "lib/screen-navigation.php"
+    ],
+    "admin/users.php": [
+      "app-theme.css",
+      "app-navigation.js",
+      "lib/screen-navigation.php"
+    ],
+    "backpack-blessing.php": [
+      "app-theme.css",
+      "app-navigation.js",
+      "lib/screen-navigation.php"
+    ],
+    "bulletin.php": [
+      "app-theme.css",
+      "app-navigation.js",
+      "lib/screen-navigation.php"
+    ],
+    "care.php": [
+      "app-theme.css",
+      "app-navigation.js",
+      "lib/screen-navigation.php"
+    ],
+    "connect.php": [
+      "app-theme.css",
+      "app-navigation.js",
+      "lib/screen-navigation.php"
+    ],
+    "events.php": [
+      "app-theme.css",
+      "app-navigation.js",
+      "lib/screen-navigation.php"
+    ],
+    "index.php": [
+      "app-theme.css",
+      "app-navigation.js",
+      "lib/screen-navigation.php"
+    ],
+    "lib/bootstrap.php": [
+      "app-theme.css",
+      "app-navigation.js",
+      "lib/screen-navigation.php"
+    ],
+    "lib/payroll.php": [
+      "app-theme.css",
+      "app-navigation.js",
+      "lib/screen-navigation.php"
+    ],
+    "member/activate.php": [
+      "app-theme.css",
+      "app-navigation.js",
+      "lib/screen-navigation.php"
+    ],
+    "member/first-login.php": [
+      "app-theme.css",
+      "app-navigation.js",
+      "lib/screen-navigation.php"
+    ],
+    "member/index.php": [
+      "app-theme.css",
+      "app-navigation.js",
+      "lib/screen-navigation.php"
+    ],
+    "member/login.php": [
+      "app-theme.css",
+      "app-navigation.js",
+      "lib/screen-navigation.php"
+    ],
+    "member/logout.php": [
+      "app-theme.css",
+      "app-navigation.js",
+      "lib/screen-navigation.php"
+    ],
+    "member/notifications.php": [
+      "app-theme.css",
+      "app-navigation.js",
+      "lib/screen-navigation.php"
+    ],
+    "member/password.php": [
+      "app-theme.css",
+      "app-navigation.js",
+      "lib/screen-navigation.php"
+    ],
+    "member/prayer-care.php": [
+      "app-theme.css",
+      "app-navigation.js",
+      "lib/screen-navigation.php"
+    ],
+    "member/prayer-team.php": [
+      "app-theme.css",
+      "app-navigation.js",
+      "lib/screen-navigation.php"
+    ],
+    "member/prayers.php": [
+      "app-theme.css",
+      "app-navigation.js",
+      "lib/screen-navigation.php"
+    ],
+    "member/reset-password.php": [
+      "app-theme.css",
+      "app-navigation.js",
+      "lib/screen-navigation.php"
+    ],
+    "member/submit-prayer.php": [
+      "app-theme.css",
+      "app-navigation.js",
+      "lib/screen-navigation.php"
+    ],
+    "member/timeclock.php": [
+      "app-theme.css",
+      "app-navigation.js",
+      "lib/screen-navigation.php"
+    ],
+    "member/work.php": [
+      "app-theme.css",
+      "app-navigation.js",
+      "lib/screen-navigation.php"
+    ]
+  },
+  "homepage_navigation_edits": [
+    [
+      "<link rel=\"apple-touch-icon\" href=\"assets/icons/icon-192.png?v=3.0.1\">",
+      "<link rel=\"apple-touch-icon\" href=\"assets/icons/icon-192.png?v=3.0.1\">\n<?php require_once __DIR__ . '/lib/screen-navigation.php'; echo kcmc_screen_assets(); ?>"
+    ],
+    [
+      "      <nav id=\"siteMenuLinks\" aria-label=\"KCMC Connect navigation\">",
+      "      <nav id=\"siteMenuLinks\" aria-label=\"KCMC Connect navigation\">\n        <?=kcmc_screen_back($member ? 'member/' : '')?>"
+    ],
+    [
+      "<a class=\"menu-home\" href=\"#home\" data-route=\"home\">",
+      "<a class=\"menu-home\" href=\"#home\" data-route=\"home\" aria-label=\"Home\">"
+    ],
+    [
+      "        <a class=\"menu-account\" href=\"<?=kcmc_h(kcmc_url($member ? 'member/' : 'admin/login.php'))?>\"><?=$member ? 'My account' : 'Staff Sign In'?></a>",
+      "        <a class=\"menu-account\" href=\"<?=kcmc_h(kcmc_url($member ? 'member/' : 'admin/login.php'))?>\"><?=$member ? 'My account' : 'Staff Sign In'?></a>\n        <?php if($member): ?><a href=\"<?=kcmc_h(kcmc_url('member/timeclock.php'))?>\">Time clock</a><?php endif; ?>"
+    ]
+  ]
+}
