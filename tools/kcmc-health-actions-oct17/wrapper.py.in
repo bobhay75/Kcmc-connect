@@ -1,0 +1,198 @@
+#!/usr/bin/env python3
+"""Pinned KCMC health actions code repair; offline Python3.6+, no app execution."""
+from __future__ import print_function
+import argparse
+import contextlib
+import hashlib
+import os
+from pathlib import Path
+import re
+import shutil
+import subprocess
+import sys
+import types
+
+PRIVATE_BACKUP_ROOT = '/home/bobsome1/kcmc-health-actions-backups'
+PHP82_LOCATIONS = ('/opt/cpanel/ea-php82/root/usr/bin/php', '/opt/alt/php82/usr/bin/php',
+    '/opt/alt/php82/usr/bin/php-cli', '/usr/local/bin/ea-php82')
+# EMBEDDED_ENGINE
+# EMBEDDED_PREREQUISITES
+
+
+class Refusal(RuntimeError): pass
+
+
+def require(ok, message):
+    if not ok: raise Refusal(message)
+
+
+def load_engine():
+    source, expected = EMBEDDED
+    require(isinstance(source, str) and hashlib.sha256(source.encode('utf-8')).hexdigest() == expected,
+            'Embedded engine checksum mismatch')
+    module = types.ModuleType('kcmc_health_actions'); module.__file__ = '<verified-health-actions>'
+    exec(compile(source, module.__file__, 'exec'), module.__dict__)
+    require(module.PATHS == ('admin/health.php',) and tuple(module.FILES) == module.PATHS and
+            all(row['before_sha256'] is not None for row in module.FILES.values()) and
+            module.DEPENDENCIES == {}, 'Fixed existing one-file scope changed')
+    require(not (set(PREREQUISITES) & set(module.PATHS)), 'Read-only prerequisites overlap write inventory')
+    return module
+
+
+def prerequisites(module):
+    return PREREQUISITES
+
+
+def capture_prerequisites(module):
+    module.caller(); module.inventory(); captured = {}
+    for path, approved in prerequisites(module).items():
+        unused, info = module.live(path)
+        module.require(info['sha256'] == approved['sha256'] and info['bytes'] == approved['bytes'],
+            'Approved current code prerequisite required: ' + path + '; no repair made. Use diagnose for fixed code hashes only.')
+        captured[path] = info
+    verify_prerequisites(module, captured)
+    return captured
+
+
+def verify_prerequisites(module, captured):
+    require(set(captured) == set(prerequisites(module)), 'Prerequisite capture scope changed')
+    for path in prerequisites(module): module.verify_lease(path, captured[path])
+
+
+@contextlib.contextmanager
+def prerequisite_guard(module, captured):
+    verify_prerequisites(module, captured); frozen_locked = module.locked
+    @contextlib.contextmanager
+    def guarded_locked():
+        verify_prerequisites(module, captured)
+        with frozen_locked() as frozen_check:
+            def checked():
+                verify_prerequisites(module, captured); frozen_check()
+                verify_prerequisites(module, captured)
+            checked(); yield checked; checked()
+        verify_prerequisites(module, captured)
+    module.locked = guarded_locked
+    try: yield
+    finally: module.locked = frozen_locked
+
+
+def preflight(module):
+    captured = capture_prerequisites(module); module.unfinished()
+    state, files = module.inspect(); verify_prerequisites(module, captured)
+    return state, files, captured
+
+
+def diagnose(module):
+    module.caller(); module.inventory(); paths = module.PATHS + tuple(prerequisites(module))
+    records = {path: module.optional_live(path) for path in paths}
+    for path in paths:
+        unused, info, parent = records[path]
+        module.verify_parent(path, parent); module.verify_lease(path, info)
+    for path in paths:
+        unused, info, parent = records[path]
+        if info is None:
+            print('CODE ' + path + ' ABSENT parent_dev=' + str(parent['dev']) + ' parent_ino=' + str(parent['ino']))
+        else:
+            print('CODE ' + path + ' sha256=' + info['sha256'] + ' bytes=' + str(info['bytes']) +
+                  ' mode=' + format(info['mode'], '04o') + ' uid=' + str(info['uid']) +
+                  ' gid=' + str(info['gid']) + ' links=' + str(info['nlink']))
+    print('Hashes-only read-only diagnostic complete; no backup, config, private data or repository operation.')
+
+
+def php82_candidates():
+    candidates = list(PHP82_LOCATIONS); found = shutil.which('php')
+    if found: candidates.append(os.path.abspath(found))
+    return list(dict.fromkeys(candidates))
+
+
+def choose_php82_cli():
+    for candidate in php82_candidates():
+        try: version = subprocess.check_output([candidate, '-n', '-v'], stderr=subprocess.STDOUT, timeout=8)
+        except (OSError, subprocess.SubprocessError): continue
+        match = re.match(br'\APHP (8\.2\.[0-9]+) \(cli\)(?:\s|\Z)', version)
+        if match: return candidate, match.group(1).decode('ascii')
+    raise Refusal('No compatible PHP8.2 CLI found; no backup or live replacement made')
+
+
+def report_files(module, state, files):
+    for path in module.PATHS:
+        info = files[path][1]
+        print('CODE ' + path + (' ABSENT' if info is None else ' sha256=' + info['sha256']))
+    print('CHECK ' + ('READY' if state == 'before' else 'ALREADY_REPAIRED'))
+
+
+def verify_files(module, files):
+    require(tuple(files) == module.PATHS, 'Result file scope changed')
+    for path in module.PATHS:
+        module.verify_parent(path, files[path][2]); module.verify_lease(path, files[path][1])
+
+
+def verify_session_result(module, session, phase):
+    value = module.load(session)
+    require(value['phase'] == phase and value['intent'] is None and not value['uncertain'],
+            'Final journal requires manual review')
+    for path in module.PATHS:
+        record = value['files'][path]; module.verify_parent(path, record['parent'])
+        if phase == 'applied':
+            require(record['installed'] is not None, 'Missing final installed lease')
+            module.verify_lease(path, record['installed'])
+        else:
+            require(record['installed'] is None, 'Unexpected retained installed lease')
+            module.verify_lease(path, record['original'])
+
+
+def main():
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument('action', nargs='?', default='check', choices=('check', 'diagnose', 'apply', 'rollback'))
+    parser.add_argument('--session'); args = parser.parse_args(); module = None
+    try:
+        require((args.action == 'rollback') == (args.session is not None), 'Exact session is required only for rollback')
+        module = load_engine()
+        if args.action == 'diagnose': diagnose(module); return 0
+        if args.action == 'rollback':
+            captured = capture_prerequisites(module)
+            with prerequisite_guard(module, captured):
+                session = module.rollback(args.session); verify_prerequisites(module, captured)
+                verify_session_result(module, session, 'rolled_back')
+                state, files = module.inspect(); require(state == 'before', 'Rollback target bundle verification failed')
+            verify_prerequisites(module, captured)
+            verify_session_result(module, session, 'rolled_back'); verify_files(module, files)
+            print('ROLLED_BACK ' + str(session)); return 0
+        state, files, captured = preflight(module)
+        initial_state, initial_files = state, files
+        if state == 'before':
+            php, version = choose_php82_cli(); module.PHP = php
+            print('PHP_CLI ' + php + ' PHP ' + version)
+        verify_prerequisites(module, captured)
+        if args.action == 'check':
+            verify_files(module, files)
+            report_files(module, state, files)
+            print('Read-only check complete; no backup, config, private data or repository operation.'); return 0
+        with prerequisite_guard(module, captured):
+            session = module.apply(); verify_prerequisites(module, captured)
+            if session is None:
+                require(initial_state == 'after', 'Code changed during this invocation; no no-op result authorized')
+                verify_files(module, initial_files)
+            state, files = module.inspect(); require(state == 'after', 'Final target bundle verification failed')
+            module.unfinished(); verify_prerequisites(module, captured)
+        verify_prerequisites(module, captured)
+        if session is not None: verify_session_result(module, session, 'applied')
+        else: verify_files(module, initial_files)
+        verify_files(module, files)
+        if session is None: print('ALREADY_REPAIRED; no replacement or new private backup.')
+        else:
+            print('REPAIRED ' + ', '.join(module.PATHS))
+            print('PRIVATE_ROLLBACK ' + str(session))
+            print('ROLLBACK_COMMAND python3 installer.py rollback --session ' + session.name)
+        print('CHECK ALREADY_REPAIRED; complete health actions code repair verified. No configuration, private-record or repository operation.')
+        return 0
+    except BaseException as error:
+        known = (Refusal,) + ((module.Refusal,) if module is not None else ())
+        message = str(error) if isinstance(error, known) else 'Unexpected failure; refused safely'
+        print('REFUSED ' + message, file=sys.stderr)
+        print('PRIVATE_BACKUP_ROOT ' + (str(module.BACKUPS) if module is not None else PRIVATE_BACKUP_ROOT), file=sys.stderr)
+        print('Recorded journals, installed leases and uncertain candidates are retained for manual review.', file=sys.stderr)
+        return 1
+
+
+if __name__ == '__main__': sys.exit(main())
