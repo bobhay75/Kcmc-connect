@@ -253,7 +253,17 @@ def browser_checks(f, base, output):
                     check(overview.locator('a[aria-current="true"]').count() == 1, "active status is identified " + label)
                     theme.fit(page, "filtered health " + label, width)
                     page.screenshot(path=str(output / ("health-fail-" + label + ".png")), full_page=True)
-                    page.get_by_role("link", name="Show all checks", exact=True).click()
+                    show_all = page.get_by_role("link", name="Show all checks", exact=True)
+                    if javascript:
+                        show_all.click()
+                    else:
+                        # Exercise native anchor keyboard activation as well as
+                        # the pointer journeys above. It does not depend on
+                        # Playwright's injected animation-frame stability check
+                        # after a full-page capture of a smooth-scrolling page.
+                        show_all.focus()
+                        page.keyboard.press("Enter")
+                    page.wait_for_url("**/admin/health.php#health-checks")
                     check(page.locator("details.health-check").count() == 13, "Show all restores every check " + label)
                     check(snapshot(f) == before, "native menu and filter interactions leave records unchanged " + label)
                     evidence.append(dict(width=width, javascript=javascript, checks=13, keyboard=True, read_only=True))
