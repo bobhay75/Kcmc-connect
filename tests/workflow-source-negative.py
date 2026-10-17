@@ -10,6 +10,7 @@ from workflow_source_layer import FIXTURE, Layer, PREFIX, ROOT
 from phase_two_source_layer import FIXTURE as PHASE_TWO_FIXTURE
 from visual_source_layer import FIXTURE as VISUAL_FIXTURE
 from manual_clock_source_layer import FIXTURE as MANUAL_FIXTURE
+from health_actions_source_layer import FIXTURE as HEALTH_FIXTURE
 
 
 class ExactWorkflowSource(unittest.TestCase):
@@ -23,6 +24,7 @@ class ExactWorkflowSource(unittest.TestCase):
         shutil.copyfile(ROOT / PHASE_TWO_FIXTURE, self.root / PHASE_TWO_FIXTURE)
         shutil.copyfile(ROOT / VISUAL_FIXTURE, self.root / VISUAL_FIXTURE)
         shutil.copyfile(ROOT / MANUAL_FIXTURE, self.root / MANUAL_FIXTURE)
+        shutil.copyfile(ROOT / HEALTH_FIXTURE, self.root / HEALTH_FIXTURE)
 
     def tearDown(self):
         self.directory.cleanup()

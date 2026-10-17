@@ -10,6 +10,7 @@ from phase_two_source_layer import FIXTURE, PhaseTwoLayer, PREFIX, ROOT
 from workflow_source_layer import FIXTURE as FIRST_FIXTURE, Layer
 from visual_source_layer import FIXTURE as VISUAL_FIXTURE
 from manual_clock_source_layer import FIXTURE as MANUAL_FIXTURE
+from health_actions_source_layer import FIXTURE as HEALTH_FIXTURE
 
 
 class ExactPhaseTwoSource(unittest.TestCase):
@@ -18,7 +19,7 @@ class ExactPhaseTwoSource(unittest.TestCase):
         self.root = Path(self.directory.name) / 'source'
         self.app = self.root / PREFIX
         shutil.copytree(ROOT / PREFIX, self.app)
-        for name in [FIXTURE, FIRST_FIXTURE, VISUAL_FIXTURE, MANUAL_FIXTURE]:
+        for name in [FIXTURE, FIRST_FIXTURE, VISUAL_FIXTURE, MANUAL_FIXTURE, HEALTH_FIXTURE]:
             target = self.root / name
             target.parent.mkdir(parents=True, exist_ok=True)
             shutil.copyfile(ROOT / name, target)
