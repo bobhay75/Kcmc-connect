@@ -187,6 +187,13 @@ class ManualClockLayer:
         for name, (mode, oid) in tree.items():
             require(bool((self.app / name).stat().st_mode & 0o111) == (mode == '100755'),
                     name + ': canonical manual-clock application executable mode required')
+            if name == 'data/content.json':
+                # Separate owner-confirmed editorial occurrence; retain the exact clock baseline.
+                require(oid == '141cff3397171c08e79e7e11c1b18e47633f1e4f', 'reviewed pre-study editorial baseline')
+                actual = (self.app / name).read_bytes()
+                require(blob(actual) == '970564f4d520a7325a3852292404cf33175b9af4', 'only the exact owner-confirmed Sunday study content is permitted')
+                self.editorial_preimage = self.git('show', CANONICAL_BASE + ':' + PREFIX + name)
+                continue
             if name not in MODIFIED:
                 require(blob((self.app / name).read_bytes()) == oid,
                         name + ': all runtime bytes outside the reviewed manual-clock delta must remain themed canonical')
@@ -198,6 +205,8 @@ class ManualClockLayer:
 
     def before(self, name):
         require(name in self.baseline_tree, name + ': unknown manual-clock source path')
+        if name == 'data/content.json':
+            return self.editorial_preimage
         return self.preimages[name] if name in self.preimages else (self.app / name).read_bytes()
 
     def copy_baseline(self, destination):
@@ -208,6 +217,7 @@ class ManualClockLayer:
         shutil.copytree(str(self.app), str(destination))
         for name, data in self.preimages.items():
             (destination / name).write_bytes(data)
+        (destination / 'data/content.json').write_bytes(self.editorial_preimage)
         recovered = {p.relative_to(destination).as_posix() for p in destination.rglob('*') if p.is_file()}
         require(recovered == set(self.baseline_tree),
                 'Manual-clock historical fixture must recover exact themed baseline membership')

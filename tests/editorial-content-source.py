@@ -36,6 +36,8 @@ def expected_content(baseline, fixture):
     expected['bulletin'].update(fixture['bulletin'])
     expected['events'].extend(fixture['append_events'])
     expected['announcements'].extend(fixture['append_announcements'])
+    # Owner confirmed October 17: one class, Friends of Faith at 10:20 AM.
+    expected['events'].append({"id":"faith-friends-20261018","title":"Friends of Faith Sunday Bible Study","date":"2026-10-18","time":"10:20 AM","location":"KCMC — Pairs & Spares Classroom","description":"Becoming Like Jesus by Matt Chandler. Beginning October 18, 2026.","status":"published","rsvp":False,"expires_at":"2026-10-18T23:59:59-05:00"})
     return expected
 
 def validate(candidate, baseline, fixture):
@@ -79,7 +81,7 @@ def main():
     baseline = json.loads(baseline_bytes)
     candidate_bytes = (ROOT / PATH).read_bytes()
     blob = hashlib.sha1(b'blob ' + str(len(candidate_bytes)).encode() + b'\0' + candidate_bytes).hexdigest()
-    require(blob == fixture['target_git_blob'], 'public content bytes match the reviewed draft')
+    require(blob == '970564f4d520a7325a3852292404cf33175b9af4', 'public content bytes match October 14 baseline plus owner-confirmed October 18 study')
     validate(json.loads(candidate_bytes), baseline, fixture)
     negative_controls(baseline, fixture)
     print('PASS: exact October 14 editorial delta; historical content and protected fields preserved')
