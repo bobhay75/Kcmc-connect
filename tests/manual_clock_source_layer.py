@@ -1,8 +1,9 @@
 #!/usr/bin/env python3
 """Reverse the exact reviewed manual time-clock change before historical proofs.
 
-The complete application must equal the pinned themed release plus precisely
-five reviewed functional edits. The recovered bytes are provided in memory;
+After reversing the separately pinned health actions, the complete application
+must equal the themed release plus five reviewed functional edits and the exact
+owner-confirmed editorial occurrence. Recovered bytes are provided in memory;
 historical source layers never read an unchecked current functional file.
 No host, private records, Git mutation or application operation is performed.
 """
@@ -15,6 +16,8 @@ from pathlib import Path
 import shutil
 import stat
 import subprocess
+
+from health_actions_source_layer import HealthActionsLayer
 
 ROOT = Path(__file__).resolve().parents[1]
 PREFIX = 'KCMC-Connect-Phase6-Recreated/'
@@ -82,6 +85,7 @@ class ManualClockLayer:
         self.git_source = Path(git_source or self.root).resolve()
         require(self.app.is_dir() and not self.app.is_symlink(),
                 'Manual-clock application mount must be an ordinary source directory')
+        self.health_actions = HealthActionsLayer(self.root)
         raw = (self.root / FIXTURE).read_bytes()
         require(sha256(raw) == FIXTURE_SHA256, 'Exact immutable manual-clock fixture required')
         fixture = json.loads(raw)
@@ -173,7 +177,7 @@ class ManualClockLayer:
                 require(old and new and old != new and expected.count(old) == 1,
                         name + ': one exact forward manual-clock anchor required')
                 expected = expected.replace(old, new, 1)
-            actual = (self.app / name).read_bytes()
+            actual = self.health_actions.before(name)
             require(actual == expected and sha256(actual) == record['after_sha256'],
                     name + ': only exact reviewed manual-clock target bytes permitted')
             recovered = actual
@@ -195,7 +199,7 @@ class ManualClockLayer:
                 self.editorial_preimage = self.git('show', CANONICAL_BASE + ':' + PREFIX + name)
                 continue
             if name not in MODIFIED:
-                require(blob((self.app / name).read_bytes()) == oid,
+                require(blob(self.health_actions.before(name)) == oid,
                         name + ': all runtime bytes outside the reviewed manual-clock delta must remain themed canonical')
         self.paths = frozenset(PREFIX + name for name in MODIFIED)
         self.baseline_tree = tree
@@ -207,7 +211,7 @@ class ManualClockLayer:
         require(name in self.baseline_tree, name + ': unknown manual-clock source path')
         if name == 'data/content.json':
             return self.editorial_preimage
-        return self.preimages[name] if name in self.preimages else (self.app / name).read_bytes()
+        return self.preimages[name] if name in self.preimages else self.health_actions.before(name)
 
     def copy_baseline(self, destination):
         """Write a separate exact themed baseline; never overwrite a path."""
@@ -215,6 +219,8 @@ class ManualClockLayer:
         require(not destination.exists() and not destination.is_symlink(),
                 'Manual-clock historical fixture destination must not already exist')
         shutil.copytree(str(self.app), str(destination))
+        for name, data in self.health_actions.preimages.items():
+            (destination / name).write_bytes(data)
         for name, data in self.preimages.items():
             (destination / name).write_bytes(data)
         (destination / 'data/content.json').write_bytes(self.editorial_preimage)
