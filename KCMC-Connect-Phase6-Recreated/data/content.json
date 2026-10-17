@@ -86,6 +86,7 @@
     ]
   },
   "events": [
+    {"id":"faith-friends-20261018","title":"Friends of Faith Sunday Bible Study","date":"2026-10-18","time":"10:20 AM","location":"KCMC — Pairs & Spares Classroom","description":"Becoming Like Jesus by Matt Chandler. Beginning October 18, 2026.","status":"published","rsvp":false,"expires_at":"2026-10-18T23:59:59-05:00"},
     {"id":"front-porch-gospel-20260920","title":"Front Porch Gospel","date":"2026-09-20","time":"8:00 AM","location":"KCMC","description":"Sunday worship service from the weekly church calendar.","status":"published","expires_at":"2026-09-21T00:00:00-05:00"},
     {"id":"traditional-worship-20260920","title":"Traditional Worship","date":"2026-09-20","time":"9:15 AM","location":"KCMC","description":"Sunday worship service from the weekly church calendar.","status":"published","expires_at":"2026-09-21T00:00:00-05:00"},
     {"id":"contemporary-worship-20260920","title":"Contemporary Worship","date":"2026-09-20","time":"10:30 AM","location":"KCMC","description":"Sunday worship service from the weekly church calendar.","status":"published","expires_at":"2026-09-21T00:00:00-05:00"},
