@@ -1,0 +1,106 @@
+{
+  "baseline_commit": "8f25cf66b86d9bada85077867bc52436cdaced4f",
+  "source_commit": "6ca96d7d7531a8a42c497af8d4452e2997d45995",
+  "frozen_engine_sha256": "4df2cdef03853c80c96350398b6a5b92cb78722e202debd3279d535fb9e757d7",
+  "corrected_extension_sha256": "a09f1d2e69f20a057be712b7c21bae3ec174e2faea60c9eb1dcbf2fca985d6c2",
+  "input_sha256": {
+    "wrapper.py.in": "cd6d5a4121e6950b715f64efaadf8599e13080490853d5877418db7add7ced5d",
+    "source-runtime-reviewed.json": "1a0222e24af37e8b0ab6fb49be4294d78a7ea064039e5471f49ad0dd7f6caaf7",
+    "runtime-reviewed.json": "6b8507aed5e061017219c9aeb011fff05c37227b505fcbc28f7fdbb90f42b4d1",
+    "prerequisites-reviewed.json": "82cd666f5dd1fffc44d6f2494f18afa14522a48af5727978cd8877dde84b11dd"
+  },
+  "engine_sha256": "d98bbe3e1cedeb6e7a422b6d449912d664676841570f693e5202729acee98e1b",
+  "installer_sha256": "1aa4512a8db43bc36ab1a4c5df1231bb858778eede89c37f7f1a508c6ecede09",
+  "paths": [
+    "admin/health.php"
+  ],
+  "dependencies": {},
+  "new_paths": [],
+  "read_only_prerequisites": {
+    "lib/bootstrap.php": {
+      "sha256": "19a932424250b6bc33a5e844bfb942fb33a8194aa8bf912bf4494f1e27ba354e",
+      "bytes": 26188
+    },
+    "lib/operations-owner.php": {
+      "sha256": "5f8e91462c25c39ab8064b0d9da542e24271d03d02cd1cc8ebb243b8f9618b5f",
+      "bytes": 540
+    },
+    "lib/invitation-mailer.php": {
+      "sha256": "2b4a91fe11fd58cef33c95a9ab348f25984b6cb1f0508a18009e10b46e5944e9",
+      "bytes": 3854
+    },
+    "lib/push-subscriptions.php": {
+      "sha256": "ad69b69567d4aad246ba3bb99ea385ecc7c0b4aea2b1b079195ea06cb4923958",
+      "bytes": 15515
+    },
+    "lib/connection-intake.php": {
+      "sha256": "6928d0adfe0f67c6642a03845dace7fd684ba6ea7c9b60d39b3a4a4f588cae4c",
+      "bytes": 7335
+    },
+    "lib/event-rsvp.php": {
+      "sha256": "abf62a1b852f61682cbb7695c4a23fdee965ef77c80ca4a5ed0ecf82fa64e6f6",
+      "bytes": 6305
+    },
+    "lib/inbox-follow-up.php": {
+      "sha256": "d94cfff1bada48e4f91cc3afe40932f458e3ac73f8ec9de0eea06e02d1db4f96",
+      "bytes": 3099
+    },
+    "lib/release-health.php": {
+      "sha256": "0b341121e1119595542cc94d40127e088d97f9b939f8bcc68f9ffaa9cb02428c",
+      "bytes": 9150
+    },
+    "lib/screen-navigation.php": {
+      "sha256": "e614e218d17e53c687d994b33415a7991d80ed56b3148521c7fc6ea2a66bf0f0",
+      "bytes": 2664
+    },
+    "styles.css": {
+      "sha256": "9941c7da64ae5f2a3eb3a45f97081a2af160e8a8fa50bc17f1b6eb8a8fbd4476",
+      "bytes": 25895
+    },
+    "app-theme.css": {
+      "sha256": "168aaeb92bef5e6f341848dd5649064d306838ec52da48fe9bff95030a633776",
+      "bytes": 12537
+    },
+    "app-navigation.js": {
+      "sha256": "9c4ea42155c3758afe216b2206b3a8d30b98714bc082c45cf8bea0384c545af2",
+      "bytes": 5861
+    },
+    "admin/index.php": {
+      "sha256": "e457c1d32b018b1020008e3f66a35f2bcb727ae3f082e6ca090ec24b4b2f9b76",
+      "bytes": 11540
+    },
+    "admin/backup.php": {
+      "sha256": "01f6d883c5a073c0f539f4d23934e5fbc86f9b416209fb50b2acd121761968c5",
+      "bytes": 470
+    },
+    "admin/restore.php": {
+      "sha256": "6ec1467db6de059a40064b4f65685267fc222549dc3cd422ea771e2d25265052",
+      "bytes": 4591
+    },
+    "admin/users.php": {
+      "sha256": "829d9ae63b16a8d4c5ab81eba79481a3043af6e4440a4747ea822e118ad6514a",
+      "bytes": 15936
+    },
+    "admin/push.php": {
+      "sha256": "f4e73fc165a37417f54dc1e072a2f95955f7813da1618a7cf4c0d1a87c1fbd84",
+      "bytes": 7833
+    },
+    "admin/audit.php": {
+      "sha256": "8f2113f8a7ed59906eb24e9f1f5191fcbc9c84db84800ffe6761940351e673c9",
+      "bytes": 6215
+    },
+    "member/notifications.php": {
+      "sha256": "f0a86dbe7ec5c5994b14d657791dc35fe55e75bc420f7d5b2e8b6703f17e5ffc",
+      "bytes": 2363
+    },
+    "admin/rsvps.php": {
+      "sha256": "4841142ace3fbd7bfdb6f31dd1945eeef7dbf0ee4424c7529109736bd3a0fc83",
+      "bytes": 8995
+    },
+    "admin/connections.php": {
+      "sha256": "4d2203f54b3b3b4726b7c98ab906ff3d4e9ed1984247cba9aa417dd198ce6066",
+      "bytes": 9714
+    }
+  },
+  "preserved": "Configuration, private/editorial records, time punches, payroll delivery, roles and hosting repository."
+}

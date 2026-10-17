@@ -1,0 +1,15 @@
+{
+  "baseline_commit": "8f25cf66b86d9bada85077867bc52436cdaced4f",
+  "source_commit": "6ca96d7d7531a8a42c497af8d4452e2997d45995",
+  "paths": [
+    "admin/health.php"
+  ],
+  "files": {
+    "admin/health.php": {
+      "before_sha256": "600c22ea31fc8cd340d819e3356ca5eef42e3d8bd64897500a92aa988364e5a9",
+      "before_bytes": 9368,
+      "after_sha256": "737703fc3351f7b369abd638ebcd0441fd5a69bebebea8f1df052722f2e6b543",
+      "after_bytes": 17455
+    }
+  }
+}

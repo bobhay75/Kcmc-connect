@@ -1,0 +1,350 @@
+/* Shared screen palette. Publication artwork and printed documents keep their own colors. */
+@media screen {
+  :root {
+    --kcmc-night: #07121c;
+    --kcmc-navy: #0b2030;
+    --kcmc-panel: #102638;
+    --kcmc-panel-muted: #0c2131;
+    --kcmc-text: #eef5f8;
+    --kcmc-muted: #a9bbc6;
+    --kcmc-gold: #d6ad62;
+    --kcmc-gold-hover: #e8c57a;
+    --kcmc-line: #345062;
+    --kcmc-control-line: #668193;
+    --kcmc-input: #071722;
+    --kcmc-success-bg: #153b35;
+    --kcmc-success: #c9f0e3;
+    --kcmc-warning-bg: #3b321e;
+    --kcmc-warning: #f5daa1;
+    --kcmc-error-bg: #45272c;
+    --kcmc-error: #ffc1bb;
+    --kcmc-error-line: #e89e96;
+    --kcmc-info-bg: #193b50;
+    --kcmc-info: #c5e6f6;
+  }
+
+  html body {
+    --ink: var(--kcmc-text);
+    --muted: var(--kcmc-muted);
+    --gold: var(--kcmc-gold);
+    --line: var(--kcmc-line);
+    min-height: 100vh;
+    margin: 0;
+    background: radial-gradient(circle at 82% 3%, rgba(78, 145, 173, .24), transparent 34rem),
+      linear-gradient(180deg, var(--kcmc-night), var(--kcmc-navy));
+    color: var(--kcmc-text);
+    color-scheme: dark;
+    font-family: Inter, ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+    line-height: 1.55;
+  }
+
+  body:not(.publication-designer) h1 {
+    font-family: Georgia, serif;
+    font-weight: 400;
+    line-height: 1.08;
+    letter-spacing: -.025em;
+  }
+
+  body:not(.publication-designer) h2 {
+    color: var(--kcmc-text);
+  }
+
+  body :is(.eyebrow, .desk .eyebrow) { color: var(--kcmc-gold); }
+  body :is(.muted, .portal-fine, .portal-lead, .tc-note, .audit-time, .health-meta,
+    .bulletin-fine, .adjustment-history, .tc-meta small, .shift-row small, .tc-row small) {
+    color: var(--kcmc-muted);
+  }
+
+  body:not(.publication-designer) :is(.card, .cardx, .panel, .portal-card, .ops-card,
+    .audit-row, .audit-empty, .health-stat, .health-check, .tc-card, .eventx, .bulletin-sheet,
+    .news-feature) {
+    background: linear-gradient(160deg, #14334b, #091c2a);
+    color: var(--kcmc-text);
+    border-color: var(--kcmc-line);
+  }
+
+  body:not(.publication-designer) :is(.summary article, .tc-meta div, .service-card,
+    .description-recovery, .audit-chip) {
+    background: var(--kcmc-panel-muted);
+    color: var(--kcmc-text);
+    border-color: var(--kcmc-line);
+  }
+
+  body:not(.publication-designer) :is(.row, .shift-row, .tc-row, .tc-request,
+    .tc-correction, .adjust-form, .bulletin-section) { border-color: var(--kcmc-line); }
+  body:not(.publication-designer) :is(.service-card p, .eventx p, .eventx small,
+    .audit-chip, .news-feature p) { color: var(--kcmc-muted); }
+  body:not(.publication-designer) .row > span::before { color: var(--kcmc-muted); }
+  body:not(.publication-designer) .service-card strong { color: var(--kcmc-gold-hover); }
+
+  body:not(.publication-designer) :is(a, button, input, select, textarea, summary) {
+    touch-action: manipulation;
+  }
+  body:not(.publication-designer) a { text-underline-offset: .18em; }
+  body:not(.publication-designer) :is(a, button):hover { text-decoration-thickness: 2px; }
+
+  body:not(.publication-designer) :is(
+    input:not([type="checkbox"]):not([type="radio"]):not([type="hidden"]):not([type="submit"]):not([type="button"]):not([type="reset"]):not([type="range"]):not([type="color"]),
+    select, textarea) {
+    background: var(--kcmc-input);
+    color: var(--kcmc-text);
+    border: 1px solid var(--kcmc-control-line);
+    border-radius: 10px;
+    padding: 11px 12px;
+    font: inherit;
+    caret-color: var(--kcmc-text);
+    max-width: 100%;
+    min-width: 0;
+    color-scheme: dark;
+  }
+  body:not(.publication-designer) :is(input, textarea)::placeholder {
+    color: var(--kcmc-muted);
+    opacity: 1;
+  }
+  body:not(.publication-designer) :is(input[type="checkbox"], input[type="radio"]) {
+    accent-color: var(--kcmc-gold);
+  }
+  body:not(.publication-designer) option { background: var(--kcmc-input); color: var(--kcmc-text); }
+
+  body:not(.publication-designer) :is(button:not(.work-task), input[type="submit"], input[type="button"],
+    .btn, .btnx, .bulletin-actions a) {
+    min-height: 44px;
+    background: var(--kcmc-gold);
+    color: var(--kcmc-night);
+    border: 1px solid var(--kcmc-gold);
+    border-radius: 999px;
+    font: inherit;
+    font-weight: 800;
+    cursor: pointer;
+  }
+  body:not(.publication-designer) :is(button:not(.work-task), input[type="submit"], input[type="button"], .btn, .btnx):hover {
+    background: var(--kcmc-gold-hover);
+    border-color: var(--kcmc-gold-hover);
+    filter: none;
+  }
+  body:not(.publication-designer) :is(button, input, select, textarea):disabled {
+    opacity: .6;
+    cursor: not-allowed;
+  }
+  body:not(.publication-designer) :is(.btn.secondary, .btn.alt, .bulletin-actions a.alt,
+    .export-link, .filters a:not([aria-current="page"])) {
+    background: transparent;
+    color: var(--kcmc-text);
+    border: 1px solid var(--kcmc-control-line);
+  }
+  body:not(.publication-designer) :is(.btn.secondary, .btn.alt, .export-link,
+    .filters a:not([aria-current="page"])):hover { background: var(--kcmc-panel); }
+  body:not(.publication-designer) .filters a[aria-current="page"] {
+    background: var(--kcmc-gold);
+    color: var(--kcmc-night);
+    border-color: var(--kcmc-gold);
+  }
+  body:not(.publication-designer) :is(button.portal-link-button, .signout-form button) {
+    min-height: 44px;
+    background: transparent;
+    border: 0;
+    color: var(--kcmc-gold-hover);
+    border-radius: 8px;
+  }
+  body:not(.publication-designer) :is(button.portal-link-button, .signout-form button):hover {
+    background: var(--kcmc-panel);
+    color: var(--kcmc-gold-hover);
+    border: 0;
+  }
+  body:not(.publication-designer) :is(button.danger, .btn.danger, .btnx.danger) {
+    background: var(--kcmc-error-bg);
+    border-color: var(--kcmc-error-line);
+    color: var(--kcmc-error);
+  }
+
+  body:not(.publication-designer) :is(.portal-alert.success, .notice.success, .ok,
+    .health-pill.pass, .status.approved) {
+    background: var(--kcmc-success-bg);
+    color: var(--kcmc-success);
+    border-color: var(--kcmc-success);
+  }
+  body:not(.publication-designer) :is(.portal-alert.warning, .health-pill.warn, .status.submitted,
+    .status.pending, .tc-adjusted, .eventx .label, .correction-card, .ops-card.warning) {
+    background: var(--kcmc-warning-bg);
+    color: var(--kcmc-warning);
+    border-color: var(--kcmc-gold);
+  }
+  body:not(.publication-designer) :is(.portal-alert.error, .error, .health-pill.fail,
+    .status.returned, .status.rejected) {
+    background: var(--kcmc-error-bg);
+    color: var(--kcmc-error);
+    border-color: var(--kcmc-error-line);
+  }
+  body:not(.publication-designer) :is(.status, .correction-mark) {
+    background: var(--kcmc-info-bg);
+    color: var(--kcmc-info);
+  }
+
+  body :is(a, button, input, select, textarea, summary):focus-visible {
+    outline: 3px solid var(--kcmc-gold-hover);
+    outline-offset: 4px;
+  }
+
+  /* A compact escape route remains in the same place on every screen. */
+  body .screen-navigation {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 10px;
+    width: min(1400px, calc(100% - 28px));
+    margin: 12px auto 0;
+    padding: 0;
+  }
+  body .screen-navigation :is(a, button) {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 44px;
+    padding: 9px 15px;
+    border: 1px solid var(--kcmc-control-line);
+    border-radius: 999px;
+    background: rgba(7, 18, 28, .45);
+    color: var(--kcmc-text);
+    text-decoration: none;
+    font: inherit;
+    font-weight: 800;
+  }
+  body .screen-navigation :is(a, button):hover { background: var(--kcmc-panel); }
+
+  body .admin-group > summary {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    min-height: 64px;
+    padding: 17px 0;
+    color: var(--kcmc-gold-hover);
+    font-size: 1.05rem;
+    font-weight: 800;
+    cursor: pointer;
+    list-style: none;
+  }
+  body .admin-group > summary::-webkit-details-marker { display: none; }
+  body .admin-group > summary::after { content: "+"; font-size: 1.5rem; line-height: 1; }
+  body .admin-group[open] > summary::after { content: "−"; }
+  body .admin-group > summary:hover { color: var(--kcmc-text); }
+
+  body .payroll-shell code { overflow-wrap: anywhere; }
+  body .payroll-form,
+  body .payroll-form label { min-width: 0; }
+  body.timecard-print .timecard-table {
+    max-width: 100%;
+    overflow-x: auto;
+  }
+  body.timecard-print .timecard-table:focus-visible {
+    outline: 3px solid var(--kcmc-gold-hover);
+    outline-offset: -3px;
+  }
+
+  /* Public home keeps its photos and controls; church information stays in the fish menu. */
+  body[data-office-email] [data-view="home"] .home-cover.hero.hero-imagery {
+    display: block;
+    min-height: 0;
+    padding: 0;
+    background: var(--kcmc-night);
+    color: var(--kcmc-text);
+    color-scheme: dark;
+  }
+  body[data-office-email] [data-view="home"] .home-cover .home-cover-photo {
+    position: relative;
+    inset: auto;
+    display: block;
+    width: 100%;
+    height: auto;
+    max-height: min(760px, 75svh);
+    aspect-ratio: 1402 / 1122;
+    object-fit: contain;
+  }
+  body[data-office-email] [data-view="home"] .home-cover-layout {
+    width: 100%;
+    margin: 0;
+    padding: 12px 16px;
+    justify-content: center;
+  }
+  body[data-office-email] [data-view="home"] .home-cover-card {
+    width: auto;
+    padding: 0;
+    border: 0;
+    border-radius: 0;
+    background: transparent;
+    box-shadow: none;
+    backdrop-filter: none;
+  }
+  body[data-office-email] [data-view="home"] .home-cover-card > :not([data-hero-controls]):not([data-hero-status]),
+  body[data-office-email] [data-view="home"] > .home-worship-strip {
+    display: none;
+  }
+  body[data-office-email] [data-view="home"] .hero-photo-controls {
+    justify-content: center;
+    margin: 0;
+  }
+  body[data-office-email] [data-view="home"] .hero-photo-controls button:focus-visible {
+    outline: 3px solid var(--kcmc-gold-hover);
+    outline-offset: 4px;
+  }
+  body[data-office-email] [data-view="home"] > :is(.section[aria-label="KCMC kids and family photos"], .section[data-family-welcome]) {
+    padding: 24px 0;
+  }
+  body[data-office-email] [data-view="home"] .family-welcome-grid { gap: 0; }
+  body[data-office-email] [data-view="home"] .family-welcome-copy,
+  body[data-office-email] [data-view="home"] > [data-family-welcome]:has(.family-photo-frame[hidden]) {
+    display: none;
+  }
+
+  /* Designer chrome uses the app palette; .page and its items remain authored artwork. */
+  body.publication-designer { --ink: var(--kcmc-text); --bg: var(--kcmc-night); }
+  body.publication-designer :is(.topbar, .panel) {
+    background: linear-gradient(160deg, #14334b, #091c2a);
+    color: var(--kcmc-text);
+    border-color: var(--kcmc-line);
+  }
+  body.publication-designer :is(.status, .small) { color: var(--kcmc-muted); }
+  body.publication-designer :is(.field input, .field select, .field textarea) {
+    background: var(--kcmc-input);
+    color: var(--kcmc-text);
+    border-color: var(--kcmc-control-line);
+    color-scheme: dark;
+  }
+  body.publication-designer :is(.btn, .template) {
+    background: var(--kcmc-panel-muted);
+    color: var(--kcmc-text);
+    border-color: var(--kcmc-control-line);
+    min-height: 44px;
+  }
+  body.publication-designer :is(.btn, .template):hover { background: #1c3d53; }
+  body.publication-designer .btn.primary {
+    background: var(--kcmc-gold);
+    color: var(--kcmc-night);
+    border-color: var(--kcmc-gold);
+  }
+  body.publication-designer .canvas-wrap {
+    background-color: #0b1c2a;
+    background-image: linear-gradient(45deg, #122b3d 25%, transparent 25%),
+      linear-gradient(-45deg, #122b3d 25%, transparent 25%),
+      linear-gradient(45deg, transparent 75%, #122b3d 75%),
+      linear-gradient(-45deg, transparent 75%, #122b3d 75%);
+  }
+  body.publication-designer .page { color: #17324c; color-scheme: light; }
+  body.publication-designer .item.selected { box-shadow: 0 0 0 2px var(--kcmc-gold); }
+
+  @media (max-width: 760px) {
+    body:not(.publication-designer) :is(.connections-table, .rsvp-table) .row {
+      background: var(--kcmc-panel);
+    }
+    body.publication-designer .topbar { align-items: flex-start; flex-wrap: wrap; }
+    body.publication-designer .brand { flex-wrap: wrap; }
+    body.publication-designer .actions { gap: 8px; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    body .admin-group > summary { transition: none; }
+  }
+}
+
+@media print {
+  .screen-navigation { display: none !important; }
+}
