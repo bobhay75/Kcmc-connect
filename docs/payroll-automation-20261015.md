@@ -61,6 +61,14 @@ A scoped hosting installer should:
 
 This plan preserves existing jobs and makes retries idempotent. A later host package may implement and test it with a fake crontab executable before any authorized hosting activation.
 
+The separate [October18 schedule tool](../tools/kcmc-payroll-schedule-oct18/README.md)
+now implements that crontab transaction with executable fake-crontab tests and
+dedicated Python3.6/actual-PHP8.2 CI. It has not activated a live schedule. It can
+install an exact owner-selected **queue** plan; email selection is inspectable
+but email scheduling remains blocked until current CLI sender readiness is
+separately verified. It does not execute preserved PHP config or provide an
+attestation bypass. Existing recipient/channel settings remain untouched.
+
 ## Validation
 
 - `tests/payroll-automation-contract.php`:43 real PHP assertions for off defaults, exact recipient selection, owner-only setup, unchanged roles/prayer/publishing rights, deactivation/revocation, stable fingerprint across real punches, metadata refusal, shell quoting, email configuration, totals/privacy, correction revisions, idempotence, malformed-history preservation, failed transport, uncertain claims, activation boundaries, same-reviewer preservation, reviewer switches, off/on reset, and invalid legacy activation refusal. Every transport is injected; no real mail is called.
