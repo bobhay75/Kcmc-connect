@@ -1,0 +1,121 @@
+{
+  "baseline_commit": "4b108316a3865dba8583b30ec0dd8e2eeae6968e",
+  "source_commit": "dda594646d834fe8959168a1d0928dfcd62e10bc",
+  "frozen_engine_sha256": "4df2cdef03853c80c96350398b6a5b92cb78722e202debd3279d535fb9e757d7",
+  "corrected_extension_sha256": "a09f1d2e69f20a057be712b7c21bae3ec174e2faea60c9eb1dcbf2fca985d6c2",
+  "input_sha256": {
+    "wrapper.py.in": "272111f75d34ae364890c367df754d1409d681127167d42dabced481de641cc2",
+    "source-runtime-reviewed.json": "82158e6525bb8e8ca1d6708f5f2a7519149104b5419a718f3eb63064dea905db",
+    "runtime-reviewed.json": "b667ea7ae9bef905cd56711dca87e9918e3757243b1cbffd7136b6c1f7813024",
+    "prerequisites-reviewed.json": "c454fae8f365e5a3cda22db6842ab647907088fad74e80843ad5e942e6a935e6",
+    "public-variants-reviewed.json": "cbb48d538eb2e3126430988c2b34b84db43efcad8e09b9f4b07ecabe4411abc2"
+  },
+  "engine_sha256": "28831e41d3f89abed4749f2c4ec925ecf2bbe84835cb26512182f9e786296392",
+  "installer_sha256": "d66e666eac0de865bf03d35c047dbc82b3228fac23e5e5fd23c056a6ae82b1ae",
+  "paths": [
+    "sw.js",
+    "member/push-settings.js",
+    "member/notifications.php",
+    "admin/push.php",
+    "index.php",
+    "admin/operations.php"
+  ],
+  "new_paths": [],
+  "dependencies": {
+    "member/push-settings.js": [
+      "sw.js"
+    ],
+    "member/notifications.php": [
+      "sw.js",
+      "member/push-settings.js"
+    ],
+    "admin/push.php": [
+      "member/notifications.php"
+    ]
+  },
+  "read_only_prerequisites": {
+    "lib/bootstrap.php": {
+      "sha256": "19a932424250b6bc33a5e844bfb942fb33a8194aa8bf912bf4494f1e27ba354e",
+      "bytes": 26188
+    },
+    "lib/operations-owner.php": {
+      "sha256": "5f8e91462c25c39ab8064b0d9da542e24271d03d02cd1cc8ebb243b8f9618b5f",
+      "bytes": 540
+    },
+    "lib/push-subscriptions.php": {
+      "sha256": "ad69b69567d4aad246ba3bb99ea385ecc7c0b4aea2b1b079195ea06cb4923958",
+      "bytes": 15515
+    },
+    "lib/screen-navigation.php": {
+      "sha256": "e614e218d17e53c687d994b33415a7991d80ed56b3148521c7fc6ea2a66bf0f0",
+      "bytes": 2664
+    },
+    "app-theme.css": {
+      "sha256": "168aaeb92bef5e6f341848dd5649064d306838ec52da48fe9bff95030a633776",
+      "bytes": 12537
+    },
+    "app-navigation.js": {
+      "sha256": "9c4ea42155c3758afe216b2206b3a8d30b98714bc082c45cf8bea0384c545af2",
+      "bytes": 5861
+    },
+    "styles.css": {
+      "sha256": "9941c7da64ae5f2a3eb3a45f97081a2af160e8a8fa50bc17f1b6eb8a8fbd4476",
+      "bytes": 25895
+    },
+    "api/push-subscription.php": {
+      "sha256": "d1ee30a704b3776c39d870508b943d5ad5351befa4b33c0bd0cdbb20a506eb90",
+      "bytes": 2000
+    },
+    "admin/health.php": {
+      "sha256": "737703fc3351f7b369abd638ebcd0441fd5a69bebebea8f1df052722f2e6b543",
+      "bytes": 17455
+    },
+    "admin/home.php": {
+      "sha256": "3080c5cb157ed174a9c90b8b2d0a5a59c37f8b8a8f50585dcb48e44be7e496c3",
+      "bytes": 4610
+    },
+    "member/index.php": {
+      "sha256": "cf9f30ceb9943c576b1241d1639da8624f16ffdbbcc2ac608d27d806fadeb3f3",
+      "bytes": 4440
+    },
+    "app.js": {
+      "sha256": "d2d349264224e119482187e0fdbfcee6cd6ed29c16b1874c65c88cf29dd93963",
+      "bytes": 19463
+    },
+    "manifest.webmanifest": {
+      "sha256": "811afe8914a44b8f5ada3affc27e71714acfa8adfc79e16348189016342d49da",
+      "bytes": 773
+    }
+  },
+  "public_variant_hashes": {
+    "main": {
+      "index_before": "6e6070b6bc2faeda02c64cf0bf225a37110aba38287b5be0c0c2e0f45b7eab1c",
+      "index_after": "07693d46cdd5eb9661b9ad37d6856343b7293dfda4ee9db603e40f74cbb73b34",
+      "read_only": {
+        "public-presentation.css": {
+          "sha256": "640ba99c997867e7d3fec3a36d08f9992bfc295d224523f2a980f0bc57bdc4e2",
+          "bytes": 17129
+        },
+        "public-presentation.js": {
+          "sha256": "bfc4e7a6ab3cb11bae76a74be5d1cdc0912ae00e32f1d66bedf128ec7aabfcc9",
+          "bytes": 7250
+        }
+      }
+    },
+    "livecalendar": {
+      "index_before": "fe92b62285e9232f53d459f83d853138f46b3732a4ec12af356da102e9a98f5b",
+      "index_after": "34b4446fab211c86e96090d056980171a913e7a7eee4e85da1cf22ba3f7a1b89",
+      "read_only": {
+        "public-presentation.css": {
+          "sha256": "640ba99c997867e7d3fec3a36d08f9992bfc295d224523f2a980f0bc57bdc4e2",
+          "bytes": 17129
+        },
+        "public-presentation.js": {
+          "sha256": "bfc4e7a6ab3cb11bae76a74be5d1cdc0912ae00e32f1d66bedf128ec7aabfcc9",
+          "bytes": 7250
+        }
+      }
+    }
+  },
+  "preserved": "Configuration, keys, subscriptions, private/editorial records, time punches, payroll delivery, roles, cron and hosting repository."
+}

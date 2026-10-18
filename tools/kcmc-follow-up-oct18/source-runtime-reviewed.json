@@ -1,0 +1,68 @@
+{
+  "baseline_commit": "4b108316a3865dba8583b30ec0dd8e2eeae6968e",
+  "source_commit": "dda594646d834fe8959168a1d0928dfcd62e10bc",
+  "paths": [
+    "sw.js",
+    "member/push-settings.js",
+    "member/notifications.php",
+    "admin/push.php",
+    "index.php",
+    "admin/operations.php"
+  ],
+  "files": {
+    "sw.js": {
+      "before_sha256": "547e555f9e9bd85bf290e6887eccfbeaceacb37c9b8905f3c74113e876f643a4",
+      "before_bytes": 5917,
+      "after_sha256": "100dc03b25fa0999c48fc6a0db2d684209ba972f28325ac6f59460c3a0873a7c",
+      "after_bytes": 5919
+    },
+    "member/push-settings.js": {
+      "before_sha256": "f92ede20083b580ddce13f16c2ce0d3b17238774a5cd56b82d2690766a1a4c99",
+      "before_bytes": 5512,
+      "after_sha256": "d5a6858e84cecbff266e83aab4bb503102036f3c9daaa22c30e6f575a6c9d336",
+      "after_bytes": 7449
+    },
+    "member/notifications.php": {
+      "before_sha256": "f0a86dbe7ec5c5994b14d657791dc35fe55e75bc420f7d5b2e8b6703f17e5ffc",
+      "before_bytes": 2363,
+      "after_sha256": "4184b7000aa8ee616f41d239f7c3b68220fc42c6b88375b0d3dfec121494cd67",
+      "after_bytes": 3076
+    },
+    "admin/push.php": {
+      "before_sha256": "f4e73fc165a37417f54dc1e072a2f95955f7813da1618a7cf4c0d1a87c1fbd84",
+      "before_bytes": 7833,
+      "after_sha256": "43a0075a5dd618b54757192f595037b27fecdcb708ac020c391ade6d9b492d61",
+      "after_bytes": 8202
+    },
+    "index.php": {
+      "before_sha256": "6e6070b6bc2faeda02c64cf0bf225a37110aba38287b5be0c0c2e0f45b7eab1c",
+      "before_bytes": 32904,
+      "after_sha256": "07693d46cdd5eb9661b9ad37d6856343b7293dfda4ee9db603e40f74cbb73b34",
+      "after_bytes": 32912
+    },
+    "admin/operations.php": {
+      "before_sha256": "7528f1248d510df17a28449805a310234d48e7dbd89caf2d684792bd99f16ccc",
+      "before_bytes": 4525,
+      "after_sha256": "574d2e3d891ed1d4e9fbe22f62a021ee42d61ca799f762b3fca582fd4c5e136c",
+      "after_bytes": 4569
+    }
+  },
+  "dependencies": {
+    "member/push-settings.js": [
+      "sw.js"
+    ],
+    "member/notifications.php": [
+      "sw.js",
+      "member/push-settings.js"
+    ],
+    "admin/push.php": [
+      "member/notifications.php"
+    ]
+  },
+  "homepage_edits": [
+    [
+      "        <button type=\"button\" data-share-app>Share KCMC Connect</button>\n        <a class=\"menu-account\" href=\"<?=kcmc_h(kcmc_url($member ? 'member/' : 'admin/login.php'))?>\"><?=$member ? 'My account' : 'Staff Sign In'?></a>\n        <?php if($member): ?><a href=\"<?=kcmc_h(kcmc_url('member/timeclock.php'))?>\">Time clock</a><?php endif; ?>\n        <?php if($member && kcmc_has_role(['pastor_admin', 'recovery_admin'], $member)): ?><a href=\"<?=kcmc_h(kcmc_url('admin/'))?>\">Administration</a><?php endif; ?>\n      </nav>\n    </details>\n  </div>\n",
+      "        <button type=\"button\" data-share-app>Share KCMC Connect</button>\n        <a class=\"menu-account\" href=\"<?=kcmc_h(kcmc_url($member ? 'member/' : 'admin/login.php'))?>\"><?=$member ? 'My account' : 'Staff Sign In'?></a>\n        <?php if($member): ?><a href=\"<?=kcmc_h(kcmc_url('member/timeclock.php'))?>\">Time clock</a><?php endif; ?>\n        <?php if($member && kcmc_has_role(['pastor_admin', 'recovery_admin'], $member)): ?><a href=\"<?=kcmc_h(kcmc_url('admin/home.php'))?>\">Administration</a><?php endif; ?>\n      </nav>\n    </details>\n  </div>\n"
+    ]
+  ]
+}

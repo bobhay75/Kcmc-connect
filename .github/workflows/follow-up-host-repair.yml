@@ -1,0 +1,77 @@
+name: KCMC follow-up scoped hosting repair
+on:
+  pull_request:
+    paths:
+      - 'tools/kcmc-follow-up-oct18/**'
+      - '.github/workflows/follow-up-host-repair.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  current-python-php:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          persist-credentials: false
+      - name: Fetch exact reviewed source objects
+        run: |
+          set -euo pipefail
+          python3 -B - <<'PY' > /tmp/kcmc-follow-up-source-refs
+          import ast,pathlib,re
+          tree=ast.parse(pathlib.Path('tools/kcmc-follow-up-oct18/derive_installer.py').read_text())
+          for name in ('BASE_COMMIT','SOURCE_COMMIT'):
+              value=next(ast.literal_eval(n.value) for n in tree.body if isinstance(n,ast.Assign) and any(isinstance(k,ast.Name) and k.id==name for k in n.targets))
+              assert isinstance(value,str) and re.fullmatch('[0-9a-f]{40}',value)
+              print(value)
+          PY
+          mapfile -t kcmc_follow_up_refs < /tmp/kcmc-follow-up-source-refs
+          git fetch --no-tags origin "${kcmc_follow_up_refs[@]}"
+      - name: Exact payload, source provenance and isolated transactions
+        run: |
+          set -euo pipefail
+          cd tools/kcmc-follow-up-oct18
+          sha256sum -c CHECKSUMS.sha256
+          python3 -B derive_installer.py
+          git diff --exit-code -- installer.py provenance.json
+          python3 -B test_installer.py --git-root ../..
+          cd ../..
+          python3 -B tools/kcmc-team-payroll-repair-oct15/test_existing_safety.py
+          python3 -B tools/kcmc-team-payroll-repair-oct15/test_policy_safety.py
+      - name: Real PHP8.2 staged syntax, mode-preserving apply and rollback
+        run: |
+          set -euo pipefail
+          docker pull php@sha256:118ef4fb1db5e866fb604f2f260da81f819a0a1eac87a4083f9194f48e00beee
+          kcmc_follow_up_php=$(mktemp -d)
+          trap 'rm -f -- "$kcmc_follow_up_php/php"; rmdir -- "$kcmc_follow_up_php"' EXIT
+          cat > "$kcmc_follow_up_php/php" <<'SH'
+          #!/usr/bin/env bash
+          set -euo pipefail
+          if [ "$#" -eq 3 ] && [ "$1" = '-n' ] && [ "$2" = '-l' ]; then
+            kcmc_follow_up_stage=$(dirname -- "$3")
+            exec docker run --rm --network none --user "$(id -u):$(id -g)" \
+              --mount "type=bind,src=$kcmc_follow_up_stage,dst=$kcmc_follow_up_stage,readonly" \
+              php@sha256:118ef4fb1db5e866fb604f2f260da81f819a0a1eac87a4083f9194f48e00beee php "$@"
+          fi
+          exec docker run --rm --network none --user "$(id -u):$(id -g)" \
+            php@sha256:118ef4fb1db5e866fb604f2f260da81f819a0a1eac87a4083f9194f48e00beee php "$@"
+          SH
+          chmod 0700 "$kcmc_follow_up_php/php"
+          python3 -B tools/kcmc-follow-up-oct18/verify-stage.py --php "$kcmc_follow_up_php/php"
+  python36:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          persist-credentials: false
+      - name: Actual Python3.6 from a read-only package
+        run: |
+          set -euo pipefail
+          docker run --rm --network none --user "$(id -u):$(id -g)" \
+            --mount "type=bind,src=$PWD,dst=/source,readonly" -w /source \
+            python@sha256:f8652afaf88c25f0d22354d547d892591067aa4026a7fa9a6819df9f300af6fc \
+            bash -c 'set -e; cd tools/kcmc-follow-up-oct18; sha256sum -c CHECKSUMS.sha256; python3 -B test_installer.py; cd ../..; python3 -B tools/kcmc-team-payroll-repair-oct15/test_existing_safety.py; python3 -B tools/kcmc-team-payroll-repair-oct15/test_policy_safety.py'
