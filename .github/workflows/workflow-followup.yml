@@ -1,0 +1,80 @@
+name: KCMC device display and navigation follow-up
+
+on:
+  pull_request:
+    paths:
+      - 'KCMC-Connect-Phase6-Recreated/**'
+      - 'tests/push-*'
+      - 'tests/pwa-cache-privacy.cjs'
+      - 'tests/workflow_followup_source_layer.py'
+      - 'tests/workflow-followup-source-negative.py'
+      - 'tests/manual_clock_source_layer.py'
+      - 'tests/fixtures/workflow-followup-reviewed.json'
+      - 'tests/app-theme-browser.py'
+      - 'tests/member-account-routes.py'
+      - '.github/workflows/workflow-followup.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'KCMC-Connect-Phase6-Recreated/**'
+      - 'tests/push-*'
+      - 'tests/pwa-cache-privacy.cjs'
+      - 'tests/workflow_followup_source_layer.py'
+      - 'tests/workflow-followup-source-negative.py'
+      - 'tests/manual_clock_source_layer.py'
+      - 'tests/fixtures/workflow-followup-reviewed.json'
+      - 'tests/app-theme-browser.py'
+      - 'tests/member-account-routes.py'
+      - '.github/workflows/workflow-followup.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  protected-device-display:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          persist-credentials: false
+      - name: Syntax and exact reviewed source scope
+        run: |
+          set -euo pipefail
+          php -l KCMC-Connect-Phase6-Recreated/index.php
+          php -l KCMC-Connect-Phase6-Recreated/admin/operations.php
+          php -l KCMC-Connect-Phase6-Recreated/admin/push.php
+          php -l KCMC-Connect-Phase6-Recreated/member/notifications.php
+          node --check KCMC-Connect-Phase6-Recreated/member/push-settings.js
+          node --check KCMC-Connect-Phase6-Recreated/sw.js
+          python3 -m py_compile tests/push-device-browser.py
+          git fetch --no-tags origin b0c257edb8a42fc89fd6371c1bce7ee3efbd5ed9
+          python3 tests/workflow_followup_source_layer.py
+          python3 tests/workflow-followup-source-negative.py
+          git diff --check
+      - name: Push boundaries, worker behavior and cache privacy
+        run: |
+          set -euo pipefail
+          node tests/push-subscription-contract.cjs
+          node tests/push-client-runtime.cjs
+          node tests/pwa-cache-privacy.cjs
+          php tests/push-subscription-contract.php
+          php tests/push-delivery-contract.php
+          php tests/push-self-test-contract.php
+          php tests/operations-hub-contract.php
+          python3 tests/push-diagnostics-routes.py
+      - name: Browser dependencies
+        run: |
+          python3 -m pip install --disable-pip-version-check playwright==1.55.0
+          python3 -m playwright install --with-deps chromium
+      - name: Actual protected settings, real app worker and native permission states
+        run: python3 tests/push-device-browser.py
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        if: always()
+        with:
+          name: kcmc-device-display-acceptance
+          path: test-artifacts/push-device/
+          retention-days: 7
+          if-no-files-found: ignore

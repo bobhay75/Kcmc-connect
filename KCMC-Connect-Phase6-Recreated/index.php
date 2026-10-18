@@ -84,7 +84,7 @@ usort($kcmcAnnouncements, fn($a,$b)=>(int)($b['priority']??0)<=>(int)($a['priori
         <button type="button" data-share-app>Share KCMC Connect</button>
         <a class="menu-account" href="<?=kcmc_h(kcmc_url($member ? 'member/' : 'admin/login.php'))?>"><?=$member ? 'My account' : 'Staff Sign In'?></a>
         <?php if($member): ?><a href="<?=kcmc_h(kcmc_url('member/timeclock.php'))?>">Time clock</a><?php endif; ?>
-        <?php if($member && kcmc_has_role(['pastor_admin', 'recovery_admin'], $member)): ?><a href="<?=kcmc_h(kcmc_url('admin/'))?>">Administration</a><?php endif; ?>
+        <?php if($member && kcmc_has_role(['pastor_admin', 'recovery_admin'], $member)): ?><a href="<?=kcmc_h(kcmc_url('admin/home.php'))?>">Administration</a><?php endif; ?>
       </nav>
     </details>
   </div>
