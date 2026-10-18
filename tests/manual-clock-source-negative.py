@@ -12,6 +12,7 @@ from manual_clock_source_layer import (
 )
 from visual_source_layer import NEW_FILES as VISUAL_NEW_FILES, VisualLayer
 from health_actions_source_layer import FIXTURE as HEALTH_FIXTURE
+from workflow_followup_source_layer import FIXTURE as FOLLOWUP_FIXTURE
 
 
 class ExactManualClockSource(unittest.TestCase):
@@ -20,7 +21,7 @@ class ExactManualClockSource(unittest.TestCase):
         self.root = Path(self.directory.name) / 'source'
         self.app = self.root / PREFIX
         shutil.copytree(ROOT / PREFIX, self.app)
-        for name in [FIXTURE, VISUAL_FIXTURE, HEALTH_FIXTURE]:
+        for name in [FIXTURE, VISUAL_FIXTURE, HEALTH_FIXTURE, FOLLOWUP_FIXTURE]:
             target = self.root / name
             target.parent.mkdir(parents=True, exist_ok=True)
             shutil.copyfile(ROOT / name, target)
@@ -154,12 +155,14 @@ class ExactManualClockSource(unittest.TestCase):
             for p in themed.rglob('*') if p.is_file()
         }
         self.assertEqual(app_tree_oid(themed_tree), BASE_APP_TREE)
-        # Functional and later health edits must be reversed before the visual
+        # Functional and later health/follow-up edits must be reversed before the visual
         # layer copies the exact b0c application for older package tests.
         visual = VisualLayer(self.root, ROOT)
         installed = Path(self.directory.name) / 'installed'
         visual.copy_baseline(installed)
-        for name in ['lib/timeclock.php', 'admin/timecards-export.php', 'admin/health.php']:
+        for name in ['lib/timeclock.php', 'admin/timecards-export.php', 'admin/health.php',
+                     'index.php', 'admin/operations.php', 'admin/push.php',
+                     'member/notifications.php', 'member/push-settings.js', 'sw.js']:
             self.assertEqual((installed / name).read_bytes(), visual.git('show',
                              'b0c257edb8a42fc89fd6371c1bce7ee3efbd5ed9:' + PREFIX + name))
         self.assertFalse(any((installed / name).exists() for name in VISUAL_NEW_FILES))

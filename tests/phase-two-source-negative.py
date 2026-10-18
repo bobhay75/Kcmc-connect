@@ -11,6 +11,7 @@ from workflow_source_layer import FIXTURE as FIRST_FIXTURE, Layer
 from visual_source_layer import FIXTURE as VISUAL_FIXTURE
 from manual_clock_source_layer import FIXTURE as MANUAL_FIXTURE
 from health_actions_source_layer import FIXTURE as HEALTH_FIXTURE
+from workflow_followup_source_layer import FIXTURE as FOLLOWUP_FIXTURE
 
 
 class ExactPhaseTwoSource(unittest.TestCase):
@@ -19,7 +20,7 @@ class ExactPhaseTwoSource(unittest.TestCase):
         self.root = Path(self.directory.name) / 'source'
         self.app = self.root / PREFIX
         shutil.copytree(ROOT / PREFIX, self.app)
-        for name in [FIXTURE, FIRST_FIXTURE, VISUAL_FIXTURE, MANUAL_FIXTURE, HEALTH_FIXTURE]:
+        for name in [FIXTURE, FIRST_FIXTURE, VISUAL_FIXTURE, MANUAL_FIXTURE, HEALTH_FIXTURE, FOLLOWUP_FIXTURE]:
             target = self.root / name
             target.parent.mkdir(parents=True, exist_ok=True)
             shutil.copyfile(ROOT / name, target)
@@ -38,7 +39,7 @@ class ExactPhaseTwoSource(unittest.TestCase):
     def test_public_homepage_is_protected_outside_collaboration_payroll_scope(self):
         path = self.app / 'index.php'
         path.write_bytes(path.read_bytes() + b'\n<!-- undeclared homepage banner -->\n')
-        with self.assertRaisesRegex(AssertionError, 'index.php: all runtime bytes outside the reviewed manual-clock delta'):
+        with self.assertRaisesRegex(AssertionError, 'index.php: only exact reviewed workflow-followup target bytes'):
             self.verify()
 
     def test_undeclared_owner_authorization_edit_cannot_hide_in_reviewed_403_markup(self):

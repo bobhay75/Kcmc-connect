@@ -1,0 +1,218 @@
+(() => {
+  'use strict';
+  document.querySelector('.skip-link[href="#mainContent"]')?.addEventListener('click', event => {
+    const main = document.getElementById('mainContent');
+    if (!main) return;
+    event.preventDefault();
+    main.setAttribute('tabindex', '-1');
+    main.focus({preventScroll:true});
+    main.style.scrollMarginTop = `${document.querySelector('.topbar')?.getBoundingClientRect().height || 0}px`;
+    main.scrollIntoView({block:'start',behavior:'instant'});
+  });
+  const OFFICE_EMAIL = document.body.dataset.officeEmail || 'secretary@umckc.org';
+  const views = [...document.querySelectorAll('[data-view]')];
+  const routeLinks = [...document.querySelectorAll('[data-route]')];
+  const allowed = new Set(views.map(v => v.dataset.view));
+  const normalize = () => { const raw=location.hash.replace(/^#/,'').trim().toLowerCase(); return allowed.has(raw)?raw:'home'; };
+  function renderRoute(){ const route=normalize(); views.forEach(v=>v.classList.toggle('active',v.dataset.view===route)); routeLinks.forEach(a=>{const active=a.dataset.route===route;a.classList.toggle('active',active);if(active)a.setAttribute('aria-current','page');else a.removeAttribute('aria-current');}); document.title=route==='home'?'KCMC Connect':`${route[0].toUpperCase()+route.slice(1)} • KCMC Connect`; window.scrollTo({top:0,behavior:'instant'}); }
+  window.addEventListener('hashchange',renderRoute); renderRoute();
+
+  document.querySelectorAll('.phase6-bulletin-fab').forEach(link=>{link.href='bulletin.php';link.textContent='Latest Bulletin';});
+
+  async function hydrateCurrentStory(){
+    let top=null; try{const response=await fetch('./api/content.php',{cache:'no-store'});if(response.ok){const payload=await response.json();const announcements=Array.isArray(payload?.announcements)?payload.announcements:[];const now=Date.now();top=announcements.filter(item=>{if(item?.status&&item.status!=='published')return false;const start=item?.starts_at?Date.parse(item.starts_at):-Infinity,end=item?.expires_at?Date.parse(item.expires_at):Infinity;return now>=start&&now<end;}).sort((a,b)=>(Number(b?.priority)||0)-(Number(a?.priority)||0))[0]||null;}}catch(_){}
+    const announcement=document.querySelector('.phase6-announcement'); const href=top?.link||'';
+    if(announcement&&href){announcement.classList.add('is-actionable');announcement.setAttribute('role','link');announcement.setAttribute('tabindex','0');announcement.setAttribute('aria-label',`${top?.title||'Current KCMC story'} — open story`);announcement.title='Open this story';const open=()=>{window.location.href=href;};announcement.addEventListener('click',open);announcement.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();open();}});}
+  }
+  hydrateCurrentStory();
+
+  // PWA installation: Chromium can open its native prompt; iOS requires Safari's Share menu.
+  let deferredPrompt=null;
+  let installationCompleted=false;
+  let installReturnFocus=null;
+  const installButtons=[...document.querySelectorAll('[data-install-app]')];
+  const installCallout=document.querySelector('[data-install-callout]');
+  const installMessage=document.querySelector('[data-install-message]');
+  const installSheet=document.getElementById('installSheet');
+  const installSheetCard=installSheet?.querySelector('.install-sheet-card');
+  const installSheetCopy=installSheet?.querySelector('[data-install-sheet-copy]');
+  const installNativeButton=installSheet?.querySelector('[data-install-native]');
+  const userAgent=navigator.userAgent||'';
+  const isIOS=/iPad|iPhone|iPod/i.test(userAgent)||(navigator.platform==='MacIntel'&&navigator.maxTouchPoints>1);
+  const isIOSSafari=isIOS&&/Safari/i.test(userAgent)&&!/CriOS|FxiOS|EdgiOS|OPiOS/i.test(userAgent);
+  const isAndroid=/Android/i.test(userAgent);
+  const isStandalone=()=>window.matchMedia('(display-mode: standalone)').matches||navigator.standalone===true;
+
+  function updateInstallUI(){
+    const installed=isStandalone()||installationCompleted;
+    installButtons.forEach(button=>{button.hidden=installed;});
+    if(installCallout)installCallout.hidden=installed;
+    if(installMessage){
+      if(isIOS)installMessage.textContent='Add KCMC Connect to your iPhone or iPad Home Screen.';
+      else if(deferredPrompt)installMessage.textContent='Install KCMC Connect now for quick, app-like access.';
+      else if(isAndroid)installMessage.textContent='Add KCMC Connect to your Android Home Screen.';
+      else installMessage.textContent='Install KCMC Connect on this computer for quick access.';
+    }
+  }
+
+  function closeInstallSheet(){
+    if(!installSheet||installSheet.hidden)return;
+    installSheet.hidden=true;
+    document.documentElement.classList.remove('install-sheet-open');
+    installReturnFocus?.focus();
+    installReturnFocus=null;
+  }
+
+  function showInstallSheet(trigger){
+    if(!installSheet||!installSheetCopy||!installNativeButton)return;
+    installReturnFocus=trigger||document.activeElement;
+    installNativeButton.hidden=true;
+    if(deferredPrompt){
+      installSheet.querySelector('[data-install-eyebrow]').textContent='Ready to install';
+      installSheet.querySelector('#installSheetTitle').textContent='Install KCMC Connect';
+      installSheetCopy.innerHTML='<p>Your browser is ready. Select the button below, then confirm the native install prompt.</p>';
+      installNativeButton.hidden=false;
+    }else if(isIOS){
+      installSheet.querySelector('[data-install-eyebrow]').textContent='iPhone & iPad';
+      installSheet.querySelector('#installSheetTitle').textContent='Add KCMC to your Home Screen';
+      installSheetCopy.innerHTML=isIOSSafari
+        ?'<ol class="install-sheet-steps"><li><span>Tap the <strong>Share <span class="install-sheet-share" aria-label="Share icon">↑</span></strong> button in Safari.</span></li><li><span>Scroll and tap <strong>Add to Home Screen</strong>.</span></li><li><span>Tap <strong>Add</strong>.</span></li></ol>'
+        :'<ol class="install-sheet-steps"><li><span>Open this page in <strong>Safari</strong>.</span></li><li><span>Tap <strong>Share</strong>, then <strong>Add to Home Screen</strong>.</span></li><li><span>Tap <strong>Add</strong>.</span></li></ol>';
+    }else if(isAndroid){
+      installSheet.querySelector('[data-install-eyebrow]').textContent='Android';
+      installSheet.querySelector('#installSheetTitle').textContent='Add KCMC to your Home Screen';
+      installSheetCopy.innerHTML='<p>Open this page in <strong>Chrome</strong>, open the browser menu, then choose <strong>Install app</strong> or <strong>Add to Home screen</strong>.</p>';
+    }else{
+      installSheet.querySelector('[data-install-eyebrow]').textContent='Desktop';
+      installSheet.querySelector('#installSheetTitle').textContent='Install KCMC Connect';
+      installSheetCopy.innerHTML='<p>Use your browser’s <strong>Install app</strong> command. In Chrome or Edge, look for the install icon near the address bar or open the browser menu.</p>';
+    }
+    installSheet.hidden=false;
+    document.documentElement.classList.add('install-sheet-open');
+    installSheetCard?.focus();
+  }
+
+  async function requestInstall(trigger){
+    if(isStandalone())return;
+    if(!deferredPrompt){showInstallSheet(trigger);return;}
+    const promptEvent=deferredPrompt;
+    deferredPrompt=null;
+    await promptEvent.prompt();
+    const choice=await promptEvent.userChoice;
+    installationCompleted=choice?.outcome==='accepted';
+    updateInstallUI();
+  }
+
+  installButtons.forEach(button=>button.addEventListener('click',()=>requestInstall(button)));
+  installNativeButton?.addEventListener('click',async()=>{const trigger=installReturnFocus;closeInstallSheet();await requestInstall(trigger);});
+  installSheet?.querySelector('[data-install-close]')?.addEventListener('click',closeInstallSheet);
+  installSheet?.addEventListener('click',event=>{if(event.target===installSheet)closeInstallSheet();});
+  document.addEventListener('keydown',event=>{
+    if(!installSheet||installSheet.hidden)return;
+    if(event.key==='Escape'){closeInstallSheet();return;}
+    if(event.key==='Tab'){
+      const focusable=[...installSheet.querySelectorAll('button:not([hidden]),a[href],[tabindex]:not([tabindex="-1"])')];
+      if(!focusable.length)return;
+      const first=focusable[0],last=focusable[focusable.length-1];
+      if(event.shiftKey&&document.activeElement===first){event.preventDefault();last.focus();}
+      else if(!event.shiftKey&&document.activeElement===last){event.preventDefault();first.focus();}
+    }
+  });
+  window.addEventListener('beforeinstallprompt',event=>{event.preventDefault();deferredPrompt=event;updateInstallUI();});
+  window.addEventListener('appinstalled',()=>{deferredPrompt=null;installationCompleted=true;closeInstallSheet();updateInstallUI();});
+  window.matchMedia('(display-mode: standalone)').addEventListener?.('change',updateInstallUI);
+  updateInstallUI();
+
+  // Share KCMC Connect through the device share sheet when available, with a safe copy fallback.
+  const shareButtons=[...document.querySelectorAll('[data-share-app]')];
+  const shareStatus=document.querySelector('[data-share-status]');
+  const setShareStatus=message=>{if(shareStatus)shareStatus.textContent=message;};
+  async function shareKcmc(event){
+    const visit=event?.currentTarget?.hasAttribute('data-share-visit')===true;
+    const appUrl=new URL('./',window.location.href).href;
+    const shareUrl=visit?appUrl+'#visit':appUrl;
+    const payload={title:'KCMC Connect',text:visit?'Come sit with me at Kimberling City Methodist Church this Sunday. Choose 8:00, 9:15 or 10:30 AM and plan your visit.':'Kimberling City Methodist Church — worship, events, care and connection.',url:shareUrl};
+    if(typeof navigator.share==='function'){
+      try{await navigator.share(payload);setShareStatus('KCMC Connect share sheet opened.');return;}
+      catch(error){if(error?.name==='AbortError'){setShareStatus('Share canceled.');return;}}
+    }
+    try{
+      if(navigator.clipboard?.writeText&&window.isSecureContext){
+        await navigator.clipboard.writeText(shareUrl);
+      }else{
+        const field=document.createElement('textarea');
+        field.value=shareUrl;field.setAttribute('readonly','');field.style.position='fixed';field.style.opacity='0';
+        document.body.appendChild(field);field.select();
+        const copied=document.execCommand('copy');
+        field.remove();
+        if(!copied)throw new Error('copy failed');
+      }
+      setShareStatus('KCMC Connect link copied.');
+    }catch(_){
+      setShareStatus('Could not open sharing. Copy the page address from your browser.');
+    }
+  }
+  shareButtons.forEach(button=>button.addEventListener('click',shareKcmc));
+
+  function sendFormByEmail(form){const status=form.querySelector('.form-status');if(!form.checkValidity()){form.reportValidity();status.textContent='Please complete the required fields.';status.className='form-status error';return;}const data=new FormData(form),lines=[];for(const [key,value] of data.entries())if(String(value).trim())lines.push(`${key}: ${value}`);const subject=form.dataset.subject||'KCMC Connect Form';status.textContent='Opening your email app with this request ready to send…';status.className='form-status success';window.location.href=`mailto:${OFFICE_EMAIL}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(lines.join('\n'))}`;}
+  async function sendEventRsvp(form){
+    const status=form.querySelector('.form-status');
+    if(!form.checkValidity()){form.reportValidity();status.textContent='Please complete the required fields.';status.className='form-status error';return;}
+    const eventField=form.querySelector('input[name="event"]');
+    const eventDateField=form.querySelector('input[name="event_date"]');
+    if(!eventField?.value||!eventDateField?.value){status.textContent='Choose an event above before sending your RSVP.';status.className='form-status error';return;}
+    const data=new FormData(form),payload={};
+    for(const [key,value] of data.entries())payload[key]=String(value);
+    const submit=form.querySelector('button[type="submit"]');
+    status.textContent='Sending your RSVP…';status.className='form-status';if(submit)submit.disabled=true;
+    try{
+      const response=await fetch('./api/rsvp.php',{method:'POST',headers:{'Content-Type':'application/json','Accept':'application/json','X-KCMC-RSVP':'1'},credentials:'same-origin',cache:'no-store',body:JSON.stringify(payload)});
+      let result=null;try{result=await response.json();}catch(_){}
+      if(!response.ok||!result?.ok)throw new Error(result?.message||'Your RSVP could not be saved.');
+      const selectedEvent=eventField.value,selectedDate=eventDateField.value;
+      form.reset();eventField.value=selectedEvent;eventDateField.value=selectedDate;
+      if(eventDisplay)eventDisplay.value=selectedEvent;
+      status.textContent=result.message||'Your RSVP has been received by KCMC.';status.className='form-status success';
+    }catch(error){status.textContent=error?.message||'Your RSVP could not be saved. Please try again.';status.className='form-status error';}
+    finally{if(submit)submit.disabled=false;}
+  }
+  async function sendConnectionRequest(form){
+    const status=form.querySelector('.form-status');
+    if(!form.checkValidity()){form.reportValidity();status.textContent='Please complete the required fields.';status.className='form-status error';return;}
+    const kind=form.dataset.kcmcForm||'';
+    const nextSteps=form.querySelector('[data-visit-next-steps]');
+    if(nextSteps)nextSteps.hidden=true;
+    const data=new FormData(form),payload={kind};
+    for(const [key,value] of data.entries())payload[key]=String(value);
+    const submit=form.querySelector('button[type="submit"]');
+    status.textContent='Sending your request…';status.className='form-status';if(submit)submit.disabled=true;
+    try{
+      const response=await fetch('./api/connection.php',{method:'POST',headers:{'Content-Type':'application/json','Accept':'application/json','X-KCMC-CONNECTION':'1'},credentials:'same-origin',cache:'no-store',body:JSON.stringify(payload)});
+      let result=null;try{result=await response.json();}catch(_){}
+      if(!response.ok||!result?.ok)throw new Error(result?.message||'Your request could not be saved.');
+      form.reset();
+      status.textContent=result.message||'Thank you. KCMC has received your request.';status.className='form-status success';
+      if(kind==='visit'&&nextSteps)nextSteps.hidden=false;
+    }catch(error){status.textContent=error?.message||'Your request could not be saved. Please try again.';status.className='form-status error';}
+    finally{if(submit)submit.disabled=false;}
+  }
+  const connectionKinds=new Set(['visit','serve','groups']);
+  document.querySelectorAll('[data-kcmc-form]').forEach(form=>form.addEventListener('submit',e=>{
+    e.preventDefault();
+    const kind=form.dataset.kcmcForm||'';
+    if(kind==='event') sendEventRsvp(form);
+    else if(connectionKinds.has(kind)) sendConnectionRequest(form);
+    else sendFormByEmail(form);
+  }));
+  const eventForm=document.getElementById('eventForm'),eventName=document.getElementById('eventName'),eventDisplay=document.getElementById('eventDisplay');
+  let eventDateField=eventForm?.querySelector('input[name="event_date"]')||null;
+  if(eventForm&&!eventDateField){eventDateField=document.createElement('input');eventDateField.type='hidden';eventDateField.name='event_date';eventForm.appendChild(eventDateField);}
+  document.querySelectorAll('.event-rsvp').forEach(btn=>btn.addEventListener('click',()=>{const card=btn.closest('.event-card'),name=card?.dataset.event||'',date=card?.dataset.date||'';if(eventName)eventName.value=name;if(eventDateField)eventDateField.value=date;if(eventDisplay)eventDisplay.value=name;eventForm?.scrollIntoView({behavior:'smooth',block:'center'});}));
+  function toICSDate(date,time){const [y,m,d]=date.split('-').map(Number);const match=time.match(/(\d+):(\d+)\s*(AM|PM)/i);if(!match)return`${y}${String(m).padStart(2,'0')}${String(d).padStart(2,'0')}`;let h=Number(match[1]);const min=Number(match[2]),ap=match[3].toUpperCase();if(ap==='PM'&&h!==12)h+=12;if(ap==='AM'&&h===12)h=0;return`${y}${String(m).padStart(2,'0')}${String(d).padStart(2,'0')}T${String(h).padStart(2,'0')}${String(min).padStart(2,'0')}00`;}
+  function icsEscape(value){return String(value||'').replace(/\\/g,'\\\\').replace(/\r?\n/g,'\\n').replace(/([,;])/g,'\\$1');}
+  document.querySelectorAll('.add-calendar').forEach(btn=>btn.addEventListener('click',()=>{const card=btn.closest('.event-card');if(!card)return;const start=toICSDate(card.dataset.date,card.dataset.time),end=card.dataset.endTime?toICSDate(card.dataset.date,card.dataset.endTime):'',stamp=new Date().toISOString().replace(/[-:]/g,'').replace(/\.\d{3}/,''),eventName=card.dataset.event||'KCMC event',location=card.dataset.location||'57 Kimberling City Center Lane, Kimberling City, MO 65686',description=card.dataset.description||'',uid=`${card.dataset.date}-${eventName.toLowerCase().replace(/[^a-z0-9]+/g,'-')}@kcmc-connect`,startLine=start.includes('T')?`DTSTART;TZID=America/Chicago:${start}`:`DTSTART;VALUE=DATE:${start}`;const lines=['BEGIN:VCALENDAR','VERSION:2.0','CALSCALE:GREGORIAN','PRODID:-//KCMC Connect//EN','X-WR-TIMEZONE:America/Chicago','BEGIN:VTIMEZONE','TZID:America/Chicago','X-LIC-LOCATION:America/Chicago','BEGIN:DAYLIGHT','TZOFFSETFROM:-0600','TZOFFSETTO:-0500','TZNAME:CDT','DTSTART:20070311T020000','RRULE:FREQ=YEARLY;BYMONTH=3;BYDAY=2SU','END:DAYLIGHT','BEGIN:STANDARD','TZOFFSETFROM:-0500','TZOFFSETTO:-0600','TZNAME:CST','DTSTART:20071104T020000','RRULE:FREQ=YEARLY;BYMONTH=11;BYDAY=1SU','END:STANDARD','END:VTIMEZONE','BEGIN:VEVENT',`UID:${icsEscape(uid)}`,`DTSTAMP:${stamp}`,startLine];if(end)lines.push(`DTEND;TZID=America/Chicago:${end}`);lines.push(`SUMMARY:${icsEscape(eventName)}`,`LOCATION:${icsEscape(location)}`);if(description)lines.push(`DESCRIPTION:${icsEscape(description)}`);lines.push('END:VEVENT','END:VCALENDAR');const ics=lines.join('\r\n');const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([ics],{type:'text/calendar'}));a.download=`kcmc-${card.dataset.date}-${eventName.toLowerCase().replace(/[^a-z0-9]+/g,'-')}.ics`;a.click();setTimeout(()=>URL.revokeObjectURL(a.href),1000);}));
+  const sermonSearch=document.getElementById('sermonSearch'),sermonFilter=document.getElementById('sermonFilter');function filterSermons(){const q=(sermonSearch?.value||'').trim().toLowerCase(),type=sermonFilter?.value||'all';document.querySelectorAll('.sermon-card').forEach(card=>{card.hidden=!!((q&&!card.dataset.search.includes(q))||(type!=='all'&&card.dataset.type!==type));});}sermonSearch?.addEventListener('input',filterSermons);sermonFilter?.addEventListener('change',filterSermons);
+  const preferred=document.getElementById('preferredService');if(preferred){try{preferred.value=localStorage.getItem('kcmcPreferredService')||'';}catch(_){preferred.value='';}preferred.addEventListener('change',()=>{try{localStorage.setItem('kcmcPreferredService',preferred.value);}catch(_){}});}
+  const banner=document.getElementById('offlineBanner');const updateOnline=()=>banner?.classList.toggle('show',!navigator.onLine);window.addEventListener('online',updateOnline);window.addEventListener('offline',updateOnline);updateOnline();
+  if('serviceWorker'in navigator)window.addEventListener('load',()=>navigator.serviceWorker.register('./sw.js',{updateViaCache:'none'}).catch(()=>{}));
+})();
