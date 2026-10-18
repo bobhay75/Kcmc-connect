@@ -80,16 +80,15 @@ def main():
     baseline_bytes = subprocess.check_output(['git', 'show', fixture['baseline_commit'] + ':' + PATH], cwd=ROOT)
     baseline = json.loads(baseline_bytes)
     # Keep the previous reviewed snapshot and its negative controls intact.
-    historical_bytes = subprocess.check_output(['git', 'cat-file', 'blob', '970564f4d520a7325a3852292404cf33175b9af4'], cwd=ROOT)
-    blob = hashlib.sha1(b'blob ' + str(len(historical_bytes)).encode() + b'\0' + historical_bytes).hexdigest()
-    require(blob == '970564f4d520a7325a3852292404cf33175b9af4', 'public content bytes match October 14 baseline plus owner-confirmed October 18 study')
-    historical = json.loads(historical_bytes)
+    # Reconstruct from the pinned baseline and hash-verified review fixture.
+    # A shallow CI checkout need not contain the previous content blob.
+    historical = expected_content(baseline, fixture)
     validate(historical, baseline, fixture)
     negative_controls(baseline, fixture)
     release_bytes = (ROOT / 'tests/fixtures/editorial-content-20261018-reviewed.json').read_bytes()
     require(hashlib.sha256(release_bytes).hexdigest() == '028d58fff94280e658aa6fb9dfbb11b55ae5dbf6e3fe878cbebda1f374055126', 'October 18 reviewed fixture remains exact')
     release = json.loads(release_bytes)
-    require(release['baseline_git_blob'] == blob, 'October 18 starts at the previously reviewed content')
+    require(release['baseline_git_blob'] == '970564f4d520a7325a3852292404cf33175b9af4', 'October 18 starts at the previously reviewed content')
     expected = copy.deepcopy(historical)
     expected['bulletin'].update(release['bulletin'])
     for section in ('events', 'announcements'):
