@@ -132,9 +132,18 @@ class DeploymentGuardTests(unittest.TestCase):
         visual = json.loads(raw)
         canonical_bundle = self.reviewed_fish_bundle('main130')
         installed_bundle = self.reviewed_fish_bundle('livecalendar')
+        # The reviewed follow-up changes the administration destination and
+        # notification worker. Keep the installed historical tuple unchanged:
+        # broad deployment must still refuse it against this exact new source.
+        followup_sha = {
+            'index.php': '07693d46cdd5eb9661b9ad37d6856343b7293dfda4ee9db603e40f74cbb73b34',
+            'sw.js': '100dc03b25fa0999c48fc6a0db2d684209ba972f28325ac6f59460c3a0873a7c',
+        }
         for name, historical in canonical_bundle.items():
             canonical = (ROOT / 'KCMC-Connect-Phase6-Recreated' / name).read_bytes()
-            expected_sha = visual['modified'][name]['after_sha256'] if name in visual['modified'] else hashlib.sha256(historical).hexdigest()
+            expected_sha = followup_sha[name] if name in followup_sha else (
+                visual['modified'][name]['after_sha256'] if name in visual['modified']
+                else hashlib.sha256(historical).hexdigest())
             self.assertEqual(hashlib.sha256(canonical).hexdigest(), expected_sha)
             (self.source / name).write_bytes(canonical)
             (self.live / name).write_bytes(installed_bundle[name])

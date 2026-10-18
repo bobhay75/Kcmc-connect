@@ -58,6 +58,17 @@ def observe_notifications(page, worker):
     }""", worker)
 
 
+def permission_state(page):
+    """Capture both real permission APIs without replacing their getters."""
+    return page.evaluate("""async () => {
+        const result={notification:typeof Notification==='function'?Notification.permission:null,
+            origin:location.origin,secureContext:isSecureContext};
+        try{result.permissions=(await navigator.permissions.query({name:'notifications'})).state}
+        catch(error){result.permissionsError=String(error)}
+        return result;
+    }""")
+
+
 def navigation(page, base, actor, width):
     response = page.goto(base + "/")
     check(response.status == 200, actor + " reaches the real public app while signed in")
@@ -125,18 +136,14 @@ def browser_checks(f, base, output):
                 context.add_init_script(SAFETY)
                 if permission == "granted":
                     context.grant_permissions(["notifications"], origin=origin)
+                elif permission == "denied":
+                    # Chromium's grantPermissions command denies permissions
+                    # outside this empty allow-list for this exact origin and
+                    # isolated context. No browser permission getter is mocked.
+                    context.grant_permissions([], origin=origin)
                 page = context.new_page()
                 page.on("pageerror", lambda error: errors.append(str(error)))
                 try:
-                    if permission == "denied":
-                        # Apply a real Chromium permission decision in this
-                        # isolated browser context, without overriding getters.
-                        cdp = context.new_cdp_session(page)
-                        target = cdp.send("Target.getTargetInfo")["targetInfo"]
-                        check(bool(target.get("browserContextId")), "denied case identifies its isolated Chromium context")
-                        cdp.send("Browser.setPermission", dict(permission=dict(name="notifications"),
-                            setting="denied", origin=origin, browserContextId=target["browserContextId"]))
-                        cdp.detach()
                     theme.sign_in(context, base, actor)
                     before = snapshot(f)
                     requests.clear()
@@ -146,8 +153,10 @@ def browser_checks(f, base, output):
                     check(response.status == 200 and "no-store" in response.headers.get("cache-control", "")
                           and response.headers.get("referrer-policy") == "no-referrer",
                           label + " opens the actual protected notification settings")
-                    check(page.evaluate("Notification.permission") == permission,
-                          label + " uses the intended native browser permission")
+                    state = permission_state(page)
+                    expected_query = "prompt" if permission == "default" else permission
+                    check(state.get("notification") == permission and state.get("permissions") == expected_query,
+                          label + " uses the intended native browser permission: " + json.dumps(state, sort_keys=True))
                     page.wait_for_function("document.getElementById('push-status').textContent !== 'Checking this device…'")
                     check(page.evaluate("window.kcmcPushAcceptance.permissionPrompts === 0 && window.kcmcPushAcceptance.subscriptions === 0"),
                           label + " opening settings neither prompts permission nor subscribes")
@@ -207,8 +216,13 @@ def browser_checks(f, base, output):
                         subscriptions=0, provider_delivery=False, os_banner_visibility=False, records_changed=False))
                 except Exception as error:
                     page.screenshot(path=str(output / ("failure-" + label + ".png")), full_page=True)
+                    try:
+                        native_permission = permission_state(page)
+                    except Exception as diagnostic_error:
+                        native_permission = dict(error=str(diagnostic_error))
                     (output / ("failure-" + label + ".json")).write_text(json.dumps(dict(error=str(error),
-                        url=page.url, requests=requests, forbidden=forbidden, script_errors=errors), indent=2) + "\n")
+                        url=page.url, native_permission=native_permission, requests=requests,
+                        forbidden=forbidden, script_errors=errors), indent=2) + "\n")
                     raise
                 finally:
                     context.close()
