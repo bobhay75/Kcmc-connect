@@ -1,0 +1,55 @@
+name: KCMC payroll schedule tool (no activation)
+on:
+  pull_request:
+    paths:
+      - 'tools/kcmc-payroll-schedule-oct18/**'
+      - '.github/workflows/payroll-schedule-tool.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  isolated-transactions:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          persist-credentials: false
+      - name: Exact package and executable fake-crontab scenarios
+        run: |
+          set -euo pipefail
+          cd tools/kcmc-payroll-schedule-oct18
+          sha256sum -c CHECKSUMS.sha256
+          python3 -B test_schedule.py
+  python36:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          persist-credentials: false
+      - name: Host Python3.6 compatibility with fake cron only
+        run: |
+          set -euo pipefail
+          docker run --rm --network none \
+            --mount "type=bind,src=$PWD,dst=/source,readonly" -w /source \
+            python@sha256:f8652afaf88c25f0d22354d547d892591067aa4026a7fa9a6819df9f300af6fc \
+            bash -c 'set -e; cd tools/kcmc-payroll-schedule-oct18; sha256sum -c CHECKSUMS.sha256; python3 -B test_schedule.py'
+  real-php82:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          persist-credentials: false
+      - name: Build isolated PHP8.2 diagnostic test environment
+        run: docker build -f tools/kcmc-payroll-schedule-oct18/ci.Dockerfile -t kcmc-payroll-diagnosis-test .
+      - name: Actual PHP diagnosis, command parity and fake-schedule transaction
+        run: |
+          set -euo pipefail
+          docker run --rm --network none \
+            --mount "type=bind,src=$PWD,dst=/source,readonly" -w /source \
+            kcmc-payroll-diagnosis-test python3 -B tools/kcmc-payroll-schedule-oct18/verify_php82.py --php /usr/local/bin/php
