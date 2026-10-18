@@ -194,10 +194,10 @@ class ManualClockLayer:
             require(bool((self.app / name).stat().st_mode & 0o111) == (mode == '100755'),
                     name + ': canonical manual-clock application executable mode required')
             if name == 'data/content.json':
-                # Separate owner-confirmed editorial occurrence; retain the exact clock baseline.
+                # Separate reviewed October 18 newsletter overlay; retain the exact clock baseline.
                 require(oid == '141cff3397171c08e79e7e11c1b18e47633f1e4f', 'reviewed pre-study editorial baseline')
                 actual = (self.app / name).read_bytes()
-                require(blob(actual) == '970564f4d520a7325a3852292404cf33175b9af4', 'only the exact owner-confirmed Sunday study content is permitted')
+                require(blob(actual) == 'efee40e1152857a391491df7c4db2c1e11cc3228', 'only the exact reviewed October 18 newsletter content is permitted')
                 self.editorial_preimage = self.git('show', CANONICAL_BASE + ':' + PREFIX + name)
                 continue
             if name not in MODIFIED:

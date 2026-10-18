@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Verify the bounded October 14 public editorial delta; no host or writes."""
+"""Verify the historical editorial delta and reviewed October 18 overlay."""
 import copy
 import hashlib
 import json
@@ -79,12 +79,40 @@ def main():
     fixture = json.loads(fixture_bytes)
     baseline_bytes = subprocess.check_output(['git', 'show', fixture['baseline_commit'] + ':' + PATH], cwd=ROOT)
     baseline = json.loads(baseline_bytes)
-    candidate_bytes = (ROOT / PATH).read_bytes()
-    blob = hashlib.sha1(b'blob ' + str(len(candidate_bytes)).encode() + b'\0' + candidate_bytes).hexdigest()
-    require(blob == '970564f4d520a7325a3852292404cf33175b9af4', 'public content bytes match October 14 baseline plus owner-confirmed October 18 study')
-    validate(json.loads(candidate_bytes), baseline, fixture)
+    # Keep the previous reviewed snapshot and its negative controls intact.
+    # Reconstruct from the pinned baseline and hash-verified review fixture.
+    # A shallow CI checkout need not contain the previous content blob.
+    historical = expected_content(baseline, fixture)
+    validate(historical, baseline, fixture)
     negative_controls(baseline, fixture)
-    print('PASS: exact October 14 editorial delta; historical content and protected fields preserved')
+    release_bytes = (ROOT / 'tests/fixtures/editorial-content-20261018-reviewed.json').read_bytes()
+    require(hashlib.sha256(release_bytes).hexdigest() == '028d58fff94280e658aa6fb9dfbb11b55ae5dbf6e3fe878cbebda1f374055126', 'October 18 reviewed fixture remains exact')
+    release = json.loads(release_bytes)
+    require(release['baseline_git_blob'] == '970564f4d520a7325a3852292404cf33175b9af4', 'October 18 starts at the previously reviewed content')
+    expected = copy.deepcopy(historical)
+    expected['bulletin'].update(release['bulletin'])
+    for section in ('events', 'announcements'):
+        updates = release['update_' + section]
+        require(set(updates) <= {item['id'] for item in historical[section]}, 'update IDs must exist')
+        for item in expected[section]:
+            item.update(updates.get(item['id'], {}))
+        expected[section].extend(release['append_' + section])
+    candidate = json.loads((ROOT / PATH).read_bytes())
+    require(candidate == expected, 'only the exact October 18 reviewed content delta is permitted')
+    for section in ('events', 'announcements'):
+        require(len({item['id'] for item in candidate[section]}) == len(candidate[section]), 'unique content IDs')
+    require(candidate['contact'] == historical['contact'], 'contact fields stay unchanged')
+    require(candidate['bulletin']['services'] == historical['bulletin']['services'], 'service definitions stay unchanged')
+    for key in ('meta', 'news', 'sponsors'):
+        require(candidate[key] == historical[key], key + ' remains unchanged')
+    bottle = next(e for e in candidate['events'] if e['id'] == 'pll-bottle-return-20261025')
+    require(bottle['time'] == '' and 'end_time' not in bottle, 'bottle deadline remains date only')
+    trunk = next(e for e in candidate['events'] if e['id'] == 'trunk-or-treat-2026')
+    require(trunk['time'] == '4:30 PM' and trunk['end_time'] == '6:30 PM', 'confirmed Trunk hours preserved')
+    study = [e for e in candidate['events'] if e['date'] == '2026-10-18' and ('Faith' in e['title'] or 'Friends' in e['title'])]
+    require(len(study) == 1 and study[0]['time'] == '10:20 AM', 'one owner-corrected Bible study')
+    require(len(release['append_events']) == 17 and len(release['append_announcements']) == 3, 'complete newsletter delta')
+    print('PASS: October 18 newsletter delta, unique IDs, corrected class, date-only deadline and protected sections')
 
 if __name__ == '__main__':
     main()
