@@ -193,6 +193,34 @@ class Transactions(unittest.TestCase):
                 code,text=f.cli('rollback','--session',f.session().name);self.assertEqual(code,0,text)
                 for path in f.m.PATHS:self.assertEqual((f.app/path).read_bytes(),f.before[path])
                 f.preserved()
+    def test_historical_installed_stylesheet_is_accepted_without_replacement(self):
+        historical = HERE.parent / 'kcmc-app-theme-oct15/evidence/public/livecalendar/public-presentation.css'
+        content = historical.read_bytes()
+        self.assertEqual((sha(content), len(content)),
+            ('b08824180406891f3ff784967dc507e62488b4cb9b12f3a81347731be61a5acb', 17233))
+        f = self.fixture(variant='livecalendar')
+        self.assertEqual((f.app / 'public-presentation.css').read_bytes(), content)
+        before = identity(f.app / 'public-presentation.css')
+        code, text = f.cli('check'); self.assertEqual(code, 0, text)
+        code, text = f.apply(); self.assertEqual(code, 0, text)
+        self.assertEqual((f.app / 'public-presentation.css').read_bytes(), content)
+        self.assertEqual(identity(f.app / 'public-presentation.css'), before)
+        code, text = f.cli('rollback', '--session', f.session().name); self.assertEqual(code, 0, text)
+        self.assertEqual(identity(f.app / 'public-presentation.css'), before); f.preserved()
+    def test_crossed_canonical_and_historical_stylesheets_refuse_without_backup(self):
+        for variant, other in (('main', 'livecalendar'), ('livecalendar', 'main')):
+            for image in ('before', 'after'):
+                f = self.fixture(variant=variant, image=image)
+                content = (HERE / 'evidence/public' / other / 'public-presentation.css').read_bytes()
+                f.foreign('public-presentation.css', content)
+                for action in ('check', 'apply'):
+                    code, text = f.cli(action)
+                    self.assertEqual(code, 1, variant + '/' + image + text)
+                    self.assertIn('Approved current code prerequisite required: public-presentation.css', text)
+                    self.assertFalse(f.m.BACKUPS.exists())
+                for path in f.m.PATHS:
+                    self.assertEqual((f.app / path).read_bytes(), (f.after if image == 'after' else f.before)[path])
+                f.preserved(except_guard='public-presentation.css')
     def test_unknown_index_can_be_diagnosed_without_authorizing_repair(self):
         f=self.fixture();f.foreign('index.php',b'<?php // unknown local homepage change\n')
         code,text=f.cli('diagnose');self.assertEqual(code,0,text)
@@ -272,15 +300,39 @@ class Provenance(unittest.TestCase):
                     self.assertEqual((sha(content), len(content)), (row['sha256'], row['bytes']))
             for name,variant in variants.items():
                 for path,row in variant['public_prerequisites'].items():
-                    for ref in (derive.BASE_COMMIT, derive.SOURCE_COMMIT):
-                        content = subprocess.check_output(['git', 'show', ref + ':' + prefix + path], cwd=str(GIT_ROOT))
-                        self.assertEqual((sha(content),len(content)),(row['sha256'],row['bytes']))
+                    if name == 'livecalendar' and path == 'public-presentation.css':
+                        historical_path = 'tools/kcmc-app-theme-oct15/evidence/public/livecalendar/' + path
+                        content = subprocess.check_output(['git', 'show', derive.BASE_COMMIT + ':' + historical_path], cwd=str(GIT_ROOT))
+                        manifest = subprocess.check_output(['git', 'show', derive.BASE_COMMIT + ':' + derive.THEME_PUBLIC_MANIFEST], cwd=str(GIT_ROOT))
+                        self.assertEqual(sha(manifest), derive.THEME_PUBLIC_MANIFEST_SHA256)
+                        self.assertEqual(json.loads(manifest.decode('utf-8'))['livecalendar']['public_prerequisites'][path], row)
+                        self.assertEqual(content, (HERE / 'evidence/public/livecalendar' / path).read_bytes())
+                        self.assertEqual((sha(content), len(content)), (row['sha256'], row['bytes']))
+                    else:
+                        for ref in (derive.BASE_COMMIT, derive.SOURCE_COMMIT):
+                            content = subprocess.check_output(['git', 'show', ref + ':' + prefix + path], cwd=str(GIT_ROOT))
+                            self.assertEqual((sha(content),len(content)),(row['sha256'],row['bytes']))
+            historical_index = subprocess.check_output(['git', 'show', derive.BASE_COMMIT + ':tools/kcmc-app-theme-oct15/evidence/public/livecalendar/index-after.php'], cwd=str(GIT_ROOT))
+            self.assertEqual(historical_index, (HERE / 'evidence/public/livecalendar/index-before.php').read_bytes())
         with tempfile.TemporaryDirectory(prefix='kcmc-follow-up-reproduce-') as directory:
             copied = Path(directory) / 'package'; shutil.copytree(str(HERE), str(copied))
             command = [sys.executable, '-B', '-c', 'import derive_installer as d; d.build(candidate=True)'] if CANDIDATE else [sys.executable, '-B', 'derive_installer.py']
             subprocess.check_call(command, cwd=str(copied))
             for name in ('installer.py', 'provenance.json'):
                 self.assertEqual((HERE / (PREFIX + name)).read_bytes(), (copied / (PREFIX + name)).read_bytes())
+    def test_repinning_manifest_cannot_cross_historical_css_with_main(self):
+        with tempfile.TemporaryDirectory(prefix='kcmc-follow-up-provenance-') as directory:
+            copied = Path(directory) / 'package'; shutil.copytree(str(HERE), str(copied))
+            checked = loaded(copied / 'derive_installer.py', 'independent_bundle_pins')
+            checked.verify_inputs(allow_unapproved=CANDIDATE)
+            canonical = (copied / 'evidence/public/main/public-presentation.css').read_bytes()
+            (copied / 'evidence/public/livecalendar/public-presentation.css').write_bytes(canonical)
+            path = copied / 'public-variants-reviewed.json'; manifest = json.loads(path.read_text())
+            manifest['livecalendar']['public_prerequisites']['public-presentation.css'] = manifest['main']['public_prerequisites']['public-presentation.css']
+            path.write_text(json.dumps(manifest, indent=2) + '\n')
+            checked.PINS['public-variants-reviewed.json'] = sha(path.read_bytes())
+            with self.assertRaisesRegex(ValueError, 'Independent canonical/historical public bundle pins changed: livecalendar'):
+                checked.verify_inputs(allow_unapproved=CANDIDATE)
 
 
 if __name__ == '__main__': unittest.main()

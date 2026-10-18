@@ -63,6 +63,13 @@ def main():
     variants = {}; edits = homepage_edits((HERE/'evidence/before/index.php').read_bytes(), (HERE/'evidence/after/index.php').read_bytes())
     installed = ROOT/'tools/kcmc-app-theme-oct15/evidence/public/livecalendar/index-after.php'
     if sha(installed.read_bytes()) != derive.LIVE_INDEX_SHA256: raise ValueError('Installed livecalendar source evidence changed')
+    theme_manifest_raw = (ROOT / derive.THEME_PUBLIC_MANIFEST).read_bytes()
+    if sha(theme_manifest_raw) != derive.THEME_PUBLIC_MANIFEST_SHA256:
+        raise ValueError('Pinned historical theme public manifest changed')
+    theme_manifest = json.loads(theme_manifest_raw.decode('utf-8'))
+    historical_css_row = theme_manifest['livecalendar']['public_prerequisites']['public-presentation.css']
+    if historical_css_row != derive.PUBLIC_BUNDLE_PINS['livecalendar']['public-presentation.css']:
+        raise ValueError('Historical theme stylesheet differs from independent installed-bundle pin')
     for name in ('main','livecalendar'):
         before = (HERE/'evidence/before/index.php').read_bytes() if name == 'main' else installed.read_bytes()
         after = before
@@ -73,7 +80,19 @@ def main():
         write(HERE/'evidence/public'/name/'index-before.php',before); write(HERE/'evidence/public'/name/'index-after.php',after)
         public = {}
         for path in ('public-presentation.css','public-presentation.js'):
-            data = git('show',derive.BASE_COMMIT+':'+PREFIX+path)
+            if name == 'livecalendar' and path == 'public-presentation.css':
+                historical_path = 'tools/kcmc-app-theme-oct15/evidence/public/livecalendar/' + path
+                data = (ROOT / historical_path).read_bytes()
+                if data != git('show', derive.BASE_COMMIT + ':' + historical_path):
+                    raise ValueError('Historical installed stylesheet differs from pinned Git evidence')
+                if theme_manifest_raw != git('show', derive.BASE_COMMIT + ':' + derive.THEME_PUBLIC_MANIFEST):
+                    raise ValueError('Historical theme manifest differs from pinned Git evidence')
+            else:
+                data = git('show',derive.BASE_COMMIT+':'+PREFIX+path)
+                if data != git('show',source+':'+PREFIX+path):
+                    raise ValueError('Read-only public dependency changed: ' + path)
+            if {'sha256':sha(data),'bytes':len(data)} != derive.PUBLIC_BUNDLE_PINS[name][path]:
+                raise ValueError('Independent public bundle pin mismatch: ' + name + '/' + path)
             write(HERE/'evidence/public'/name/path,data); public[path] = {'sha256':sha(data),'bytes':len(data)}
         variants[name] = {'index':derive.payload(before,after),'public_prerequisites':public}
     source_manifest = {'baseline_commit':derive.BASE_COMMIT,'source_commit':None if args.candidate else source,'paths':list(derive.PATHS),'files':files,

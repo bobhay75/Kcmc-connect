@@ -10,6 +10,12 @@ ordering, and receives only the same uniquely anchored homepage edits reviewed i
 partial before/after bundles, unsafe ownership/modes, changed read-only prerequisites and unfinished journals in either
 public variant are refused. No force, reset, stash, chmod, full deployment, source fetch or repository update is used.
 
+The corrected package retains the installed livecalendar stylesheet as a read-only prerequisite: its 17,233-byte
+historical image is independently pinned and checked against the original theme evidence and manifest. Canonical
+main retains its separate 17,129-byte stylesheet. The public script is unchanged and common to both variants.
+The initial package incorrectly used main's CSS prerequisite for both variants and refused the installed livecalendar
+bundle before making any repair. This packaging correction changes no runtime replacement or stylesheet/script bytes.
+
 The existing-file mover and corrected dependency extension are byte-for-byte copies of the previously reviewed engine.
 The browser script depends on the worker, both install before the notification page, and the administrator guide depends on that page.
 Recovery retains all transitive providers if a consumer replacement has an uncertain outcome. Backups and journals
