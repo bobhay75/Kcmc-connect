@@ -38,8 +38,8 @@
     },
     "public_prerequisites": {
       "public-presentation.css": {
-        "sha256": "640ba99c997867e7d3fec3a36d08f9992bfc295d224523f2a980f0bc57bdc4e2",
-        "bytes": 17129
+        "sha256": "b08824180406891f3ff784967dc507e62488b4cb9b12f3a81347731be61a5acb",
+        "bytes": 17233
       },
       "public-presentation.js": {
         "sha256": "bfc4e7a6ab3cb11bae76a74be5d1cdc0912ae00e32f1d66bedf128ec7aabfcc9",

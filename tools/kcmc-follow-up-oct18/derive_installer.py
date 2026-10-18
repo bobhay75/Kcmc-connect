@@ -12,9 +12,20 @@ SOURCE_COMMIT = 'dda594646d834fe8959168a1d0928dfcd62e10bc'
 FROZEN_SHA256 = '4df2cdef03853c80c96350398b6a5b92cb78722e202debd3279d535fb9e757d7'
 EXTENSION_SHA256 = 'a09f1d2e69f20a057be712b7c21bae3ec174e2faea60c9eb1dcbf2fca985d6c2'
 LIVE_INDEX_SHA256 = 'fe92b62285e9232f53d459f83d853138f46b3732a4ec12af356da102e9a98f5b'
+THEME_PUBLIC_MANIFEST = 'tools/kcmc-app-theme-oct15/public-variants-reviewed.json'
+THEME_PUBLIC_MANIFEST_SHA256 = 'db6663eeba6e249f28413a4e74f891b983df4bd41c622befd4bac3d129c401bf'
+# The installed livecalendar stylesheet is historical evidence, not canonical main CSS.
+# The public script was not changed by the theme release and is common to both bundles.
+PUBLIC_BUNDLE_PINS = {
+    'main': {
+        'public-presentation.css': {'sha256': '640ba99c997867e7d3fec3a36d08f9992bfc295d224523f2a980f0bc57bdc4e2', 'bytes': 17129},
+        'public-presentation.js': {'sha256': 'bfc4e7a6ab3cb11bae76a74be5d1cdc0912ae00e32f1d66bedf128ec7aabfcc9', 'bytes': 7250}},
+    'livecalendar': {
+        'public-presentation.css': {'sha256': 'b08824180406891f3ff784967dc507e62488b4cb9b12f3a81347731be61a5acb', 'bytes': 17233},
+        'public-presentation.js': {'sha256': 'bfc4e7a6ab3cb11bae76a74be5d1cdc0912ae00e32f1d66bedf128ec7aabfcc9', 'bytes': 7250}}}
 PATHS = ('sw.js', 'member/push-settings.js', 'member/notifications.php', 'admin/push.php', 'index.php', 'admin/operations.php')
 DEPENDENCIES = {'member/push-settings.js': ('sw.js',), 'member/notifications.php': ('sw.js', 'member/push-settings.js'), 'admin/push.php': ('member/notifications.php',)}
-PINS = {'wrapper.py.in': '272111f75d34ae364890c367df754d1409d681127167d42dabced481de641cc2', 'source-runtime-reviewed.json': '82158e6525bb8e8ca1d6708f5f2a7519149104b5419a718f3eb63064dea905db', 'runtime-reviewed.json': 'b667ea7ae9bef905cd56711dca87e9918e3757243b1cbffd7136b6c1f7813024', 'prerequisites-reviewed.json': 'c454fae8f365e5a3cda22db6842ab647907088fad74e80843ad5e942e6a935e6', 'public-variants-reviewed.json': 'cbb48d538eb2e3126430988c2b34b84db43efcad8e09b9f4b07ecabe4411abc2'}
+PINS = {'wrapper.py.in': '272111f75d34ae364890c367df754d1409d681127167d42dabced481de641cc2', 'source-runtime-reviewed.json': '82158e6525bb8e8ca1d6708f5f2a7519149104b5419a718f3eb63064dea905db', 'runtime-reviewed.json': 'b667ea7ae9bef905cd56711dca87e9918e3757243b1cbffd7136b6c1f7813024', 'prerequisites-reviewed.json': 'c454fae8f365e5a3cda22db6842ab647907088fad74e80843ad5e942e6a935e6', 'public-variants-reviewed.json': 'b4260b97a8294ea61060fe489f9cfafe5862e7d592085c6cb5e35e27c70800f8'}
 
 
 def sha(content): return hashlib.sha256(content).hexdigest()
@@ -72,6 +83,8 @@ def verify_inputs(allow_unapproved=False):
         if transformed != after: raise ValueError('Variant includes change beyond reviewed homepage edits: ' + name)
         if set(variant['public_prerequisites']) != set(('public-presentation.css', 'public-presentation.js')):
             raise ValueError('Fixed public bundle prerequisite scope changed')
+        if variant['public_prerequisites'] != PUBLIC_BUNDLE_PINS[name]:
+            raise ValueError('Independent canonical/historical public bundle pins changed: ' + name)
         for path, row in variant['public_prerequisites'].items():
             data = (HERE / 'evidence/public' / name / path).read_bytes()
             if (sha(data), len(data)) != (row['sha256'], row['bytes']): raise ValueError('Public bundle guard changed')
@@ -104,6 +117,10 @@ def build(candidate=False):
         'dependencies': {key: list(value) for key, value in DEPENDENCIES.items()}, 'read_only_prerequisites': guards,
         'public_variant_hashes': {name: {'index_before': row['index']['before_sha256'], 'index_after': row['index']['after_sha256'],
             'read_only': row['public_prerequisites']} for name, row in variants.items()},
+        'historical_theme_evidence': {'commit': BASE_COMMIT, 'manifest_path': THEME_PUBLIC_MANIFEST,
+            'manifest_sha256': THEME_PUBLIC_MANIFEST_SHA256,
+            'stylesheet_path': 'tools/kcmc-app-theme-oct15/evidence/public/livecalendar/public-presentation.css',
+            'stylesheet': PUBLIC_BUNDLE_PINS['livecalendar']['public-presentation.css']},
         'preserved': 'Configuration, keys, subscriptions, private/editorial records, time punches, payroll delivery, roles, cron and hosting repository.'}
     if candidate: proof['unpublished_candidate_only'] = True
     (HERE / (prefix + 'provenance.json')).write_text(json.dumps(proof, indent=2) + '\n')
