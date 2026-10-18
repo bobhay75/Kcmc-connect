@@ -11,6 +11,7 @@ from phase_two_source_layer import FIXTURE as PHASE_TWO_FIXTURE
 from visual_source_layer import FIXTURE as VISUAL_FIXTURE
 from manual_clock_source_layer import FIXTURE as MANUAL_FIXTURE
 from health_actions_source_layer import FIXTURE as HEALTH_FIXTURE
+from workflow_followup_source_layer import FIXTURE as FOLLOWUP_FIXTURE
 
 
 class ExactWorkflowSource(unittest.TestCase):
@@ -25,6 +26,7 @@ class ExactWorkflowSource(unittest.TestCase):
         shutil.copyfile(ROOT / VISUAL_FIXTURE, self.root / VISUAL_FIXTURE)
         shutil.copyfile(ROOT / MANUAL_FIXTURE, self.root / MANUAL_FIXTURE)
         shutil.copyfile(ROOT / HEALTH_FIXTURE, self.root / HEALTH_FIXTURE)
+        shutil.copyfile(ROOT / FOLLOWUP_FIXTURE, self.root / FOLLOWUP_FIXTURE)
 
     def tearDown(self):
         self.directory.cleanup()
@@ -46,7 +48,7 @@ class ExactWorkflowSource(unittest.TestCase):
     def test_extra_change_inside_reviewed_route_is_rejected(self):
         path = self.app / 'admin/push.php'
         path.write_bytes(path.read_bytes() + b'\n<!-- undeclared sender change -->\n')
-        with self.assertRaisesRegex(AssertionError, 'admin/push.php: all runtime bytes outside the reviewed manual-clock delta'):
+        with self.assertRaisesRegex(AssertionError, 'admin/push.php: only exact reviewed workflow-followup target bytes'):
             self.verify()
 
     def test_changed_new_admin_route_is_rejected(self):

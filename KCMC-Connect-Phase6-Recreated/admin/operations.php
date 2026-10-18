@@ -33,7 +33,7 @@ $tools = [
         'href' => 'admin/timecards.php',
         'eyebrow' => 'EMPLOYEE TIME',
         'title' => 'Time Cards',
-        'description' => 'Review submitted employee pay periods, approve or return them, and export approved time cards for accounting.',
+        'description' => 'Review recorded hours from completed shifts, handle corrections with a reason, and export time cards for accounting. No submission or approval is needed.',
         'action' => 'Review time cards',
     ],
     [

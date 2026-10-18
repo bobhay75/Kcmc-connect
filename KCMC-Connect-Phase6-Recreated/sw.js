@@ -1,4 +1,4 @@
-const CACHE='kcmc-connect-v3.0.3-public-only-fish-home-20261014';
+const CACHE='kcmc-connect-v3.0.3-public-only-push-display-20261018';
 // Connection-intake client refresh: worker install reruns cache:'reload' and overwrites cached app.js.
 const CORE=[
   './','./styles.css?v=3.0.3','./public-presentation.css?v=fish-only-home-20261014','./public-presentation.js?v=blue-fish-menu-20261009','./app.js?v=visitor-welcome-20261008','./manifest.webmanifest?v=3.0.1',
@@ -71,7 +71,7 @@ self.addEventListener('push',event=>{
     badge:'./assets/icons/icon-192.png',
     data:{url:payload.url},
     tag:'kcmc-update',
-    renotify:false
+    renotify:true
   }));
 });
 
