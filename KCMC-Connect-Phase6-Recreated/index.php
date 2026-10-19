@@ -41,19 +41,20 @@ usort($kcmcAnnouncements, fn($a,$b)=>(int)($b['priority']??0)<=>(int)($a['priori
 <meta property="og:title" content="KCMC Connect | Kimberling City Methodist Church">
 <meta property="og:description" content="Plan a visit, watch worship, find events, request prayer and connect with KCMC.">
 <meta property="og:type" content="website">
-<meta property="og:image" content="assets/visuals/kcmc-building-retouched-20261009.jpg">
+<meta property="og:image" content="assets/visuals/kcmc-building-original-20261018.jpg">
 <meta name="twitter:card" content="summary_large_image">
 <script type="application/ld+json"><?=$kcmcSchema?></script>
 <title>KCMC Connect</title>
-<link rel="manifest" href="manifest.webmanifest?v=3.0.1">
-<link rel="preload" as="image" href="assets/visuals/kcmc-building-retouched-20261009.jpg" type="image/jpeg" fetchpriority="high">
+<link rel="manifest" href="manifest.webmanifest?v=20261019">
+<link rel="preload" as="image" href="assets/visuals/kcmc-building-original-20261018.jpg" type="image/jpeg" fetchpriority="high">
 <link rel="stylesheet" href="styles.css?v=3.0.3">
 <link rel="stylesheet" href="public-presentation.css?v=fish-only-home-20261014">
-<link rel="icon" href="assets/icons/icon-192.png?v=3.0.1">
-<link rel="apple-touch-icon" href="assets/icons/icon-192.png?v=3.0.1">
+<link rel="icon" href="assets/icons/icon-192.png?v=20261019">
+<link rel="apple-touch-icon" href="assets/icons/icon-192.png?v=20261019">
 <?php require_once __DIR__ . '/lib/screen-navigation.php'; echo kcmc_screen_assets(); ?>
+<link rel="stylesheet" href="home-welcome.css?v=20261019">
 </head>
-<body data-office-email="<?=kcmc_h($kcmcEmail)?>">
+<body class="kcmc-welcome-design" data-office-email="<?=kcmc_h($kcmcEmail)?>">
 <a class="skip-link" href="#mainContent">Skip to content</a>
 <div class="offline-banner" id="offlineBanner" role="status">You’re offline. Saved KCMC Connect pages are still available.</div>
 <p class="sr-only" data-share-status role="status" aria-live="polite" aria-atomic="true"></p>
@@ -87,43 +88,27 @@ usort($kcmcAnnouncements, fn($a,$b)=>(int)($b['priority']??0)<=>(int)($a['priori
         <?php if($member && kcmc_has_role(['pastor_admin', 'recovery_admin'], $member)): ?><a href="<?=kcmc_h(kcmc_url('admin/home.php'))?>">Administration</a><?php endif; ?>
       </nav>
     </details>
+    <a class="welcome-brand" href="#home" data-route="home" aria-label="KCMC Connect home">KCMC CONNECT</a>
+    <nav class="welcome-nav" aria-label="Main pages"><a href="#home" data-route="home">Home</a><a href="#visit" data-route="visit">Visit</a><a href="#events" data-route="events">Events</a><a href="care.php">Prayer</a><a href="<?=kcmc_h(kcmc_url($member ? 'member/' : 'admin/login.php'))?>"><?=$member ? 'My account' : 'Sign In'?></a></nav>
   </div>
 </header>
 
 <main id="mainContent">
 <section class="view active" data-view="home">
-  <section class="hero hero-imagery home-cover" data-hero-gallery aria-label="Welcome to KCMC">
-    <img class="home-cover-photo hero-photo is-current" data-hero-photo src="./assets/visuals/kcmc-building-retouched-20261009.jpg" alt="Kimberling City Methodist Church exterior; foreground weeds retouched" loading="eager" decoding="async" fetchpriority="high" width="1402" height="1122">
-    <img class="home-cover-photo hero-photo" data-hero-photo src="./assets/visuals/kcmc-worship-2017.webp" alt="People gathered for worship at KCMC, photographed in 2017" loading="lazy" decoding="async" width="640" height="344" hidden>
-    <img class="home-cover-photo hero-photo" data-hero-photo src="./assets/visuals/kcmc-congregation-gathering.jpg" alt="People seated around tables facing the KCMC worship stage" loading="lazy" decoding="async" width="2048" height="1105" hidden>
-    <img class="home-cover-photo hero-photo" data-hero-photo src="./assets/visuals/kcmc-family-outdoor-event.jpg" alt="Children and adults enjoying balloons and an inflatable slide at a Kimberling City outdoor event" loading="lazy" decoding="async" width="2048" height="1536" hidden>
-    <div class="wrap home-cover-layout">
-      <div class="home-cover-card">
-        <div class="eyebrow">Welcome to Kimberling City Methodist Church</div>
-        <h1>Come as you are.<br>Find your people.</h1>
-        <p class="lead">Join us for worship, get to know our church, and find your next step. There’s a place for you at KCMC.</p>
-        <div class="hero-photo-controls" data-hero-controls hidden>
-          <button type="button" data-hero-previous aria-label="Previous church photo">←</button>
-          <button type="button" data-hero-toggle>Pause photos</button>
-          <button type="button" data-hero-next aria-label="Next church photo">→</button>
-        </div>
-        <p class="sr-only" data-hero-status role="status" aria-live="polite"></p>
-      </div>
-    </div>
+  <section class="hero hero-imagery home-cover" aria-label="Welcome to KCMC">
+    <img class="home-cover-photo" data-authentic-building src="./assets/visuals/kcmc-building-original-20261018.jpg" alt="Original photograph of Kimberling City Methodist Church with its natural sky and clouds" loading="eager" decoding="async" fetchpriority="high" width="1536" height="1229">
+    <div class="wrap home-cover-layout"><div class="home-cover-card">
+      <h1>Welcome Home</h1>
+      <div class="welcome-hero-actions"><a class="btn gold" href="#visit" data-route="visit">Plan Your Visit <span aria-hidden="true">&#160;›</span></a><a class="btn secondary" href="#watch" data-route="watch">Watch Online <span aria-hidden="true">&#160;›</span></a></div>
+    </div></div>
   </section>
-
-  <section class="home-worship-strip" aria-label="Sunday worship at KCMC">
-    <div class="wrap home-worship-strip-inner">
-      <div class="home-worship-times">
-        <span class="eyebrow">Sunday worship</span>
-        <strong>8:00 • 9:15 • 10:30</strong>
-      </div>
-      <div class="home-worship-copy">
-        <b>Three expressions. One church.</b>
-        <span>Front Porch Gospel, Traditional Worship, and Contemporary Worship each offer a distinct style with a common mission.</span>
-      </div>
-    </div>
-  </section>
+  <section class="home-worship-strip" aria-label="Sunday worship at KCMC"><div class="wrap home-worship-strip-inner"><div class="home-worship-times"><span class="eyebrow">Sunday Services</span><strong>8:00 AM <span aria-hidden="true">•</span> 9:15 AM <span aria-hidden="true">•</span> 10:30 AM</strong></div></div></section>
+  <nav class="welcome-quicklinks" aria-label="Your next step at KCMC">
+    <a href="#events" data-route="events"><svg viewBox="0 0 48 48" aria-hidden="true"><rect x="7" y="10" width="34" height="31" rx="3"/><path d="M15 5v10m18-10v10M7 20h34M15 28h2m6 0h2m6 0h2M15 34h2m6 0h2m6 0h2"/></svg><span>Upcoming Events</span><span class="welcome-arrow" aria-hidden="true">›</span></a>
+    <a href="care.php"><svg viewBox="0 0 48 48" aria-hidden="true"><path d="M23 15v17L13 42l-8-7 9-11 4-13q2-4 5 0m2 4v17l10 10 8-7-9-11-4-13q-2-4-5 0M24 2v5M11 4l4 5M37 4l-4 5"/></svg><span>Prayer Requests</span><span class="welcome-arrow" aria-hidden="true">›</span></a>
+    <a href="#partner" data-route="partner"><svg viewBox="0 0 48 48" aria-hidden="true"><circle cx="24" cy="13" r="7"/><circle cx="8" cy="20" r="5"/><circle cx="40" cy="20" r="5"/><path d="M13 42V33a11 11 0 0 1 22 0v9ZM2 42v-8a7 7 0 0 1 10-6m34 14v-8a7 7 0 0 0-10-6"/></svg><span>Church Family</span><span class="welcome-arrow" aria-hidden="true">›</span></a>
+  </nav>
+  <div class="welcome-design-footer">KIMBERLING CITY METHODIST CHURCH</div>
 
   <section class="section" aria-label="KCMC kids and family photos">
     <div class="wrap grid3" data-kcmc-photo-gallery>

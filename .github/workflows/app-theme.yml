@@ -5,6 +5,8 @@ on:
       - 'KCMC-Connect-Phase6-Recreated/**'
       - 'tests/app-theme-browser.py'
       - 'tests/app-navigation-vm.cjs'
+      - 'tests/welcome_home_assertions.py'
+      - 'tests/welcome-home-source.cjs'
       - '.github/workflows/app-theme.yml'
   push:
     branches: [main]
@@ -12,6 +14,8 @@ on:
       - 'KCMC-Connect-Phase6-Recreated/**'
       - 'tests/app-theme-browser.py'
       - 'tests/app-navigation-vm.cjs'
+      - 'tests/welcome_home_assertions.py'
+      - 'tests/welcome-home-source.cjs'
       - '.github/workflows/app-theme.yml'
   workflow_dispatch:
 permissions:
@@ -31,6 +35,7 @@ jobs:
           find KCMC-Connect-Phase6-Recreated -name '*.php' -print0 | xargs -0 -n1 php -l
           node --check KCMC-Connect-Phase6-Recreated/app-navigation.js
           node tests/app-navigation-vm.cjs
+          node tests/welcome-home-source.cjs
           git diff --check
           python3 tests/app-theme-browser.py --http-only
       - name: Browser dependencies

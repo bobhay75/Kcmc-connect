@@ -483,66 +483,11 @@ def dropdowns(page, width):
 
 
 def public_home(page, width):
-    """No welcome-copy clutter or empty lazy-photo shells on the current home."""
-    home = page.locator('[data-view="home"]')
-    menu = page.locator("#siteMenu")
-    check(menu.get_attribute("open") is None, "public home keeps the fish dropdown closed")
-    for element in home.locator(".home-cover-card > .eyebrow,.home-cover-card h1,.home-cover-card > .lead,.home-worship-strip,.family-welcome-copy").all():
-        check(element.is_hidden(), "welcome copy, service strip and family prose stay off the photo homepage")
-    check(home.locator("[data-hero-previous]:visible,[data-hero-toggle]:visible,[data-hero-next]:visible").count() == 3,
-          "the three compact photo controls remain available")
-    for shell in home.locator(".home-cover-card,.home-cover-layout").all():
-        color = shell.evaluate(PALETTE)["ownBackground"]
-        check(color[3] == 0 or max(color[:3]) < 100, "photo controls have a navy or transparent shell without a cream card")
-    outside_actions = page.locator("body a:visible,body button:visible").evaluate_all("""elements=>elements.filter(el=>
-        !el.closest('#siteMenu')&&!el.matches('.skip-link,[data-hero-previous],[data-hero-toggle],[data-hero-next]')).map(el=>el.textContent.trim())""")
-    check(outside_actions == [], "homepage destination actions stay inside the fish menu")
-    check(home.locator('[data-hero-photo]').count() == 4 and home.locator('[data-hero-photo]:visible').count() == 1,
-          "the approved four-photo carousel keeps one visible image plane")
-    gallery = home.locator('[aria-label="KCMC kids and family photos"]')
-    family = home.locator('[data-family-welcome]')
-    check(gallery.is_visible() and gallery.locator('img:visible').count() == 3
-          and family.is_visible() and family.locator('img:visible').count() == 1,
-          "the three supplied gallery photos and family photo remain on the homepage")
-    # Simulate reaching each photo before a full-page capture. A full-page
-    # screenshot alone does not trigger native below-the-fold lazy loading.
-    for photo in home.locator('img:visible').all():
-        photo.scroll_into_view_if_needed()
-        page.wait_for_function("img=>img.complete&&img.naturalWidth>0", arg=photo.element_handle(), timeout=10000)
-    page.evaluate("window.scrollTo({top:0,behavior:'instant'})")
-    page.wait_for_function("window.scrollY===0")
-    photo = home.locator('[data-hero-photo]:visible')
-    check(photo.evaluate("el=>getComputedStyle(el).objectFit==='contain'&&el.naturalWidth>0"),
-          "the authentic church photograph remains fully contained and decoded")
-    hero_box = home.locator('[data-hero-gallery]').bounding_box()
-    photo_box = photo.bounding_box()
-    control_box = home.locator('[data-hero-controls]').bounding_box()
-    check(hero_box['height'] <= photo_box['height'] + control_box['height'] + 64,
-          "the photo cover has no reserved welcome-card space")
-    sections = home.locator(':scope > .section:visible')
-    check(sections.count() == 2, "only the retained gallery and family photo sections follow the cover")
-    for section in sections.all():
-        bounds = [image.bounding_box() for image in section.locator('img:visible').all()]
-        check(bool(bounds), "each visible homepage section contains a real photograph")
-        photo_span = max(box['y'] + box['height'] for box in bounds) - min(box['y'] for box in bounds)
-        check(section.bounding_box()['height'] <= photo_span + 96,
-              "a photo section has no large empty text shell beneath its images")
-    # Exercise the actual scheduled callback, followed by the manual controls.
-    page.mouse.move(width - 1, 10)
-    check(page.evaluate("window.kcmcPhotoReview.delays()")==[420000], "public photo rotation retains the seven-minute interval")
-    first = photo.get_attribute('src')
-    page.evaluate("window.kcmcPhotoReview.advance()")
-    check(home.locator('[data-hero-photo]:visible').get_attribute('src') != first,
-          "the existing automatic photo callback still advances the carousel")
-    home.locator('[data-hero-previous]').click()
-    check(home.locator('[data-hero-photo]:visible').get_attribute('src') == first, "Previous photo still works")
-    home.locator('[data-hero-next]').click()
-    check(home.locator('[data-hero-photo]:visible').get_attribute('src') != first, "Next photo still works")
-    home.locator('[data-hero-previous]').click()
-    check(page.evaluate("window.kcmcPhotoReview.delays()")==[], "manual photo selection pauses automatic changes")
-    home.locator('[data-hero-toggle]').click()
-    page.mouse.move(width - 1, 10)
-    check(page.evaluate("window.kcmcPhotoReview.delays()")==[420000], "Play photos restores automatic rotation")
+    """Owner-approved original-photo homepage plus all existing destination routes."""
+    from welcome_home_assertions import welcome_home
+    welcome_home(page, width, check)
+    menu=page.locator('#siteMenu')
+    check(menu.get_attribute('open') is None, 'native fish dropdown starts closed')
     for route in ['visit', 'watch', 'news', 'events', 'serve', 'partner']:
         menu.locator('summary').click()
         menu.locator('a[data-route="'+route+'"]').click()

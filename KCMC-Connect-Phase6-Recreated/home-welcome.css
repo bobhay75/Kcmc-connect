@@ -1,0 +1,41 @@
+/* Approved October 18 welcome design. Public shell only. */
+body.kcmc-welcome-design{--ink:#f5f7fa;--muted:#ccd7df;--gold:#e7b34f;background:#0d2235;color:var(--ink)}
+.kcmc-welcome-design .topbar{background:#0d2235;border-bottom:1px solid #405567;backdrop-filter:none}
+.kcmc-welcome-design .topbar .inner{width:min(1500px,calc(100% - 40px));min-height:78px;gap:16px}
+.kcmc-welcome-design .fish-menu summary{width:64px;height:64px;min-height:64px;padding:0;border:0;border-radius:12px}
+.kcmc-welcome-design .fish-menu summary img{width:64px;height:64px;border-radius:12px}
+.kcmc-welcome-design .fish-menu summary:after{content:none}
+.welcome-brand{font-family:Georgia,serif;color:#fff;text-decoration:none;font-size:clamp(1.1rem,2.3vw,2rem);font-weight:700;letter-spacing:.035em;white-space:nowrap}
+.welcome-nav{display:flex;gap:16px;margin-left:auto;align-items:center}
+.welcome-nav a{color:#f5f7fa;text-decoration:none;min-height:44px;padding:10px 4px;border-bottom:2px solid transparent;font-family:Georgia,serif;font-size:1.1rem}
+.welcome-nav a:hover,.welcome-nav a:focus-visible{border-bottom-color:#e7b34f}
+body.kcmc-welcome-design[data-office-email] [data-view="home"] .home-cover.hero.hero-imagery{display:block;position:relative;min-height:0;padding:0;background:#0d2235;overflow:hidden}
+body.kcmc-welcome-design[data-office-email] [data-view="home"] .home-cover .home-cover-photo{display:block;position:relative;inset:auto;width:100%;height:clamp(500px,46vw,730px);object-fit:cover;object-position:center 18%;filter:none;opacity:1}
+body.kcmc-welcome-design[data-office-email] [data-view="home"] .home-cover:after{content:none}
+body.kcmc-welcome-design[data-office-email] [data-view="home"] .home-cover-layout{display:block;position:absolute;inset:0 auto auto 0;width:100%;margin:0;padding:clamp(26px,4vw,64px);pointer-events:none}
+body.kcmc-welcome-design[data-office-email] [data-view="home"] .home-cover-card{display:block;width:max-content;max-width:100%;padding:0;background:transparent;border:0;border-radius:0;box-shadow:none;backdrop-filter:none}
+body.kcmc-welcome-design[data-office-email] [data-view="home"] .home-cover h1{display:block;color:#07172b;font-family:Georgia,serif;font-size:clamp(3.1rem,6.4vw,6.6rem);font-weight:700;line-height:1.08;margin:0 0 20px;letter-spacing:-.035em;text-shadow:0 1px 12px #ffffffb3}
+.welcome-hero-actions{display:flex;gap:16px;flex-wrap:wrap;pointer-events:auto}
+.welcome-hero-actions .btn{display:inline-flex;align-items:center;justify-content:center;min-height:54px;padding:12px 28px;border:1px solid #b78222;border-radius:8px;font-family:Georgia,serif;font-size:clamp(1rem,1.6vw,1.5rem);font-weight:700;text-decoration:none}
+.welcome-hero-actions .btn.gold{color:#102337;background:#e7b34f}
+.welcome-hero-actions .btn.secondary{color:#102337;background:#fcfcf8}
+body.kcmc-welcome-design[data-office-email] [data-view="home"] .home-worship-strip{display:block;background:#0d2235;color:#f5f7fa;border:0}
+body.kcmc-welcome-design[data-office-email] [data-view="home"] .home-worship-strip-inner{display:flex;justify-content:center;align-items:center;gap:30px;padding:24px 0;flex-wrap:wrap}
+body.kcmc-welcome-design[data-office-email] [data-view="home"] .home-worship-times{display:flex;align-items:center;gap:24px;flex-wrap:wrap;justify-content:center}
+body.kcmc-welcome-design[data-office-email] [data-view="home"] .home-worship-times .eyebrow{color:#fff;font-family:Georgia,serif;font-size:clamp(1.1rem,2.3vw,1.9rem);font-weight:700;letter-spacing:.035em}
+body.kcmc-welcome-design[data-office-email] [data-view="home"] .home-worship-times strong{color:#fff;border-left:2px solid #e7b34f;padding-left:24px;font-family:Georgia,serif;font-size:clamp(1.2rem,2.4vw,2rem);line-height:1.4}
+.welcome-quicklinks{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:18px;width:min(1500px,calc(100% - 40px));margin:0 auto 30px}
+.welcome-quicklinks a{display:flex;align-items:center;gap:18px;min-height:108px;padding:18px 24px;border:1px solid #63798b;border-radius:10px;text-decoration:none;color:#fff;font-family:Georgia,serif;font-weight:700;font-size:clamp(1.1rem,2vw,1.8rem)}
+.welcome-quicklinks a:hover{background:#193b55;border-color:#e7b34f}
+.welcome-quicklinks svg{width:48px;height:48px;flex-shrink:0;fill:none;stroke:#e7b34f;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.welcome-quicklinks .welcome-arrow{margin-left:auto;color:#e7b34f;font-family:system-ui,sans-serif;font-size:2rem}
+.welcome-design-footer{text-align:center;color:#f5f7fa;font-size:.8rem;letter-spacing:.2em;padding:0 18px 30px}
+.kcmc-welcome-design :where(a,button,summary):focus-visible{outline:3px solid #f5c96c;outline-offset:4px}
+/* Keep the existing family photographs available below the approved opening view. */
+.kcmc-welcome-design [data-view="home"]>.section{background:#0d2235;color:#f5f7fa}
+@media(max-width:1000px){.welcome-nav{gap:10px}.welcome-nav a{font-size:1rem}.welcome-quicklinks a{padding:16px;gap:12px}.welcome-quicklinks svg{width:36px;height:36px}}
+@media(max-width:760px){.kcmc-welcome-design .topbar .inner{min-height:68px;width:calc(100% - 24px);gap:12px}.welcome-brand{font-size:1.15rem}.welcome-nav{display:none}.kcmc-welcome-design .fish-menu summary,.kcmc-welcome-design .fish-menu summary img{width:54px;height:54px;min-height:54px}body.kcmc-welcome-design[data-office-email] [data-view="home"] .home-cover .home-cover-photo{height:auto;aspect-ratio:1536/1229;object-fit:contain;object-position:center}body.kcmc-welcome-design[data-office-email] [data-view="home"] .home-cover-layout{position:static;padding:22px 18px 26px}body.kcmc-welcome-design[data-office-email] [data-view="home"] .home-cover h1{color:#fff;text-shadow:none;font-size:clamp(2.5rem,10vw,4rem);margin-bottom:18px}.welcome-hero-actions{gap:10px}.welcome-hero-actions .btn{padding:12px 18px;flex:1;white-space:normal;text-align:center}body.kcmc-welcome-design[data-office-email] [data-view="home"] .home-worship-strip-inner{padding:18px 12px}body.kcmc-welcome-design[data-office-email] [data-view="home"] .home-worship-times{gap:10px}body.kcmc-welcome-design[data-office-email] [data-view="home"] .home-worship-times strong{padding-left:0;border-left:0;font-size:clamp(1.05rem,4.6vw,1.5rem);white-space:normal;text-align:center}.welcome-quicklinks{grid-template-columns:1fr;width:calc(100% - 32px);gap:12px;margin-bottom:24px}.welcome-quicklinks a{min-height:78px;font-size:1.4rem}.welcome-design-footer{font-size:.65rem;letter-spacing:.12em}}
+@media(prefers-reduced-motion:reduce){.kcmc-welcome-design *{scroll-behavior:auto;transition:none!important}}
+
+body.kcmc-welcome-design[data-office-email] [data-view="home"] .home-cover-card>:is(h1,.welcome-hero-actions){display:block}
+body.kcmc-welcome-design[data-office-email] [data-view="home"] .home-cover-card>.welcome-hero-actions{display:flex}

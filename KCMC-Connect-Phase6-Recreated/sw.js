@@ -1,10 +1,10 @@
-const CACHE='kcmc-connect-v3.0.3-public-only-push-display-20261018';
+const CACHE='kcmc-connect-v3.0.3-public-only-welcome-home-20261019';
 // Connection-intake client refresh: worker install reruns cache:'reload' and overwrites cached app.js.
 const CORE=[
-  './','./styles.css?v=3.0.3','./public-presentation.css?v=fish-only-home-20261014','./public-presentation.js?v=blue-fish-menu-20261009','./app.js?v=visitor-welcome-20261008','./manifest.webmanifest?v=3.0.1',
+  './','./home-welcome.css?v=20261019','./styles.css?v=3.0.3','./public-presentation.css?v=fish-only-home-20261014','./public-presentation.js?v=blue-fish-menu-20261009','./app.js?v=visitor-welcome-20261008','./manifest.webmanifest?v=20261019',
   './bulletin.php','./news.php','./events.php','./care.php','./connect.php',
   './assets/icons/icon-192.png','./assets/icons/icon-512.png',
-  './assets/visuals/kcmc-building-retouched-20261009.jpg','./assets/visuals/kcmc-worship-2017.webp',
+  './assets/visuals/kcmc-building-original-20261018.jpg','./assets/visuals/kcmc-building-retouched-20261009.jpg','./assets/visuals/kcmc-worship-2017.webp',
   './assets/visuals/trunk-or-treat-2026.svg',
   './assets/visuals/kcmc-congregation-gathering.jpg',
   './assets/visuals/kcmc-family-outdoor-event.jpg',
