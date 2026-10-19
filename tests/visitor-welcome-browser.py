@@ -3,6 +3,7 @@
 from pathlib import Path
 import email, email.policy, hashlib, json, os, shutil, socket, subprocess, sys, tempfile, time, urllib.request, urllib.error
 from playwright.sync_api import sync_playwright
+from welcome_home_assertions import welcome_home
 ROOT=Path(__file__).resolve().parents[1]
 APP=ROOT/'KCMC-Connect-Phase6-Recreated'
 OUT=Path(os.environ.get('KCMC_WELCOME_REVIEW_OUTPUT','visitor-review-artifacts'))
@@ -46,28 +47,9 @@ with tempfile.TemporaryDirectory(prefix='kcmc-visitor-review-') as td:
                 context.add_init_script("Object.defineProperty(navigator,'share',{value:async data=>{window.sharedInvitation=data;},configurable:true});")
                 page=context.new_page();page.on('pageerror',lambda e:errors.append(str(e)))
                 page.goto(base,wait_until='networkidle')
-                photos=page.locator('[data-hero-photo]')
-                check(photos.count()==4,f'{width}px four retained church and event photographs')
-                check(page.locator('[data-hero-photo][src*="stage-2014"]').count()==0,'rejected empty stage is absent')
-                check(page.locator('[data-hero-photo]:visible').count()==1,'one hero photo plane')
+                welcome_home(page,width,check)
                 check(page.locator('.hero-church-photo,.hero-church-window,[data-hero-caption]').count()==0,'no nested hero image or source subtitle')
-                check(page.locator('[data-hero-toggle]').inner_text()=='Play photos','reduced-motion preference preserved')
-                for selector, expected in [('.hero','rgb(7, 18, 28)'),('.invite-neighbor','rgb(13, 34, 53)'),('.cw-section','rgb(13, 34, 53)'),('.family-welcome','rgb(13, 34, 53)')]:
-                    check(page.locator(selector).evaluate("el=>getComputedStyle(el).backgroundColor")==expected, selector+' retains the requested navy palette')
-                for selector in ('.invite-neighbor-card', '.cw-feature'):
-                    check(page.locator(selector).evaluate("el=>getComputedStyle(el).backgroundColor")=='rgb(20, 51, 75)', selector+' uses a blue card surface')
-                check(page.locator('.home-cover-card').count()==1 and page.locator('.hero-card').count()==0,'single compact controls shell replaces the old welcome and service cards')
-                check(page.locator('.home-cover-card').evaluate("el=>{const s=getComputedStyle(el);return s.backgroundColor==='rgba(0, 0, 0, 0)'&&s.boxShadow==='none'&&parseFloat(s.padding)===0}"),'photo controls use a transparent shell without a cream card')
-                for selector in ('.home-cover-card > .eyebrow','.hero h1','.home-cover-card > .lead','.home-worship-strip','.family-welcome-copy'):
-                    check(page.locator(selector).is_hidden(),selector+' stays behind navigation rather than cluttering the photo homepage')
-                check(page.locator('[data-hero-controls] button:visible').count()==3,'all three carousel controls remain available')
-                photo_box=page.locator('[data-hero-photo]:visible').bounding_box()
-                controls_box=page.locator('[data-hero-controls]').bounding_box()
-                cover_box=page.locator('[data-hero-gallery]').bounding_box()
-                check(controls_box['y']>=photo_box['y']+photo_box['height']-1 and cover_box['height']<=photo_box['height']+controls_box['height']+64,'compact controls follow the photograph without reserved welcome-card space')
-                check(page.locator('[data-hero-photo][src*="ministry-group"],[data-hero-photo][src*="bridge-"]').count()==0,'photographed poster and layered logo artwork are absent')
-                check(page.locator('.hero-photo').first.evaluate("el=>getComputedStyle(el).filter")=='none','hero photo is not darkened by a filter')
-                check(page.evaluate('document.documentElement.scrollWidth<=innerWidth'),f'{width}px no horizontal overflow')
+                check(page.locator('[data-authentic-building]').evaluate("el=>getComputedStyle(el).filter")=='none','original church photo is not darkened')
                 page.screenshot(path=str(OUT/f'hero-{width}.png'),full_page=False)
                 page.locator('#siteMenu summary').click()
                 page.locator('#siteMenu').get_by_role('button',name='Invite someone this Sunday',exact=True).click()
