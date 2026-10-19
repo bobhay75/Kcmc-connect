@@ -222,4 +222,3 @@ test('legacy artwork rewriting never touches another origin',async()=>{
   assert.equal(result.handled,false);
   assert.equal(h.calls.fetch.length,0);
 });
-
