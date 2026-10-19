@@ -9,6 +9,7 @@ import subprocess
 import sys
 
 from workflow_source_layer import Layer
+from welcome_home_source_layer import WelcomeLayer
 
 ROOT = Path(__file__).resolve().parents[1]
 PREFIX = 'KCMC-Connect-Phase6-Recreated/'
@@ -37,7 +38,9 @@ def check(ok, message):
 # The current user-requested workflows are an exact reversible layer over the
 # signed 00fdd baseline. Recover it before every historical assertion below;
 # current journeys and roles are tested separately on the current application.
+welcome_layer = WelcomeLayer(ROOT)
 workflow_layer = Layer(ROOT)
+welcome_paths = {PREFIX + p for p in welcome_layer.fixture['modified']} | {PREFIX + p for p in welcome_layer.fixture['added']}
 workflow_paths = (set(workflow_layer.paths) | set(workflow_layer.phase_two.paths)
                   | set(workflow_layer.phase_two.visual.paths))
 def before_workflows(name):
@@ -501,11 +504,11 @@ for name in gallery['removed_gallery_assets']:
 icon = gallery['icon']
 check(icon['path'] == 'assets/icons/icon-512.png' and icon['source_icon'] == 'assets/icons/icon-192.png', 'only the broken 512px icon is repaired')
 check(hashlib.sha256(source(gallery['source_commit'], PREFIX + icon['path'])).hexdigest() == icon['baseline_sha256'], 'broken icon baseline remains exact')
-check(hashlib.sha256((ROOT / PREFIX / icon['source_icon']).read_bytes()).hexdigest() == icon['source_icon_sha256'], 'approved 192px fish artwork is unchanged')
-icon_bytes = (ROOT / PREFIX / icon['path']).read_bytes()
+check(hashlib.sha256(welcome_layer.before(icon['source_icon'])).hexdigest() == icon['source_icon_sha256'], 'approved 192px fish artwork is unchanged')
+icon_bytes = welcome_layer.before(icon['path'])
 check(len(icon_bytes) == icon['bytes'] and hashlib.sha256(icon_bytes).hexdigest() == icon['sha256'], 'repaired 512px icon bytes match reviewed build')
 manifest = apply_gallery('manifest.webmanifest', source(gallery['source_commit'], PREFIX + 'manifest.webmanifest'))
-check((ROOT / PREFIX / 'manifest.webmanifest').read_bytes() == manifest, 'manifest has only reviewed icon cache version change')
+check(welcome_layer.before('manifest.webmanifest') == manifest, 'manifest has only reviewed icon cache version change')
 gallery_repair_paths = {PREFIX + p for p in gallery['replacements']} | {PREFIX + icon['path']}
 
 # Publication Designer changes remain constrained to the same three reviewed
@@ -593,9 +596,9 @@ check(git_blob(source(BASE, editorial_path)) == 'e7eb008c163a524f036d52b5e8e6203
 subprocess.check_call([sys.executable, str(ROOT / 'tests/editorial-content-source.py')], cwd=ROOT)
 editorial_paths = {editorial_path}
 changed = set(git('diff', '--name-only', BASE, '--', PREFIX).decode().splitlines())
-check(changed == ({PREFIX + p for p in expected} | {PREFIX + p for p in publication} | image_paths | documentation_paths | visitor_paths | appearance_paths | artwork_paths | gallery_repair_paths | owner_paths | home_paths | minimal_paths | editorial_paths | post_paths | skip_paths | calendar_paths | care_paths | owner_access_paths | fish_paths | credential_paths | owner_ui_paths | workflow_paths), 'application diff is exact prior scope plus enumerated repairs')
+check(changed == ({PREFIX + p for p in expected} | {PREFIX + p for p in publication} | image_paths | documentation_paths | visitor_paths | appearance_paths | artwork_paths | gallery_repair_paths | owner_paths | home_paths | minimal_paths | editorial_paths | post_paths | skip_paths | calendar_paths | care_paths | owner_access_paths | fish_paths | credential_paths | owner_ui_paths | workflow_paths | welcome_paths), 'application diff is exact prior scope plus enumerated repairs')
 changed_since_reconciled = set(git('diff', '--name-only', RECONCILED, '--', PREFIX).decode().splitlines())
-check(changed_since_reconciled == ({PREFIX + p for p in approved} | {PREFIX + 'sw.js'} | {PREFIX + p for p in publication} | image_paths | documentation_paths | visitor_paths | appearance_paths | artwork_paths | gallery_repair_paths | owner_paths | home_paths | minimal_paths | editorial_paths | post_paths | skip_paths | calendar_paths | care_paths | owner_access_paths | fish_paths | credential_paths | owner_ui_paths | workflow_paths), 'post-reconciliation diff is exact reviewed source plus enumerated repairs')
+check(changed_since_reconciled == ({PREFIX + p for p in approved} | {PREFIX + 'sw.js'} | {PREFIX + p for p in publication} | image_paths | documentation_paths | visitor_paths | appearance_paths | artwork_paths | gallery_repair_paths | owner_paths | home_paths | minimal_paths | editorial_paths | post_paths | skip_paths | calendar_paths | care_paths | owner_access_paths | fish_paths | credential_paths | owner_ui_paths | workflow_paths | welcome_paths), 'post-reconciliation diff is exact reviewed source plus enumerated repairs')
 # Reverse only the mandatory read-only deployment task before the historical proof.
 deployment_bytes = (ROOT / 'tests/fixtures/deployment-preflight-reviewed.json').read_bytes()
 check(hashlib.sha256(deployment_bytes).hexdigest() == '5983e3965249361d1e99afd6896d7c6a1e1c88cb7a03587371df1b6ec7933dfc', 'deployment preflight fixture is exact')
