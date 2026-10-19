@@ -153,14 +153,14 @@ with tempfile.TemporaryDirectory(prefix='kcmc-public-photo-offline-') as td:
     fixed['index.php'] = WelcomeLayer().before('index.php')
     for label, sources in [('stale', stale), ('fixed', fixed), ('missing', fixed)]:
         build_site(work / label, sources)
-    current = work / 'current'
-    shutil.copytree(work / 'fixed', current)
+    current_site = work / 'current'
+    shutil.copytree(work / 'fixed', current_site)
     original = (APP / 'index.php').read_text()
     hero = re.search(r'<section class="hero hero-imagery[^"]*" aria-label="Welcome to KCMC">.*?</section>', original, re.S).group()
     markup = '<!doctype html><html><body>'+hero+'<script>navigator.serviceWorker.register("./sw.js");</script></body></html>'
-    (current / 'index.html').write_text(markup)
-    (current / 'index.php').write_text(markup)
-    shutil.copyfile(APP / 'home-welcome.css', current / 'home-welcome.css')
+    (current_site / 'index.html').write_text(markup)
+    (current_site / 'index.php').write_text(markup)
+    shutil.copyfile(APP / 'home-welcome.css', current_site / 'home-welcome.css')
     class Handler(SimpleHTTPRequestHandler):
         def __init__(self, *args, **kwargs):
             super().__init__(*args, directory=str(work), **kwargs)
