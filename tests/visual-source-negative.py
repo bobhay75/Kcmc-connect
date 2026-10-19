@@ -9,6 +9,7 @@ import unittest
 from visual_source_layer import FIXTURE, NEW_FILES, PREFIX, ROOT, VisualLayer
 from manual_clock_source_layer import FIXTURE as MANUAL_FIXTURE
 from health_actions_source_layer import FIXTURE as HEALTH_FIXTURE
+from welcome_home_source_layer import FIXTURE as WELCOME_FIXTURE
 from workflow_followup_source_layer import FIXTURE as FOLLOWUP_FIXTURE
 
 
@@ -18,7 +19,7 @@ class ExactVisualSource(unittest.TestCase):
         self.root = Path(self.directory.name) / 'source'
         self.app = self.root / PREFIX
         shutil.copytree(ROOT / PREFIX, self.app)
-        for name in [FIXTURE, MANUAL_FIXTURE, HEALTH_FIXTURE, FOLLOWUP_FIXTURE]:
+        for name in [WELCOME_FIXTURE, FIXTURE, MANUAL_FIXTURE, HEALTH_FIXTURE, FOLLOWUP_FIXTURE]:
             target = self.root / name
             target.parent.mkdir(parents=True, exist_ok=True)
             shutil.copyfile(ROOT / name, target)
@@ -37,7 +38,7 @@ class ExactVisualSource(unittest.TestCase):
     def test_undeclared_homepage_content_cannot_hide_inside_navigation_update(self):
         path = self.app / 'index.php'
         path.write_bytes(path.read_bytes() + b'\n<!-- unreviewed public banner -->\n')
-        with self.assertRaisesRegex(AssertionError, 'index.php: only exact reviewed workflow-followup target bytes'):
+        with self.assertRaisesRegex(AssertionError, 'Only exact reviewed welcome-design bytes permitted: index.php'):
             self.verify()
 
     def test_admin_role_change_cannot_hide_inside_ui_helper_loading(self):

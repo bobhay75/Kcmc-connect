@@ -13,6 +13,7 @@ from manual_clock_source_layer import (
     FIXTURE as MANUAL_FIXTURE, VISUAL_FIXTURE, ManualClockLayer,
 )
 from health_actions_source_layer import FIXTURE as HEALTH_FIXTURE
+from welcome_home_source_layer import FIXTURE as WELCOME_FIXTURE
 from visual_source_layer import VisualLayer
 
 
@@ -22,7 +23,7 @@ class ExactWorkflowFollowupSource(unittest.TestCase):
         self.root = Path(self.directory.name) / 'source'
         self.app = self.root / PREFIX
         shutil.copytree(ROOT / PREFIX, self.app)
-        for name in [FIXTURE, MANUAL_FIXTURE, HEALTH_FIXTURE, VISUAL_FIXTURE]:
+        for name in [WELCOME_FIXTURE, FIXTURE, MANUAL_FIXTURE, HEALTH_FIXTURE, VISUAL_FIXTURE]:
             target = self.root / name
             target.parent.mkdir(parents=True, exist_ok=True)
             shutil.copyfile(ROOT / name, target)
@@ -31,7 +32,7 @@ class ExactWorkflowFollowupSource(unittest.TestCase):
         self.directory.cleanup()
 
     def verify(self):
-        return WorkflowFollowupLayer(self.root)
+        return WorkflowFollowupLayer(self.root, ROOT)
 
     def test_each_reviewed_target_rejects_additional_code(self):
         for name in sorted(MODIFIED):
@@ -39,7 +40,9 @@ class ExactWorkflowFollowupSource(unittest.TestCase):
             raw = path.read_bytes()
             with self.subTest(path=name):
                 path.write_bytes(raw + b'\n/* unreviewed push/navigation behavior */\n')
-                with self.assertRaisesRegex(AssertionError, 'only exact reviewed workflow-followup target bytes'):
+                message = ('Only exact reviewed welcome-design bytes permitted: '+name if name in {'index.php', 'sw.js'}
+                           else 'only exact reviewed workflow-followup target bytes')
+                with self.assertRaisesRegex(AssertionError, message):
                     self.verify()
                 path.write_bytes(raw)
 
@@ -65,7 +68,9 @@ class ExactWorkflowFollowupSource(unittest.TestCase):
             raw = path.read_bytes()
             with self.subTest(path=name):
                 path.unlink()
-                with self.assertRaisesRegex(AssertionError, 'target must be an ordinary source file'):
+                message = ('Ordinary non-executable welcome-design file required: '+name if name in {'index.php', 'sw.js'}
+                           else 'target must be an ordinary source file')
+                with self.assertRaisesRegex(AssertionError, message):
                     self.verify()
                 path.write_bytes(raw)
 
@@ -75,7 +80,7 @@ class ExactWorkflowFollowupSource(unittest.TestCase):
         outside.write_bytes(path.read_bytes())
         path.unlink()
         path.symlink_to(outside)
-        with self.assertRaisesRegex(AssertionError, 'target must be an ordinary source file'):
+        with self.assertRaisesRegex(AssertionError, 'Ordinary non-executable welcome-design file required: sw.js'):
             self.verify()
 
     def test_equal_reviewed_parent_cannot_be_a_symbolic_link(self):

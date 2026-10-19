@@ -13,6 +13,7 @@ import hashlib
 import json
 from pathlib import Path
 import stat
+from welcome_home_source_layer import WelcomeLayer
 
 ROOT = Path(__file__).resolve().parents[1]
 PREFIX = 'KCMC-Connect-Phase6-Recreated/'
@@ -46,9 +47,10 @@ def bounded(name):
 
 
 class WorkflowFollowupLayer:
-    def __init__(self, root=ROOT):
+    def __init__(self, root=ROOT, git_source=None):
         self.root = Path(root).resolve()
         self.app = self.root / PREFIX
+        self.welcome = WelcomeLayer(self.root, git_source)
         require(self.app.is_dir() and not self.app.is_symlink(),
                 'Workflow-followup application mount must be an ordinary source directory')
         raw = (self.root / FIXTURE).read_bytes()
@@ -75,7 +77,7 @@ class WorkflowFollowupLayer:
                     name + ': workflow-followup target must be an ordinary source file')
             require(not path.stat().st_mode & 0o111,
                     name + ': canonical workflow-followup executable mode required')
-            actual = path.read_bytes()
+            actual = self.welcome.before(name)
             require(sha256(actual) == record['after_sha256'],
                     name + ': only exact reviewed workflow-followup target bytes permitted')
             require(isinstance(record['replacements'], list) and record['replacements'],
@@ -104,7 +106,7 @@ class WorkflowFollowupLayer:
 
     def before(self, name):
         require(bounded(name), 'Workflow-followup source paths must be bounded')
-        return self.preimages[name] if name in self.preimages else (self.app / name).read_bytes()
+        return self.preimages[name] if name in self.preimages else self.welcome.before(name)
 
 
 def main():

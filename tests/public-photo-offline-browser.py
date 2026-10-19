@@ -17,6 +17,7 @@ import threading
 import time
 
 from playwright.sync_api import sync_playwright
+from welcome_home_source_layer import WelcomeLayer
 
 ROOT = Path(__file__).resolve().parents[1]
 APP = ROOT / 'KCMC-Connect-Phase6-Recreated'
@@ -147,8 +148,19 @@ with tempfile.TemporaryDirectory(prefix='kcmc-public-photo-offline-') as td:
     work = Path(td)
     stale = {name: baseline(name) for name in PINS}
     fixed = {name: (APP / name).read_bytes() for name in PINS}
+    # Keep unchanged carousel regression tests on the exact reviewed preimage.
+    # The current real worker must still serve those retained family assets.
+    fixed['index.php'] = WelcomeLayer().before('index.php')
     for label, sources in [('stale', stale), ('fixed', fixed), ('missing', fixed)]:
         build_site(work / label, sources)
+    current_site = work / 'current'
+    shutil.copytree(work / 'fixed', current_site)
+    original = (APP / 'index.php').read_text()
+    hero = re.search(r'<section class="hero hero-imagery[^"]*" aria-label="Welcome to KCMC">.*?</section>', original, re.S).group()
+    markup = '<!doctype html><html><body>'+hero+'<script>navigator.serviceWorker.register("./sw.js");</script></body></html>'
+    (current_site / 'index.html').write_text(markup)
+    (current_site / 'index.php').write_text(markup)
+    shutil.copyfile(APP / 'home-welcome.css', current_site / 'home-welcome.css')
     class Handler(SimpleHTTPRequestHandler):
         def __init__(self, *args, **kwargs):
             super().__init__(*args, directory=str(work), **kwargs)
@@ -205,6 +217,20 @@ with tempfile.TemporaryDirectory(prefix='kcmc-public-photo-offline-') as td:
             for expected in (0, 1, 3, 0):
                 page.locator('[data-hero-next]').click()
                 assert_one_photo(page, expected, 'missing-frame recovery reaches the remaining real photographs')
+            context.close()
+            context = browser.new_context()
+            page = context.new_page()
+            page.goto(origin + '/current/')
+            page.evaluate('navigator.serviceWorker.ready')
+            page.reload()
+            page.wait_for_function('navigator.serviceWorker.controller !== null')
+            page.wait_for_function("document.querySelector('[data-authentic-building]').naturalWidth === 1536")
+            context.set_offline(True)
+            page.reload()
+            page.wait_for_function("document.querySelector('[data-authentic-building]').naturalWidth === 1536")
+            check(page.locator('[data-authentic-building]').count() == 1, 'current fixed original photograph decodes after real-worker offline reload')
+            response = page.evaluate("async()=>({css:(await fetch('./home-welcome.css?v=20261019')).status,photo:(await fetch('./assets/visuals/kcmc-building-original-20261018.jpg')).status})")
+            check(response == {'css':200,'photo':200}, 'current welcome stylesheet and original photo are cached anonymously')
             context.close()
             browser.close()
     finally:

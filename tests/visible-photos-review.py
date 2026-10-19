@@ -16,6 +16,7 @@ import time
 import urllib.request
 from PIL import Image
 from playwright.sync_api import sync_playwright
+from welcome_home_assertions import welcome_home
 
 ROOT = Path(__file__).resolve().parents[1]
 APP = ROOT / 'KCMC-Connect-Phase6-Recreated'
@@ -32,7 +33,7 @@ def export_preview(html: str, photos: dict[str, bytes]) -> None:
     # Export actual public markup/styles. No app.js, service worker, API writes or working forms.
     html = re.sub(r'<script\b[^>]*\bsrc=[^>]*>\s*</script>', '', html, flags=re.I)
     html = re.sub(r'<link\b[^>]*>', '', html, flags=re.I)
-    css = '\n'.join((APP / name).read_text() for name in ('styles.css', 'public-presentation.css', 'app-theme.css'))
+    css = '\n'.join((APP / name).read_text() for name in ('styles.css', 'public-presentation.css', 'app-theme.css', 'home-welcome.css'))
     js = (APP / 'public-presentation.js').read_text()
     def uri(blob: bytes, mime: str) -> str:
         return 'data:' + mime + ';base64,' + base64.b64encode(blob).decode()
@@ -109,24 +110,8 @@ with tempfile.TemporaryDirectory(prefix='kcmc-photos-review-') as td:
                         page.route('**/' + url.removeprefix('./'), lambda route, request, body=blob: route.fulfill(status=200, content_type='image/jpeg', body=body))
                     page.goto(base, wait_until='networkidle')
                     check(page.locator('.hero-church-photo, .hero-church-window, .hero-card-with-photo').count() == 0, f'{width}px no nested picture-on-picture hero')
-                    check(page.locator('[data-hero-photo]').count() == 4, f'{width}px four retained photos; rejected poster and logo composites removed')
-                    check('kcmc-building-retouched-20261009.jpg' in page.locator('[data-hero-photo]').first.get_attribute('src'), f'{width}px retouched church exterior is first hero frame')
-                    check(page.locator('[data-hero-toggle]').inner_text() == 'Play photos', f'{width}px reduced-motion setting retained')
+                    welcome_home(page,width,check)
                     check(page.locator('[data-hero-caption]').count() == 0, f'{width}px no hero source caption element')
-                    page.locator('[data-hero-next]').click()
-                    check('kcmc-worship-2017.webp' in page.locator('[data-hero-photo]:visible').get_attribute('src'), f'{width}px existing gallery still works')
-                    check('2017' in page.locator('[data-hero-photo]:visible').get_attribute('alt'), f'{width}px historical photo description retained')
-                    check(page.locator('[data-hero-caption]').count() == 0, f'{width}px manual photo selection does not restore a source caption')
-                    for filename in ['kcmc-congregation-gathering.jpg', 'kcmc-family-outdoor-event.jpg']:
-                        page.locator('[data-hero-next]').click()
-                        active = page.locator('[data-hero-photo]:visible')
-                        check(filename in active.get_attribute('src'), f'{width}px {filename} participates in rotation')
-                        check(bool(active.get_attribute('alt')), 'rotating supplied photograph has alt text')
-                        check(active.evaluate('(img) => img.complete && img.naturalWidth > 0'), 'rotating photograph decoded')
-                    for _ in range(3):
-                        page.locator('[data-hero-previous]').click()
-                    check('retouched' in page.locator('[data-hero-photo]:visible').get_attribute('alt'), 'exterior retouch is identified accessibly')
-                    check(page.locator('[data-hero-photo][src*="ministry-group"],[data-hero-photo][src*="bridge-"]').count() == 0, 'rejected poster and logo artwork stay out of the public gallery')
                     check(page.locator('[data-kcmc-photo-gallery] img').count() == 3, 'three supplied family activity photos in public gallery')
                     family = page.locator('[data-family-welcome]')
                     family.scroll_into_view_if_needed()
@@ -171,11 +156,9 @@ with tempfile.TemporaryDirectory(prefix='kcmc-photos-review-') as td:
                 page.wait_for_function("document.querySelector('.family-photo-frame')?.hidden === true")
                 check(page.locator('[data-family-welcome]').is_hidden(), 'failed family photo leaves no empty homepage section')
                 check(page.locator('.hero-church-window').count() == 0, 'failed remote hero does not replace the local fallback')
-                check('kcmc-building-retouched-20261009.jpg' in page.locator('[data-hero-photo]').first.get_attribute('src'), 'local retouched building photo retained on family photo failure')
-                check(page.locator('[data-hero-caption]').is_hidden(), 'failed remote hero keeps the local source caption hidden')
-                page.locator('[data-hero-next]').click()
-                check('kcmc-worship-2017.webp' in page.locator('[data-hero-photo]:visible').get_attribute('src'), 'manual gallery navigation works after remote photo failure')
-                check(page.locator('[data-hero-caption]').is_hidden(), 'manual fallback photo selection does not restore the source caption')
+                check('kcmc-building-original-20261018.jpg' in page.locator('[data-authentic-building]').get_attribute('src'), 'original church photo survives family photo failure')
+                check(page.locator('[data-authentic-building]').evaluate('(img)=>img.complete&&img.naturalWidth===1536'), 'original church photograph still decodes')
+                check(page.locator('[data-hero-caption],[data-hero-controls]').count() == 0, 'no retired carousel or caption appears after family photo failure')
                 check(page.locator('.family-welcome-copy').is_hidden(), 'failed family photo does not restore homepage promotional copy')
                 check(page.locator('.family-photo-frame').is_hidden(), 'failed kids photo does not leave a broken-image placeholder')
                 page.locator('#siteMenu summary').click()
