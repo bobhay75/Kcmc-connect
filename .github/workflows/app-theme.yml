@@ -7,6 +7,8 @@ on:
       - 'tests/app-navigation-vm.cjs'
       - 'tests/welcome_home_assertions.py'
       - 'tests/welcome-home-source.cjs'
+      - 'tests/welcome-release-package.py'
+      - 'tools/prepare-welcome-release.py'
       - '.github/workflows/app-theme.yml'
   push:
     branches: [main]
@@ -16,6 +18,8 @@ on:
       - 'tests/app-navigation-vm.cjs'
       - 'tests/welcome_home_assertions.py'
       - 'tests/welcome-home-source.cjs'
+      - 'tests/welcome-release-package.py'
+      - 'tools/prepare-welcome-release.py'
       - '.github/workflows/app-theme.yml'
   workflow_dispatch:
 permissions:
@@ -29,6 +33,7 @@ jobs:
         with:
           ref: ${{ github.event.pull_request.head.sha || github.sha }}
           persist-credentials: false
+          fetch-depth: 0
       - name: Syntax and PHP route coverage
         run: |
           python3 -m py_compile tests/app-theme-browser.py
@@ -37,6 +42,7 @@ jobs:
           node tests/app-navigation-vm.cjs
           node tests/welcome-home-source.cjs
           python3 tests/welcome-source-layer.py
+          python3 -B tests/welcome-release-package.py
           git diff --check
           python3 tests/app-theme-browser.py --http-only
       - name: Browser dependencies
