@@ -36,6 +36,7 @@ jobs:
           node --check KCMC-Connect-Phase6-Recreated/app-navigation.js
           node tests/app-navigation-vm.cjs
           node tests/welcome-home-source.cjs
+          python3 tests/welcome-source-layer.py
           git diff --check
           python3 tests/app-theme-browser.py --http-only
       - name: Browser dependencies

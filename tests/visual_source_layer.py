@@ -79,6 +79,8 @@ class VisualLayer:
                 continue
             require(stat.S_ISREG(info.st_mode), 'Application source must contain ordinary files')
             actual_paths.add(path.relative_to(self.app).as_posix())
+        from welcome_home_source_layer import ADDED
+        actual_paths -= ADDED  # WelcomeLayer verified exact added bytes before this historical projection.
         require(actual_paths == set(tree) | NEW_FILES,
                 'Current application membership must be the exact installed baseline plus reviewed visual/navigation files')
 
@@ -163,3 +165,4 @@ def main():
 
 if __name__ == '__main__':
     main()
+

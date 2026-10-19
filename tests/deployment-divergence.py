@@ -136,8 +136,8 @@ class DeploymentGuardTests(unittest.TestCase):
         # notification worker. Keep the installed historical tuple unchanged:
         # broad deployment must still refuse it against this exact new source.
         followup_sha = {
-            'index.php': '07693d46cdd5eb9661b9ad37d6856343b7293dfda4ee9db603e40f74cbb73b34',
-            'sw.js': '100dc03b25fa0999c48fc6a0db2d684209ba972f28325ac6f59460c3a0873a7c',
+            'index.php': 'ce49b8c05e602175223dfcf0e6f7c64e29c9b8c9930aaf2c172121340874f330',
+            'sw.js': '459c6c13be36bf9f9189267f6038513a803c931a06eef542c7a48a652165d754',
         }
         for name, historical in canonical_bundle.items():
             canonical = (ROOT / 'KCMC-Connect-Phase6-Recreated' / name).read_bytes()
@@ -344,3 +344,4 @@ class DeploymentGuardTests(unittest.TestCase):
 
 if __name__ == '__main__':
     unittest.main(verbosity=2)
+

@@ -86,7 +86,7 @@ class ManualClockLayer:
         self.git_source = Path(git_source or self.root).resolve()
         require(self.app.is_dir() and not self.app.is_symlink(),
                 'Manual-clock application mount must be an ordinary source directory')
-        self.workflow_followup = WorkflowFollowupLayer(self.root)
+        self.workflow_followup = WorkflowFollowupLayer(self.root, self.git_source)
         self.health_actions = HealthActionsLayer(self.root)
         raw = (self.root / FIXTURE).read_bytes()
         require(sha256(raw) == FIXTURE_SHA256, 'Exact immutable manual-clock fixture required')
@@ -128,6 +128,8 @@ class ManualClockLayer:
                 continue
             require(stat.S_ISREG(info.st_mode), 'Manual-clock application source must contain ordinary files')
             actual_paths.add(path.relative_to(self.app).as_posix())
+        from welcome_home_source_layer import ADDED
+        actual_paths -= ADDED  # Each exact new asset was already hash-checked by WelcomeLayer.
         require(actual_paths == set(tree) | set(visual['new_files']),
                 'Manual-clock application membership must equal the exact themed baseline')
         themed_bytes = {}
@@ -226,6 +228,7 @@ class ManualClockLayer:
         require(not destination.exists() and not destination.is_symlink(),
                 'Manual-clock historical fixture destination must not already exist')
         shutil.copytree(str(self.app), str(destination))
+        self.workflow_followup.welcome.restore_copy(destination)
         for name, data in self.workflow_followup.preimages.items():
             (destination / name).write_bytes(data)
         for name, data in self.health_actions.preimages.items():
@@ -260,3 +263,4 @@ def main():
 
 if __name__ == '__main__':
     main()
+
