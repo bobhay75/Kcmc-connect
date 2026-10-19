@@ -47,7 +47,7 @@ with tempfile.TemporaryDirectory(prefix='kcmc-skip-link-') as temporary:
                 data, kind = html, 'text/html; charset=utf-8'
             elif name == 'api/content.php':
                 data, kind = b'{"announcements":[]}', 'application/json'
-            elif name in ('app.js','styles.css','public-presentation.js','public-presentation.css') or name.startswith('assets/'):
+            elif name in ('app.js','styles.css','public-presentation.js','public-presentation.css','home-welcome.css','app-theme.css','app-navigation.js') or name.startswith('assets/'):
                 target = (app / name).resolve()
                 if not target.is_relative_to(app) or not target.is_file():
                     self.send_error(404); return
