@@ -32,7 +32,9 @@ class WelcomeLayer:
                 for parent in (self.app/name).parents:
                     if parent==self.app.parent: break
                     require(parent.is_dir() and not parent.is_symlink(),'Ordinary welcome-design parents required')
-                p=self.app/name;info=p.lstat()
+                p=self.app/name
+                require(p.exists() or p.is_symlink(),'Ordinary non-executable welcome-design file required: '+name)
+                info=p.lstat()
                 require(stat.S_ISREG(info.st_mode) and not info.st_mode&0o111 and not p.is_symlink(),'Ordinary non-executable welcome-design file required: '+name)
                 actual=p.read_bytes()
                 require(len(actual)==record['after_bytes'] and hashlib.sha256(actual).hexdigest()==record['after_sha256'],'Only exact reviewed welcome-design bytes permitted: '+name)
