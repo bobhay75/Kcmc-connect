@@ -2,6 +2,7 @@
 require_once __DIR__ . '/lib/bootstrap.php';
 require_once __DIR__ . '/lib/event-calendar.php';
 require_once __DIR__ . '/lib/public-presentation.php';
+require_once __DIR__ . '/lib/public-features.php';
 $kcmc = kcmc_public_content();
 $member = kcmc_current_user_if_session();
 $memberCanPray = $member !== null && kcmc_has_role(['member', 'prayer_team', 'pastor_admin'], $member);
@@ -20,7 +21,8 @@ $kcmcSchema = json_encode([
   'telephone' => $kcmcPhone,
   'email' => $kcmcEmail,
 ], JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE | JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT) ?: '{}';
-$calendar = kcmc_event_calendar($kcmc['events'] ?? [], $_GET['event_view'] ?? null);
+$worshipServices = kcmc_worship_services($kcmc);
+$calendar = kcmc_public_event_calendar($kcmc['events'] ?? [], $_GET['event_view'] ?? null, $_GET['event_scope'] ?? null);
 $kcmcEvents = $calendar['events'];
 $kcmcHasRsvpEvents = count(array_filter($kcmcEvents, fn($event)=>!array_key_exists('rsvp',$event)||$event['rsvp']!==false)) > 0;
 $kcmcAnnouncements = kcmc_active_items($kcmc['announcements'] ?? []);
@@ -52,7 +54,7 @@ usort($kcmcAnnouncements, fn($a,$b)=>(int)($b['priority']??0)<=>(int)($a['priori
 <link rel="icon" href="assets/icons/icon-192.png?v=20261019">
 <link rel="apple-touch-icon" href="assets/icons/icon-192.png?v=20261019">
 <?php require_once __DIR__ . '/lib/screen-navigation.php'; echo kcmc_screen_assets(); ?>
-<link rel="stylesheet" href="home-welcome.css?v=20261020">
+<link rel="stylesheet" href="home-welcome.css?v=tony-functions-20261020">
 </head>
 <body class="kcmc-welcome-design" data-office-email="<?=kcmc_h($kcmcEmail)?>">
 <a class="skip-link" href="#mainContent">Skip to content</a>
@@ -99,7 +101,7 @@ usort($kcmcAnnouncements, fn($a,$b)=>(int)($b['priority']??0)<=>(int)($a['priori
     <img class="home-cover-photo" data-authentic-building src="./assets/visuals/kcmc-building-original-20261018.jpg" alt="Original photograph of Kimberling City Methodist Church with its natural sky and clouds" loading="eager" decoding="async" fetchpriority="high" width="1536" height="1229">
     <div class="wrap home-cover-layout"><div class="home-cover-card">
       <h1>Welcome Home</h1>
-      <div class="welcome-hero-actions"><a class="btn gold" href="#visit" data-route="visit">Plan Your Visit <span aria-hidden="true">&#160;›</span></a><a class="btn secondary" href="#watch" data-route="watch">Watch Online <span aria-hidden="true">&#160;›</span></a></div>
+      <div class="welcome-hero-actions"><a class="btn gold" href="#visit" data-route="visit">Plan Your Visit <span aria-hidden="true">&#160;›</span></a><a class="btn secondary" href="https://www.facebook.com/KimberlingCityMethodistChurch/live_videos" target="_blank" rel="noopener">Watch Online <span aria-hidden="true">&#160;›</span></a></div>
     </div></div>
   </section>
   <section class="home-worship-strip" aria-label="Sunday worship at KCMC"><div class="wrap home-worship-strip-inner"><div class="home-worship-times"><span class="eyebrow">Sunday Services</span><strong>8:00 AM <span aria-hidden="true">•</span> 9:15 AM <span aria-hidden="true">•</span> 10:30 AM</strong></div></div></section>
@@ -110,94 +112,7 @@ usort($kcmcAnnouncements, fn($a,$b)=>(int)($b['priority']??0)<=>(int)($a['priori
   </nav>
   <div class="welcome-design-footer"><p class="welcome-mission">Called to love and serve.</p><p>KIMBERLING CITY METHODIST CHURCH</p></div>
 
-  <section class="section church-life" aria-labelledby="church-life-title">
-    <div class="wrap">
-      <div class="section-head"><h2 id="church-life-title">Life at KCMC</h2></div>
-      <div class="church-life-grid" data-kcmc-photo-gallery>
-        <img src="./assets/visuals/kcmc-traditional-sanctuary-20261018.jpg" alt="The KCMC congregation standing together in the sanctuary during worship" loading="lazy" decoding="async" width="1536" height="1152">
-        <img src="./assets/visuals/kcmc-contemporary-gathering-20261018.jpg" alt="KCMC members gathered around tables for contemporary worship" loading="lazy" decoding="async" width="1536" height="1152">
-        <img src="./assets/visuals/kcmc-contemporary-music-20261018.jpg" alt="Musicians leading contemporary worship at KCMC" loading="lazy" decoding="async" width="1536" height="1152">
-      </div>
-      <details class="church-life-more">
-        <summary>More from our church family</summary>
-        <div class="church-life-grid" data-kcmc-photo-gallery>
-          <img src="./assets/visuals/kcmc-traditional-worship-20261018.jpg" alt="KCMC worshippers and musicians in the sanctuary" loading="lazy" decoding="async" width="1536" height="1152">
-          <img src="./assets/visuals/kcmc-traditional-front-20261018.jpg" alt="A moment at the front of the KCMC sanctuary during worship" loading="lazy" decoding="async" width="1536" height="1152">
-          <img class="church-life-portrait" src="./assets/visuals/kcmc-traditional-message-20261018.jpg" alt="A speaker at the front of the KCMC sanctuary" loading="lazy" decoding="async" width="1536" height="1152">
-          <img src="./assets/visuals/kcmc-contemporary-fellowship-20261018.jpg" alt="KCMC members sharing worship around tables beside the cross" loading="lazy" decoding="async" width="1536" height="1152">
-          <img src="./assets/visuals/kcmc-contemporary-room-20261018.jpg" alt="A wide view of the KCMC contemporary worship room with members gathered" loading="lazy" decoding="async" width="1536" height="1152">
-          <img class="church-life-portrait" src="./assets/visuals/kcmc-contemporary-room-portrait-20261018.jpg" alt="The KCMC contemporary worship room from the sound desk" loading="lazy" decoding="async" width="1152" height="1536">
-          <img class="church-life-portrait" src="./assets/visuals/kcmc-contemporary-after-service-20261018.jpg" alt="Members visiting in the KCMC contemporary worship room" loading="lazy" decoding="async" width="1152" height="1536">
-        </div>
-      </details>
-    </div>
-  </section>
 
-  <section class="section" aria-label="KCMC kids and family photos">
-    <div class="wrap grid3" data-kcmc-photo-gallery>
-      <div><img style="display:block;width:100%;height:auto;border-radius:18px" src="./assets/visuals/kcmc-family-outdoor-event.jpg" alt="Children and adults enjoying balloons and an inflatable slide at a Kimberling City outdoor event" loading="lazy" decoding="async" width="2048" height="1536"></div>
-      <div><img style="display:block;width:100%;height:auto;border-radius:18px" src="./assets/visuals/kcmc-kids-safari.jpg" alt="Children seated in a decorated safari cart inside KCMC" loading="lazy" decoding="async" width="2048" height="1536"></div>
-      <div><img style="display:block;width:100%;height:auto;border-radius:18px" src="./assets/visuals/kcmc-kids-game-room.jpg" alt="Children playing foosball and other table games in the KCMC game room" loading="lazy" decoding="async" width="2048" height="1289"></div>
-    </div>
-  </section>
-
-  <section class="section invite-neighbor" aria-labelledby="invite-neighbor-title">
-    <div class="wrap invite-neighbor-card">
-      <div><div class="eyebrow">Make room for someone new</div><h2 id="invite-neighbor-title">A familiar face can make the first visit easier.</h2><p>Invite a friend, neighbor or family member to join you. Share the visit page, choose a service together, and offer to meet them when they arrive.</p></div>
-      <div class="btns"><button class="btn gold" type="button" data-share-app data-share-visit>Invite someone this Sunday</button><a class="btn secondary" href="#events" data-route="events">Find a community event</a></div>
-      <p class="fine">You choose who receives your invitation. KCMC Connect does not contact your friends or add them to a mailing list.</p>
-    </div>
-  </section>
-
-  <section class="section welcome-next">
-    <div class="wrap">
-      <div class="section-head"><div><div class="eyebrow">Life together</div><h2>Your next step starts here.</h2></div><p>Leading people to become deeply committed followers of Jesus Christ.</p></div>
-      <div class="grid3">
-        <article class="card"><h3>New to KCMC?</h3><p>Find service times, directions and a friendly way to introduce yourself.</p><div class="btns"><a class="btn" href="#visit" data-route="visit">Plan your visit</a></div></article>
-        <article class="card"><h3>This week</h3><p>Find the church bulletin and the gatherings published by our team.</p><div class="btns"><a class="btn" href="bulletin.php">Read the bulletin</a><a class="btn secondary" href="#events" data-route="events">See events</a></div></article>
-        <article class="card"><h3>Get connected</h3><p>Ask about groups, serving, or finding your place in church life.</p><div class="btns"><a class="btn" href="#partner" data-route="partner">Get connected</a></div></article>
-      </div>
-    </div>
-  </section>
-
-  <section class="section alt">
-    <div class="wrap">
-      <div class="section-head"><div><div class="eyebrow">Sunday worship</div><h2>Choose your experience</h2></div><p>All three Sunday services are at Kimberling City Methodist Church, <?=kcmc_h($kcmcAddress)?>.</p></div>
-      <div class="grid3">
-        <article class="card"><div class="time">8:00 AM</div><h3>Front Porch Gospel</h3><p>Old-time country and bluegrass Gospel music with an uplifting Bible-based message.</p></article>
-        <article class="card"><div class="time">9:15 AM</div><h3>Traditional Worship</h3><p>Hymns, piano, organ and choir in a traditional worship setting.</p></article>
-        <article class="card"><div class="time">10:30 AM</div><h3>Contemporary Worship</h3><p>A relaxed coffee-shop setting with fellowship, refreshments and Launch Kids.</p></article>
-      </div>
-    </div>
-  </section>
-
-  <!-- KCMC_CONTEMPORARY_FEATURE_20261002 BEGIN -->
-  <section class="section cw-section" data-contemporary-feature aria-labelledby="cw-title">
-    <div class="wrap">
-      <div class="cw-feature">
-        <div class="cw-copy">
-          <p class="cw-kicker">Sunday mornings <span>10:30 AM</span></p>
-          <h2 id="cw-title">Contemporary<br><span>Worship.</span></h2>
-          <p class="cw-intro">Come as you are. Find your place.</p>
-          <p class="cw-description">A relaxed, coffee-shop setting with fellowship, refreshments, and an uplifting message from the Bible.</p>
-          <p class="cw-family">Bringing the family? Launch Kids meets during the 10:30 service.</p>
-          <div class="cw-actions">
-            <a class="cw-button cw-primary" href="#visit" data-route="visit">Plan your Sunday <span aria-hidden="true">&#8594;</span></a>
-            <a class="cw-button cw-secondary" href="https://www.facebook.com/KimberlingCityMethodistChurch/live_videos" target="_blank" rel="noopener noreferrer">Watch messages</a>
-          </div>
-          <p class="cw-online-note">Messages and worship are on our official Facebook page. Facebook may ask you to sign in.</p>
-        </div>
-        <div class="cw-media">
-          <img src="assets/visuals/kcmc-worship-2017.webp" alt="People gathered around tables for worship at KCMC, photographed in 2017" width="640" height="344" loading="lazy" decoding="async">
-        </div>
-      </div>
-    </div>
-  </section>
-  <!-- KCMC_CONTEMPORARY_FEATURE_20261002 END -->
-
-  <section class="section alt">
-    <div class="wrap contact-strip"><div><div class="eyebrow">Need a person?</div><h2>Call the church office.</h2><p class="muted"><?=kcmc_h($kcmcOfficeHours)?> • <?=kcmc_h($kcmcPhone)?> • <?=kcmc_h($kcmcEmail)?></p></div><div class="btns" style="align-content:center"><a class="btn gold" href="<?=kcmc_h($kcmcPhoneHref)?>">Call now</a><a class="btn secondary" href="<?=kcmc_h($kcmcEmailHref)?>">Email</a></div></div>
-  </section>
 </section>
 
 
@@ -229,13 +144,26 @@ usort($kcmcAnnouncements, fn($a,$b)=>(int)($b['priority']??0)<=>(int)($a['priori
 </section>
 
 <section class="view" data-view="watch">
-  <div class="wrap partner-hero"><div class="eyebrow">Watch</div><h1 style="font-family:Georgia,serif;font-size:clamp(3rem,7vw,5rem);font-weight:400;margin:.1em 0">Worship wherever you are.</h1><p class="lead muted">Use the official Facebook live room for current broadcasts and recent services.</p></div>
-  <section class="section"><div class="wrap video-card"><div class="video-art watch-art"><div><span class="pill">Official livestream</span><br><br><b>Sunday<br>Online</b></div></div><div class="video-copy"><h2 class="section-title">Live when KCMC is live.</h2><p class="muted">When the church is not broadcasting, the same destination provides recent live videos and replays.</p><div class="btns"><a class="btn gold" href="https://www.facebook.com/KimberlingCityMethodistChurch/live_videos" target="_blank" rel="noopener">Open live room</a><a class="btn secondary" href="https://www.facebook.com/KimberlingCityMethodistChurch/live_videos" target="_blank" rel="noopener">KCMC messages and worship</a></div></div></div></section>
-  <section class="section alt"><div class="wrap"><div class="section-head"><div><div class="eyebrow">Message library</div><h2>Watch. Reflect. Share.</h2></div><p>Find current messages and worship services from KCMC.</p></div><div class="library-toolbar"><label class="search-field"><span class="sr-only">Search messages</span><input id="sermonSearch" type="search" placeholder="Search messages, series or speaker"></label><select id="sermonFilter" aria-label="Filter messages"><option value="all">All services</option><option value="contemporary">Contemporary</option></select></div><div class="sermon-grid" id="sermonGrid"><article class="sermon-card" data-search="kcmc messages worship contemporary service" data-type="contemporary"><div class="sermon-thumb contemporary-art"></div><div><span class="pill">Contemporary</span><h3>KCMC messages and worship</h3><p class="muted">Browse messages and worship in the official KCMC video archive. Facebook may require sign-in.</p><div class="btns"><a class="btn" href="https://www.facebook.com/KimberlingCityMethodistChurch/live_videos" target="_blank" rel="noopener">Watch service</a></div></div></article></div></div></section>
+  <div class="wrap partner-hero"><div class="eyebrow">Watch Live</div><h1 class="display-title">Worship wherever you are.</h1><p class="lead muted">Choose your Sunday service. Times are Central time.</p></div>
+  <section class="section"><div class="wrap">
+    <div class="library-toolbar"><label class="search-field"><span class="sr-only">Search services</span><input id="sermonSearch" type="search" placeholder="Search services"></label><select id="sermonFilter" aria-label="Filter services"><option value="all">All services</option><?php foreach($worshipServices as $service): ?><option value="<?=kcmc_h($service['id'])?>"><?=kcmc_h($service['name'])?></option><?php endforeach; ?></select></div>
+    <div class="sermon-grid" id="sermonGrid">
+      <?php foreach($worshipServices as $service): ?>
+      <article class="sermon-card" data-search="<?=kcmc_h(strtolower($service['name'].' '.$service['time']))?>" data-type="<?=kcmc_h($service['id'])?>">
+        <img class="service-photo" src="<?=kcmc_h($service['image'])?>" alt="<?=kcmc_h($service['alt'])?>" loading="lazy" decoding="async" width="720" height="540">
+        <div><span class="pill"><?=kcmc_h($service['time'])?> Sunday</span><h2><?=kcmc_h($service['name'])?></h2><p><?=kcmc_h($service['description'])?></p>
+        <?php if($service['stream_url'] !== ''): ?><a class="btn gold" href="<?=kcmc_h($service['stream_url'])?>" target="_blank" rel="noopener" aria-label="Watch <?=kcmc_h($service['name'])?> on Facebook">Watch this service</a><?php else: ?><p class="muted">This service’s direct broadcast link has not been published yet.</p><?php endif; ?></div>
+      </article>
+      <?php endforeach; ?>
+    </div>
+    <p class="sermon-empty" hidden role="status">No services match your search.</p>
+    <p>Current broadcasts and recent recordings are also available on KCMC’s Facebook page. Facebook may ask you to sign in.</p>
+    <a class="btn secondary" href="https://www.facebook.com/KimberlingCityMethodistChurch/live_videos" target="_blank" rel="noopener">KCMC Facebook broadcasts</a>
+  </div></section>
 </section>
 
 <section class="view" data-view="news">
-  <div class="wrap partner-hero"><div class="eyebrow">Church updates</div><h1 class="display-title">Stay connected this week.</h1><p class="lead muted">The latest bulletin, published announcements and upcoming gatherings.</p></div>
+  <div class="wrap partner-hero"><div class="eyebrow">Church updates</div><h1 class="display-title">Stay connected this week.</h1><p class="lead muted">The latest bulletin, published announcements and upcoming gatherings.</p><a class="btn secondary" href="#home" data-route="home">← Back</a></div>
   <section class="section"><div class="wrap">
     <div class="btns"><a class="btn gold" href="bulletin.php">Latest bulletin</a><a class="btn secondary" href="#events" data-route="events">Upcoming events</a><a class="btn secondary" href="https://www.facebook.com/KimberlingCityMethodistChurch" target="_blank" rel="noopener">KCMC on Facebook</a></div>
     <div class="announcement-stack">
@@ -249,8 +177,9 @@ usort($kcmcAnnouncements, fn($a,$b)=>(int)($b['priority']??0)<=>(int)($a['priori
   <div class="wrap"><nav class="btns" aria-label="Event calendar view">
       <a class="btn <?= $calendar['view']==='upcoming'?'gold':'secondary' ?>" href="?event_view=upcoming#events"<?= $calendar['view']==='upcoming'?' aria-current="page"':'' ?>>Upcoming</a>
       <a class="btn <?= $calendar['view']==='next-week'?'gold':'secondary' ?>" href="?event_view=next-week#events"<?= $calendar['view']==='next-week'?' aria-current="page"':'' ?>>Next week</a>
+      <a class="btn secondary" href="events.php?event_scope=calendar">Church calendar</a>
     </nav>
-    <p class="muted"><?= $calendar['view']==='next-week'?'Next week: '.kcmc_h($calendar['range']).' · Sunday–Saturday · Central time':'Showing the next occurrence of each published event.' ?></p></div>
+    <p class="muted"><?= $calendar['view']==='next-week'?'Next week: '.kcmc_h($calendar['range']).' · Sunday–Saturday · Central time':'Community events and special gatherings.' ?></p></div>
   <section class="section"><div class="wrap grid3 event-grid">
     <?php if(!$kcmcEvents): ?><p><?= $calendar['view']==='next-week'?'No events are published for next week. Choose Upcoming to see other dates.':'No current events are published.' ?></p><?php endif; ?>
     <?php foreach($kcmcEvents as $event):
@@ -295,7 +224,7 @@ usort($kcmcAnnouncements, fn($a,$b)=>(int)($b['priority']??0)<=>(int)($a['priori
 </section>
 
 <section class="view" data-view="partner">
-  <div class="wrap partner-hero"><div class="eyebrow">Partner Hub</div><h1 style="font-family:Georgia,serif;font-size:clamp(3rem,7vw,5rem);font-weight:400;margin:.1em 0">Your church week, in one place.</h1><p class="lead muted">Find your next step, ask for support, and get connected with our church team.</p></div>
+  <div class="wrap partner-hero"><div class="eyebrow">Church Family</div><h1 style="font-family:Georgia,serif;font-size:clamp(3rem,7vw,5rem);font-weight:400;margin:.1em 0">Your church week, in one place.</h1><p class="lead muted">Find your next step, ask for support, and get connected with our church team.</p></div>
   <section class="section"><div class="wrap announcement-stack">
 
     <article class="announcement"><span class="pill">This week</span><h3>Use the app for worship, care and current links</h3><p>The official livestream, online giving, visit planning, office contact and current service information are all one tap away.</p></article>
@@ -319,6 +248,6 @@ usort($kcmcAnnouncements, fn($a,$b)=>(int)($b['priority']??0)<=>(int)($a['priori
     <p class="install-sheet-note">After it is saved, KCMC Connect opens from your screen like an app.</p>
   </div>
 </div>
-<script src="app.js?v=visitor-welcome-20261008" defer></script>
-<script src="public-presentation.js?v=blue-fish-menu-20261009" defer></script>
+<script src="app.js?v=tony-functions-20261020" defer></script>
+<script src="public-presentation.js?v=tony-functions-20261020" defer></script>
 </body></html>

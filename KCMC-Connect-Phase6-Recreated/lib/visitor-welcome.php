@@ -1,7 +1,7 @@
 <?php
 declare(strict_types=1);
 
-/** One-time visit receipts, never a subscription or a staff invitation.
+/** One-time requested welcome receipts, never a subscription or a staff invitation.
  * Production sending requires independent server-only approval/configuration.
  * Tests inject a transport; no browser-provided sender, URL or message is used.
  */
@@ -56,11 +56,17 @@ function kcmc_visitor_welcome_message(array $visit, array $settings, ?array $con
     $first = explode(' ', trim((string)($visit['name'] ?? '')))[0];
     if (preg_match("/\A[\p{L}\p{M}'\x{2019}-]{1,80}\z/u", $first) !== 1) $first = 'there';
     $service = (string)($visit['service'] ?? '');
+    $kind = (string)($visit['kind'] ?? 'visit');
+    $intro = $kind === 'visit'
+        ? "We're glad you're planning to visit Kimberling City Methodist Church. Come as you are - there is a place for you here."
+        : "Welcome to Kimberling City Methodist Church. Thank you for reaching out - there is a place for you here.";
+    $receipt = $kind === 'visit'
+        ? "Your visit request is saved for our welcome team.\nYour selected Sunday service: {$service}\n"
+        : "Your connection request is saved for our church team. We'll follow up about your interests.\nSunday services: 8:00 AM Front Porch Gospel, 9:15 AM Traditional Worship and 10:30 AM Contemporary Worship.\n";
     $base = $settings['base_url'];
     $body = "Hi {$first},\n\n"
-        . "We're glad you're planning to visit Kimberling City Methodist Church. Come as you are - there is a place for you here.\n\n"
-        . "Your visit request is saved for our welcome team.\n"
-        . "Your selected Sunday service: {$service}\n"
+        . $intro . "\n\n"
+        . $receipt
         . "Where: {$address}\n"
         . "Directions: https://maps.app.goo.gl/W6kRCHvbaVJ7mwte7\n\n"
         . "A FEW EASY NEXT STEPS\n"
@@ -72,16 +78,17 @@ function kcmc_visitor_welcome_message(array $visit, array $settings, ?array $con
         . "Invite someone to come with you: {$base}#visit\n\n"
         . "Questions? Reply to this email or call {$phone}.\n"
         . "Your KCMC church family\n\n"
-        . "This one-time email responds to a visit request. It does not create an account or subscribe you to ongoing updates. If you did not request it, no action is needed.\n";
-    return ['subject' => 'Welcome to KCMC - your visit and next steps', 'body' => $body, 'reply_to' => $reply];
+        . "This one-time email responds to your request. It does not create an account or subscribe you to ongoing updates. If you did not request it, no action is needed.\n";
+    return ['subject' => ($kind === 'visit' ? 'Welcome to KCMC - your visit and next steps' : 'Welcome to KCMC - your connection and next steps'), 'body' => $body, 'reply_to' => $reply];
 }
 
 /** Publicly returned statuses never claim that an inbox received a message. */
-function kcmc_visitor_welcome_confirmation(string $status): string {
-    $saved = 'Your visit request is saved for our welcome team. ';
-    if ($status === 'accepted') return $saved . 'Your welcome email has been accepted for delivery; check your inbox and spam folder. Your next steps are below.';
-    if ($status === 'suppressed') return $saved . 'A welcome email was already requested for this address in the last 24 hours, so no repeat email was sent. Your next steps are below.';
-    return $saved . 'We could not send the welcome email right now. Your request is still saved, and your next steps are below. Contact the church office with any questions.';
+function kcmc_visitor_welcome_confirmation(string $status, string $kind = 'visit'): string {
+    $saved = $kind === 'visit' ? 'Your visit request is saved for our welcome team. ' : 'Your request is saved for our church team. ';
+    $next = $kind === 'visit' ? ' Your next steps are below.' : ' Explore Church Family, events and serving in the app.';
+    if ($status === 'accepted') return $saved . 'Your welcome email has been accepted for delivery; check your inbox and spam folder.' . $next;
+    if ($status === 'suppressed') return $saved . 'A welcome email was already requested for this address in the last 24 hours, so no repeat email was sent.' . $next;
+    return $saved . 'We could not send the welcome email right now. Your request is still saved. Contact the church office with any questions.';
 }
 
 function kcmc_visitor_welcome_status_label(string $status): string {
@@ -132,9 +139,9 @@ function kcmc_visitor_welcome_claim(string $id, string $email, bool $ready, int 
 function kcmc_visitor_welcome_send(string $id, array $visit, ?callable $transport = null, ?array $settingsOverride = null, ?int $now = null): array {
     $services = ['8:00 AM — Front Porch Gospel', '9:15 AM — Traditional Worship', '10:30 AM — Contemporary Worship'];
     $email = strtolower(trim((string)($visit['email'] ?? '')));
-    if (($visit['kind'] ?? '') !== 'visit') return ['status' => 'not_applicable'];
+    if (!in_array($visit['kind'] ?? '', ['visit', 'groups', 'serve'], true)) return ['status' => 'not_applicable'];
     if (!preg_match('/\Aconnection_[a-f0-9]{24}\z/', $id) || !kcmc_visitor_welcome_email_valid($email)
-        || !in_array($visit['service'] ?? '', $services, true)) return ['status' => 'unavailable'];
+        || (($visit['kind'] ?? '') === 'visit' && !in_array($visit['service'] ?? '', $services, true))) return ['status' => 'unavailable'];
     $settings = kcmc_visitor_welcome_settings($settingsOverride);
     $now ??= time();
     try {

@@ -1,11 +1,19 @@
 <?php
 require_once __DIR__ . '/lib/bootstrap.php';
+require_once __DIR__ . '/lib/public-features.php';
+header('Cache-Control: no-store');
 $content = kcmc_content();
 $bulletin = is_array($content['bulletin'] ?? null) ? $content['bulletin'] : [];
 $services = array_values(array_filter($bulletin['services'] ?? [], 'is_array'));
 $notes = array_values(array_filter($bulletin['notes'] ?? [], fn($note): bool => is_string($note) && trim($note) !== ''));
+$currentBulletin = kcmc_bulletin_is_current($bulletin);
+if (!$currentBulletin) {
+    $bulletin['title'] = 'Weekly bulletin being updated';
+    $bulletin['welcome'] = 'This week’s bulletin has not been confirmed yet. Contact the church office for the latest details.';
+    $notes = [];
+}
 $date = trim((string)($bulletin['date'] ?? ''));
-$dateLabel = $date !== '' && strtotime($date) !== false ? date('l, F j, Y', strtotime($date)) : 'Current Sunday information';
+$dateLabel = $currentBulletin && $date !== '' && strtotime($date) !== false ? date('l, F j, Y', strtotime($date)) : 'Awaiting this week’s update';
 ?><!doctype html>
 <html lang="en">
 <head>
@@ -44,6 +52,7 @@ body{background:linear-gradient(180deg,#0d2235 0,#17384f 25rem,var(--kcmc-panel-
 <section class="bulletin-section">
 <h2>Stay connected</h2>
 <div class="bulletin-actions"><a href="./#watch">Watch KCMC</a><a class="alt" href="care.php">Prayer &amp; care</a><a class="alt" href="./#events">Events</a></div>
+<p><a class="alt" href="./#home">← Back to KCMC Connect</a></p>
 <p class="bulletin-fine">Prayer requests and prayer details are available only after verified member sign-in.</p>
 </section>
 </article>

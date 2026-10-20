@@ -12,22 +12,7 @@ def welcome_home(page, width, check):
     check(home.locator('[data-hero-gallery],[data-hero-controls]').count() == 0, 'fixed building is never replaced by automatic rotation')
     check(page.locator('body').evaluate("el=>getComputedStyle(el).backgroundColor==='rgb(13, 34, 53)'"), 'public background matches the app icon navy')
     check(home.locator('.welcome-mission').inner_text() == 'Called to love and serve.', 'approved mission is visible beneath the welcome links')
-    gallery = home.locator('.church-life')
-    check(gallery.is_visible() and gallery.get_by_role('heading', name='Life at KCMC').is_visible(), 'authentic church-life gallery survives the older homepage hide rule')
-    check(gallery.locator('img').count() == 10, 'all ten supplied October 18 photographs are retained')
-    for family_photo in gallery.locator(':scope > .wrap > .church-life-grid img').all():
-        family_photo.scroll_into_view_if_needed()
-        check(family_photo.is_visible(), 'featured authentic worship photograph is visible')
-        page.wait_for_function('img=>img.complete&&img.naturalWidth>0', arg=family_photo.element_handle())
-    more = gallery.locator('details')
-    more.locator('summary').click()
-    check(more.get_attribute('open') is not None, 'native gallery expansion opens')
-    for family_photo in more.locator('img').all():
-        family_photo.scroll_into_view_if_needed()
-        check(family_photo.is_visible(), 'expanded authentic worship photograph is visible')
-        page.wait_for_function('img=>img.complete&&img.naturalWidth>0', arg=family_photo.element_handle())
-    more.locator('summary').click()
-    check(more.get_attribute('open') is None, 'native gallery expansion closes')
+    check(home.locator('img').count() == 1, 'landing page retains only the approved building background; no congregation galleries')
     for text in ['Plan Your Visit', 'Watch Online', 'Upcoming Events', 'Prayer Requests', 'Church Family']:
         check(home.get_by_role('link', name=text).count() == 1 and home.get_by_role('link', name=text).is_visible(), text+' is a visible usable link')
     links = home.locator('.welcome-quicklinks a')

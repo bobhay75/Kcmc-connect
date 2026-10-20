@@ -95,7 +95,7 @@ test('precache fetches anonymously and reloads from network',async()=>{
   await h.lifecycle('install');
   assert.ok(h.calls.fetch.length>0);
   assert.ok(h.calls.fetch.every(request=>request.credentials==='omit'&&request.cache==='reload'));
-  assert.ok(h.calls.fetch.some(request=>request.url.endsWith('/app.js?v=visitor-welcome-20261008')));
+  assert.ok(h.calls.fetch.some(request=>request.url.endsWith('/app.js?v=tony-functions-20261020')));
 });
 
 for(const policy of ['no-store','private, max-age=0','no-cache']){
@@ -179,8 +179,8 @@ test('activation removes only old KCMC caches',async()=>{
 test('event artwork upgrade precaches the SVG and never the photographed flyer',async()=>{
   const h=harness();
   await h.lifecycle('install');
-  assert.match(h.cacheName,/welcome-brand-20261020$/);
-  assert.ok(h.calls.fetch.some(request=>request.url.endsWith('/home-welcome.css?v=20261020')));
+  assert.match(h.cacheName,/tony-functions-20261020$/);
+  assert.ok(h.calls.fetch.some(request=>request.url.endsWith('/home-welcome.css?v=tony-functions-20261020')));
   assert.ok(h.calls.fetch.some(request=>request.url.endsWith('/kcmc-building-original-20261018.jpg')));
   assert.ok(h.calls.fetch.some(request=>request.url.endsWith('/public-presentation.css?v=fish-only-home-20261014')));
   assert.ok(h.calls.fetch.some(request=>request.url.endsWith('/trunk-or-treat-2026.svg')));
