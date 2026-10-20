@@ -41,3 +41,9 @@ Each week, use Mary Lou's approved Front Pew News/current church announcements a
 ## Source of the service photograph
 
 The Front Porch Gospel photo comes from the church's existing homepage (`frontporch.jpg`), fetched unchanged from the original Wix image URL recorded in `assets/visuals/SOURCE.md`. Traditional and Contemporary use the supplied October 18 KCMC photos. No generated congregation photos are used.
+
+## Read-only cPanel handoff
+
+`tools/kcmc-tony-functions-oct20/check-terminal.py` downloads only the fixed review ZIP from commit `0cc99c3c50f2f589d238b605957f032a5a56c0c8`, verifies SHA256 `680edad8969f5361cc73e48dcc004c44d6147c17e158c11ae6dfa7eb08edf3f3`, and creates a new private review staging folder. It runs the read-only code checks and, when the expected PHP 8.2 CLI exists, the mail readiness flags. It has no apply argument, changes no live code/configuration/content, and sends no mail. It has been exercised against a local simulated package/command capture. It requires the real hosting UID/GID and stops on mismatches.
+
+The current cloud browser has no cPanel tab/session, so actual host acceptance must start from that terminal output. Existing user authorization for building does not substitute for Robert’s separate production-deployment approval.
