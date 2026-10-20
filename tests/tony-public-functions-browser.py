@@ -60,6 +60,9 @@ with tempfile.TemporaryDirectory(prefix='kcmc-tony-functions-') as td:
                 page.locator('#sermonFilter').select_option('all')
                 urls=page.locator('.sermon-card a').evaluate_all('els=>els.map(el=>el.href)')
                 check(len(set(urls))==3,'service actions have distinct verified fixture videos')
+                for photo in page.locator('.sermon-card img').all():
+                    photo.scroll_into_view_if_needed()
+                    page.wait_for_function('img=>img.complete&&img.naturalWidth>0',arg=photo.element_handle())
                 check(page.locator('.sermon-card img').evaluate_all('els=>els.every(el=>el.complete&&el.naturalWidth>0)'),'all three authentic service photos load')
                 page.locator('#sermonSearch').fill('missing-service')
                 check(page.locator('.sermon-card:visible').count()==0 and page.locator('.sermon-empty').is_visible(),'empty search explains result')

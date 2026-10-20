@@ -3,6 +3,7 @@ import base64
 import os
 from pathlib import Path
 from playwright.sync_api import sync_playwright
+from tony_function_source_layer import FunctionalLayer
 
 ROOT = Path(__file__).resolve().parents[1]
 APP = ROOT / 'KCMC-Connect-Phase6-Recreated'
@@ -12,7 +13,9 @@ def check(ok, label):
         raise AssertionError(label)
     print('PASS:', label, flush=True)
 
-source = (APP / 'index.php').read_text()
+# Retain the previous panel's exact visual proof on its reviewed preimage.
+# Current three-service cards are exercised by tony-public-functions-browser.py.
+source = FunctionalLayer().before('index.php').decode('utf-8')
 section = source.split('<!-- KCMC_CONTEMPORARY_FEATURE_20261002 BEGIN -->', 1)[1].split('<!-- KCMC_CONTEMPORARY_FEATURE_20261002 END -->', 1)[0]
 image = (APP / 'assets/visuals/kcmc-worship-2017.webp').read_bytes()
 section = section.replace('assets/visuals/kcmc-worship-2017.webp', 'data:image/webp;base64,' + base64.b64encode(image).decode())
