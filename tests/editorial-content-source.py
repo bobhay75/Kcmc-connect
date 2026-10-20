@@ -97,8 +97,22 @@ def main():
         for item in expected[section]:
             item.update(updates.get(item['id'], {}))
         expected[section].extend(release['append_' + section])
+    current_bytes = (ROOT / 'tests/fixtures/editorial-content-20261020-reviewed.json').read_bytes()
+    require(hashlib.sha256(current_bytes).hexdigest() == '4027b8d12c3d7f3faf06bb79b6215ae92e04e1f039d50fa81c16a6a2cb58846b', 'October 20 reviewed fixture remains exact')
+    current = json.loads(current_bytes)
+    require(set(current) == {'baseline_git_blob','baseline_utf8','bulletin','update_events','update_announcements'}, 'October 20 scope stays bounded')
+    require(current['baseline_git_blob'] == 'efee40e1152857a391491df7c4db2c1e11cc3228', 'October 20 exact baseline retained')
+    baseline_raw = current['baseline_utf8'].encode('utf-8')
+    require(hashlib.sha1(b'blob '+str(len(baseline_raw)).encode('ascii')+b'\0'+baseline_raw).hexdigest() == current['baseline_git_blob'], 'October 18 bytes remain independently pinned for shallow CI')
+    require(json.loads(baseline_raw) == expected, 'exact October 18 projection retained')
+    require(set(current['update_events']) == {'faith-friends-20261018','trunk-or-treat-2026'}, 'only the confirmed class recurrence and dated trunk wording change')
+    require(set(current['update_announcements']) == {'trunk-volunteers-20261014'}, 'only expired relative signup wording changes')
+    expected['bulletin'].update(current['bulletin'])
+    for section in ('events', 'announcements'):
+        for item in expected[section]:
+            item.update(current['update_' + section].get(item['id'], {}))
     candidate = json.loads((ROOT / PATH).read_bytes())
-    require(candidate == expected, 'only the exact October 18 reviewed content delta is permitted')
+    require(candidate == expected, 'only the exact October 18 and October 20 reviewed content deltas are permitted')
     for section in ('events', 'announcements'):
         require(len({item['id'] for item in candidate[section]}) == len(candidate[section]), 'unique content IDs')
     require(candidate['contact'] == historical['contact'], 'contact fields stay unchanged')
@@ -111,6 +125,8 @@ def main():
     require(trunk['time'] == '4:30 PM' and trunk['end_time'] == '6:30 PM', 'confirmed Trunk hours preserved')
     study = [e for e in candidate['events'] if e['date'] == '2026-10-18' and ('Faith' in e['title'] or 'Friends' in e['title'])]
     require(len(study) == 1 and study[0]['time'] == '10:20 AM', 'one owner-corrected Bible study')
+    require(study[0]['repeat'] == 'weekly' and study[0]['repeat_until'] == '' and study[0]['expires_at'] == '', 'owner-confirmed Sundays remain visible without invented end date')
+    require('this Sunday' not in trunk['description'], 'relative October 18 signup wording has expired')
     require(len(release['append_events']) == 17 and len(release['append_announcements']) == 3, 'complete newsletter delta')
     print('PASS: October 18 newsletter delta, unique IDs, corrected class, date-only deadline and protected sections')
 

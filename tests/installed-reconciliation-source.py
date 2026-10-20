@@ -40,7 +40,7 @@ def check(ok, message):
 # current journeys and roles are tested separately on the current application.
 welcome_layer = WelcomeLayer(ROOT)
 workflow_layer = Layer(ROOT)
-welcome_paths = {PREFIX + p for p in welcome_layer.fixture['modified']} | {PREFIX + p for p in welcome_layer.fixture['added']}
+welcome_paths = set(welcome_layer.paths)
 workflow_paths = (set(workflow_layer.paths) | set(workflow_layer.phase_two.paths)
                   | set(workflow_layer.phase_two.visual.paths))
 def before_workflows(name):

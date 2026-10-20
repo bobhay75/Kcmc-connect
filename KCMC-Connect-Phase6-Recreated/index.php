@@ -52,7 +52,7 @@ usort($kcmcAnnouncements, fn($a,$b)=>(int)($b['priority']??0)<=>(int)($a['priori
 <link rel="icon" href="assets/icons/icon-192.png?v=20261019">
 <link rel="apple-touch-icon" href="assets/icons/icon-192.png?v=20261019">
 <?php require_once __DIR__ . '/lib/screen-navigation.php'; echo kcmc_screen_assets(); ?>
-<link rel="stylesheet" href="home-welcome.css?v=20261019">
+<link rel="stylesheet" href="home-welcome.css?v=20261020">
 </head>
 <body class="kcmc-welcome-design" data-office-email="<?=kcmc_h($kcmcEmail)?>">
 <a class="skip-link" href="#mainContent">Skip to content</a>
@@ -108,7 +108,30 @@ usort($kcmcAnnouncements, fn($a,$b)=>(int)($b['priority']??0)<=>(int)($a['priori
     <a href="care.php"><svg viewBox="0 0 48 48" aria-hidden="true"><path d="M23 15v17L13 42l-8-7 9-11 4-13q2-4 5 0m2 4v17l10 10 8-7-9-11-4-13q-2-4-5 0M24 2v5M11 4l4 5M37 4l-4 5"/></svg><span>Prayer Requests</span><span class="welcome-arrow" aria-hidden="true">›</span></a>
     <a href="#partner" data-route="partner"><svg viewBox="0 0 48 48" aria-hidden="true"><circle cx="24" cy="13" r="7"/><circle cx="8" cy="20" r="5"/><circle cx="40" cy="20" r="5"/><path d="M13 42V33a11 11 0 0 1 22 0v9ZM2 42v-8a7 7 0 0 1 10-6m34 14v-8a7 7 0 0 0-10-6"/></svg><span>Church Family</span><span class="welcome-arrow" aria-hidden="true">›</span></a>
   </nav>
-  <div class="welcome-design-footer">KIMBERLING CITY METHODIST CHURCH</div>
+  <div class="welcome-design-footer"><p class="welcome-mission">Called to love and serve.</p><p>KIMBERLING CITY METHODIST CHURCH</p></div>
+
+  <section class="section church-life" aria-labelledby="church-life-title">
+    <div class="wrap">
+      <div class="section-head"><h2 id="church-life-title">Life at KCMC</h2></div>
+      <div class="church-life-grid" data-kcmc-photo-gallery>
+        <img src="./assets/visuals/kcmc-traditional-sanctuary-20261018.jpg" alt="The KCMC congregation standing together in the sanctuary during worship" loading="lazy" decoding="async" width="1536" height="1152">
+        <img src="./assets/visuals/kcmc-contemporary-gathering-20261018.jpg" alt="KCMC members gathered around tables for contemporary worship" loading="lazy" decoding="async" width="1536" height="1152">
+        <img src="./assets/visuals/kcmc-contemporary-music-20261018.jpg" alt="Musicians leading contemporary worship at KCMC" loading="lazy" decoding="async" width="1536" height="1152">
+      </div>
+      <details class="church-life-more">
+        <summary>More from our church family</summary>
+        <div class="church-life-grid" data-kcmc-photo-gallery>
+          <img src="./assets/visuals/kcmc-traditional-worship-20261018.jpg" alt="KCMC worshippers and musicians in the sanctuary" loading="lazy" decoding="async" width="1536" height="1152">
+          <img src="./assets/visuals/kcmc-traditional-front-20261018.jpg" alt="A moment at the front of the KCMC sanctuary during worship" loading="lazy" decoding="async" width="1536" height="1152">
+          <img class="church-life-portrait" src="./assets/visuals/kcmc-traditional-message-20261018.jpg" alt="A speaker at the front of the KCMC sanctuary" loading="lazy" decoding="async" width="1536" height="1152">
+          <img src="./assets/visuals/kcmc-contemporary-fellowship-20261018.jpg" alt="KCMC members sharing worship around tables beside the cross" loading="lazy" decoding="async" width="1536" height="1152">
+          <img src="./assets/visuals/kcmc-contemporary-room-20261018.jpg" alt="A wide view of the KCMC contemporary worship room with members gathered" loading="lazy" decoding="async" width="1536" height="1152">
+          <img class="church-life-portrait" src="./assets/visuals/kcmc-contemporary-room-portrait-20261018.jpg" alt="The KCMC contemporary worship room from the sound desk" loading="lazy" decoding="async" width="1152" height="1536">
+          <img class="church-life-portrait" src="./assets/visuals/kcmc-contemporary-after-service-20261018.jpg" alt="Members visiting in the KCMC contemporary worship room" loading="lazy" decoding="async" width="1152" height="1536">
+        </div>
+      </details>
+    </div>
+  </section>
 
   <section class="section" aria-label="KCMC kids and family photos">
     <div class="wrap grid3" data-kcmc-photo-gallery>
@@ -284,7 +307,7 @@ usort($kcmcAnnouncements, fn($a,$b)=>(int)($b['priority']??0)<=>(int)($a['priori
 </section>
 </main>
 
-<footer class="footer"><div class="wrap footer-grid"><div><strong>KCMC CONNECT</strong><p>Kimberling City Methodist Church<br><?=kcmc_h($kcmcAddress)?></p></div><div><p><?=kcmc_h($kcmcPhone)?><br><?=kcmc_h($kcmcEmail)?></p><p class="fine">Leading people to become deeply committed followers of Jesus Christ.</p></div></div></footer>
+<footer class="footer"><div class="wrap footer-grid"><div><strong>KCMC CONNECT</strong><p>Kimberling City Methodist Church<br><?=kcmc_h($kcmcAddress)?></p></div><div><p><?=kcmc_h($kcmcPhone)?><br><?=kcmc_h($kcmcEmail)?></p><p class="fine">Called to love and serve.</p></div></div></footer>
 
 <div class="install-sheet" id="installSheet" role="dialog" aria-modal="true" aria-labelledby="installSheetTitle" hidden>
   <div class="install-sheet-card" tabindex="-1">

@@ -141,7 +141,11 @@ with tempfile.TemporaryDirectory(prefix='kcmc-public-review-') as td:
                     for photo in archived_photos.all():
                         expect(photo).to_have_js_property('complete', True)
                         check(photo.evaluate('(img) => img.naturalWidth > 0'), 'supplied gallery and family photos load')
+                        if photo.is_visible():
+                            photo.scroll_into_view_if_needed()
+                        photo.evaluate('(img) => img.decode()')
                     page.evaluate('window.scrollTo(0, 0)')
+                    page.evaluate('new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve)))')
                     page.screenshot(path=str(OUT / f'home-viewport-{width}.png'))
                     page.screenshot(path=str(OUT / f'home-{width}.png'), full_page=True)
                 page.goto(base + '/bulletin.php')
@@ -192,6 +196,8 @@ with tempfile.TemporaryDirectory(prefix='kcmc-public-review-') as td:
                 plain.goto(base + '/')
                 check(plain.locator('[data-authentic-building]:visible').count() == 1, 'no-JavaScript static photo fallback works')
                 check(plain.locator('[data-hero-caption]').count() == 0, 'no-JavaScript fallback contains no source caption element')
+                plain.locator('.church-life-more summary').click()
+                check(plain.locator('.church-life-more[open] img:visible').count() == 7, 'all additional authentic photographs are reachable without JavaScript')
                 plain.locator('#siteMenu summary').click()
                 check(plain.locator('.menu-account').is_visible(), 'native menu works without JavaScript')
                 c3.close()

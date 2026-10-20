@@ -1,0 +1,44 @@
+name: KCMC branding and current content review
+on:
+  pull_request:
+    paths:
+      - 'KCMC-Connect-Phase6-Recreated/**'
+      - 'tools/kcmc-content-oct20/**'
+      - 'tools/prepare-brand-release.py'
+      - 'tests/brand-release-package.py'
+      - 'tests/editorial-content-source.py'
+      - 'tests/welcome_home_source_layer.py'
+      - 'tests/fixtures/*20261020*'
+      - '.github/workflows/brand-content-review.yml'
+  push:
+    branches: [main]
+    paths:
+      - 'KCMC-Connect-Phase6-Recreated/**'
+      - 'tools/kcmc-content-oct20/**'
+      - 'tools/prepare-brand-release.py'
+      - 'tests/brand-release-package.py'
+      - 'tests/editorial-content-source.py'
+      - 'tests/welcome_home_source_layer.py'
+      - 'tests/fixtures/*20261020*'
+      - '.github/workflows/brand-content-review.yml'
+permissions:
+  contents: read
+jobs:
+  review:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          persist-credentials: false
+          fetch-depth: 0
+      - name: Exact sources, isolated publication and offline release package
+        run: |
+          set -euo pipefail
+          python3 -B tests/editorial-content-source.py
+          python3 -B tests/welcome-source-layer.py
+          node tests/welcome-home-source.cjs
+          python3 -B tools/kcmc-content-oct20/test_publish.py
+          python3 -B tests/brand-release-package.py
+          git diff --check

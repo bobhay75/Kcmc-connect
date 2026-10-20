@@ -7,12 +7,13 @@ import tempfile
 import unittest
 
 from manual_clock_source_layer import (
+    EDITORIAL_FIXTURE,
     BASE, BASE_APP_TREE, FIXTURE, MODIFIED, PREFIX, ROOT, VISUAL_FIXTURE,
     ManualClockLayer, app_tree_oid, blob,
 )
 from visual_source_layer import NEW_FILES as VISUAL_NEW_FILES, VisualLayer
 from health_actions_source_layer import FIXTURE as HEALTH_FIXTURE
-from welcome_home_source_layer import FIXTURE as WELCOME_FIXTURE
+from welcome_home_source_layer import FIXTURE as WELCOME_FIXTURE, BRAND_FIXTURE
 from workflow_followup_source_layer import FIXTURE as FOLLOWUP_FIXTURE
 
 
@@ -22,7 +23,7 @@ class ExactManualClockSource(unittest.TestCase):
         self.root = Path(self.directory.name) / 'source'
         self.app = self.root / PREFIX
         shutil.copytree(ROOT / PREFIX, self.app)
-        for name in [WELCOME_FIXTURE, FIXTURE, VISUAL_FIXTURE, HEALTH_FIXTURE, FOLLOWUP_FIXTURE]:
+        for name in [EDITORIAL_FIXTURE, BRAND_FIXTURE, WELCOME_FIXTURE, FIXTURE, VISUAL_FIXTURE, HEALTH_FIXTURE, FOLLOWUP_FIXTURE]:
             target = self.root / name
             target.parent.mkdir(parents=True, exist_ok=True)
             shutil.copyfile(ROOT / name, target)

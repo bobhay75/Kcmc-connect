@@ -1,0 +1,621 @@
+{
+  "bulletin": {
+    "date": {
+      "accepted_before": [
+        "2026-10-14",
+        "2026-10-18",
+        "2026-10-20"
+      ],
+      "after": "2026-10-20"
+    },
+    "notes": {
+      "accepted_before": [
+        [
+          "October 15, 10:00 AM — The Gathering Place: confidential encouragement and resources for caregivers. Everyone is welcome.",
+          "October 15, 12:30 PM — Methodist Women: bring a sack lunch and baby diapers for mission giving. Desserts provided; guest speaker Carrie Padilla of Unite TableRock.",
+          "October 16, 6:00 PM — Friday Night Freedom Worship Service.",
+          "Return Pregnancy Life Line baby bottles by Sunday, October 25.",
+          "October 31 — Trunk or Treat volunteers are needed. See Church updates for arrival, candy and family-friendly setup guidance.",
+          "November 14, 4:30 PM — Richard French Memorial Lasagna Dinner, Fellowship Hall. Tickets are $15 per person from the Methodist Men.",
+          "For prayer or support, contact the church office at 417-739-4395. Personal prayer details are not displayed publicly."
+        ],
+        [
+          "Sunday, October 18 — Worship at 8:00, 9:15 and 10:30 AM; LaunchKids Children’s Church at 10:30 AM.",
+          "Sunday, October 18, 10:20 AM — Friends of Faith Sunday Bible Study, Pairs & Spares Classroom. Becoming Like Jesus by Matt Chandler.",
+          "Thursday, October 22, 1:30 PM — Way Forward All Church Informational Meeting with Pastor Tony.",
+          "Return filled Pregnancy Life Line baby bottles by Sunday, October 25.",
+          "Saturday, October 31, 4:30–6:30 PM — Trunk or Treat in the church parking lot. Sign up your trunk this Sunday; individually wrapped candy donations are needed at the office or in the lobby.",
+          "Saturday, November 14, 4:30 PM — Richard French Memorial Lasagna Dinner, Fellowship Hall. Tickets are $15 each.",
+          "For prayer or a conversation with a pastor, call the church office at 417-739-4395. Services are live-streamed on Facebook."
+        ],
+        [
+          "Sunday worship — 8:00 AM Front Porch Gospel, 9:15 AM Traditional Worship, and 10:30 AM Contemporary Worship. LaunchKids Children’s Church meets at 10:30 AM.",
+          "Friends of Faith Sunday Bible Study — Sundays at 10:20 AM in the Pairs & Spares Classroom. Becoming Like Jesus by Matt Chandler.",
+          "Thursday, October 22, 1:30 PM — Way Forward All Church Informational Meeting with Pastor Tony.",
+          "Return filled Pregnancy Life Line baby bottles by Sunday, October 25.",
+          "Saturday, October 31, 4:30–6:30 PM — Trunk or Treat in the church parking lot. Contact the church office about signing up a trunk; individually wrapped candy donations are needed at the office or in the lobby.",
+          "Saturday, November 14, 4:30 PM — Richard French Memorial Lasagna Dinner, Fellowship Hall. Tickets are $15 each.",
+          "For prayer or a conversation with a pastor, call the church office at 417-739-4395. Services are live-streamed on Facebook."
+        ]
+      ],
+      "after": [
+        "Sunday worship — 8:00 AM Front Porch Gospel, 9:15 AM Traditional Worship, and 10:30 AM Contemporary Worship. LaunchKids Children’s Church meets at 10:30 AM.",
+        "Friends of Faith Sunday Bible Study — Sundays at 10:20 AM in the Pairs & Spares Classroom. Becoming Like Jesus by Matt Chandler.",
+        "Thursday, October 22, 1:30 PM — Way Forward All Church Informational Meeting with Pastor Tony.",
+        "Return filled Pregnancy Life Line baby bottles by Sunday, October 25.",
+        "Saturday, October 31, 4:30–6:30 PM — Trunk or Treat in the church parking lot. Contact the church office about signing up a trunk; individually wrapped candy donations are needed at the office or in the lobby.",
+        "Saturday, November 14, 4:30 PM — Richard French Memorial Lasagna Dinner, Fellowship Hall. Tickets are $15 each.",
+        "For prayer or a conversation with a pastor, call the church office at 417-739-4395. Services are live-streamed on Facebook."
+      ]
+    },
+    "title": {
+      "accepted_before": [
+        "KCMC Community Updates — October 14, 2026",
+        "KCMC Community Updates — October 18–24, 2026",
+        "KCMC Community Updates — October 20–25, 2026"
+      ],
+      "after": "KCMC Community Updates — October 20–25, 2026"
+    },
+    "welcome": {
+      "accepted_before": [
+        "Same God. New Mercies. Every Day. Community updates from the October 9 Front Pew News.",
+        "Same God. New Mercies. Every Day. Worship, serve and share time together at KCMC. There is a place for you here!",
+        "Called to love and serve. Worship, serve and share time together at KCMC. There is a place for you here!"
+      ],
+      "after": "Called to love and serve. Worship, serve and share time together at KCMC. There is a place for you here!"
+    }
+  },
+  "prepared_for": "2026-10-20",
+  "records": [
+    {
+      "fields": {
+        "description": {
+          "accepted_before": [
+            {
+              "present": true,
+              "value": "Free candy, hot dogs, chips and drinks, plus music and family fun. All are welcome."
+            },
+            {
+              "present": true,
+              "value": "Bring the family for a bounce house, hot dogs, hot cider and a costume contest. Sign up your trunk this Sunday, decorate your vehicle and help distribute candy. Individually wrapped candy donations may be dropped off at the church office or in the lobby. All are welcome."
+            },
+            {
+              "present": true,
+              "value": "Bring the family for a bounce house, hot dogs, hot cider and a costume contest. Contact the church office about signing up a trunk, decorating your vehicle and helping distribute candy. Individually wrapped candy donations may be dropped off at the church office or in the lobby. All are welcome."
+            }
+          ],
+          "after": "Bring the family for a bounce house, hot dogs, hot cider and a costume contest. Contact the church office about signing up a trunk, decorating your vehicle and helping distribute candy. Individually wrapped candy donations may be dropped off at the church office or in the lobby. All are welcome."
+        }
+      },
+      "id": "trunk-or-treat-2026",
+      "originally_missing": false,
+      "section": "events",
+      "target": {
+        "address": "57 Kimberling City Center Lane, Kimberling City, MO 65686",
+        "date": "2026-10-31",
+        "description": "Bring the family for a bounce house, hot dogs, hot cider and a costume contest. Contact the church office about signing up a trunk, decorating your vehicle and helping distribute candy. Individually wrapped candy donations may be dropped off at the church office or in the lobby. All are welcome.",
+        "end_time": "6:30 PM",
+        "expires_at": "2026-10-31T23:59:59-05:00",
+        "id": "trunk-or-treat-2026",
+        "image": "assets/visuals/trunk-or-treat-2026.webp",
+        "image_alt": "Autumn Trunk or Treat graphic with friendly ghosts, pumpkins and an open car trunk filled with candy beside a lake.",
+        "label": "Free community event",
+        "location": "KCMC parking lot",
+        "priority": 100,
+        "rsvp": false,
+        "status": "published",
+        "time": "4:30 PM",
+        "title": "Trunk or Treat!"
+      }
+    },
+    {
+      "fields": {
+        "description": {
+          "accepted_before": [
+            {
+              "present": true,
+              "value": "Please return your baby bottle by Sunday, October 25, the last Sunday in October. Fill it with change or a check to support Pregnancy Life Line/Southern Missouri. Contact the church office with questions."
+            },
+            {
+              "present": true,
+              "value": "Please return your filled baby bottle by Sunday, October 25. Fill it with change or folding money to support Pregnancy Life Line/Southern Missouri. Contact the church office with questions."
+            }
+          ],
+          "after": "Please return your filled baby bottle by Sunday, October 25. Fill it with change or folding money to support Pregnancy Life Line/Southern Missouri. Contact the church office with questions."
+        }
+      },
+      "id": "pll-bottle-return-20261025",
+      "originally_missing": false,
+      "section": "events",
+      "target": {
+        "date": "2026-10-25",
+        "description": "Please return your filled baby bottle by Sunday, October 25. Fill it with change or folding money to support Pregnancy Life Line/Southern Missouri. Contact the church office with questions.",
+        "expires_at": "2026-10-25T23:59:59-05:00",
+        "id": "pll-bottle-return-20261025",
+        "label": "Return deadline",
+        "location": "KCMC",
+        "rsvp": false,
+        "status": "published",
+        "time": "",
+        "title": "Pregnancy Life Line baby bottle return deadline"
+      }
+    },
+    {
+      "fields": {
+        "expires_at": {
+          "accepted_before": [
+            {
+              "present": false
+            },
+            {
+              "present": true,
+              "value": "2026-10-18T23:59:59-05:00"
+            },
+            {
+              "present": true,
+              "value": ""
+            }
+          ],
+          "after": ""
+        },
+        "one_time_expires_at": {
+          "accepted_before": [
+            {
+              "present": false
+            },
+            {
+              "present": true,
+              "value": "2026-10-18T23:59:59-05:00"
+            }
+          ],
+          "after": "2026-10-18T23:59:59-05:00"
+        },
+        "repeat": {
+          "accepted_before": [
+            {
+              "present": false
+            },
+            {
+              "present": true,
+              "value": "weekly"
+            }
+          ],
+          "after": "weekly"
+        },
+        "repeat_until": {
+          "accepted_before": [
+            {
+              "present": false
+            },
+            {
+              "present": true,
+              "value": ""
+            }
+          ],
+          "after": ""
+        }
+      },
+      "id": "faith-friends-20261018",
+      "originally_missing": false,
+      "section": "events",
+      "target": {
+        "date": "2026-10-18",
+        "description": "Becoming Like Jesus by Matt Chandler. Beginning October 18, 2026.",
+        "expires_at": "",
+        "id": "faith-friends-20261018",
+        "location": "KCMC — Pairs & Spares Classroom",
+        "one_time_expires_at": "2026-10-18T23:59:59-05:00",
+        "repeat": "weekly",
+        "repeat_until": "",
+        "rsvp": false,
+        "status": "published",
+        "time": "10:20 AM",
+        "title": "Friends of Faith Sunday Bible Study"
+      }
+    },
+    {
+      "fields": {},
+      "id": "front-porch-gospel-20261018",
+      "originally_missing": true,
+      "section": "events",
+      "target": {
+        "date": "2026-10-18",
+        "description": "Listed in the October 16, 2026 Front Pew News weekly calendar.",
+        "expires_at": "2026-10-18T23:59:59-05:00",
+        "id": "front-porch-gospel-20261018",
+        "location": "KCMC",
+        "rsvp": false,
+        "status": "published",
+        "time": "8:00 AM",
+        "title": "Front Porch Gospel"
+      }
+    },
+    {
+      "fields": {},
+      "id": "traditional-worship-20261018",
+      "originally_missing": true,
+      "section": "events",
+      "target": {
+        "date": "2026-10-18",
+        "description": "Listed in the October 16, 2026 Front Pew News weekly calendar.",
+        "expires_at": "2026-10-18T23:59:59-05:00",
+        "id": "traditional-worship-20261018",
+        "location": "KCMC",
+        "rsvp": false,
+        "status": "published",
+        "time": "9:15 AM",
+        "title": "Traditional Worship"
+      }
+    },
+    {
+      "fields": {},
+      "id": "contemporary-worship-20261018",
+      "originally_missing": true,
+      "section": "events",
+      "target": {
+        "date": "2026-10-18",
+        "description": "Listed in the October 16, 2026 Front Pew News weekly calendar.",
+        "expires_at": "2026-10-18T23:59:59-05:00",
+        "id": "contemporary-worship-20261018",
+        "location": "KCMC",
+        "rsvp": false,
+        "status": "published",
+        "time": "10:30 AM",
+        "title": "Contemporary Worship"
+      }
+    },
+    {
+      "fields": {},
+      "id": "launchkids-20261018",
+      "originally_missing": true,
+      "section": "events",
+      "target": {
+        "date": "2026-10-18",
+        "description": "Listed in the October 16, 2026 Front Pew News weekly calendar.",
+        "expires_at": "2026-10-18T23:59:59-05:00",
+        "id": "launchkids-20261018",
+        "location": "KCMC",
+        "rsvp": false,
+        "status": "published",
+        "time": "10:30 AM",
+        "title": "LaunchKids Children’s Church"
+      }
+    },
+    {
+      "fields": {},
+      "id": "quest-preschool-20261020",
+      "originally_missing": true,
+      "section": "events",
+      "target": {
+        "date": "2026-10-20",
+        "description": "Listed in the October 16, 2026 Front Pew News weekly calendar.",
+        "expires_at": "2026-10-20T23:59:59-05:00",
+        "id": "quest-preschool-20261020",
+        "location": "KCMC",
+        "rsvp": false,
+        "status": "published",
+        "time": "8:30 AM",
+        "title": "Quest Preschool"
+      }
+    },
+    {
+      "fields": {},
+      "id": "staff-meeting-20261020",
+      "originally_missing": true,
+      "section": "events",
+      "target": {
+        "date": "2026-10-20",
+        "description": "Listed in the October 16, 2026 Front Pew News weekly calendar.",
+        "expires_at": "2026-10-20T23:59:59-05:00",
+        "id": "staff-meeting-20261020",
+        "location": "KCMC",
+        "rsvp": false,
+        "status": "published",
+        "time": "9:00 AM",
+        "title": "Staff Meeting"
+      }
+    },
+    {
+      "fields": {},
+      "id": "bell-choir-rehearsal-20261020",
+      "originally_missing": true,
+      "section": "events",
+      "target": {
+        "date": "2026-10-20",
+        "description": "Listed in the October 16, 2026 Front Pew News weekly calendar.",
+        "expires_at": "2026-10-20T23:59:59-05:00",
+        "id": "bell-choir-rehearsal-20261020",
+        "location": "KCMC",
+        "rsvp": false,
+        "status": "published",
+        "time": "5:15 PM",
+        "title": "Bell Choir Rehearsal"
+      }
+    },
+    {
+      "fields": {},
+      "id": "griefshare-20261021",
+      "originally_missing": true,
+      "section": "events",
+      "target": {
+        "date": "2026-10-21",
+        "description": "Listed in the October 16, 2026 Front Pew News weekly calendar.",
+        "expires_at": "2026-10-21T23:59:59-05:00",
+        "id": "griefshare-20261021",
+        "location": "KCMC",
+        "rsvp": false,
+        "status": "published",
+        "time": "9:30 AM",
+        "title": "GriefShare"
+      }
+    },
+    {
+      "fields": {},
+      "id": "salt-light-bible-study-20261021",
+      "originally_missing": true,
+      "section": "events",
+      "target": {
+        "date": "2026-10-21",
+        "description": "Listed in the October 16, 2026 Front Pew News weekly calendar.",
+        "expires_at": "2026-10-21T23:59:59-05:00",
+        "id": "salt-light-bible-study-20261021",
+        "location": "KCMC",
+        "rsvp": false,
+        "status": "published",
+        "time": "5:17 PM",
+        "title": "Salt & Light Meal & Adult Bible Study"
+      }
+    },
+    {
+      "fields": {},
+      "id": "rooted-youth-20261021",
+      "originally_missing": true,
+      "section": "events",
+      "target": {
+        "date": "2026-10-21",
+        "description": "Listed in the October 16, 2026 Front Pew News weekly calendar.",
+        "expires_at": "2026-10-21T23:59:59-05:00",
+        "id": "rooted-youth-20261021",
+        "location": "KCMC",
+        "rsvp": false,
+        "status": "published",
+        "time": "5:17 PM",
+        "title": "Rooted Youth Group"
+      }
+    },
+    {
+      "fields": {},
+      "id": "launchpad-kids-20261021",
+      "originally_missing": true,
+      "section": "events",
+      "target": {
+        "date": "2026-10-21",
+        "description": "Listed in the October 16, 2026 Front Pew News weekly calendar.",
+        "expires_at": "2026-10-21T23:59:59-05:00",
+        "id": "launchpad-kids-20261021",
+        "location": "KCMC",
+        "rsvp": false,
+        "status": "published",
+        "time": "5:17 PM",
+        "title": "LaunchPad Kids"
+      }
+    },
+    {
+      "fields": {},
+      "id": "coffee-bible-study-20261022",
+      "originally_missing": true,
+      "section": "events",
+      "target": {
+        "date": "2026-10-22",
+        "description": "Listed in the October 16, 2026 Front Pew News weekly calendar.",
+        "expires_at": "2026-10-22T23:59:59-05:00",
+        "id": "coffee-bible-study-20261022",
+        "location": "KCMC",
+        "rsvp": false,
+        "status": "published",
+        "time": "8:30 AM",
+        "title": "Coffee & Bible Study"
+      }
+    },
+    {
+      "fields": {},
+      "id": "web-kids-pack-food-20261022",
+      "originally_missing": true,
+      "section": "events",
+      "target": {
+        "date": "2026-10-22",
+        "description": "Pack food bags from 9:00–10:00 AM. Contact the church office for the packing location.",
+        "end_time": "10:00 AM",
+        "expires_at": "2026-10-22T23:59:59-05:00",
+        "id": "web-kids-pack-food-20261022",
+        "location": "",
+        "rsvp": false,
+        "status": "published",
+        "time": "9:00 AM",
+        "title": "WEB Kids — Pack Food Bags"
+      }
+    },
+    {
+      "fields": {},
+      "id": "way-forward-20261022",
+      "originally_missing": true,
+      "section": "events",
+      "target": {
+        "date": "2026-10-22",
+        "description": "Join Pastor Tony for information and conversation about our church’s way forward.",
+        "expires_at": "2026-10-22T23:59:59-05:00",
+        "id": "way-forward-20261022",
+        "location": "KCMC",
+        "rsvp": false,
+        "status": "published",
+        "time": "1:30 PM",
+        "title": "Way Forward All Church Informational Meeting"
+      }
+    },
+    {
+      "fields": {},
+      "id": "beginners-line-dancing-20261022",
+      "originally_missing": true,
+      "section": "events",
+      "target": {
+        "date": "2026-10-22",
+        "description": "Listed in the October 16, 2026 Front Pew News weekly calendar.",
+        "expires_at": "2026-10-22T23:59:59-05:00",
+        "id": "beginners-line-dancing-20261022",
+        "location": "KCMC",
+        "rsvp": false,
+        "status": "published",
+        "time": "5:45 PM",
+        "title": "Line Dancing Beginner"
+      }
+    },
+    {
+      "fields": {},
+      "id": "intermediate-line-dancing-20261022",
+      "originally_missing": true,
+      "section": "events",
+      "target": {
+        "date": "2026-10-22",
+        "description": "Listed in the October 16, 2026 Front Pew News weekly calendar.",
+        "expires_at": "2026-10-22T23:59:59-05:00",
+        "id": "intermediate-line-dancing-20261022",
+        "location": "KCMC",
+        "rsvp": false,
+        "status": "published",
+        "time": "6:30 PM",
+        "title": "Line Dancing Intermediate"
+      }
+    },
+    {
+      "fields": {},
+      "id": "friday-night-freedom-20261023",
+      "originally_missing": true,
+      "section": "events",
+      "target": {
+        "date": "2026-10-23",
+        "description": "Listed in the October 16, 2026 Front Pew News weekly calendar.",
+        "expires_at": "2026-10-23T23:59:59-05:00",
+        "id": "friday-night-freedom-20261023",
+        "location": "KCMC",
+        "rsvp": false,
+        "status": "published",
+        "time": "6:00 PM",
+        "title": "Friday Night Freedom Worship Service"
+      }
+    },
+    {
+      "fields": {
+        "body": {
+          "accepted_before": [
+            {
+              "present": true,
+              "value": "Help us reach at least 30 decorated trunks! Sign up to bring your vehicle and welcome children and families. The pastors have promised a party for participants if we reach 30 trunks. Volunteers should arrive by 3:30 PM on October 31 to park and decorate. Plan for approximately 200 children: about 200 individually wrapped treats for one each, or 400 for two each. Use commercially packaged, individually wrapped treats. Extra candy is available, and the church can provide candy if purchasing it is a burden. Drop off donated candy at the church office or in the lobby. Keep decorations and optional costumes family-friendly and not frightening; an adult volunteer costume contest is planned. Keep walkways clear and cords secure. Keep vehicles parked until the event is over and families have cleared the area. Smile, welcome each child and be patient with shy visitors. Contact the church office with questions."
+            },
+            {
+              "present": true,
+              "value": "Help us reach at least 30 decorated trunks! Sign up to bring your vehicle and welcome children and families. The pastors have promised a party for participants if we reach 30 trunks. Volunteers should arrive by 3:30 PM on October 31 to park and decorate. Plan for approximately 200 children: about 200 individually wrapped treats for one each, or 400 for two each. Use commercially packaged, individually wrapped treats. Extra candy is available, and the church can provide candy if purchasing it is a burden. Drop off donated candy at the church office or in the lobby. Keep decorations and optional costumes family-friendly and not frightening; an adult volunteer costume contest is planned. Keep walkways clear and cords secure. Keep vehicles parked until the event is over and families have cleared the area. Smile, welcome each child and be patient with shy visitors. Contact the church office with questions. The October 16 Front Pew News asks trunk participants to sign up this Sunday. The public event runs October 31, 4:30–6:30 PM in the church parking lot, with a bounce house, hot dogs, hot cider and a costume contest."
+            },
+            {
+              "present": true,
+              "value": "Help us reach at least 30 decorated trunks! Sign up to bring your vehicle and welcome children and families. The pastors have promised a party for participants if we reach 30 trunks. Volunteers should arrive by 3:30 PM on October 31 to park and decorate. Plan for approximately 200 children: about 200 individually wrapped treats for one each, or 400 for two each. Use commercially packaged, individually wrapped treats. Extra candy is available, and the church can provide candy if purchasing it is a burden. Drop off donated candy at the church office or in the lobby. Keep decorations and optional costumes family-friendly and not frightening; an adult volunteer costume contest is planned. Keep walkways clear and cords secure. Keep vehicles parked until the event is over and families have cleared the area. Smile, welcome each child and be patient with shy visitors. Contact the church office with questions. Contact the church office about signing up a trunk. The public event runs October 31, 4:30–6:30 PM in the church parking lot, with a bounce house, hot dogs, hot cider and a costume contest."
+            }
+          ],
+          "after": "Help us reach at least 30 decorated trunks! Sign up to bring your vehicle and welcome children and families. The pastors have promised a party for participants if we reach 30 trunks. Volunteers should arrive by 3:30 PM on October 31 to park and decorate. Plan for approximately 200 children: about 200 individually wrapped treats for one each, or 400 for two each. Use commercially packaged, individually wrapped treats. Extra candy is available, and the church can provide candy if purchasing it is a burden. Drop off donated candy at the church office or in the lobby. Keep decorations and optional costumes family-friendly and not frightening; an adult volunteer costume contest is planned. Keep walkways clear and cords secure. Keep vehicles parked until the event is over and families have cleared the area. Smile, welcome each child and be patient with shy visitors. Contact the church office with questions. Contact the church office about signing up a trunk. The public event runs October 31, 4:30–6:30 PM in the church parking lot, with a bounce house, hot dogs, hot cider and a costume contest."
+        }
+      },
+      "id": "trunk-volunteers-20261014",
+      "originally_missing": false,
+      "section": "announcements",
+      "target": {
+        "body": "Help us reach at least 30 decorated trunks! Sign up to bring your vehicle and welcome children and families. The pastors have promised a party for participants if we reach 30 trunks. Volunteers should arrive by 3:30 PM on October 31 to park and decorate. Plan for approximately 200 children: about 200 individually wrapped treats for one each, or 400 for two each. Use commercially packaged, individually wrapped treats. Extra candy is available, and the church can provide candy if purchasing it is a burden. Drop off donated candy at the church office or in the lobby. Keep decorations and optional costumes family-friendly and not frightening; an adult volunteer costume contest is planned. Keep walkways clear and cords secure. Keep vehicles parked until the event is over and families have cleared the area. Smile, welcome each child and be patient with shy visitors. Contact the church office with questions. Contact the church office about signing up a trunk. The public event runs October 31, 4:30–6:30 PM in the church parking lot, with a bounce house, hot dogs, hot cider and a costume contest.",
+        "expires_at": "2026-10-31T23:59:59-05:00",
+        "id": "trunk-volunteers-20261014",
+        "link": "#events",
+        "priority": 90,
+        "starts_at": "2026-10-14T00:00:00-05:00",
+        "status": "published",
+        "title": "Trunk or Treat volunteers: welcome families with us"
+      }
+    },
+    {
+      "fields": {
+        "body": {
+          "accepted_before": [
+            {
+              "present": true,
+              "value": "Fill a baby bottle with change or a check to support Pregnancy Life Line/Southern Missouri. Please return your bottle by Sunday, October 25, the last Sunday in October. Contact the church office with questions. Thank you for supporting this ministry!"
+            },
+            {
+              "present": true,
+              "value": "Fill your baby bottle with change or folding money to support Pregnancy Life Line/Southern Missouri. Please return your filled bottle by Sunday, October 25. Small Change Makes a Big Impact! Contact the church office with questions."
+            }
+          ],
+          "after": "Fill your baby bottle with change or folding money to support Pregnancy Life Line/Southern Missouri. Please return your filled bottle by Sunday, October 25. Small Change Makes a Big Impact! Contact the church office with questions."
+        }
+      },
+      "id": "pll-bottles-20261025",
+      "originally_missing": false,
+      "section": "announcements",
+      "target": {
+        "body": "Fill your baby bottle with change or folding money to support Pregnancy Life Line/Southern Missouri. Please return your filled bottle by Sunday, October 25. Small Change Makes a Big Impact! Contact the church office with questions.",
+        "expires_at": "2026-10-25T23:59:59-05:00",
+        "id": "pll-bottles-20261025",
+        "link": "#partner",
+        "priority": 80,
+        "starts_at": "2026-10-14T00:00:00-05:00",
+        "status": "published",
+        "title": "Return Pregnancy Life Line baby bottles by October 25"
+      }
+    },
+    {
+      "fields": {},
+      "id": "way-forward-20261022",
+      "originally_missing": true,
+      "section": "announcements",
+      "target": {
+        "body": "Join Pastor Tony for the Way Forward All Church Informational Meeting on Thursday, October 22 at 1:30 PM. Come hear the information and be part of the conversation.",
+        "expires_at": "2026-10-22T23:59:59-05:00",
+        "id": "way-forward-20261022",
+        "link": "#events",
+        "priority": 95,
+        "starts_at": "2026-10-18T00:00:00-05:00",
+        "status": "published",
+        "title": "Way Forward meeting — October 22 at 1:30 PM"
+      }
+    },
+    {
+      "fields": {},
+      "id": "richard-french-lasagna-20261114",
+      "originally_missing": true,
+      "section": "announcements",
+      "target": {
+        "body": "Saturday, November 14 at 4:30 PM in Fellowship Hall. Tickets are $15 each. Gather for food and fellowship as we remember Richard.",
+        "expires_at": "2026-11-14T23:59:59-06:00",
+        "id": "richard-french-lasagna-20261114",
+        "link": "#events",
+        "priority": 70,
+        "starts_at": "2026-10-18T00:00:00-05:00",
+        "status": "published",
+        "title": "Richard French Memorial Lasagna Dinner"
+      }
+    },
+    {
+      "fields": {},
+      "id": "friends-of-faith-20261018",
+      "originally_missing": true,
+      "section": "announcements",
+      "target": {
+        "body": "Beginning October 18 at 10:20 AM in the Pairs & Spares Classroom. Becoming Like Jesus by Matt Chandler.",
+        "expires_at": "2026-10-18T23:59:59-05:00",
+        "id": "friends-of-faith-20261018",
+        "link": "#events",
+        "priority": 85,
+        "starts_at": "2026-10-18T00:00:00-05:00",
+        "status": "published",
+        "title": "Friends of Faith — Sunday Bible Study"
+      }
+    }
+  ],
+  "source_commit": "ca0d6197b4be7339fd5937f216202a7e5fbdd13d",
+  "version": 1
+}
