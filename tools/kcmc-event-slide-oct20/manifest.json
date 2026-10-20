@@ -1,14 +1,14 @@
 {
   "index.php": {
-    "before": "fe9afab116f986d0a7cbc496c642c5c7c56a80680d917f80d96ff1295acb8bfa",
-    "after": "20af871050569e5a78462255bdac4e2df3cff9977690f5dfe779106ac3f9c9b5"
+    "before": "20af871050569e5a78462255bdac4e2df3cff9977690f5dfe779106ac3f9c9b5",
+    "after": "9dc7c5fb9f83b1a6d7dfebc03d3ea6471717859ad265ad9a6508524d250a33c6"
   },
   "events.php": {
-    "before": "6f37a33a3b80b31f7f430105d6c7fbe29cf1215aec00e51511970ef6aacf656d",
-    "after": "ada6c0f5a037caee8a43475a572903a965c5830ba6b349979cf2cc71f4b05fe8"
+    "before": "ada6c0f5a037caee8a43475a572903a965c5830ba6b349979cf2cc71f4b05fe8",
+    "after": "e51c902409bd9bc08b763a1d881ff25ffe6960ef53895077f5d59133f808db25"
   },
   "assets/visuals/trunk-or-treat-2026.svg": {
-    "before": "655428d44e4f5c1a43ab62a047c4050cb57d4581c30e5de67e0b0527b7c1ede8",
+    "before": "e67b170dca612f062bf6aa6ddfe23cc926fde5c6b71d0df4ac6f2899d966a4f7",
     "after": "e67b170dca612f062bf6aa6ddfe23cc926fde5c6b71d0df4ac6f2899d966a4f7"
   }
 }

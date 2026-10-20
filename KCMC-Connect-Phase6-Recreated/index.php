@@ -204,7 +204,7 @@ usort($kcmcAnnouncements, fn($a,$b)=>(int)($b['priority']??0)<=>(int)($a['priori
         data-end-time="<?=kcmc_h($eventEndTime)?>"
         data-location="<?=kcmc_h($calendarLocation)?>"
         data-description="<?=kcmc_h((string)($event['description']??''))?>">
-        <?php if($hasEventImage): ?><img class="event-image" src="<?=kcmc_h($eventImage)?>" alt="<?=kcmc_h((string)($event['image_alt']??''))?>" loading="lazy" decoding="async"><?php endif; ?>
+        <?php if($hasEventImage): ?><img class="event-image" src="<?=kcmc_h($eventImage.($detailsOnSlide?'?v=event-slide-20261020':''))?>" alt="<?=kcmc_h((string)($event['image_alt']??''))?>" loading="lazy" decoding="async"><?php endif; ?>
         <div class="event-card-copy">
           <?php if(!$detailsOnSlide): ?><p class="muted"><time datetime="<?=kcmc_h($eventDate)?>"><?=kcmc_h(date('D, M j',strtotime($eventDate)))?></time></p><?php endif; ?>
           <h3><?=kcmc_h($eventTitle)?></h3>

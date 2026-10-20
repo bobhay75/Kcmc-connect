@@ -40,7 +40,7 @@ $events = $calendar['events'];
     $timeLabel = $endTime !== '' ? $time . '–' . $endTime : $time;
   ?>
     <article class="eventx">
-      <?php if($hasImage): ?><img src="<?=kcmc_h($image)?>" alt="<?=kcmc_h((string)($event['image_alt'] ?? ''))?>" loading="lazy" decoding="async"><?php endif; ?>
+      <?php if($hasImage): ?><img src="<?=kcmc_h($image.($detailsOnSlide?'?v=event-slide-20261020':''))?>" alt="<?=kcmc_h((string)($event['image_alt'] ?? ''))?>" loading="lazy" decoding="async"><?php endif; ?>
       <div class="eventx-copy">
         <?php if(!$detailsOnSlide): ?><small><time datetime="<?=kcmc_h((string)($event['date'] ?? ''))?>"><?=kcmc_h(date('l, F j, Y', strtotime((string)($event['date'] ?? ''))))?></time> • <?=kcmc_h($timeLabel)?></small><?php endif; ?>
         <h2><?=kcmc_h((string)($event['title'] ?? ''))?></h2>
