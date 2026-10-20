@@ -1,6 +1,7 @@
 <?php
 require_once __DIR__ . '/../lib/bootstrap.php';
 require_once __DIR__ . '/../lib/backup-retention.php';
+require_once __DIR__ . '/../lib/public-features.php';
 $user = kcmc_require_role(['pastor_admin', 'recovery_admin']);
 kcmc_private_headers();
 function kcmc_publish_fail(string $message, int $status): never {
@@ -49,9 +50,23 @@ $data['bulletin']['title']=trim((string)($_POST['bulletin_title']??''));
 $data['bulletin']['date']=trim((string)($_POST['bulletin_date']??''));
 $data['bulletin']['welcome']=trim((string)($_POST['bulletin_welcome']??''));
 $data['bulletin']['notes']=array_values(array_filter(array_map('trim',preg_split('/\R/',(string)($_POST['bulletin_notes']??'')))));
+if (isset($_POST['worship_streams'])) {
+    if (!is_array($_POST['worship_streams'])) kcmc_publish_fail('Invalid service links.', 422);
+    $streams=[];
+    foreach (kcmc_worship_services([]) as $service) {
+        $raw=$_POST['worship_streams'][$service['id']]??'';
+        if (!is_string($raw)) kcmc_publish_fail('Enter one direct Facebook link per service.', 422);
+        $url=kcmc_service_stream_url($raw);
+        if (trim($raw)!=='' && $url==='') kcmc_publish_fail('Use a direct Facebook video link for '.$service['name'].'.',422);
+        if ($url!=='' && in_array($url,$streams,true)) kcmc_publish_fail('Each service needs its own recording. Duplicate links were not published.',422);
+        $streams[$service['id']]=$url;
+    }
+    $data['worship_streams']=$streams;
+}
 $postedEvents=$_POST['events']??[];
 foreach($postedEvents as $i=>$p){
     if(!isset($data['events'][$i]) || !empty($data['events'][$i]['deleted_at']))continue;
+    if(array_key_exists('public_event',$p))$data['events'][$i]['public_event']=($p['public_event']==='1');
     $data['events'][$i]['title']=trim((string)($p['title']??''));
     $data['events'][$i]['date']=trim((string)($p['date']??''));
     $data['events'][$i]['time']=trim((string)($p['time']??''));

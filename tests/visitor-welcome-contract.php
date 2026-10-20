@@ -57,8 +57,16 @@ try {
     welcome_check($result['status']==='unavailable','transport exception produces safe follow-up status');
     $result=kcmc_visitor_welcome_send($next(6),$visit,$accept,$settings,$now+86401);
     welcome_check($result['status']==='accepted' && count($captured)===2,'later legitimate visit may receive a receipt after 24 hours');
-    $nonvisit=$visit; $nonvisit['kind']='groups';
-    welcome_check(kcmc_visitor_welcome_send($next(7),$nonvisit,$accept,$settings,$now)['status']==='not_applicable','group interest does not receive a visit receipt');
+    $nonvisit=$visit; $nonvisit['kind']='groups'; $nonvisit['email']='groups@example.invalid'; $nonvisit['service']='';
+    welcome_check(kcmc_visitor_welcome_send($next(7),$nonvisit,$accept,$settings,$now)['status']==='accepted','group interest receives an immediate connection welcome');
+    $groupBody=quoted_printable_decode($captured[2][2]);
+    welcome_check(str_contains($groupBody,'connection request') && !str_contains($groupBody,'selected Sunday service'),'connection welcome does not claim a planned visit');
+    $serve=$nonvisit; $serve['kind']='serve';
+    welcome_check(kcmc_visitor_welcome_send($next(10),$serve,$accept,$settings,$now)['status']==='suppressed','one recipient receives no duplicate welcome across forms');
+    $serve['email']='serve@example.invalid';
+    welcome_check(kcmc_visitor_welcome_send($next(11),$serve,$accept,$settings,$now)['status']==='accepted','serving interest receives a welcome');
+    $unknown=$visit; $unknown['kind']='other';
+    welcome_check(kcmc_visitor_welcome_send($next(12),$unknown,$accept,$settings,$now)['status']==='not_applicable','unrecognized intake does not send mail');
     $invalid=$visit; $invalid['service']='arbitrary service';
     welcome_check(kcmc_visitor_welcome_send($next(8),$invalid,$accept,$settings,$now)['status']==='unavailable','mailer independently checks the service allowlist');
     $state=file_get_contents(KCMC_VISITOR_WELCOME_STATE);
@@ -68,7 +76,7 @@ try {
     welcome_check(str_contains(kcmc_visitor_welcome_confirmation('unavailable'),'still saved'),'failed email does not imply the visit request was lost');
     file_put_contents(KCMC_VISITOR_WELCOME_STATE,'{broken');
     $fresh=$visit; $fresh['email']='fresh@example.invalid';
-    welcome_check(kcmc_visitor_welcome_send($next(9),$fresh,$accept,$settings,$now)['status']==='unavailable' && count($captured)===2,'corrupt delivery state fails closed without sending');
+    welcome_check(kcmc_visitor_welcome_send($next(9),$fresh,$accept,$settings,$now)['status']==='unavailable' && count($captured)===4,'corrupt delivery state fails closed without sending');
     $api=file_get_contents(__DIR__.'/../KCMC-Connect-Phase6-Recreated/api/connection.php');
     welcome_check(strpos($api,"if (!empty(\$result['duplicate']))") < strpos($api,'$welcome ='), 'duplicate requests return before mail logic');
     welcome_check(strpos($api,"if (empty(\$result['stored']))") < strpos($api,'$welcome ='), 'failed saves return before mail logic');

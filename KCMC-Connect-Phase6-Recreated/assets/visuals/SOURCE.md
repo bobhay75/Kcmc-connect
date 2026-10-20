@@ -7,3 +7,5 @@
 - Creator: Avalon1101
 - License: CC0 1.0 Universal Public Domain Dedication
 - SHA-256: `CE218D95AF71BB393380CCC0EA7EB15493CD5FCDCA1D85094F4F317715DEA235`
+
+Front Porch Gospel card (October 20 functional review): kcmc-front-porch-official.jpg is the frontporch.jpg photograph published by https://www.kimberlingcitymethodist.com/ . Original: https://static.wixstatic.com/media/479e82_6a5dfa6151704a61bddf0b6435487718~mv2.jpg . Retained for the service card only.

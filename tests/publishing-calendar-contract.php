@@ -57,7 +57,7 @@ expect_same(
 foreach (['index.php', 'events.php'] as $publicPage) {
     $publicSource = file_get_contents(__DIR__ . '/../KCMC-Connect-Phase6-Recreated/' . $publicPage);
     $calendarSource = file_get_contents(__DIR__ . '/../KCMC-Connect-Phase6-Recreated/lib/event-calendar.php');
-    expect_same(true, is_string($publicSource) && str_contains($publicSource, 'kcmc_event_calendar(') && str_contains($calendarSource, "'kcmc_compare_event_start'"), "{$publicPage} uses the shared chronological event sort through the calendar view.");
+    expect_same(true, is_string($publicSource) && (str_contains($publicSource, 'kcmc_event_calendar(') || (str_contains($publicSource, 'kcmc_public_event_calendar(') && str_contains(file_get_contents(__DIR__.'/../KCMC-Connect-Phase6-Recreated/lib/public-features.php'), "usort(\$events,'kcmc_compare_event_start')"))) && str_contains($calendarSource, "'kcmc_compare_event_start'"), "{$publicPage} uses the shared chronological event sort through the calendar view.");
 }
 
 // Keep visibility fixtures relative to the runtime clock so this contract does

@@ -112,16 +112,8 @@ with tempfile.TemporaryDirectory(prefix='kcmc-photos-review-') as td:
                     check(page.locator('.hero-church-photo, .hero-church-window, .hero-card-with-photo').count() == 0, f'{width}px no nested picture-on-picture hero')
                     welcome_home(page,width,check)
                     check(page.locator('[data-hero-caption]').count() == 0, f'{width}px no hero source caption element')
-                    check(page.locator('section[aria-label="KCMC kids and family photos"] [data-kcmc-photo-gallery] img').count() == 3, 'three supplied family activity photos remain in their original public gallery')
-                    family = page.locator('[data-family-welcome]')
-                    family.scroll_into_view_if_needed()
-                    page.wait_for_function("document.querySelector('.family-photo')?.naturalWidth > 0")
-                    page.locator('.family-photo').evaluate('(img) => img.decode()')
-                    check(family.count() == 1, f'{width}px one family section')
-                    check(page.locator('.family-photo').get_attribute('src') == PHOTOS['kids-group.jpg'], f'{width}px new kids photo loads')
-                    check('summer kick-off' in page.locator('.family-photo').get_attribute('alt'), f'{width}px useful supplied photo description')
-                    check(page.locator('.family-photo-frame .photo-source, .family-photo-frame figcaption').count() == 0, f'{width}px family photo has no visible source caption')
-                    check(page.locator('.family-welcome-copy').is_hidden(), f'{width}px family photo stays free of extra navigation and promotional copy')
+                    check(page.locator('[data-view=home] img').count() == 1, 'only the approved church background remains on the landing page')
+                    check(page.locator('[data-family-welcome]').count() == 0, 'removed family photo section is not reinserted by JavaScript')
                     page.locator('#siteMenu summary').click()
                     check(page.locator('#siteMenu').get_by_role('link', name='Kids & youth', exact=True).get_attribute('href') == 'https://www.kimberlingcitymethodist.com/youth', f'{width}px youth ministry destination retained inside the fish')
                     page.keyboard.press('Escape')
@@ -131,7 +123,7 @@ with tempfile.TemporaryDirectory(prefix='kcmc-photos-review-') as td:
                     screenshot = OUT / f'homepage-{width}.png'
                     page.screenshot(path=str(screenshot), full_page=True)
                     with Image.open(screenshot) as full:
-                        for selector, name in [('.hero', 'new-hero'), ('[data-family-welcome]', 'new-kids')]:
+                        for selector, name in [('.hero', 'retained-hero')]:
                             box = page.locator(selector).bounding_box()
                             check(box is not None, f'{width}px {name} has a rendered box')
                             left, top = round(box['x']), round(box['y'])
@@ -150,17 +142,13 @@ with tempfile.TemporaryDirectory(prefix='kcmc-photos-review-') as td:
                 for url in photo_bytes:
                     page.route('**/' + url.removeprefix('./'), lambda route: route.abort())
                 page.goto(base, wait_until='networkidle')
-                # Trigger the lazy photo request without scrolling a section
-                # that deliberately disappears as soon as its image fails.
-                page.locator('.family-photo').evaluate("img => { img.loading = 'eager'; }")
-                page.wait_for_function("document.querySelector('.family-photo-frame')?.hidden === true")
-                check(page.locator('[data-family-welcome]').is_hidden(), 'failed family photo leaves no empty homepage section')
+                check(page.locator('[data-family-welcome]').count() == 0, 'removed family gallery stays absent even when its old asset is unavailable')
                 check(page.locator('.hero-church-window').count() == 0, 'failed remote hero does not replace the local fallback')
                 check('kcmc-building-original-20261018.jpg' in page.locator('[data-authentic-building]').get_attribute('src'), 'original church photo survives family photo failure')
                 check(page.locator('[data-authentic-building]').evaluate('(img)=>img.complete&&img.naturalWidth===1536'), 'original church photograph still decodes')
                 check(page.locator('[data-hero-caption],[data-hero-controls]').count() == 0, 'no retired carousel or caption appears after family photo failure')
-                check(page.locator('.family-welcome-copy').is_hidden(), 'failed family photo does not restore homepage promotional copy')
-                check(page.locator('.family-photo-frame').is_hidden(), 'failed kids photo does not leave a broken-image placeholder')
+                check(page.locator('.family-welcome-copy').count() == 0, 'removed family copy is not reinserted')
+                check(page.locator('.family-photo-frame').count() == 0, 'removed kids image leaves no empty placeholder')
                 page.locator('#siteMenu summary').click()
                 check(page.locator('#siteMenu [data-route="visit"]').is_visible() and page.locator('#siteMenu').get_by_role('link', name='Kids & youth', exact=True).is_visible(), 'visit and youth destinations survive photo failure in the fish')
                 fallback.close()

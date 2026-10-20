@@ -112,7 +112,7 @@ def main() -> int:
                 die(f"PHP server did not start: {output}")
 
             with sync_playwright() as p:
-                browser = p.chromium.launch()
+                browser = p.chromium.launch(**({'executable_path': os.environ['KCMC_CHROMIUM_PATH']} if os.environ.get('KCMC_CHROMIUM_PATH') else {}))
                 context = browser.new_context(viewport={"width": 390, "height": 844})
                 page = context.new_page()
                 errors: list[str] = []

@@ -19,6 +19,7 @@ with tempfile.TemporaryDirectory(prefix='kcmc-calendar-') as tmp:
       {'id':'test-hidden','title':'PRIVATE HIDDEN FIXTURE','date':str(wed),'time':'7:00 PM','repeat':'weekly','status':'hidden'},
       {'id':'test-outside','title':'Outside-week fixture','date':str(start+timedelta(days=9)),'time':'4:30 PM','rsvp':False},
     ]
+    for event in data['events']: event['public_event']=True  # Explicit synthetic community-event fixtures.
     (app/'data/content.json').write_text(json.dumps(data),encoding='utf-8')
     before=hashlib.sha256((app/'data/content.json').read_bytes()).hexdigest()
     with socket.socket() as s:s.bind(('127.0.0.1',0));port=s.getsockname()[1]
@@ -30,7 +31,7 @@ with tempfile.TemporaryDirectory(prefix='kcmc-calendar-') as tmp:
                 with socket.create_connection(('127.0.0.1',port),timeout=.2):break
             except OSError:time.sleep(.1)
         with sync_playwright() as p:
-            browser=p.chromium.launch()
+            browser=p.chromium.launch(**({'executable_path':os.environ['KCMC_CHROMIUM_PATH']} if os.environ.get('KCMC_CHROMIUM_PATH') else {}))
             page=browser.new_page();errors=[];writes=[]
             page.on('pageerror',lambda e:errors.append(str(e)))
             page.on('request',lambda r:writes.append(r.url) if r.method!='GET' else None)

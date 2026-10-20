@@ -11,7 +11,7 @@ from phase_two_source_layer import FIXTURE as PHASE_TWO_FIXTURE
 from visual_source_layer import FIXTURE as VISUAL_FIXTURE
 from manual_clock_source_layer import FIXTURE as MANUAL_FIXTURE, EDITORIAL_FIXTURE
 from health_actions_source_layer import FIXTURE as HEALTH_FIXTURE
-from welcome_home_source_layer import FIXTURE as WELCOME_FIXTURE, BRAND_FIXTURE
+from welcome_home_source_layer import FIXTURE as WELCOME_FIXTURE, BRAND_FIXTURE, FUNCTION_FIXTURE
 from workflow_followup_source_layer import FIXTURE as FOLLOWUP_FIXTURE
 
 
@@ -30,6 +30,7 @@ class ExactWorkflowSource(unittest.TestCase):
         shutil.copyfile(ROOT / FOLLOWUP_FIXTURE, self.root / FOLLOWUP_FIXTURE)
         shutil.copyfile(ROOT / WELCOME_FIXTURE, self.root / WELCOME_FIXTURE)
         shutil.copyfile(ROOT / BRAND_FIXTURE, self.root / BRAND_FIXTURE)
+        shutil.copyfile(ROOT / FUNCTION_FIXTURE, self.root / FUNCTION_FIXTURE)
         shutil.copyfile(ROOT / EDITORIAL_FIXTURE, self.root / EDITORIAL_FIXTURE)
 
     def tearDown(self):

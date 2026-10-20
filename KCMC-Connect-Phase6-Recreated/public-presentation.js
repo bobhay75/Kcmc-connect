@@ -117,7 +117,7 @@
 (() => {
   'use strict';
   const home = document.querySelector('[data-view="home"]');
-  if (!home || home.querySelector('[data-family-welcome]')) return;
+  if (!home || document.body.classList.contains('kcmc-welcome-design') || home.querySelector('[data-family-welcome]')) return;
   const kidsPhoto = './assets/visuals/kcmc-kids-summer-group.jpg';
   const youthPage = 'https://www.kimberlingcitymethodist.com/youth';
   const visitPage = 'https://www.kimberlingcitymethodist.com/visit';
