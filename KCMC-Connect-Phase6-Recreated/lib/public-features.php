@@ -33,9 +33,19 @@ function kcmc_worship_services(array $content): array {
          'image'=>'assets/visuals/kcmc-contemporary-gathering-20261018.jpg', 'alt'=>'KCMC members gathered around tables for contemporary worship',
          'description'=>'A relaxed coffee-shop setting with fellowship, refreshments and Launch Kids.'],
     ];
+    // Verified on the church's public Facebook video pages, October 20, 2026.
+    // These are October 18 recordings, not promises of a currently live stream.
+    $verified = [
+        'front-porch'=>'https://www.facebook.com/KimberlingCityMethodistChurch/videos/1653016829754297/',
+        'traditional'=>'https://www.facebook.com/KimberlingCityMethodistChurch/videos/1756125088830337/',
+        'contemporary'=>'https://www.facebook.com/KimberlingCityMethodistChurch/videos/3164538033744471',
+    ];
+    $configured=is_array($content['worship_streams']??null)?$content['worship_streams']:[];
     $urls = [];
     foreach ($services as &$service) {
-        $url = kcmc_service_stream_url($content['worship_streams'][$service['id']] ?? '');
+        $raw = array_key_exists($service['id'],$configured) ? $configured[$service['id']] : $verified[$service['id']];
+        $url = kcmc_service_stream_url($raw);
+        $service['recording_label'] = $url !== '' && $url === kcmc_service_stream_url($verified[$service['id']]) ? 'October 18, 2026 recording' : '';
         $service['stream_url'] = $url;
         if ($url !== '') $urls[$url] = ($urls[$url] ?? 0) + 1;
     }

@@ -4,6 +4,7 @@ import hashlib
 import json
 import stat
 import subprocess
+from tony_function_source_layer import FunctionalLayer, FIXTURE as FUNCTION_FIXTURE, MODIFIED as FUNCTION_MODIFIED, ADDED as FUNCTION_ADDED
 
 ROOT=Path(__file__).resolve().parents[1]
 PREFIX='KCMC-Connect-Phase6-Recreated/'
@@ -19,7 +20,7 @@ BRAND_ADDED=frozenset('assets/visuals/kcmc-'+n+'-20261018.jpg' for n in [
     'contemporary-room-portrait','contemporary-after-service'])
 MODIFIED=frozenset(['index.php','sw.js','manifest.webmanifest','assets/icons/icon-192.png','assets/icons/icon-512.png'])
 WELCOME_ADDED=frozenset(['home-welcome.css','assets/visuals/kcmc-building-original-20261018.jpg'])
-ADDED=WELCOME_ADDED | BRAND_ADDED
+ADDED=WELCOME_ADDED | BRAND_ADDED | FUNCTION_ADDED
 
 def require(ok,message):
     if not ok: raise AssertionError(message)
@@ -30,6 +31,7 @@ def blob(data):
 class WelcomeLayer:
     def __init__(self,root=ROOT,git_source=None):
         self.root=Path(root).resolve();self.app=self.root/PREFIX;self.git_source=Path(git_source or self.root).resolve()
+        self.functions=FunctionalLayer(self.root)
         # Current branding is a separately pinned reversible layer. The October
         # 19 fixture and every earlier security/provenance proof stay immutable.
         brand_raw=(self.root/BRAND_FIXTURE).read_bytes()
@@ -47,7 +49,7 @@ class WelcomeLayer:
                 require(p.is_file() and not p.is_symlink(),'Ordinary branding file required: '+name)
                 info=p.lstat()
                 require(stat.S_ISREG(info.st_mode) and not info.st_mode&0o111,'Non-executable branding file required: '+name)
-                actual=p.read_bytes()
+                actual=self.functions.before(name)
                 require(len(actual)==record['after_bytes'] and hashlib.sha256(actual).hexdigest()==record['after_sha256'],'Only exact reviewed October 20 branding bytes permitted: '+name)
                 expected={'after_sha256','after_bytes'} | ({'before_utf8'} if group=='modified' else set())
                 require(set(record)==expected,'Bounded branding record required: '+name)
@@ -66,16 +68,16 @@ class WelcomeLayer:
                 require(p.exists() or p.is_symlink(),'Ordinary non-executable welcome-design file required: '+name)
                 info=p.lstat()
                 require(stat.S_ISREG(info.st_mode) and not info.st_mode&0o111 and not p.is_symlink(),'Ordinary non-executable welcome-design file required: '+name)
-                actual=self.brand_before.get(name,p.read_bytes())
+                actual=self.brand_before.get(name,self.functions.before(name))
                 require(len(actual)==record['after_bytes'] and hashlib.sha256(actual).hexdigest()==record['after_sha256'],'Only exact reviewed welcome-design bytes permitted: '+name)
                 expected={'after_sha256','after_bytes'}
                 if group=='modified': expected.add('before_git_blob' if name.startswith('assets/icons/') else 'before_utf8')
                 require(set(record)==expected,'Bounded welcome-design record required: '+name)
-        self.paths=frozenset(PREFIX+n for n in MODIFIED | ADDED)
+        self.paths=frozenset(PREFIX+n for n in MODIFIED | ADDED | FUNCTION_MODIFIED)
 
     def before(self,name):
         require(name not in ADDED,'Added design asset has no historical preimage')
-        if name not in MODIFIED: return (self.app/name).read_bytes()
+        if name not in MODIFIED: return self.functions.before(name)
         record=self.fixture['modified'][name]
         if 'before_utf8' in record: return record['before_utf8'].encode('utf-8')
         # Existing historical suites already require this immutable canonical
@@ -87,9 +89,10 @@ class WelcomeLayer:
     def restore_copy(self,destination):
         destination=Path(destination)
         require(destination.resolve()!=self.app,'Never project historical bytes into current application')
+        for name,data in self.functions.preimages.items(): (destination/name).write_bytes(data)
         for name in MODIFIED: (destination/name).write_bytes(self.before(name))
         for name in ADDED:
             p=destination/name
-            record=self.brand['added'].get(name) or self.brand['modified'].get(name) or self.fixture['added'][name]
+            record=self.functions.fixture['added'].get(name) or self.brand['added'].get(name) or self.brand['modified'].get(name) or self.fixture['added'][name]
             require(hashlib.sha256(p.read_bytes()).hexdigest()==record['after_sha256'],'Only copied exact added asset may be removed')
             p.unlink()

@@ -5,7 +5,7 @@ import hashlib
 import shutil
 import tempfile
 import unittest
-from welcome_home_source_layer import WelcomeLayer, ROOT, PREFIX, FIXTURE, BRAND_FIXTURE, MODIFIED, ADDED
+from welcome_home_source_layer import WelcomeLayer, ROOT, PREFIX, FIXTURE, BRAND_FIXTURE, MODIFIED, ADDED, FUNCTION_FIXTURE, FUNCTION_MODIFIED
 
 
 class WelcomeProjectionTests(unittest.TestCase):
@@ -13,7 +13,7 @@ class WelcomeProjectionTests(unittest.TestCase):
         self.temp = tempfile.TemporaryDirectory()
         self.addCleanup(self.temp.cleanup)
         self.root = Path(self.temp.name)
-        for name in [FIXTURE, BRAND_FIXTURE] + [PREFIX + p for p in MODIFIED | ADDED]:
+        for name in [FIXTURE, BRAND_FIXTURE, FUNCTION_FIXTURE] + [PREFIX + p for p in MODIFIED | ADDED | FUNCTION_MODIFIED]:
             target = self.root / name
             target.parent.mkdir(parents=True, exist_ok=True)
             shutil.copyfile(ROOT / name, target)

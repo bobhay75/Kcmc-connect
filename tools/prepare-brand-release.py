@@ -175,11 +175,11 @@ def build(destination):
     reviewed=layer.WelcomeLayer()
     assert set(MODIFIED)==set(reviewed.brand['modified']) and set(ADDED)==set(reviewed.brand['added'])
     before={name:image(name) for name in MODIFIED}
-    after={name:(ROOT/PREFIX/name).read_bytes() for name in MODIFIED+ADDED}
+    after={name:reviewed.functions.before(name) for name in MODIFIED+ADDED}
     for name in MODIFIED:
         assert before[name]==reviewed.brand_before[name], 'Pinned baseline mismatch: '+name
     for name in GUARDS:
-        assert (ROOT/PREFIX/name).read_bytes()==image(name), 'Read-only prerequisite changed: '+name
+        assert reviewed.functions.before(name)==image(name), 'Read-only prerequisite changed: '+name
     entries={'README.md':RUNBOOK.encode('utf-8')}
     for name,data in before.items(): entries['before/'+name]=data
     for name,data in after.items(): entries['after/'+name]=data

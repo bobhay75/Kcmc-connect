@@ -159,11 +159,22 @@ class DeploymentGuardTests(unittest.TestCase):
         welcome = WelcomeLayer()
         installed_bundle = self.reviewed_fish_bundle('livecalendar')
         for name, installed in installed_bundle.items():
-            canonical = (ROOT / 'KCMC-Connect-Phase6-Recreated' / name).read_bytes()
+            canonical = welcome.functions.before(name)
             if name in welcome.brand['modified']:
                 self.assertEqual(hashlib.sha256(canonical).hexdigest(),
                     welcome.brand['modified'][name]['after_sha256'])
             (self.source / name).write_bytes(canonical)
+            (self.live / name).write_bytes(installed)
+        self.refused_unchanged()
+
+    def test_current_functional_source_still_refuses_broad_deployment(self):
+        welcome = WelcomeLayer()
+        installed_bundle = self.reviewed_fish_bundle('livecalendar')
+        for name, installed in installed_bundle.items():
+            current = (ROOT / 'KCMC-Connect-Phase6-Recreated' / name).read_bytes()
+            record = welcome.functions.fixture['modified'].get(name)
+            if record: self.assertEqual(hashlib.sha256(current).hexdigest(), record['after_sha256'])
+            (self.source / name).write_bytes(current)
             (self.live / name).write_bytes(installed)
         self.refused_unchanged()
 

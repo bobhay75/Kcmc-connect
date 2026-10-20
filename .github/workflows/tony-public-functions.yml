@@ -14,9 +14,14 @@ jobs:
     timeout-minutes: 15
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          fetch-depth: 0
       - name: Public behavior, intake, mail and cache contracts
         run: |
           set -euo pipefail
+          python3 tests/installed-reconciliation-source.py
+          python3 tests/tony-function-source-negative.py
+          python3 tests/tony-functions-release.py
           php tests/tony-public-functions-contract.php
           php tests/visitor-welcome-contract.php
           php tests/connection-intake-contract.php

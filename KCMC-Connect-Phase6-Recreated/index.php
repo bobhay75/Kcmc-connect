@@ -152,6 +152,7 @@ usort($kcmcAnnouncements, fn($a,$b)=>(int)($b['priority']??0)<=>(int)($a['priori
       <article class="sermon-card" data-search="<?=kcmc_h(strtolower($service['name'].' '.$service['time']))?>" data-type="<?=kcmc_h($service['id'])?>">
         <img class="service-photo" src="<?=kcmc_h($service['image'])?>" alt="<?=kcmc_h($service['alt'])?>" loading="lazy" decoding="async" width="720" height="540">
         <div><span class="pill"><?=kcmc_h($service['time'])?> Sunday</span><h2><?=kcmc_h($service['name'])?></h2><p><?=kcmc_h($service['description'])?></p>
+        <?php if($service['recording_label'] !== ''): ?><p class="muted"><?=kcmc_h($service['recording_label'])?></p><?php endif; ?>
         <?php if($service['stream_url'] !== ''): ?><a class="btn gold" href="<?=kcmc_h($service['stream_url'])?>" target="_blank" rel="noopener" aria-label="Watch <?=kcmc_h($service['name'])?> on Facebook">Watch this service</a><?php else: ?><p class="muted">This service’s direct broadcast link has not been published yet.</p><?php endif; ?></div>
       </article>
       <?php endforeach; ?>

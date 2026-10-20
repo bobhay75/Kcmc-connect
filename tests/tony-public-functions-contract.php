@@ -2,6 +2,10 @@
 declare(strict_types=1);
 require_once __DIR__.'/../KCMC-Connect-Phase6-Recreated/lib/public-features.php';
 function verify_public(bool $value,string $label): void {if(!$value)throw new RuntimeException($label);echo "PASS: $label\n";}
+$defaults=kcmc_worship_services([]);
+verify_public(count(array_unique(array_column($defaults,'stream_url')))===3,'verified October 18 recordings provide three distinct defaults');
+verify_public(count(array_filter($defaults,fn($row)=>$row['recording_label']==='October 18, 2026 recording'))===3,'replays are dated rather than falsely labeled currently live');
+verify_public(kcmc_worship_services(['worship_streams'=>['front-porch'=>'']])[0]['stream_url']==='','explicit staff removal does not silently restore the default');
 $urls=['front-porch'=>'https://www.facebook.com/Church/videos/111/','traditional'=>'https://www.facebook.com/watch/?v=222','contemporary'=>'https://facebook.com/Church/videos/333/?tracking=anything'];
 $services=kcmc_worship_services(['worship_streams'=>$urls]);
 verify_public(count($services)===3 && count(array_unique(array_column($services,'stream_url')))===3,'three services retain distinct direct video destinations');
