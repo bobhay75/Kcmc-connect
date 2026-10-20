@@ -40,5 +40,6 @@ jobs:
           python3 -B tests/welcome-source-layer.py
           node tests/welcome-home-source.cjs
           python3 -B tools/kcmc-content-oct20/test_publish.py
+          python3 -B tools/kcmc-content-oct20/test_reconcile_observed_live.py
           python3 -B tests/brand-release-package.py
           git diff --check
