@@ -5,7 +5,7 @@ import hashlib
 import shutil
 import tempfile
 import unittest
-from welcome_home_source_layer import WelcomeLayer, ROOT, PREFIX, FIXTURE, MODIFIED, ADDED
+from welcome_home_source_layer import WelcomeLayer, ROOT, PREFIX, FIXTURE, BRAND_FIXTURE, MODIFIED, ADDED
 
 
 class WelcomeProjectionTests(unittest.TestCase):
@@ -13,7 +13,7 @@ class WelcomeProjectionTests(unittest.TestCase):
         self.temp = tempfile.TemporaryDirectory()
         self.addCleanup(self.temp.cleanup)
         self.root = Path(self.temp.name)
-        for name in [FIXTURE] + [PREFIX + p for p in MODIFIED | ADDED]:
+        for name in [FIXTURE, BRAND_FIXTURE] + [PREFIX + p for p in MODIFIED | ADDED]:
             target = self.root / name
             target.parent.mkdir(parents=True, exist_ok=True)
             shutil.copyfile(ROOT / name, target)
@@ -37,6 +37,12 @@ class WelcomeProjectionTests(unittest.TestCase):
 
     def test_fixture_edits_refuse(self):
         target = self.root / FIXTURE
+        target.write_bytes(target.read_bytes() + b' ')
+        with self.assertRaises(AssertionError):
+            WelcomeLayer(self.root)
+
+    def test_current_brand_fixture_edits_refuse(self):
+        target = self.root / BRAND_FIXTURE
         target.write_bytes(target.read_bytes() + b' ')
         with self.assertRaises(AssertionError):
             WelcomeLayer(self.root)

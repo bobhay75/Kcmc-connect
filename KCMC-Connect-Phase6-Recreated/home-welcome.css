@@ -30,6 +30,19 @@ body.kcmc-welcome-design[data-office-email] [data-view="home"] .home-worship-tim
 .welcome-quicklinks svg{width:48px;height:48px;flex-shrink:0;fill:none;stroke:#e7b34f;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
 .welcome-quicklinks .welcome-arrow{margin-left:auto;color:#e7b34f;font-family:system-ui,sans-serif;font-size:2rem}
 .welcome-design-footer{text-align:center;color:#f5f7fa;font-size:.8rem;letter-spacing:.2em;padding:0 18px 30px}
+.welcome-design-footer p{margin:0}
+.welcome-design-footer .welcome-mission{margin:2px 0 14px;color:#e7b34f;font-family:Georgia,serif;font-size:clamp(1.6rem,3vw,2.5rem);line-height:1.3;letter-spacing:0}
+.church-life{padding-top:12px}
+.kcmc-welcome-design [data-view="home"]>.section.church-life{display:block}
+.church-life .section-head{margin-bottom:20px}
+.church-life h2{font-family:Georgia,serif;font-size:clamp(1.7rem,3vw,2.4rem);font-weight:400;color:#fff}
+.church-life-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:18px}
+.church-life-grid img{display:block;width:100%;height:auto;aspect-ratio:4/3;object-fit:cover;border:1px solid #405567;border-radius:14px;background:#102a3e}
+.church-life-grid .church-life-portrait{object-fit:contain}
+.church-life-more{margin-top:20px}
+.church-life-more summary{width:max-content;max-width:100%;min-height:44px;padding:12px 0;color:#e7b34f;font-weight:600;cursor:pointer}
+.church-life-more[open] summary{margin-bottom:12px}
+@media(max-width:760px){.church-life-grid{grid-template-columns:1fr;gap:16px}.church-life-more summary{width:100%}.welcome-design-footer .welcome-mission{font-size:1.7rem}}
 .kcmc-welcome-design :where(a,button,summary):focus-visible{outline:3px solid #f5c96c;outline-offset:4px}
 /* Keep the existing family photographs available below the approved opening view. */
 .kcmc-welcome-design [data-view="home"]>.section{background:#0d2235;color:#f5f7fa}

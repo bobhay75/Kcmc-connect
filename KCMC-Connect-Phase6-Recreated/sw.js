@@ -1,7 +1,7 @@
-const CACHE='kcmc-connect-v3.0.3-public-only-welcome-home-20261019';
+const CACHE='kcmc-connect-v3.0.3-public-only-welcome-brand-20261020';
 // Connection-intake client refresh: worker install reruns cache:'reload' and overwrites cached app.js.
 const CORE=[
-  './','./home-welcome.css?v=20261019','./styles.css?v=3.0.3','./public-presentation.css?v=fish-only-home-20261014','./public-presentation.js?v=blue-fish-menu-20261009','./app.js?v=visitor-welcome-20261008','./manifest.webmanifest?v=20261019',
+  './','./home-welcome.css?v=20261020','./styles.css?v=3.0.3','./public-presentation.css?v=fish-only-home-20261014','./public-presentation.js?v=blue-fish-menu-20261009','./app.js?v=visitor-welcome-20261008','./manifest.webmanifest?v=20261019',
   './bulletin.php','./news.php','./events.php','./care.php','./connect.php',
   './assets/icons/icon-192.png','./assets/icons/icon-512.png',
   './assets/visuals/kcmc-building-original-20261018.jpg','./assets/visuals/kcmc-building-retouched-20261009.jpg','./assets/visuals/kcmc-worship-2017.webp',
@@ -11,8 +11,20 @@ const CORE=[
   './assets/visuals/kcmc-kids-safari.jpg',
   './assets/visuals/kcmc-kids-game-room.jpg',
   './assets/visuals/kcmc-kids-summer-group.jpg',
+  './assets/visuals/kcmc-traditional-sanctuary-20261018.jpg',
+  './assets/visuals/kcmc-contemporary-gathering-20261018.jpg',
+  './assets/visuals/kcmc-contemporary-music-20261018.jpg',
+];
+// Additional real church photos are cached only when viewed. The first screen
+// and initial offline installation do not download every archive photograph.
+const GALLERY=[
+  'kcmc-traditional-worship-20261018.jpg','kcmc-traditional-front-20261018.jpg',
+  'kcmc-traditional-message-20261018.jpg','kcmc-contemporary-fellowship-20261018.jpg',
+  'kcmc-contemporary-room-20261018.jpg','kcmc-contemporary-room-portrait-20261018.jpg',
+  'kcmc-contemporary-after-service-20261018.jpg',
 ];
 const PUBLIC_PATHS=new Set(CORE.map(path=>new URL(path,self.location.href).pathname));
+GALLERY.forEach(name=>PUBLIC_PATHS.add(new URL('./assets/visuals/'+name,self.location.href).pathname));
 PUBLIC_PATHS.add(new URL('./index.php',self.location.href).pathname);
 const isAsset=url=>/\.(?:css|js|webmanifest|png|jpe?g|webp|svg)$/i.test(url.pathname);
 

@@ -179,12 +179,37 @@ test('activation removes only old KCMC caches',async()=>{
 test('event artwork upgrade precaches the SVG and never the photographed flyer',async()=>{
   const h=harness();
   await h.lifecycle('install');
-  assert.match(h.cacheName,/welcome-home-20261019$/);
-  assert.ok(h.calls.fetch.some(request=>request.url.endsWith('/home-welcome.css?v=20261019')));
+  assert.match(h.cacheName,/welcome-brand-20261020$/);
+  assert.ok(h.calls.fetch.some(request=>request.url.endsWith('/home-welcome.css?v=20261020')));
   assert.ok(h.calls.fetch.some(request=>request.url.endsWith('/kcmc-building-original-20261018.jpg')));
   assert.ok(h.calls.fetch.some(request=>request.url.endsWith('/public-presentation.css?v=fish-only-home-20261014')));
   assert.ok(h.calls.fetch.some(request=>request.url.endsWith('/trunk-or-treat-2026.svg')));
   assert.ok(h.calls.fetch.every(request=>!request.url.endsWith('/trunk-or-treat-2026.webp')));
+});
+
+test('authentic family gallery precaches only the three featured photographs',async()=>{
+  const h=harness();
+  await h.lifecycle('install');
+  for(const name of ['traditional-sanctuary','contemporary-gathering','contemporary-music']){
+    assert.ok(h.calls.fetch.some(request=>request.url.endsWith('/kcmc-'+name+'-20261018.jpg')));
+  }
+  for(const name of ['traditional-worship','traditional-front','traditional-message','contemporary-fellowship','contemporary-room','contemporary-room-portrait','contemporary-after-service']){
+    const route='assets/visuals/kcmc-'+name+'-20261018.jpg';
+    assert.ok(!h.calls.fetch.some(request=>request.url.endsWith('/'+route)));
+    await h.dispatch(route);
+    assert.ok(h.calls.put.some(call=>call.url===PUBLIC_URL+route));
+  }
+});
+
+test('new gallery photos preserve token and private-response cache restrictions',async()=>{
+  const route='assets/visuals/kcmc-traditional-worship-20261018.jpg';
+  const offline=harness({offline:true});
+  await offline.seed(offline.cacheName,route,'PUBLIC PHOTO');
+  await assert.rejects(offline.dispatch(route+'?token=TEST_SECRET'),/offline/);
+  assert.equal(offline.calls.match.length,0);
+  const privatePhoto=harness({response:()=>new Response('private',{headers:{'Cache-Control':'no-store, private'}})});
+  await privatePhoto.dispatch(route);
+  assert.equal(privatePhoto.calls.put.length,0);
 });
 
 test('older event markup requests the illustration instead of the flyer online',async()=>{

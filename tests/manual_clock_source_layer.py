@@ -27,6 +27,8 @@ BASE_TREE = '1459efa57ff58ccd91d558e9141db10511c0e818'
 BASE_APP_TREE = '3db33684b4eb70db5daaaf285facf9d83a54e8fe'
 CANONICAL_BASE = 'b0c257edb8a42fc89fd6371c1bce7ee3efbd5ed9'
 CANONICAL_TREE = '01decb86c93cf48862c6de7c0dbff4ba514f32cf'
+EDITORIAL_FIXTURE = 'tests/fixtures/editorial-content-20261020-reviewed.json'
+EDITORIAL_FIXTURE_SHA256 = '4027b8d12c3d7f3faf06bb79b6215ae92e04e1f039d50fa81c16a6a2cb58846b'
 VISUAL_FIXTURE = 'tests/fixtures/app-theme-navigation-reviewed.json'
 VISUAL_FIXTURE_SHA256 = '2793614adc95f4b0119d0b1fd0a85872aca5a7bcdd9bf54ba66c3617e13d93f8'
 FIXTURE = 'tests/fixtures/manual-clock-no-approvals-reviewed.json'
@@ -199,6 +201,12 @@ class ManualClockLayer:
                 # Separate reviewed October 18 newsletter overlay; retain the exact clock baseline.
                 require(oid == '141cff3397171c08e79e7e11c1b18e47633f1e4f', 'reviewed pre-study editorial baseline')
                 actual = (self.app / name).read_bytes()
+                require(blob(actual) == '7af675b6565060220cf9ff069c76bc1e000ed688', 'only the exact reviewed October 20 editorial follow-up is permitted')
+                # Carry the exact old bytes in the new, pinned fixture so shallow
+                # CI does not silently gain another historical Git dependency.
+                editorial = (self.root / EDITORIAL_FIXTURE).read_bytes()
+                require(hashlib.sha256(editorial).hexdigest() == EDITORIAL_FIXTURE_SHA256, 'exact October 20 editorial fixture required')
+                actual = json.loads(editorial)['baseline_utf8'].encode('utf-8')
                 require(blob(actual) == 'efee40e1152857a391491df7c4db2c1e11cc3228', 'only the exact reviewed October 18 newsletter content is permitted')
                 self.editorial_preimage = self.git('show', CANONICAL_BASE + ':' + PREFIX + name)
                 continue
