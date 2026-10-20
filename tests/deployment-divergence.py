@@ -18,6 +18,7 @@ import unittest
 from unittest import mock
 
 from visual_source_layer import FIXTURE as VISUAL_FIXTURE, FIXTURE_SHA256 as VISUAL_FIXTURE_SHA256
+from welcome_home_source_layer import WelcomeLayer
 
 ROOT = Path(__file__).resolve().parents[1]
 HELPER = ROOT / 'tools/check-deployment-divergence.py'
@@ -126,12 +127,13 @@ class DeploymentGuardTests(unittest.TestCase):
             (self.live / name).write_bytes(installed_bundle[name])
         self.refused_unchanged()
 
-    def test_known_installed_calendar_fish_bundle_refuses_against_current_themed_source(self):
+    def test_known_installed_calendar_fish_bundle_refuses_against_reviewed_welcome_source(self):
         raw = (ROOT / VISUAL_FIXTURE).read_bytes()
         self.assertEqual(hashlib.sha256(raw).hexdigest(), VISUAL_FIXTURE_SHA256)
         visual = json.loads(raw)
         canonical_bundle = self.reviewed_fish_bundle('main130')
         installed_bundle = self.reviewed_fish_bundle('livecalendar')
+        welcome = WelcomeLayer()
         # The reviewed follow-up changes the administration destination and
         # notification worker. Keep the installed historical tuple unchanged:
         # broad deployment must still refuse it against this exact new source.
@@ -140,13 +142,29 @@ class DeploymentGuardTests(unittest.TestCase):
             'sw.js': '459c6c13be36bf9f9189267f6038513a803c931a06eef542c7a48a652165d754',
         }
         for name, historical in canonical_bundle.items():
-            canonical = (ROOT / 'KCMC-Connect-Phase6-Recreated' / name).read_bytes()
+            # Keep this exact October 19 proof when a separately reviewed
+            # branding layer changes current bytes. WelcomeLayer verifies the
+            # new bytes before exposing their immutable welcome preimage.
+            canonical = welcome.brand_before.get(name,
+                (ROOT / 'KCMC-Connect-Phase6-Recreated' / name).read_bytes())
             expected_sha = followup_sha[name] if name in followup_sha else (
                 visual['modified'][name]['after_sha256'] if name in visual['modified']
                 else hashlib.sha256(historical).hexdigest())
             self.assertEqual(hashlib.sha256(canonical).hexdigest(), expected_sha)
             (self.source / name).write_bytes(canonical)
             (self.live / name).write_bytes(installed_bundle[name])
+        self.refused_unchanged()
+
+    def test_known_installed_calendar_fish_bundle_refuses_against_current_brand_source(self):
+        welcome = WelcomeLayer()
+        installed_bundle = self.reviewed_fish_bundle('livecalendar')
+        for name, installed in installed_bundle.items():
+            canonical = (ROOT / 'KCMC-Connect-Phase6-Recreated' / name).read_bytes()
+            if name in welcome.brand['modified']:
+                self.assertEqual(hashlib.sha256(canonical).hexdigest(),
+                    welcome.brand['modified'][name]['after_sha256'])
+            (self.source / name).write_bytes(canonical)
+            (self.live / name).write_bytes(installed)
         self.refused_unchanged()
 
     def test_private_owner_setting_alone_blocks_broad_deployment(self):

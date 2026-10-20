@@ -112,7 +112,7 @@ with tempfile.TemporaryDirectory(prefix='kcmc-photos-review-') as td:
                     check(page.locator('.hero-church-photo, .hero-church-window, .hero-card-with-photo').count() == 0, f'{width}px no nested picture-on-picture hero')
                     welcome_home(page,width,check)
                     check(page.locator('[data-hero-caption]').count() == 0, f'{width}px no hero source caption element')
-                    check(page.locator('[data-kcmc-photo-gallery] img').count() == 3, 'three supplied family activity photos in public gallery')
+                    check(page.locator('section[aria-label="KCMC kids and family photos"] [data-kcmc-photo-gallery] img').count() == 3, 'three supplied family activity photos remain in their original public gallery')
                     family = page.locator('[data-family-welcome]')
                     family.scroll_into_view_if_needed()
                     page.wait_for_function("document.querySelector('.family-photo')?.naturalWidth > 0")
