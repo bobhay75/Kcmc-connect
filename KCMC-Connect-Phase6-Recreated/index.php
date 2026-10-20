@@ -188,6 +188,7 @@ usort($kcmcAnnouncements, fn($a,$b)=>(int)($b['priority']??0)<=>(int)($a['priori
       $eventDate=(string)($event['date']??'');
       $eventImage=(string)($event['image']??'');
       $hasEventImage=preg_match('#\Aassets/visuals/[A-Za-z0-9][A-Za-z0-9._-]*\z#',$eventImage)===1;
+      $detailsOnSlide=$hasEventImage&&($event['id']??'')==='trunk-or-treat-2026';
       $eventTime=(string)($event['time']??'');
       $eventEndTime=(string)($event['end_time']??'');
       $eventTimeLabel=$eventEndTime!==''?$eventTime.'–'.$eventEndTime:$eventTime;
@@ -205,9 +206,9 @@ usort($kcmcAnnouncements, fn($a,$b)=>(int)($b['priority']??0)<=>(int)($a['priori
         data-description="<?=kcmc_h((string)($event['description']??''))?>">
         <?php if($hasEventImage): ?><img class="event-image" src="<?=kcmc_h($eventImage)?>" alt="<?=kcmc_h((string)($event['image_alt']??''))?>" loading="lazy" decoding="async"><?php endif; ?>
         <div class="event-card-copy">
-          <div class="event-pills"><time class="pill" datetime="<?=kcmc_h($eventDate)?>"><?=kcmc_h(date('D, M j',strtotime($eventDate)))?></time><?php if(!empty($event['label'])): ?><span class="pill important"><?=kcmc_h((string)$event['label'])?></span><?php endif; ?></div>
+          <?php if(!$detailsOnSlide): ?><p class="muted"><time datetime="<?=kcmc_h($eventDate)?>"><?=kcmc_h(date('D, M j',strtotime($eventDate)))?></time></p><?php endif; ?>
           <h3><?=kcmc_h($eventTitle)?></h3>
-          <p class="event-when"><strong><?=kcmc_h($eventTimeLabel)?></strong> • <?=kcmc_h($eventLocation)?></p>
+          <p class="event-when"><?php if(!$detailsOnSlide): ?><strong><?=kcmc_h($eventTimeLabel)?></strong> • <?php endif; ?><?=kcmc_h($eventLocation)?></p>
           <?php if(!empty($event['description'])): ?><p class="event-description"><?=kcmc_h((string)$event['description'])?></p><?php endif; ?>
           <div class="btns"><?php if($rsvpEnabled): ?><button class="btn event-rsvp" type="button" aria-label="RSVP for <?=kcmc_h($eventTitle)?>">RSVP</button><?php else: ?><a class="btn" href="<?=kcmc_h($kcmcPhoneHref)?>" aria-label="Call KCMC with questions about <?=kcmc_h($eventTitle)?>">Event questions</a><?php endif; ?><button class="btn secondary add-calendar" type="button" aria-label="Add <?=kcmc_h($eventTitle)?> to calendar">Add to calendar</button></div>
         </div>

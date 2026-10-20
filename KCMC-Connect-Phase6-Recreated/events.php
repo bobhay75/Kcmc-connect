@@ -34,6 +34,7 @@ $events = $calendar['events'];
   <?php foreach($events as $event):
     $image = (string)($event['image'] ?? '');
     $hasImage = preg_match('#\Aassets/visuals/[A-Za-z0-9][A-Za-z0-9._-]*\z#', $image) === 1;
+    $detailsOnSlide = $hasImage && ($event['id'] ?? '') === 'trunk-or-treat-2026';
     $time = (string)($event['time'] ?? '');
     $endTime = (string)($event['end_time'] ?? '');
     $timeLabel = $endTime !== '' ? $time . '–' . $endTime : $time;
@@ -41,8 +42,7 @@ $events = $calendar['events'];
     <article class="eventx">
       <?php if($hasImage): ?><img src="<?=kcmc_h($image)?>" alt="<?=kcmc_h((string)($event['image_alt'] ?? ''))?>" loading="lazy" decoding="async"><?php endif; ?>
       <div class="eventx-copy">
-        <?php if(!empty($event['label'])): ?><span class="label"><?=kcmc_h((string)$event['label'])?></span><?php endif; ?>
-        <small><time datetime="<?=kcmc_h((string)($event['date'] ?? ''))?>"><?=kcmc_h(date('l, F j, Y', strtotime((string)($event['date'] ?? ''))))?></time> • <?=kcmc_h($timeLabel)?></small>
+        <?php if(!$detailsOnSlide): ?><small><time datetime="<?=kcmc_h((string)($event['date'] ?? ''))?>"><?=kcmc_h(date('l, F j, Y', strtotime((string)($event['date'] ?? ''))))?></time> • <?=kcmc_h($timeLabel)?></small><?php endif; ?>
         <h2><?=kcmc_h((string)($event['title'] ?? ''))?></h2>
         <p class="detail"><?=kcmc_h((string)($event['location'] ?? 'KCMC'))?></p>
         <?php if(!empty($event['address'])): ?><p><?=kcmc_h((string)$event['address'])?></p><?php endif; ?>
