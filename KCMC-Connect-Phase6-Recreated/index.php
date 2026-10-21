@@ -174,7 +174,7 @@ usort($kcmcAnnouncements, fn($a,$b)=>(int)($b['priority']??0)<=>(int)($a['priori
   </div></section>
 </section>
 <section class="view" data-view="events">
-  <div class="wrap partner-hero"><div class="eyebrow">Events</div><h1 class="display-title">What’s next at KCMC.</h1><p class="lead muted">Upcoming gatherings, studies and community events, with one-tap calendar saves and easy ways to connect.</p></div>
+  <div class="wrap partner-hero"><div class="eyebrow">Events</div><h1 class="display-title">What’s next at KCMC.</h1><p class="lead muted">Upcoming gatherings, studies and community events, with easy ways to connect.</p></div>
   <div class="wrap"><nav class="btns" aria-label="Event calendar view">
       <a class="btn secondary" href="events.php?event_scope=calendar">Church calendar</a>
     </nav>
@@ -208,7 +208,7 @@ usort($kcmcAnnouncements, fn($a,$b)=>(int)($b['priority']??0)<=>(int)($a['priori
           <h3><?=kcmc_h($eventTitle)?></h3>
           <p class="event-when"><?php if(!$detailsOnSlide): ?><strong><?=kcmc_h($eventTimeLabel)?></strong> • <?php endif; ?><?=kcmc_h($eventLocation)?></p>
           <?php if(!empty($event['description'])): ?><p class="event-description"><?=kcmc_h((string)$event['description'])?></p><?php endif; ?>
-          <div class="btns"><?php if($rsvpEnabled): ?><button class="btn event-rsvp" type="button" aria-label="RSVP for <?=kcmc_h($eventTitle)?>">RSVP</button><?php else: ?><a class="btn" href="<?=kcmc_h($kcmcPhoneHref)?>" aria-label="Call KCMC with questions about <?=kcmc_h($eventTitle)?>">Event questions</a><?php endif; ?><button class="btn secondary add-calendar" type="button" aria-label="Add <?=kcmc_h($eventTitle)?> to calendar">Add to calendar</button></div>
+          <div class="btns"><?php if($rsvpEnabled): ?><button class="btn event-rsvp" type="button" aria-label="RSVP for <?=kcmc_h($eventTitle)?>">RSVP</button><?php else: ?><a class="btn" href="<?=kcmc_h($kcmcPhoneHref)?>" aria-label="Call KCMC with questions about <?=kcmc_h($eventTitle)?>">Event questions</a><?php endif; ?></div>
         </div>
       </article>
     <?php endforeach; ?>
