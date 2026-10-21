@@ -71,9 +71,8 @@ usort($kcmcAnnouncements, fn($a,$b)=>(int)($b['priority']??0)<=>(int)($a['priori
         <a class="menu-home" href="#home" data-route="home" aria-label="Home"><strong>KCMC CONNECT</strong><small>Kimberling City Methodist Church</small></a>
         <a href="#visit" data-route="visit">Plan a visit</a>
         <a href="#watch" data-route="watch">Watch messages</a>
-        <a href="#news" data-route="news">Announcements &amp; church updates</a>
+        <a href="#news" data-route="news">Church Updates</a>
         <a href="#events" data-route="events">Events</a>
-        <a href="bulletin.php">Latest bulletin</a>
         <a href="care.php">Prayer &amp; care</a>
         <a href="#serve" data-route="serve">Serving</a>
         <a href="#partner" data-route="partner">Get connected</a>
