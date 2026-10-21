@@ -80,7 +80,7 @@ with os.fdopen(fd, 'a') as stream:
                 raise SystemExit('STOP: PHP syntax checker unavailable. Nothing changed.')
             for rel in payload:
                 if rel.endswith('.php'):
-                    checked = subprocess.run([php, '-l', str(PACKAGE / 'payload' / rel)], capture_output=True, text=True)
+                    checked = subprocess.run([php, '-l', str(PACKAGE / 'payload' / rel)], stdout=subprocess.PIPE, stderr=subprocess.PIPE, universal_newlines=True)
                     if checked.returncode:
                         raise SystemExit('STOP: staged PHP check failed for ' + rel + '. Nothing changed.')
             session = Path(tempfile.mkdtemp(prefix='kcmc-digital-bulletin-backup-', dir=root.parent.parent))

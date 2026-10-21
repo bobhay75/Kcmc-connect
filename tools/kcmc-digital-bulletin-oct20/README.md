@@ -9,3 +9,5 @@ Visit information, service choices, announcements, event details, serving and Ch
 Exactly four runtime files: index.php, events.php, bulletin.php, home-welcome.css. The approved Trunk or Treat slide is preserved. No config, private records or saved editorial content changes. CSS uses a fresh asset version. Installer accepts three whole reviewed predecessor states, refuses mixed or unknown files, lints staged PHP, creates private backups and supports rollback.
 
 Validation: PHP syntax, rendered disclosure structure and preserved forms/artwork, stale-issue gate, and print expansion/state-restoration logic. Installer validation runs against all three predecessor states. Production browser acceptance is required after owner installation. The HTML preview is self-contained for the bulletin layout and native heading interactions.
+
+Python 3.6 hosting compatibility: staged PHP lint captures stdout/stderr with PIPE and universal_newlines, avoiding capture_output/text keywords introduced in Python 3.7. Runtime payloads and manifests are unchanged.
