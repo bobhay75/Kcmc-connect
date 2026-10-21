@@ -22,7 +22,7 @@ $kcmcSchema = json_encode([
   'email' => $kcmcEmail,
 ], JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE | JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT) ?: '{}';
 $worshipServices = kcmc_worship_services($kcmc);
-$calendar = kcmc_public_event_calendar($kcmc['events'] ?? [], $_GET['event_view'] ?? null, $_GET['event_scope'] ?? null);
+$calendar = kcmc_public_event_calendar($kcmc['events'] ?? [], 'upcoming', $_GET['event_scope'] ?? null);
 $kcmcEvents = $calendar['events'];
 $kcmcHasRsvpEvents = count(array_filter($kcmcEvents, fn($event)=>!array_key_exists('rsvp',$event)||$event['rsvp']!==false)) > 0;
 $kcmcAnnouncements = kcmc_active_items($kcmc['announcements'] ?? []);
@@ -176,13 +176,11 @@ usort($kcmcAnnouncements, fn($a,$b)=>(int)($b['priority']??0)<=>(int)($a['priori
 <section class="view" data-view="events">
   <div class="wrap partner-hero"><div class="eyebrow">Events</div><h1 class="display-title">What’s next at KCMC.</h1><p class="lead muted">Upcoming gatherings, studies and community events, with one-tap calendar saves and easy ways to connect.</p></div>
   <div class="wrap"><nav class="btns" aria-label="Event calendar view">
-      <a class="btn <?= $calendar['view']==='upcoming'?'gold':'secondary' ?>" href="?event_view=upcoming#events"<?= $calendar['view']==='upcoming'?' aria-current="page"':'' ?>>Upcoming</a>
-      <a class="btn <?= $calendar['view']==='next-week'?'gold':'secondary' ?>" href="?event_view=next-week#events"<?= $calendar['view']==='next-week'?' aria-current="page"':'' ?>>Next week</a>
       <a class="btn secondary" href="events.php?event_scope=calendar">Church calendar</a>
     </nav>
-    <p class="muted"><?= $calendar['view']==='next-week'?'Next week: '.kcmc_h($calendar['range']).' · Sunday–Saturday · Central time':'Community events and special gatherings.' ?></p></div>
+    <p class="muted">Community events and special gatherings.</p></div>
   <section class="section"><div class="wrap grid3 event-grid">
-    <?php if(!$kcmcEvents): ?><p><?= $calendar['view']==='next-week'?'No events are published for next week. Choose Upcoming to see other dates.':'No current events are published.' ?></p><?php endif; ?>
+    <?php if(!$kcmcEvents): ?><p>No current events are published.</p><?php endif; ?>
     <?php foreach($kcmcEvents as $event):
       $eventTitle=(string)($event['title']??'');
       $eventDate=(string)($event['date']??'');

@@ -1,0 +1,10 @@
+{
+  "index.php": {
+    "before": "9dc7c5fb9f83b1a6d7dfebc03d3ea6471717859ad265ad9a6508524d250a33c6",
+    "after": "e591f27ed342ef2e3258eef1012ef171eb1576ba595b8c8cfa9e4eb10561878f"
+  },
+  "events.php": {
+    "before": "e51c902409bd9bc08b763a1d881ff25ffe6960ef53895077f5d59133f808db25",
+    "after": "29bfa1037555f4a72707defbf07b5b01ea79c91512b9c2f192ed055ff34745f8"
+  }
+}
