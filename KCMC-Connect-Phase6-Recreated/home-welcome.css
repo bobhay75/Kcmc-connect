@@ -43,3 +43,19 @@ body.kcmc-welcome-design[data-office-email] [data-view="home"] .home-worship-tim
 
 body.kcmc-welcome-design[data-office-email] [data-view="home"] .home-cover-card>:is(h1,.welcome-hero-actions){display:block}
 body.kcmc-welcome-design[data-office-email] [data-view="home"] .home-cover-card>.welcome-hero-actions{display:flex}
+
+/* Informational headings open their details without JavaScript. */
+.disclosure-list,.expect-list{display:grid;grid-template-columns:1fr;gap:0}
+body.kcmc-welcome-design .disclosure-row{display:block;margin:0;border:0;border-bottom:1px solid #426073;border-radius:0;background:transparent;box-shadow:none;color:#f8f5ec;min-width:0}
+body.kcmc-welcome-design .disclosure-row>summary{display:block;list-style:none;position:relative;padding:20px 38px 20px 0;cursor:pointer;color:inherit;min-height:52px}
+.disclosure-row>summary::-webkit-details-marker{display:none}
+.disclosure-row>summary::after{content:'+';position:absolute;right:8px;top:18px;font:1.5rem/1 Georgia,serif;color:#e7b34f}
+.disclosure-row[open]>summary::after{content:'−'}
+.disclosure-row>summary:focus-visible{outline:3px solid #e7b34f;outline-offset:4px;border-radius:3px}
+body.kcmc-welcome-design .disclosure-row>summary :is(h2,h3){font-size:1.2rem;line-height:1.45;margin:0;font-weight:650;color:inherit}
+body.kcmc-welcome-design .disclosure-content{padding:0 0 20px;line-height:1.65;overflow-wrap:anywhere}
+body.kcmc-welcome-design .disclosure-content p{margin:0 0 12px;color:#e0e9ee;white-space:pre-line}
+body.kcmc-welcome-design .disclosure-content .btns{margin:14px 0 0}
+body.kcmc-welcome-design .event-disclosure{border-bottom:0}
+body.kcmc-welcome-design .event-disclosure>summary{padding-top:3px}
+.event-disclosure>summary::after{top:3px}

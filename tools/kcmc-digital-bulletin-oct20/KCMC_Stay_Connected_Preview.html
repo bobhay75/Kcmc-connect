@@ -1,0 +1,458 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Stay Connected • KCMC review</title><style>:root{
+  --ink:#eef5f8;--muted:#a9bbc6;--night:#07121c;--navy:#0d2235;--navy2:#14334b;
+  --lake:#4e91ad;--gold:#d6ad62;--cream:#f4efe4;--card:#102638;--line:rgba(255,255,255,.12);
+  --ok:#68b99d;--warn:#e5b85f;--urgent:#e47b72;--shadow:0 18px 54px rgba(0,0,0,.28)
+}
+*{box-sizing:border-box}html{scroll-behavior:smooth}body{margin:0;background:linear-gradient(180deg,#07121c,#0a1a28 45%,#08131f);color:var(--ink);font-family:Inter,ui-sans-serif,system-ui,-apple-system,"Segoe UI",sans-serif;line-height:1.55}
+a{color:inherit}button,a{touch-action:manipulation}.wrap{width:min(1120px,calc(100% - 30px));margin:auto}
+.topbar{position:sticky;top:0;z-index:40;background:rgba(7,18,28,.92);backdrop-filter:blur(16px);border-bottom:1px solid var(--line)}
+.topbar .inner{display:flex;align-items:center;justify-content:space-between;gap:14px;min-height:70px}.brand{display:flex;align-items:center;gap:11px;text-decoration:none}.mark{width:40px;height:40px;border-radius:14px;background:linear-gradient(145deg,var(--lake),var(--navy2));display:grid;place-items:center;font-weight:900;box-shadow:inset 0 0 0 1px rgba(255,255,255,.13)}.brand strong{display:block;letter-spacing:.04em}.brand small{display:block;color:var(--muted);font-size:.72rem}.desktop-nav{display:flex;gap:5px;flex-wrap:wrap}.desktop-nav a,.install{border:0;background:transparent;color:var(--muted);text-decoration:none;padding:10px 12px;border-radius:999px;font:inherit;cursor:pointer}.desktop-nav a:hover,.desktop-nav a.active,.install:hover{background:rgba(255,255,255,.08);color:white}.install{border:1px solid rgba(214,173,98,.65);background:rgba(214,173,98,.12);color:#f6dfa9;font-weight:850;display:inline-flex;white-space:nowrap}
+.hero{padding:76px 0 44px;overflow:hidden;position:relative}.hero-imagery{background:#07121c;border-bottom:1px solid rgba(255,255,255,.08)}.hero-photo{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:center;z-index:0;opacity:1;filter:saturate(1.08) contrast(1.04)}.hero-imagery:after{content:"";position:absolute;inset:0;z-index:0;background:linear-gradient(90deg,rgba(7,18,28,.78) 0%,rgba(7,18,28,.64) 42%,rgba(7,18,28,.18) 72%,rgba(7,18,28,.05) 100%),linear-gradient(180deg,rgba(7,18,28,.08) 0%,rgba(7,18,28,.06) 55%,rgba(7,18,28,.32) 100%);pointer-events:none}.hero-imagery .hero-grid{position:relative;z-index:1}.hero-grid{display:grid;grid-template-columns:1.2fr .8fr;gap:36px;align-items:center}.eyebrow{text-transform:uppercase;letter-spacing:.18em;font-size:.72rem;color:var(--gold);font-weight:800}.hero h1{font-family:Georgia,serif;font-weight:400;letter-spacing:-.045em;font-size:clamp(3rem,7vw,6.8rem);line-height:.88;margin:.15em 0 .2em}.hero p.lead{font-size:1.14rem;color:#c7d5dd;max-width:720px}.hero-card{background:linear-gradient(160deg,rgba(20,51,75,.88),rgba(9,28,42,.95));border:1px solid var(--line);border-radius:28px;padding:24px;box-shadow:var(--shadow)}.service-time{font-size:2.4rem;font-weight:850;letter-spacing:-.03em}.hero-card h2{margin:.2em 0}.hero-card p{color:var(--muted)}
+.actions{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin:30px 0}.action{display:flex;flex-direction:column;gap:8px;text-decoration:none;background:rgba(255,255,255,.055);border:1px solid var(--line);border-radius:18px;padding:18px;min-height:112px}.action:hover{transform:translateY(-2px);background:rgba(255,255,255,.08)}.action b{font-size:1.05rem}.action span{font-size:.84rem;color:var(--muted)}
+.install-callout{display:grid;grid-template-columns:auto 1fr auto;align-items:center;gap:14px;margin:24px 0 0;padding:14px;background:rgba(7,18,28,.74);border:1px solid rgba(214,173,98,.5);border-radius:20px;box-shadow:0 14px 36px rgba(0,0,0,.2);backdrop-filter:blur(10px)}.install-callout-icon{display:grid;place-items:center;width:46px;height:46px;border-radius:14px;background:var(--gold);color:#18212a;font-size:1.55rem;font-weight:900}.install-callout-copy{display:grid;gap:2px}.install-callout-copy strong{font-size:1.02rem}.install-callout-copy span{color:#c7d5dd;font-size:.86rem;line-height:1.35}.install-callout-button{border:0;cursor:pointer;font:inherit;white-space:nowrap}.install-callout[hidden],[data-install-app][hidden]{display:none}
+.install-sheet{position:fixed;inset:0;z-index:10000;background:rgba(4,15,24,.82);display:grid;place-items:end center;padding:18px}.install-sheet[hidden]{display:none}.install-sheet-card{position:relative;width:min(560px,100%);background:linear-gradient(160deg,#15374f,#0d2638);color:#fff;border:1px solid rgba(255,255,255,.16);border-radius:26px;padding:30px;box-shadow:0 24px 80px rgba(0,0,0,.5)}.install-sheet-card:focus{outline:none}.install-sheet-card h2{font-family:Georgia,serif;font-size:clamp(1.8rem,7vw,2.35rem);font-weight:400;line-height:1.05;margin:.28em 42px .5em 0}.install-sheet-copy{display:grid;gap:12px;margin-bottom:20px;color:#d7e2e8;line-height:1.55}.install-sheet-steps{list-style:none;counter-reset:install-step;margin:0;padding:0;display:grid;gap:11px}.install-sheet-steps li{counter-increment:install-step;display:grid;grid-template-columns:32px minmax(0,1fr);gap:10px;align-items:start}.install-sheet-steps li:before{content:counter(install-step);display:grid;place-items:center;width:30px;height:30px;border-radius:50%;background:var(--gold);color:#18212a;font-weight:900}.install-sheet-steps li>span{padding-top:2px}.install-sheet-share{display:inline-grid;place-items:center;width:1.55em;height:1.55em;margin:0 .12em;border:1px solid rgba(255,255,255,.35);border-radius:.35em;font-weight:900}.install-sheet-close{position:absolute;right:14px;top:10px;border:0;background:transparent;color:#fff;font-size:2rem;line-height:1;cursor:pointer;padding:8px}.install-sheet-native{border:0;cursor:pointer;font:inherit}.install-sheet-native[hidden]{display:none}.install-sheet-note{margin:18px 0 0;color:var(--muted);font-size:.84rem}.install-sheet-open{overflow:hidden}
+.section{padding:54px 0}.section.alt{background:rgba(255,255,255,.025);border-top:1px solid rgba(255,255,255,.06);border-bottom:1px solid rgba(255,255,255,.06)}.section-head{display:flex;align-items:end;justify-content:space-between;gap:20px;margin-bottom:22px}.section-head h2{font-family:Georgia,serif;font-size:clamp(2rem,5vw,3.6rem);font-weight:400;letter-spacing:-.035em;margin:.05em 0}.section-head p{max-width:560px;color:var(--muted);margin:0}.grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:15px}.card{background:var(--card);border:1px solid var(--line);border-radius:22px;padding:22px;box-shadow:0 10px 32px rgba(0,0,0,.12)}.card h3{margin:.1em 0 .3em;font-size:1.2rem}.card p{color:var(--muted);margin:.35em 0}.time{font-size:2rem;font-weight:900;color:white}.pill{display:inline-flex;align-items:center;gap:7px;padding:6px 10px;border-radius:999px;background:rgba(78,145,173,.15);color:#b9dce9;border:1px solid rgba(78,145,173,.25);font-size:.77rem;font-weight:800;text-transform:uppercase;letter-spacing:.08em}.pill.important{background:rgba(229,184,95,.12);color:#f1d694;border-color:rgba(229,184,95,.3)}.pill.urgent{background:rgba(228,123,114,.12);color:#ffb2ab;border-color:rgba(228,123,114,.3)}
+.btns{display:flex;flex-wrap:wrap;gap:10px;margin-top:18px}.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:46px;padding:11px 16px;border-radius:999px;text-decoration:none;border:1px solid var(--line);background:#173b56;color:#fff;font-weight:800}.btn.secondary{background:transparent}.btn.gold{background:var(--gold);color:#18212a;border-color:transparent}.btn:hover{filter:brightness(1.08)}
+.video-card{display:grid;grid-template-columns:.95fr 1.05fr;gap:20px;align-items:stretch}.video-art{min-height:300px;border-radius:22px;background:radial-gradient(circle at 30% 25%,rgba(78,145,173,.65),transparent 35%),linear-gradient(145deg,#183f5c,#08131f);background-size:cover;background-position:center;display:flex;align-items:flex-end;padding:24px;border:1px solid var(--line);position:relative;overflow:hidden}.video-art:before{content:"";position:absolute;inset:0;background:linear-gradient(180deg,rgba(7,18,28,.08),rgba(7,18,28,.82))}.video-art>div{position:relative;z-index:1}.contemporary-art{background-image:linear-gradient(180deg,rgba(7,18,28,.04),rgba(7,18,28,.18)),url("assets/visuals/kcmc-ministry-group.jpg");background-position:center 35%}.watch-art{background-image:linear-gradient(180deg,rgba(7,18,28,.08),rgba(7,18,28,.26)),url("assets/visuals/kimberling-city-missouri-bridge-2024.jpg?v=2.1.4");background-position:center}.video-art b{font-family:Georgia,serif;font-size:2.4rem;font-weight:400;line-height:1}.video-copy{display:flex;flex-direction:column;justify-content:center}
+.visual-story-section{padding-top:30px}.visual-story{display:grid;grid-template-columns:1.35fr .65fr;gap:16px}.visual-story figure{margin:0;min-height:320px;border:1px solid var(--line);border-radius:24px;overflow:hidden;position:relative;background:#0b1722;box-shadow:var(--shadow)}.visual-story img{width:100%;height:100%;display:block;object-fit:cover}.mission-visual img{object-position:center}.mission-visual:after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,rgba(7,18,28,.08),rgba(7,18,28,.9))}.mission-visual figcaption{position:absolute;z-index:1;left:0;right:0;bottom:0;padding:26px;display:flex;flex-direction:column;gap:8px}.mission-visual figcaption strong{max-width:760px;font-family:Georgia,serif;font-size:clamp(1.8rem,3.5vw,3rem);font-weight:400;line-height:1.08}.ministry-visual img{object-position:center 32%}.ministry-visual figcaption{position:absolute;left:0;right:0;bottom:0;padding:22px;background:linear-gradient(180deg,transparent,rgba(7,18,28,.96));display:flex;flex-direction:column;gap:4px}.ministry-visual figcaption strong{font-family:Georgia,serif;font-size:1.55rem;font-weight:400}.ministry-visual figcaption span:last-child{font-size:.85rem;color:#c7d5dd}.photo-news-item{display:grid;grid-template-columns:120px 1fr;gap:14px;align-items:center}.photo-news-item img{width:120px;height:120px;object-fit:cover;object-position:center 30%;border-radius:14px;border:1px solid var(--line)}
+.news-layout{display:grid;grid-template-columns:1.05fr .95fr;gap:18px}.news-feature{background:var(--cream);color:#18232c;border-radius:26px;padding:28px}.news-feature .eyebrow{color:#8b642c}.news-feature h3{font-family:Georgia,serif;font-size:2.8rem;font-weight:400;line-height:1;margin:.25em 0}.news-feature p{color:#41515b}.news-list{display:grid;gap:12px}.news-item{padding:18px;border:1px solid var(--line);border-radius:18px;background:rgba(255,255,255,.04)}.news-item time{font-weight:900;color:var(--gold)}
+.gallery{display:grid;grid-template-columns:repeat(5,1fr);gap:10px;margin-top:20px}.gallery button{padding:0;border:1px solid var(--line);border-radius:14px;overflow:hidden;background:#0b1722;cursor:pointer}.gallery img{display:block;width:100%;aspect-ratio:3/4;object-fit:cover}.gallery button:hover{outline:2px solid var(--gold)}
+.serve-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:14px}.serve-card{border:1px solid var(--line);border-radius:20px;padding:20px;background:rgba(255,255,255,.04)}.serve-card h3{margin:.2em 0}.serve-card p{color:var(--muted);font-size:.92rem}.contact-strip{display:grid;grid-template-columns:1.2fr .8fr;gap:20px;background:linear-gradient(145deg,#17364e,#102638);padding:28px;border-radius:26px;border:1px solid var(--line)}.contact-strip h2{font-family:Georgia,serif;font-size:2.5rem;font-weight:400;margin:.1em 0}.muted{color:var(--muted)}
+.view{display:none}.view.active{display:block}.partner-hero{padding:46px 0 10px}.announcement-stack{display:grid;gap:12px}.announcement{border:1px solid var(--line);background:rgba(255,255,255,.045);padding:20px;border-radius:18px}.announcement h3{margin:.35em 0}.announcement p{margin:.2em 0;color:var(--muted)}
+.footer{padding:44px 0 100px;color:#91a7b3;border-top:1px solid var(--line)}.footer-grid{display:grid;grid-template-columns:1fr 1fr;gap:20px}.fine{font-size:.78rem;color:#78909e}.mobile-nav{display:none;position:fixed;bottom:0;left:0;right:0;z-index:50;background:rgba(7,18,28,.96);backdrop-filter:blur(15px);border-top:1px solid var(--line);padding:7px max(8px,env(safe-area-inset-right)) calc(7px + env(safe-area-inset-bottom)) max(8px,env(safe-area-inset-left));grid-template-columns:repeat(5,1fr)}.mobile-nav a{text-decoration:none;color:#8fa7b4;text-align:center;font-size:.68rem;font-weight:800;padding:8px 4px;border-radius:12px}.mobile-nav a span{display:block;font-size:1.15rem;line-height:1.2}.mobile-nav a.active{background:rgba(255,255,255,.08);color:#fff}
+.modal{position:fixed;inset:0;z-index:80;background:rgba(0,0,0,.82);display:none;place-items:center;padding:18px}.modal.open{display:grid}.modal img{max-width:min(100%,900px);max-height:88vh;border-radius:14px;box-shadow:var(--shadow)}.modal button{position:absolute;right:18px;top:18px;border:1px solid rgba(255,255,255,.3);background:#111c;color:white;width:44px;height:44px;border-radius:50%;font-size:1.4rem;cursor:pointer}
+.notice{padding:14px 16px;border-left:3px solid var(--gold);background:rgba(214,173,98,.08);border-radius:10px;color:#d9c9a6;font-size:.9rem}.sr-only{position:absolute!important;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
+@media(max-width:900px){.hero-grid,.video-card,.news-layout,.contact-strip,.visual-story{grid-template-columns:1fr}.grid3{grid-template-columns:1fr}.serve-grid{grid-template-columns:1fr 1fr}.hero{padding-top:46px}.hero-photo{object-position:72% center}.hero-imagery:after{background:linear-gradient(180deg,rgba(7,18,28,.58) 0%,rgba(7,18,28,.62) 45%,rgba(7,18,28,.8) 100%),linear-gradient(90deg,rgba(7,18,28,.24),rgba(7,18,28,.08))}.hero-card{max-width:620px}.actions{grid-template-columns:1fr 1fr}.gallery{grid-template-columns:repeat(5,140px);overflow:auto;padding-bottom:8px}.desktop-nav{display:none}.mobile-nav{display:grid}.footer{padding-bottom:120px}}
+@media(max-width:680px){.install-callout{grid-template-columns:auto 1fr}.install-callout-button{grid-column:1/-1;width:100%}}
+@media(max-width:560px){.photo-news-item{grid-template-columns:88px 1fr}.photo-news-item img{width:88px;height:100px}.visual-story figure{min-height:250px}.wrap{width:min(100% - 22px,1120px)}.topbar .inner{min-height:62px}.brand small{display:none}.brand strong{font-size:.86rem}.topbar [data-install-app].install{display:none}.install{padding:8px 10px;font-size:.8rem}.hero h1{font-size:3.5rem}.actions{gap:8px}.action{min-height:100px;padding:14px}.serve-grid{grid-template-columns:1fr}.section{padding:42px 0}.section-head{display:block}.section-head p{margin-top:8px}.news-feature{padding:22px}.news-feature h3{font-size:2.3rem}.gallery{grid-template-columns:repeat(5,128px)}.install-sheet{padding:10px}.install-sheet-card{padding:26px 20px 22px;border-radius:22px}.install-sheet-card h2{font-size:1.9rem}}
+
+/* v1.2 publishing pass */
+.skip-link{position:fixed;left:12px;top:-60px;z-index:100;background:#fff;color:#111;padding:10px 14px;border-radius:8px}.skip-link:focus{top:12px}.offline-banner{display:none;position:sticky;top:68px;z-index:45;text-align:center;padding:9px 14px;background:#6d4e16;color:#fff;font-weight:800}.offline-banner.show{display:block}.display-title{font-family:Georgia,serif;font-size:clamp(3rem,7vw,5rem);font-weight:400;margin:.1em 0;letter-spacing:-.04em;line-height:.96}.section-title{font-family:Georgia,serif;font-size:clamp(2rem,5vw,3rem);font-weight:400;margin:.15em 0}.visit-grid,.connection-grid{display:grid;grid-template-columns:1fr 1fr;gap:22px;align-items:start}.expect-list{display:grid;gap:10px}.expect{display:grid;gap:5px;padding:16px 18px;border:1px solid var(--line);border-radius:16px;background:rgba(255,255,255,.035)}.expect span{color:var(--muted)}.form-wrap{margin-top:24px}.form-card{background:linear-gradient(160deg,rgba(20,51,75,.78),rgba(9,28,42,.94));border:1px solid var(--line);border-radius:24px;padding:24px;box-shadow:var(--shadow);display:grid;gap:14px}.form-card.compact{max-width:780px;margin-inline:auto}.form-card h2{font-family:Georgia,serif;font-size:2rem;font-weight:400;margin:.05em 0}.form-card label{display:grid;gap:7px;font-weight:750;font-size:.9rem}.field-row{display:grid;grid-template-columns:1fr 1fr;gap:12px}.form-card input,.form-card select,.form-card textarea,.library-toolbar input,.library-toolbar select,.preferences select{width:100%;background:#091925;color:#fff;border:1px solid #395267;border-radius:12px;padding:12px 13px;font:inherit}.form-card textarea{resize:vertical}.form-card input:focus,.form-card select:focus,.form-card textarea:focus,.library-toolbar input:focus,.library-toolbar select:focus,.preferences select:focus{outline:3px solid rgba(229,184,95,.32);border-color:var(--gold)}.form-card .check{display:flex;grid-template-columns:auto 1fr;align-items:center;gap:9px}.form-card .check input{width:auto}.form-status{min-height:1.3em;margin:0;font-size:.87rem;color:#c7d5dd}.form-status.success{color:#c9edc4}.form-status.error{color:#ffb2ab}.library-toolbar{display:grid;grid-template-columns:1fr 220px;gap:10px;margin-bottom:16px}.sermon-grid{display:grid;gap:14px}.sermon-card{display:grid;grid-template-columns:220px 1fr;gap:18px;border:1px solid var(--line);border-radius:20px;padding:14px;background:rgba(255,255,255,.035)}.sermon-thumb{min-height:170px;border-radius:14px;background-size:cover;background-position:center}.sermon-card[hidden]{display:none}.event-card .btn{cursor:pointer;font:inherit}.preferences{margin-top:22px;padding:22px;border:1px solid var(--line);border-radius:20px;background:rgba(255,255,255,.035);display:grid;grid-template-columns:1fr minmax(260px,.5fr);gap:18px;align-items:center}.preferences h2{font-family:Georgia,serif;font-weight:400;margin:.1em 0}.preferences label{display:grid;gap:7px;font-weight:800}.desktop-nav{flex-wrap:wrap}.btn:focus-visible,.action:focus-visible,a:focus-visible,button:focus-visible{outline:3px solid var(--gold);outline-offset:3px}
+.event-card{display:flex;flex-direction:column;overflow:hidden}.event-card.has-image{padding:0}.event-image{display:block;width:100%;height:auto;background:#0b1722;border-bottom:1px solid var(--line)}.event-card-copy{display:flex;flex:1;flex-direction:column;padding:22px}.event-card:not(.has-image) .event-card-copy{padding:0}.event-pills{display:flex;flex-wrap:wrap;gap:7px;margin-bottom:8px}.event-when strong{color:#fff}.event-description{font-size:.94rem;line-height:1.55}.event-card .btns{margin-top:auto;padding-top:12px}
+@media(max-width:900px){.visit-grid,.connection-grid{grid-template-columns:1fr}.library-toolbar{grid-template-columns:1fr}.sermon-card{grid-template-columns:1fr}.preferences{grid-template-columns:1fr}.offline-banner{top:62px}}
+@media(max-width:560px){.field-row{grid-template-columns:1fr}.form-card{padding:18px}.sermon-thumb{min-height:190px}.display-title{font-size:3.15rem}.mobile-nav a{min-height:52px}}
+@media(prefers-reduced-motion:reduce){*{scroll-behavior:auto!important;transition:none!important;animation:none!important}}
+
+/* v1.2.1 Church News data + imagery */
+.current-update{background:linear-gradient(180deg,rgba(18,51,75,.44),rgba(7,18,28,0))}.stat-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin:18px 0 22px}.stat-card{min-height:150px;border:1px solid var(--line);border-radius:22px;padding:22px;background:linear-gradient(150deg,rgba(255,255,255,.075),rgba(255,255,255,.025));display:flex;flex-direction:column;justify-content:flex-end;box-shadow:0 10px 28px rgba(0,0,0,.12)}.stat-card strong{font-family:Georgia,serif;font-size:clamp(2.8rem,6vw,4.3rem);font-weight:400;line-height:.9;color:var(--gold)}.stat-card span{margin-top:10px;color:#d7e2e8;font-weight:750;line-height:1.25}.news-stats{margin-top:0;margin-bottom:28px}.serve-grid{grid-template-columns:repeat(3,1fr)}.newsletter-text-grid{display:grid;grid-template-columns:1fr 1fr;gap:18px;margin-top:24px}.newsletter-text-grid ul{padding-left:1.2rem}.newsletter-text-grid li{margin:.7rem 0;line-height:1.5}
+@media(max-width:900px){.stat-grid{grid-template-columns:1fr 1fr}.serve-grid{grid-template-columns:1fr 1fr}}
+@media(max-width:560px){.stat-grid,.serve-grid,.newsletter-text-grid{grid-template-columns:1fr}.stat-card{min-height:120px}}
+
+/* Version 3 member, access and prayer portal */
+.topbar-account{display:inline-flex;align-items:center;min-height:38px;padding:8px 12px;border:1px solid rgba(214,173,98,.48);border-radius:999px;color:#f6dfa9;text-decoration:none;font-size:.82rem;font-weight:850;white-space:nowrap}.topbar-account:hover{background:rgba(214,173,98,.12)}
+.portal-body{min-height:100vh;background:radial-gradient(circle at 82% 3%,rgba(78,145,173,.24),transparent 34rem),linear-gradient(180deg,#07121c,#0b2030);color:var(--ink)}
+.portal-shell{width:min(1120px,calc(100% - 28px));margin:auto;padding:28px 0 80px}.portal-narrow{width:min(620px,calc(100% - 28px));padding-top:7vh}.portal-back{display:inline-flex;margin-bottom:18px;color:#d7e2e8;text-decoration:none;font-weight:800}.portal-top{display:flex;justify-content:space-between;align-items:flex-start;gap:24px;margin-bottom:24px}.portal-top h1,.portal-card h1,.portal-card h2{font-family:Georgia,serif;font-weight:400;line-height:1.02;margin:.18em 0}.portal-top h1,.portal-card h1{font-size:clamp(2.5rem,6vw,4.7rem)}.portal-card h2{font-size:clamp(1.8rem,4vw,2.6rem)}.portal-lead{max-width:760px;color:#c5d4dc;font-size:1.05rem}.portal-grid{display:grid;grid-template-columns:1fr 1fr;gap:20px}.portal-card{background:linear-gradient(160deg,rgba(20,51,75,.92),rgba(9,28,42,.98));border:1px solid var(--line);border-radius:26px;padding:26px;box-shadow:var(--shadow)}.portal-section{margin-top:20px}.portal-form{display:grid;gap:15px;margin-top:20px}.portal-form label{display:grid;gap:7px;font-weight:800}.portal-form input,.portal-form select,.portal-form textarea,.invite-result input{width:100%;background:#071722;color:#fff;border:1px solid #466075;border-radius:12px;padding:12px 13px;font:inherit}.portal-form textarea{resize:vertical}.portal-form input:focus,.portal-form select:focus,.portal-form textarea:focus,.invite-result input:focus{outline:3px solid rgba(214,173,98,.32);border-color:var(--gold)}.portal-check{display:grid!important;grid-template-columns:auto 1fr!important;align-items:start;gap:10px!important;font-weight:600!important;line-height:1.4}.portal-check input{width:auto;margin-top:.28em}.portal-actions{display:flex;gap:9px;align-items:center;flex-wrap:wrap}.portal-actions button{font:inherit;cursor:pointer}.portal-fine{font-size:.83rem;color:#9db2be}.portal-alert{padding:13px 15px;border-radius:12px;border:1px solid var(--line);font-weight:750}.portal-alert.error{background:rgba(228,123,114,.14);color:#ffc1bb}.portal-alert.success{background:rgba(104,185,157,.14);color:#c9f0e3}.portal-alert.warning{background:rgba(229,184,95,.15);color:#f5daa1}.portal-empty{padding:18px;border:1px dashed rgba(255,255,255,.2);border-radius:14px;color:var(--muted)}.portal-list{display:grid;gap:12px;padding-left:20px;color:#d5e0e6}.portal-list strong{color:#fff}.prayer-list{display:grid;gap:14px}.prayer-card{background:rgba(255,255,255,.05);border:1px solid var(--line);border-radius:17px;padding:18px}.prayer-card.private{border-left:4px solid var(--gold)}.prayer-card p{white-space:normal;overflow-wrap:anywhere}.prayer-meta{display:flex;gap:10px;align-items:center;flex-wrap:wrap}.prayer-meta time{margin-left:auto;color:var(--muted);font-size:.83rem}.status-pill{padding:4px 8px;border-radius:999px;background:rgba(214,173,98,.13);color:#f1d694;font-size:.74rem;font-weight:850}.request-status-list{display:grid}.request-status-list>div{display:grid;grid-template-columns:130px 150px 1fr;gap:14px;padding:12px 0;border-top:1px solid var(--line)}.request-status-list small{color:var(--muted)}.member-table{display:grid;overflow:auto}.member-row{display:grid;grid-template-columns:1.2fr 1.7fr 1.1fr .7fr .7fr;gap:14px;align-items:center;min-width:800px;padding:12px;border-top:1px solid var(--line)}.member-row.header{background:rgba(255,255,255,.07);border-radius:10px 10px 0 0;font-weight:850}.portal-link-button{border:0;background:transparent;color:#f1d694;text-decoration:underline;font:inherit;font-weight:800;cursor:pointer;padding:4px}.invite-result input{margin:12px 0;font-family:ui-monospace,SFMono-Regular,Consolas,monospace;font-size:.82rem}.privacy-lock{display:grid;grid-template-columns:auto 1fr;gap:14px;align-items:start;padding:20px;border:1px solid rgba(214,173,98,.35);border-radius:18px;background:rgba(214,173,98,.07)}.privacy-lock-icon{width:46px;height:46px;border-radius:14px;display:grid;place-items:center;background:var(--gold);color:#18212a;font-size:1.35rem}.privacy-lock h3{margin:0}.privacy-lock p{margin:.3em 0;color:var(--muted)}
+@media(max-width:900px){.portal-top{display:grid}.portal-grid{grid-template-columns:1fr}.topbar-account{font-size:.76rem;padding:7px 9px}.request-status-list>div{grid-template-columns:1fr;gap:3px}}
+
+/* Phase 6 recovered publishing layer */
+.phase6-announcement{background:#9a2f37;color:#fff;padding:10px 0;position:relative;z-index:50}.phase6-announcement .shell{display:flex;gap:14px;align-items:center;justify-content:center;flex-wrap:wrap}.phase6-announcement strong{font-weight:900}.phase6-announcement span{opacity:.94}.phase6-announcement.is-actionable{cursor:pointer}.phase6-announcement.is-actionable:hover strong{text-decoration:underline}.phase6-announcement.is-actionable:focus-visible{outline:3px solid currentColor;outline-offset:-3px}.phase6-bulletin-fab{position:fixed;right:18px;bottom:82px;z-index:60;background:#17324c;color:#fff;text-decoration:none;padding:11px 16px;border-radius:999px;box-shadow:0 10px 35px rgba(0,0,0,.2);font-weight:800;font-size:.86rem}@media(max-width:700px){.phase6-announcement .shell{justify-content:flex-start}.phase6-bulletin-fab{right:12px;bottom:72px}}
+
+/* KCMC public welcome. Private-page themes and authentication are unchanged. */
+.header-give{display:inline-flex;align-items:center;justify-content:center;min-height:44px;padding:8px 15px;border:1px solid var(--gold);border-radius:999px;text-decoration:none;font-weight:800;color:#f6dfa9;white-space:nowrap}
+.site-menu{position:relative;color:var(--ink)}
+.site-menu summary{display:flex;align-items:center;justify-content:center;min-height:44px;padding:8px 14px;border:1px solid var(--line);border-radius:999px;cursor:pointer;font-weight:800;list-style:none;white-space:nowrap}
+.site-menu summary::-webkit-details-marker{display:none}
+.site-menu summary:after{content:'▾';margin-left:7px}
+.site-menu[open] summary:after{content:'▴'}
+.site-menu nav{position:absolute;top:calc(100% + 10px);right:0;display:grid;width:250px;max-width:calc(100vw - 30px);max-height:calc(100dvh - 160px);overflow:auto;background:#0d2235;border:1px solid #51616d;border-radius:16px;padding:9px;box-shadow:var(--shadow);z-index:50}
+.site-menu nav a,.site-menu nav button{display:block;min-height:44px;padding:10px 12px;border-radius:9px;text-decoration:none;color:#eef5f8;background:transparent;border:0;text-align:left;font:inherit;cursor:pointer}
+.site-menu nav a:hover,.site-menu nav button:hover{background:#214057}
+.site-menu .menu-account{border-top:1px solid var(--line);border-radius:0;margin-top:7px;padding-top:16px}
+:where(a,button,summary,input,select,textarea):focus-visible{outline:3px solid #f6dfa9;outline-offset:4px}
+.hero-photo[hidden],.hero-photo-controls[hidden]{display:none!important}
+.hero-photo{object-position:center 50%;filter:none}
+.hero-imagery:after{background:linear-gradient(90deg,#0d2235 0%,#0d2235 38%,rgba(13,34,53,.25) 58%,transparent 72%)}
+.hero-grid>*{min-width:0}
+.hero h1{font-size:clamp(2.9rem,6.3vw,5.8rem);line-height:1.03}
+.hero p.lead{color:#eef5f8}
+.hero .eyebrow{color:#f6dfa9}
+.hero .action{background:rgba(7,18,28,.82)}
+.hero .action span{color:#d7e2e8}
+.hero-photo-controls{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-top:18px}
+.hero-photo-controls button{min-width:44px;min-height:44px;padding:8px 14px;border:1px solid #b8c6cf;border-radius:999px;background:#0d2235;color:#fff;font:inherit;font-weight:700;cursor:pointer}
+.hero-photo-caption{font-size:.8rem;color:#e1e9ee;max-width:100%;margin:12px 0 0}
+.welcome-next .card{display:flex;flex-direction:column}
+.welcome-next .btns{margin-top:auto;padding-top:18px}
+@media(max-width:1180px){.desktop-nav{display:none}}
+@media(max-width:600px){.topbar .inner{gap:7px}.brand{gap:7px;min-width:0}.brand strong{font-size:.85rem}.brand small{font-size:.63rem}.mark{width:33px;height:36px;flex-shrink:0}.topbar [data-share-app]{display:none}.site-menu [data-share-app]{display:block}.hero{padding-top:42px}.hero-grid{gap:25px}.hero-imagery:after{background:none}}
+@media(max-width:390px){.brand small{display:none}.brand strong{font-size:.8rem}.header-give{padding:8px 12px}.site-menu summary{padding:8px 11px}.service-time{font-size:2rem}.hero .install-callout-button{white-space:normal}}
+@media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}.hero *{transition:none!important;animation:none!important}}
+
+/* Replace public artwork without changing shared private-page styling. */
+.contemporary-art{background-image:linear-gradient(180deg,rgba(7,18,28,.04),rgba(7,18,28,.18)),url("assets/visuals/kcmc-congregation-gathering.jpg")}
+.watch-art{background-image:linear-gradient(180deg,rgba(7,18,28,.08),rgba(7,18,28,.26)),url("assets/visuals/kcmc-building-retouched-20261009.jpg")}
+
+/* Keep desktop navigation on one line; Share is also in the dropdown. */
+.topbar .inner{gap:10px}
+.topbar .brand{flex-shrink:0}
+.desktop-nav{flex-wrap:nowrap;gap:0}
+.desktop-nav a{padding:10px 8px;white-space:nowrap}
+.topbar>.inner>[data-share-app]{display:none}
+@media(max-width:600px){.topbar .inner{gap:7px}.topbar .brand{flex-shrink:1}}
+
+/* Public photo refresh: clear church image plus a dedicated family welcome. */
+.hero-card-with-photo{padding:0;overflow:hidden}
+.hero-service-info{padding:24px}
+.hero-church-window{margin:0;background:#0d2235}
+.hero-church-photo{display:block;width:100%;height:auto;aspect-ratio:1066/532;object-fit:cover}
+.photo-source{font-size:.75rem;line-height:1.5;padding:10px 14px;background:#102b40;color:#e4edf2}
+.photo-source a{color:#e4edf2;text-decoration:underline;text-underline-offset:3px}
+.family-welcome{background:linear-gradient(140deg,#102b40,#0a1d2b);border-top:1px solid rgba(255,255,255,.12);border-bottom:1px solid rgba(255,255,255,.12)}
+.family-welcome-grid{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);align-items:center;gap:clamp(24px,5vw,64px)}
+.family-photo-frame{margin:0;overflow:hidden;border:1px solid #526a7b;border-radius:24px;background:#102b40}
+.family-photo-frame[hidden]{display:none!important}
+.family-photo{display:block;width:100%;height:auto;aspect-ratio:2048/1535;object-fit:contain;background:#102b40}
+.family-welcome-copy{min-width:0}
+.family-welcome-copy h2{font-family:Georgia,serif;font-weight:400;font-size:clamp(2.2rem,4vw,3.7rem);line-height:1.08;letter-spacing:-.025em;margin:.35em 0;color:#f7fafc}
+.family-welcome .eyebrow{color:#f6dfa9}
+.family-description{font-size:1.07rem;line-height:1.7;color:#d9e5ed;margin-bottom:26px}
+.family-welcome .btns{gap:12px;flex-wrap:wrap}
+.family-welcome .btn{min-height:48px;white-space:normal;text-align:center}
+.family-without-photo{grid-template-columns:1fr}
+.family-without-photo .family-welcome-copy{max-width:740px}
+@media(max-width:760px){.family-welcome-grid{grid-template-columns:1fr;gap:25px}.family-photo-frame{border-radius:18px}.hero-service-info{padding:20px}.family-welcome .btns{display:grid;grid-template-columns:1fr}}
+
+/* KCMC_CONTEMPORARY_FEATURE_20261002 BEGIN */
+/* Blue public feature, retaining the original worship photograph. */
+.cw-section{padding:54px 0 64px;background:#0d2235;color:#eef5f8;color-scheme:dark;border-top:1px solid #49677c;border-bottom:1px solid #49677c}
+.cw-feature{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.12fr);background:#14334b;border:1px solid #49677c;border-radius:28px;overflow:hidden;box-shadow:0 16px 42px rgba(102,77,36,.10)}
+.cw-copy{padding:clamp(24px,3.4vw,42px);min-width:0;display:flex;flex-direction:column;justify-content:center}
+.cw-kicker{display:flex;align-items:center;gap:10px;flex-wrap:wrap;font-size:.75rem;font-weight:800;line-height:1.5;text-transform:uppercase;letter-spacing:.14em;margin:0 0 20px;color:#b9dce9}
+.cw-kicker span{display:inline-block;background:#214057;border:1px solid #628397;border-radius:99px;padding:5px 11px;letter-spacing:.04em;color:#d6eaf3}
+.cw-copy h2{font-family:Inter,ui-sans-serif,system-ui,sans-serif;font-size:clamp(2.2rem,4.2vw,3.65rem);font-weight:800;line-height:1.06;letter-spacing:-.045em;margin:0 0 22px;color:#eef5f8;overflow-wrap:normal}
+.cw-copy h2 span{color:#a3d6ea}
+.cw-intro{font-size:clamp(1.08rem,1.8vw,1.25rem);font-weight:650;color:#eef5f8;line-height:1.5;margin:0 0 12px}
+.cw-description{font-size:1rem;line-height:1.75;color:#c7d5dd;margin:0 0 15px}
+.cw-family{font-size:.94rem;line-height:1.65;color:#c7d5dd;margin:0 0 8px;padding-left:14px;border-left:2px solid #628397}
+.cw-actions{display:flex;flex-wrap:wrap;gap:10px;margin:20px 0 14px}
+.cw-button{display:inline-flex;align-items:center;justify-content:center;gap:14px;min-height:48px;padding:12px 18px;border:1px solid #526d7f;border-radius:12px;text-decoration:none;font:inherit;font-size:.94rem;font-weight:800;line-height:1.35;text-align:center;white-space:normal}
+.cw-primary{background:#214f6a;color:#eef5f8;border-color:#628397}
+.cw-secondary{background:#14334b;color:#eef5f8}
+.cw-button:hover{background:#214f6a;color:#eef5f8;filter:none}
+.cw-button:focus-visible{outline:3px solid #a3d6ea;outline-offset:4px}
+.cw-online-note{font-size:.78rem;line-height:1.6;color:#b8ccd8;margin:0;max-width:40em}
+.cw-media{background:#14334b;min-width:0;position:relative;overflow:hidden;display:flex;align-items:center;padding:26px 26px 26px 0}
+.cw-media::before,.cw-media::after{content:none}
+.cw-media img{display:block;width:100%;height:auto;min-height:0;object-fit:contain;object-position:center;border-radius:18px;filter:brightness(1.16) contrast(.88) saturate(1.04)}
+@media(max-width:850px){.cw-feature{grid-template-columns:1fr}.cw-media{grid-row:1;padding:20px 20px 0}.cw-media img{height:auto;min-height:0;aspect-ratio:640/344;object-fit:contain;border-radius:14px}.cw-copy{padding:30px}.cw-copy h2{font-size:clamp(2.35rem,7.2vw,3.5rem)}.cw-kicker{margin-bottom:18px}}
+@media(max-width:420px){.cw-section{padding:32px 0 42px}.cw-feature{border-radius:20px}.cw-media{padding:14px 14px 0}.cw-copy{padding:23px}.cw-copy h2{font-size:clamp(1.85rem,8vw,2.7rem)}.cw-actions{display:grid;grid-template-columns:1fr}.cw-kicker{font-size:.68rem;gap:8px}.cw-intro{font-size:1.08rem}}
+@media(prefers-reduced-motion:reduce){.cw-feature *{transition:none!important;animation:none!important}}
+/* KCMC_CONTEMPORARY_FEATURE_20261002 END */
+
+/* KCMC_VISITOR_WELCOME_20261008: public surfaces only; no photo-within-photo. */
+.hero.hero-imagery{background:#0d2235;color:#eef5f8;padding:44px 0 32px;border-bottom:1px solid #49677c;color-scheme:dark}
+.hero-imagery .hero-photo{left:auto;right:0;width:58%;filter:none;opacity:1;object-position:center}
+.hero-imagery .hero-grid{grid-template-columns:1.2fr 1fr;align-items:end;gap:28px}
+.hero-grid>div:first-child{background:#0d2235;border-radius:22px;padding:20px}
+.hero h1{color:#eef5f8;font-size:clamp(2.7rem,5.8vw,5.2rem)}
+.hero p.lead,.hero .hero-card p{color:#c7d5dd}
+.hero .eyebrow{color:#b9dce9}
+.hero .hero-card{background:#14334b;color:#eef5f8;border:1px solid #49677c;margin-top:210px;box-shadow:0 10px 30px rgba(36,61,80,.12)}
+.hero .hero-card .pill{background:#214057;color:#eef5f8}
+.hero .action{background:#14334b;border:1px solid #49677c;color:#eef5f8}
+.hero .action span{color:#c7d5dd}
+.hero .btn.secondary{background:#14334b;color:#eef5f8;border:1px solid #526d7f}
+.hero .install-callout{background:#214057;color:#eef5f8;border-color:#628397}
+.hero .install-callout-copy span{color:#c7d5dd}
+.hero :is(a,button):focus-visible,.invite-neighbor :is(a,button):focus-visible{outline:3px solid #a3d6ea;outline-offset:4px}
+.invite-neighbor{background:#0d2235;color:#eef5f8;color-scheme:dark}
+.invite-neighbor-card{background:#14334b;border:1px solid #49677c;border-radius:24px;padding:clamp(22px,4vw,38px)}
+.invite-neighbor h2{font-family:Georgia,serif;font-weight:400;font-size:clamp(1.9rem,3.8vw,3rem);line-height:1.15;margin:.3em 0}
+.invite-neighbor p{color:#c7d5dd;max-width:70ch}
+.invite-neighbor .eyebrow{color:#b9dce9}
+.invite-neighbor .btn.secondary{color:#eef5f8;background:#14334b;border:1px solid #526d7f}
+.invite-neighbor .btns,.visit-next-steps .btns{flex-wrap:wrap}
+.invite-neighbor button,.visit-next-steps button{white-space:normal;min-height:48px}
+.visit-next-steps{border-top:1px solid #647988;margin-top:22px;padding-top:18px}
+.visit-next-steps[hidden]{display:none!important}
+@media(max-width:900px){.hero.hero-imagery{padding-top:0}.hero-imagery .hero-photo{position:relative;inset:auto;width:100%;height:auto;aspect-ratio:16/10;object-position:center}.hero-imagery:after{display:none}.hero-imagery .hero-grid{grid-template-columns:1fr;gap:20px;margin-top:18px}.hero-grid>div:first-child{padding:12px 0}.hero .hero-card{margin-top:0;max-width:none}.hero h1{font-size:clamp(2.5rem,7.4vw,4.5rem)}}
+/* KCMC_VISITOR_WELCOME_20261008 END */
+
+/* KCMC_BLUE_FISH_MENU_20261009: owner-requested public presentation. */
+body[data-office-email]{background:#0d2235}
+.topbar{background:rgba(13,34,53,.96)}
+.topbar .inner{justify-content:flex-start}
+.topbar .fish-menu summary{width:76px;min-height:56px;padding:0 7px 0 0;gap:0;background:#0d2235;border-color:#49677c;border-radius:14px}
+.fish-menu summary img{display:block;width:56px;height:56px;border-radius:12px}
+.fish-menu summary:after{margin-left:0;font-size:.75rem;color:#b9dce9}
+.fish-menu nav{top:100%;left:0;right:auto;width:300px;max-width:calc(100vw - 30px);max-height:calc(100dvh - 92px);border-color:#49677c}
+.fish-menu .menu-home{padding:14px 12px;margin-bottom:6px;border-bottom:1px solid #49677c;border-radius:9px 9px 0 0}
+.menu-home strong,.menu-home small{display:block}
+.menu-home strong{font-size:.95rem;letter-spacing:.04em}
+.menu-home small{font-size:.72rem;color:#b8ccd8;white-space:normal}
+.fish-menu nav [data-install-app]{display:block;white-space:normal}
+.family-welcome{background:#0d2235}
+.news-feature{background:#14334b;color:#eef5f8;border:1px solid #49677c}
+.news-feature .eyebrow{color:#b9dce9}
+.news-feature p{color:#c7d5dd}
+/* KCMC_BLUE_FISH_MENU_20261009 END */
+
+
+/* KCMC_HOME_OPTION_B_20261013: one-card cover using the real KCMC building photo. */
+.home-cover.hero.hero-imagery{
+  position:relative;
+  min-height:clamp(560px,48vw,760px);
+  padding:0;
+  display:grid;
+  grid-template-columns:minmax(300px,.8fr) minmax(0,1.4fr);
+  align-items:stretch;
+  overflow:hidden;
+  background:#0d2235;
+  color:#0d2235;
+  border-bottom:0;
+  color-scheme:light;
+}
+.home-cover.hero-imagery:after{
+  content:none;
+}
+.home-cover .home-cover-photo{
+  position:relative;
+  grid-column:2;
+  grid-row:1;
+  width:100%;
+  height:100%;
+  object-fit:contain;
+  object-position:center;
+  opacity:1;
+  filter:none;
+}
+.home-cover-layout{
+  position:relative;
+  z-index:2;
+  grid-column:1;
+  grid-row:1;
+  width:100%;
+  display:flex;
+  align-items:center;
+  padding:24px;
+}
+.home-cover-card{
+  width:100%;
+  padding:clamp(20px,2vw,32px);
+  border-radius:26px;
+  background:rgba(250,247,239,.96);
+  box-shadow:0 24px 60px rgba(7,18,28,.24);
+  backdrop-filter:blur(2px);
+}
+.home-cover :where(a,button):focus-visible{outline:3px solid #17324c;outline-offset:4px}
+.home-cover .eyebrow{
+  color:#9a6a20;
+}
+.home-cover h1{
+  color:#17324c;
+  font-size:clamp(2.6rem,3.6vw,4rem);
+  line-height:.98;
+  margin:.25em 0 .28em;
+}
+.home-cover p.lead{
+  color:#486172;
+  max-width:36rem;
+}
+.home-cover-actions{
+  display:grid;
+  grid-template-columns:repeat(3,minmax(0,1fr));
+  gap:12px;
+  margin-top:24px;
+}
+.home-cover .home-cover-actions .action{
+  min-height:96px;
+  padding:12px;
+  border:1px solid #cad4da;
+  border-radius:18px;
+  background:rgba(255,255,255,.92);
+  color:#17324c;
+  box-shadow:none;
+}
+.home-cover .home-cover-actions .action:first-child{
+  background:#17324c;
+  color:#fff;
+  border-color:#17324c;
+}
+.home-cover .home-cover-actions .action span{
+  color:#5c7180;
+}
+.home-cover .home-cover-actions .action:first-child span{
+  color:#d7e2e8;
+}
+.home-worship-strip{
+  background:#f7f3eb;
+  color:#17324c;
+  border-top:1px solid #e0d8c9;
+  border-bottom:1px solid #e0d8c9;
+}
+.home-worship-strip-inner{
+  display:grid;
+  grid-template-columns:auto minmax(0,1fr) auto;
+  gap:28px;
+  align-items:center;
+  padding-top:26px;
+  padding-bottom:26px;
+}
+.home-worship-times{
+  display:grid;
+  gap:5px;
+}
+.home-worship-times .eyebrow{
+  color:#526b7c;
+}
+.home-worship-times strong{
+  font-size:clamp(2rem,4vw,3.4rem);
+  line-height:1;
+  white-space:nowrap;
+}
+.home-worship-copy{
+  display:grid;
+  gap:5px;
+  padding-left:28px;
+  border-left:1px solid #cfc6b7;
+}
+.home-worship-copy b{
+  font-size:1.05rem;
+}
+.home-worship-copy span{
+  color:#5c7180;
+  line-height:1.55;
+}
+body:has([data-view="home"].active) .phase6-bulletin-fab{display:none}
+.home-bulletin-link{
+  white-space:nowrap;
+  background:#fff;
+  color:#17324c;
+  border-color:#b9c5cc;
+}
+@media(max-width:1100px){
+  .home-cover.hero.hero-imagery{
+    min-height:auto;
+    display:block;
+    padding:0;
+  }
+  .home-cover .home-cover-photo{
+    position:relative;
+    width:100%;
+    height:auto;
+    aspect-ratio:1402/1122;
+    object-fit:contain;
+    object-position:center;
+  }
+  .home-cover.hero-imagery:after{
+    display:none;
+  }
+  .home-cover-layout{
+    margin-top:0;
+    width:min(1120px,calc(100% - 30px));
+    padding:18px 0 26px;
+  }
+  .home-cover-card{
+    width:100%;
+    border-radius:22px;
+    padding:24px;
+    background:#f9f6ef;
+  }
+  .home-cover h1{
+    font-size:clamp(2.6rem,9vw,4.5rem);
+  }
+  .home-worship-strip-inner{
+    grid-template-columns:1fr;
+    gap:18px;
+  }
+  .home-worship-copy{
+    padding-left:0;
+    border-left:0;
+  }
+  .home-bulletin-link{
+    width:max-content;
+  }
+}
+@media(max-width:560px){
+  .home-cover-actions{
+    grid-template-columns:1fr;
+  }
+  .home-cover .home-cover-actions .action{
+    min-height:72px;
+  }
+  .home-worship-times strong{
+    white-space:normal;
+  }
+}
+/* KCMC_HOME_OPTION_B_20261013 END */
+
+/* KCMC_FISH_ONLY_HOME_20261014: navigation lives inside the fish dropdown. */
+[data-view="home"] > .section:not([aria-label="KCMC kids and family photos"]):not([data-family-welcome]),
+[data-view="home"] .family-welcome-copy,
+body:has([data-view="home"].active) > .footer{display:none}
+[data-view="home"] .family-welcome-grid{grid-template-columns:minmax(0,1fr);max-width:760px}
+.home-worship-strip-inner{grid-template-columns:auto minmax(0,1fr)}
+.footer{padding-bottom:44px}
+@media(max-width:1100px){.home-worship-strip-inner{grid-template-columns:1fr}}
+/* KCMC_FISH_ONLY_HOME_20261014 END */
+
+/* Approved October 18 welcome design. Public shell only. */
+body.kcmc-welcome-design{--ink:#f5f7fa;--muted:#ccd7df;--gold:#e7b34f;background:#0d2235;color:var(--ink)}
+.kcmc-welcome-design .topbar{background:#0d2235;border-bottom:1px solid #405567;backdrop-filter:none}
+.kcmc-welcome-design .topbar .inner{width:min(1500px,calc(100% - 40px));min-height:78px;gap:16px}
+.kcmc-welcome-design .fish-menu summary{width:64px;height:64px;min-height:64px;padding:0;border:0;border-radius:12px}
+.kcmc-welcome-design .fish-menu summary img{width:64px;height:64px;border-radius:12px}
+.kcmc-welcome-design .fish-menu summary:after{content:none}
+.welcome-brand{font-family:Georgia,serif;color:#fff;text-decoration:none;font-size:clamp(1.1rem,2.3vw,2rem);font-weight:700;letter-spacing:.035em;white-space:nowrap}
+.welcome-nav{display:flex;gap:16px;margin-left:auto;align-items:center}
+.welcome-nav a{color:#f5f7fa;text-decoration:none;min-height:44px;padding:10px 4px;border-bottom:2px solid transparent;font-family:Georgia,serif;font-size:1.1rem}
+.welcome-nav a:hover,.welcome-nav a:focus-visible{border-bottom-color:#e7b34f}
+body.kcmc-welcome-design[data-office-email] [data-view="home"] .home-cover.hero.hero-imagery{display:block;position:relative;min-height:0;padding:0;background:#0d2235;overflow:hidden}
+body.kcmc-welcome-design[data-office-email] [data-view="home"] .home-cover .home-cover-photo{display:block;position:relative;inset:auto;width:100%;height:clamp(500px,46vw,730px);object-fit:cover;object-position:center 18%;filter:none;opacity:1}
+body.kcmc-welcome-design[data-office-email] [data-view="home"] .home-cover:after{content:none}
+body.kcmc-welcome-design[data-office-email] [data-view="home"] .home-cover-layout{display:block;position:absolute;inset:0 auto auto 0;width:100%;margin:0;padding:clamp(26px,4vw,64px);pointer-events:none}
+body.kcmc-welcome-design[data-office-email] [data-view="home"] .home-cover-card{display:block;width:max-content;max-width:100%;padding:0;background:transparent;border:0;border-radius:0;box-shadow:none;backdrop-filter:none}
+body.kcmc-welcome-design[data-office-email] [data-view="home"] .home-cover h1{display:block;color:#07172b;font-family:Georgia,serif;font-size:clamp(3.1rem,6.4vw,6.6rem);font-weight:700;line-height:1.08;margin:0 0 20px;letter-spacing:-.035em;text-shadow:0 1px 12px #ffffffb3}
+.welcome-hero-actions{display:flex;gap:16px;flex-wrap:wrap;pointer-events:auto}
+.welcome-hero-actions .btn{display:inline-flex;align-items:center;justify-content:center;min-height:54px;padding:12px 28px;border:1px solid #b78222;border-radius:8px;font-family:Georgia,serif;font-size:clamp(1rem,1.6vw,1.5rem);font-weight:700;text-decoration:none}
+.welcome-hero-actions .btn.gold{color:#102337;background:#e7b34f}
+.welcome-hero-actions .btn.secondary{color:#102337;background:#fcfcf8}
+body.kcmc-welcome-design[data-office-email] [data-view="home"] .home-worship-strip{display:block;background:#0d2235;color:#f5f7fa;border:0}
+body.kcmc-welcome-design[data-office-email] [data-view="home"] .home-worship-strip-inner{display:flex;justify-content:center;align-items:center;gap:30px;padding:24px 0;flex-wrap:wrap}
+body.kcmc-welcome-design[data-office-email] [data-view="home"] .home-worship-times{display:flex;align-items:center;gap:24px;flex-wrap:wrap;justify-content:center}
+body.kcmc-welcome-design[data-office-email] [data-view="home"] .home-worship-times .eyebrow{color:#fff;font-family:Georgia,serif;font-size:clamp(1.1rem,2.3vw,1.9rem);font-weight:700;letter-spacing:.035em}
+body.kcmc-welcome-design[data-office-email] [data-view="home"] .home-worship-times strong{color:#fff;border-left:2px solid #e7b34f;padding-left:24px;font-family:Georgia,serif;font-size:clamp(1.2rem,2.4vw,2rem);line-height:1.4}
+.welcome-quicklinks{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:18px;width:min(1500px,calc(100% - 40px));margin:0 auto 30px}
+.welcome-quicklinks a{display:flex;align-items:center;gap:18px;min-height:108px;padding:18px 24px;border:1px solid #63798b;border-radius:10px;text-decoration:none;color:#fff;font-family:Georgia,serif;font-weight:700;font-size:clamp(1.1rem,2vw,1.8rem)}
+.welcome-quicklinks a:hover{background:#193b55;border-color:#e7b34f}
+.welcome-quicklinks svg{width:48px;height:48px;flex-shrink:0;fill:none;stroke:#e7b34f;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.welcome-quicklinks .welcome-arrow{margin-left:auto;color:#e7b34f;font-family:system-ui,sans-serif;font-size:2rem}
+.welcome-design-footer{text-align:center;color:#f5f7fa;font-size:.8rem;letter-spacing:.2em;padding:0 18px 30px}
+.welcome-design-footer p{margin:0}
+.welcome-design-footer .welcome-mission{margin:2px 0 14px;color:#e7b34f;font-family:Georgia,serif;font-size:clamp(1.6rem,3vw,2.5rem);line-height:1.3;letter-spacing:0}
+.service-photo{display:block;width:100%;height:240px;object-fit:cover;border-radius:14px}
+.sermon-card[hidden]{display:none!important}
+.kcmc-welcome-design :where(a,button,summary):focus-visible{outline:3px solid #f5c96c;outline-offset:4px}
+/* Preserve the approved navy public shell. */
+.kcmc-welcome-design [data-view="home"]>.section{background:#0d2235;color:#f5f7fa}
+@media(max-width:1000px){.welcome-nav{gap:10px}.welcome-nav a{font-size:1rem}.welcome-quicklinks a{padding:16px;gap:12px}.welcome-quicklinks svg{width:36px;height:36px}}
+@media(max-width:760px){.kcmc-welcome-design .topbar .inner{min-height:68px;width:calc(100% - 24px);gap:12px}.welcome-brand{font-size:1.15rem}.welcome-nav{display:none}.kcmc-welcome-design .fish-menu summary,.kcmc-welcome-design .fish-menu summary img{width:54px;height:54px;min-height:54px}body.kcmc-welcome-design[data-office-email] [data-view="home"] .home-cover .home-cover-photo{height:auto;aspect-ratio:1536/1229;object-fit:contain;object-position:center}body.kcmc-welcome-design[data-office-email] [data-view="home"] .home-cover-layout{position:static;padding:22px 18px 26px}body.kcmc-welcome-design[data-office-email] [data-view="home"] .home-cover h1{color:#fff;text-shadow:none;font-size:clamp(2.5rem,10vw,4rem);margin-bottom:18px}.welcome-hero-actions{gap:10px}.welcome-hero-actions .btn{padding:12px 18px;flex:1;white-space:normal;text-align:center}body.kcmc-welcome-design[data-office-email] [data-view="home"] .home-worship-strip-inner{padding:18px 12px}body.kcmc-welcome-design[data-office-email] [data-view="home"] .home-worship-times{gap:10px}body.kcmc-welcome-design[data-office-email] [data-view="home"] .home-worship-times strong{padding-left:0;border-left:0;font-size:clamp(1.05rem,4.6vw,1.5rem);white-space:normal;text-align:center}.welcome-quicklinks{grid-template-columns:1fr;width:calc(100% - 32px);gap:12px;margin-bottom:24px}.welcome-quicklinks a{min-height:78px;font-size:1.4rem}.welcome-design-footer{font-size:.65rem;letter-spacing:.12em}}
+@media(prefers-reduced-motion:reduce){.kcmc-welcome-design *{scroll-behavior:auto;transition:none!important}}
+
+body.kcmc-welcome-design[data-office-email] [data-view="home"] .home-cover-card>:is(h1,.welcome-hero-actions){display:block}
+body.kcmc-welcome-design[data-office-email] [data-view="home"] .home-cover-card>.welcome-hero-actions{display:flex}
+
+/* Informational headings open their details without JavaScript. */
+.disclosure-list,.expect-list{display:grid;grid-template-columns:1fr;gap:0}
+body.kcmc-welcome-design .disclosure-row{display:block;margin:0;border:0;border-bottom:1px solid #426073;border-radius:0;background:transparent;box-shadow:none;color:#f8f5ec;min-width:0}
+body.kcmc-welcome-design .disclosure-row>summary{display:block;list-style:none;position:relative;padding:20px 38px 20px 0;cursor:pointer;color:inherit;min-height:52px}
+.disclosure-row>summary::-webkit-details-marker{display:none}
+.disclosure-row>summary::after{content:'+';position:absolute;right:8px;top:18px;font:1.5rem/1 Georgia,serif;color:#e7b34f}
+.disclosure-row[open]>summary::after{content:'−'}
+.disclosure-row>summary:focus-visible{outline:3px solid #e7b34f;outline-offset:4px;border-radius:3px}
+body.kcmc-welcome-design .disclosure-row>summary :is(h2,h3){font-size:1.2rem;line-height:1.45;margin:0;font-weight:650;color:inherit}
+body.kcmc-welcome-design .disclosure-content{padding:0 0 20px;line-height:1.65;overflow-wrap:anywhere}
+body.kcmc-welcome-design .disclosure-content p{margin:0 0 12px;color:#e0e9ee;white-space:pre-line}
+body.kcmc-welcome-design .disclosure-content .btns{margin:14px 0 0}
+body.kcmc-welcome-design .event-disclosure{border-bottom:0}
+body.kcmc-welcome-design .event-disclosure>summary{padding-top:3px}
+.event-disclosure>summary::after{top:3px}
+</style></head><body class="kcmc-welcome-design" data-office-email="secretary@umckc.org"><main><section class="view active" data-view="news">
+  <div class="wrap partner-hero"><div class="eyebrow">Church updates</div><h1 class="display-title">Stay connected this week.</h1><p class="lead muted">The latest bulletin, published announcements and upcoming gatherings.</p><a class="btn secondary" href="https://bobsome1.com/kcmc-connect/#home" data-route="home">← Back</a></div>
+  <section class="section"><div class="wrap">
+    <div class="btns"><a class="btn gold" href="KCMC_Digital_Bulletin_Preview.html">Latest bulletin</a><a class="btn secondary" href="https://bobsome1.com/kcmc-connect/#events" data-route="events">Upcoming events</a></div>
+    <div class="announcement-stack">
+    <details class="disclosure-row"><summary><h2>Way Forward meeting — October 22 at 1:30 PM</h2></summary><div class="disclosure-content"><p>Join Pastor Tony for the Way Forward All Church Informational Meeting on Thursday, October 22 at 1:30 PM. Come hear the information and be part of the conversation.</p></div></details><details class="disclosure-row"><summary><h2>Trunk or Treat volunteers: welcome families with us</h2></summary><div class="disclosure-content"><p>Help us reach at least 30 decorated trunks! Sign up to bring your vehicle and welcome children and families. The pastors have promised a party for participants if we reach 30 trunks. Volunteers should arrive by 3:30 PM on October 31 to park and decorate. Plan for approximately 200 children: about 200 individually wrapped treats for one each, or 400 for two each. Use commercially packaged, individually wrapped treats. Extra candy is available, and the church can provide candy if purchasing it is a burden. Drop off donated candy at the church office or in the lobby. Keep decorations and optional costumes family-friendly and not frightening; an adult volunteer costume contest is planned. Keep walkways clear and cords secure. Keep vehicles parked until the event is over and families have cleared the area. Smile, welcome each child and be patient with shy visitors. Contact the church office with questions. Contact the church office about signing up a trunk. The public event runs October 31, 4:30–6:30 PM in the church parking lot, with a bounce house, hot dogs, hot cider and a costume contest.</p></div></details><details class="disclosure-row"><summary><h2>Return Pregnancy Life Line baby bottles by October 25</h2></summary><div class="disclosure-content"><p>Fill your baby bottle with change or folding money to support Pregnancy Life Line/Southern Missouri. Please return your filled bottle by Sunday, October 25. Small Change Makes a Big Impact! Contact the church office with questions.</p></div></details><details class="disclosure-row"><summary><h2>Richard French Memorial Lasagna Dinner</h2></summary><div class="disclosure-content"><p>Saturday, November 14 at 4:30 PM in Fellowship Hall. Tickets are $15 each. Gather for food and fellowship as we remember Richard.</p></div></details>        </div>
+  </div></section>
+</section>
+</main></body></html>

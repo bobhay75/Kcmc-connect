@@ -54,7 +54,7 @@ usort($kcmcAnnouncements, fn($a,$b)=>(int)($b['priority']??0)<=>(int)($a['priori
 <link rel="icon" href="assets/icons/icon-192.png?v=20261019">
 <link rel="apple-touch-icon" href="assets/icons/icon-192.png?v=20261019">
 <?php require_once __DIR__ . '/lib/screen-navigation.php'; echo kcmc_screen_assets(); ?>
-<link rel="stylesheet" href="home-welcome.css?v=tony-functions-20261020">
+<link rel="stylesheet" href="home-welcome.css?v=bulletin-disclosures-20261020">
 </head>
 <body class="kcmc-welcome-design" data-office-email="<?=kcmc_h($kcmcEmail)?>">
 <a class="skip-link" href="#mainContent">Skip to content</a>
@@ -122,11 +122,11 @@ usort($kcmcAnnouncements, fn($a,$b)=>(int)($b['priority']??0)<=>(int)($a['priori
     <div>
       <div class="section-head"><div><div class="eyebrow">What to expect</div><h2>Come as you are.</h2></div></div>
       <div class="expect-list">
-        <article class="expect"><b>Three Sunday options</b><span>8:00 AM Front Porch Gospel • 9:15 AM Traditional • 10:30 AM Contemporary.</span></article>
-        <article class="expect"><b>Warm, relaxed welcome</b><span>KCMC describes its worship as a place to connect with God and community, with music and Bible-based teaching.</span></article>
-        <article class="expect"><b>Kids at 10:30</b><span>Launch Kids Children’s Church coincides with the Contemporary service.</span></article>
-        <article class="expect"><b>One easy destination</b><span>57 Kimberling City Center Lane, Kimberling City, MO 65686.</span></article>
-        <article class="expect"><b>Accessibility or arrival question?</b><span>Call the church office at (417) 739-4395 before your visit and the team can help with your specific need.</span></article>
+        <details class="disclosure-row"><summary><h3>Three Sunday options</h3></summary><div class="disclosure-content"><p>8:00 AM Front Porch Gospel • 9:15 AM Traditional • 10:30 AM Contemporary.</p></div></details>
+        <details class="disclosure-row"><summary><h3>Warm, relaxed welcome</h3></summary><div class="disclosure-content"><p>KCMC describes its worship as a place to connect with God and community, with music and Bible-based teaching.</p></div></details>
+        <details class="disclosure-row"><summary><h3>Kids at 10:30</h3></summary><div class="disclosure-content"><p>Launch Kids Children’s Church coincides with the Contemporary service.</p></div></details>
+        <details class="disclosure-row"><summary><h3>One easy destination</h3></summary><div class="disclosure-content"><p>57 Kimberling City Center Lane, Kimberling City, MO 65686.</p></div></details>
+        <details class="disclosure-row"><summary><h3>Accessibility or arrival question?</h3></summary><div class="disclosure-content"><p>Call the church office at (417) 739-4395 before your visit and the team can help with your specific need.</p></div></details>
       </div>
       <div class="btns"><a class="btn gold" href="https://maps.app.goo.gl/W6kRCHvbaVJ7mwte7" target="_blank" rel="noopener">Get directions</a><a class="btn secondary" href="tel:+14177394395">Call the office</a></div>
     </div>
@@ -140,7 +140,7 @@ usort($kcmcAnnouncements, fn($a,$b)=>(int)($b['priority']??0)<=>(int)($a['priori
       <button class="btn gold" type="submit">Tell the welcome team</button><p class="form-status" role="status" aria-live="polite"></p><div class="visit-next-steps" data-visit-next-steps hidden><h3>You have a place here. Take your next step.</h3><p>Come as you are. Explore what is happening, ask about a Bible study or group, or find a way to serve.</p><div class="btns"><a class="btn" href="#events" data-route="events">Upcoming events</a><a class="btn" href="#partner" data-route="partner">Find a group</a><a class="btn" href="#serve" data-route="serve">Explore serving</a><a class="btn secondary" href="https://maps.app.goo.gl/W6kRCHvbaVJ7mwte7" target="_blank" rel="noopener">Directions</a></div><p>Bringing children? Launch Kids meets during the 10:30 AM Contemporary service. Contact the church office with arrival or accessibility questions.</p><button class="btn gold" type="button" data-share-app data-share-visit>Invite someone to join you</button></div>
     </form>
   </div></section>
-  <section class="section alt"><div class="wrap"><div class="section-head"><div><div class="eyebrow">Choose your service</div><h2>Same church. Different expression.</h2></div></div><div class="grid3"><article class="card"><div class="time">8:00</div><h3>Front Porch Gospel</h3><p>Old-time country and bluegrass Gospel with an uplifting Bible-based message.</p></article><article class="card"><div class="time">9:15</div><h3>Traditional</h3><p>Hymns, piano, organ and choir with teaching based on the Bible.</p></article><article class="card"><div class="time">10:30</div><h3>Contemporary</h3><p>A laid-back coffee-shop setting with fellowship, refreshments and Launch Kids.</p></article></div></div></section>
+  <section class="section alt"><div class="wrap"><div class="section-head"><div><div class="eyebrow">Choose your service</div><h2>Same church. Different expression.</h2></div></div><div class="disclosure-list"><details class="disclosure-row"><summary><h3>8:00 AM · Front Porch Gospel</h3></summary><div class="disclosure-content"><p>Old-time country and bluegrass Gospel with an uplifting Bible-based message.</p></div></details><details class="disclosure-row"><summary><h3>9:15 AM · Traditional</h3></summary><div class="disclosure-content"><p>Hymns, piano, organ and choir with teaching based on the Bible.</p></div></details><details class="disclosure-row"><summary><h3>10:30 AM · Contemporary</h3></summary><div class="disclosure-content"><p>A laid-back coffee-shop setting with fellowship, refreshments and Launch Kids.</p></div></details></div></div></section>
 </section>
 
 <section class="view" data-view="watch">
@@ -166,9 +166,9 @@ usort($kcmcAnnouncements, fn($a,$b)=>(int)($b['priority']??0)<=>(int)($a['priori
 <section class="view" data-view="news">
   <div class="wrap partner-hero"><div class="eyebrow">Church updates</div><h1 class="display-title">Stay connected this week.</h1><p class="lead muted">The latest bulletin, published announcements and upcoming gatherings.</p><a class="btn secondary" href="#home" data-route="home">← Back</a></div>
   <section class="section"><div class="wrap">
-    <div class="btns"><a class="btn gold" href="bulletin.php">Latest bulletin</a><a class="btn secondary" href="#events" data-route="events">Upcoming events</a><a class="btn secondary" href="https://www.facebook.com/KimberlingCityMethodistChurch" target="_blank" rel="noopener">KCMC on Facebook</a></div>
+    <div class="btns"><a class="btn gold" href="bulletin.php">Latest bulletin</a><a class="btn secondary" href="#events" data-route="events">Upcoming events</a></div>
     <div class="announcement-stack">
-    <?php foreach($kcmcAnnouncements as $item): ?><article class="announcement"><h2><?=kcmc_h((string)($item['title']??''))?></h2><p><?=kcmc_h((string)($item['body']??''))?></p></article><?php endforeach; ?>
+    <?php foreach($kcmcAnnouncements as $item): ?><details class="disclosure-row"><summary><h2><?=kcmc_h((string)($item['title']??''))?></h2></summary><div class="disclosure-content"><p><?=kcmc_h((string)($item['body']??''))?></p></div></details><?php endforeach; ?>
     <?php if(!$kcmcAnnouncements): ?><p class="muted">Check the bulletin and events for the latest published information.</p><?php endif; ?>
     </div>
   </div></section>
@@ -205,10 +205,11 @@ usort($kcmcAnnouncements, fn($a,$b)=>(int)($b['priority']??0)<=>(int)($a['priori
         <?php if($hasEventImage): ?><img class="event-image" src="<?=kcmc_h($eventImage.($detailsOnSlide?'?v=event-slide-20261020':''))?>" alt="<?=kcmc_h((string)($event['image_alt']??''))?>" loading="lazy" decoding="async"><?php endif; ?>
         <div class="event-card-copy">
           <?php if(!$detailsOnSlide): ?><p class="muted"><time datetime="<?=kcmc_h($eventDate)?>"><?=kcmc_h(date('D, M j',strtotime($eventDate)))?></time></p><?php endif; ?>
-          <h3><?=kcmc_h($eventTitle)?></h3>
+          <details class="disclosure-row event-disclosure"><summary><h3><?=kcmc_h($eventTitle)?></h3></summary><div class="disclosure-content">
           <p class="event-when"><?php if(!$detailsOnSlide): ?><strong><?=kcmc_h($eventTimeLabel)?></strong> • <?php endif; ?><?=kcmc_h($eventLocation)?></p>
           <?php if(!empty($event['description'])): ?><p class="event-description"><?=kcmc_h((string)$event['description'])?></p><?php endif; ?>
-          <div class="btns"><?php if($rsvpEnabled): ?><button class="btn event-rsvp" type="button" aria-label="RSVP for <?=kcmc_h($eventTitle)?>">RSVP</button><?php else: ?><a class="btn" href="<?=kcmc_h($kcmcPhoneHref)?>" aria-label="Call KCMC with questions about <?=kcmc_h($eventTitle)?>">Event questions</a><?php endif; ?></div>
+          <div class="btns"><?php if($rsvpEnabled): ?><button class="btn event-rsvp" type="button" aria-label="RSVP for <?=kcmc_h($eventTitle)?>">RSVP</button><?php else: ?><a class="btn" href="<?=kcmc_h($kcmcPhoneHref)?>" aria-label="Call KCMC with questions about <?=kcmc_h($eventTitle)?>">Call church office · <?=kcmc_h($kcmcPhone)?></a><?php endif; ?></div>
+          </div></details>
         </div>
       </article>
     <?php endforeach; ?>
@@ -217,9 +218,9 @@ usort($kcmcAnnouncements, fn($a,$b)=>(int)($b['priority']??0)<=>(int)($a['priori
 
 <section class="view" data-view="serve">
   <div class="wrap partner-hero"><div class="eyebrow">Serve</div><h1 style="font-family:Georgia,serif;font-size:clamp(3rem,7vw,5rem);font-weight:400;margin:.1em 0">Turn everyday things into ministry.</h1><p class="lead muted">Share your interests with our church team and ask about current opportunities to serve.</p></div>
-  <section class="section"><div class="wrap serve-grid">
-    <article class="serve-card"><span class="pill">Start here</span><h3>Find a place to serve</h3><p>Tell the team about your interests and availability using the form below. The church can help you find an active opportunity.</p></article>
-    <article class="serve-card"><span class="pill">Talk with us</span><h3>Have a question?</h3><p>Call the church office to ask what is needed now before making plans.</p><div class="btns"><a class="btn" href="<?=kcmc_h($kcmcPhoneHref)?>">Call the church</a></div></article>
+  <section class="section"><div class="wrap disclosure-list">
+    <details class="disclosure-row"><summary><h3>Find a place to serve</h3></summary><div class="disclosure-content"><p>Tell the team about your interests and availability using the form below. The church can help you find an active opportunity.</p></div></details>
+    <details class="disclosure-row"><summary><h3>Have a question?</h3></summary><div class="disclosure-content"><p>Call the church office to ask what is needed now before making plans.</p><div class="btns"><a class="btn" href="<?=kcmc_h($kcmcPhoneHref)?>">Call the church</a></div></div></details>
   </div><div class="wrap form-wrap"><form class="form-card compact" data-kcmc-form="serve" data-subject="I Want to Serve at KCMC" novalidate><div class="eyebrow">Volunteer</div><h2>Find a place to serve.</h2><div class="field-row"><label>Name<input name="name" autocomplete="name" required></label><label>Email<input type="email" name="email" autocomplete="email" required></label></div><label>I’m interested in<select name="interest"><option>Not sure — help me find a fit</option><option>Kids / Youth</option><option>Worship / Music</option><option>Hospitality / Welcome</option><option>Care / Prayer</option><option>Community Outreach</option><option>Facilities / Practical Help</option></select></label><label>Tell us a little about your availability or interests<textarea name="message" rows="4"></textarea></label><button class="btn gold" type="submit">Send my interest</button><p class="form-status" role="status" aria-live="polite"></p></form></div></section>
 </section>
 
@@ -227,8 +228,8 @@ usort($kcmcAnnouncements, fn($a,$b)=>(int)($b['priority']??0)<=>(int)($a['priori
   <div class="wrap partner-hero"><div class="eyebrow">Church Family</div><h1 style="font-family:Georgia,serif;font-size:clamp(3rem,7vw,5rem);font-weight:400;margin:.1em 0">Your church week, in one place.</h1><p class="lead muted">Find your next step, ask for support, and get connected with our church team.</p></div>
   <section class="section"><div class="wrap announcement-stack">
 
-    <article class="announcement"><span class="pill">This week</span><h3>Use the app for worship, care and current links</h3><p>The official livestream, online giving, visit planning, office contact and current service information are all one tap away.</p></article>
-    <article class="announcement"><span class="pill">Find Your People</span><h3>Groups and connection</h3><p>Looking for a small group, care connection, Bible study or ministry community? Send an interest note below and the church can help connect you.</p></article>
+    <details class="disclosure-row"><summary><h3>Use the app for worship, care and current links</h3></summary><div class="disclosure-content"><p>The official livestream, online giving, visit planning, office contact and current service information are all one tap away.</p></div></details>
+    <details class="disclosure-row"><summary><h3>Groups and connection</h3></summary><div class="disclosure-content"><p>Looking for a small group, care connection, Bible study or ministry community? Send an interest note below and the church can help connect you.</p></div></details>
   </div><div class="wrap connection-grid form-wrap">
     <article class="form-card"><div class="eyebrow">Prayer &amp; care</div><h2>You don’t have to do life alone.</h2><p class="muted">Reach out to the church office for prayer or support. Personal prayer details are not displayed on the public app.</p><div class="btns"><a class="btn gold" href="<?=kcmc_h($kcmcPhoneHref)?>">Call the church</a><a class="btn secondary" href="care.php">Prayer &amp; care</a></div></article>
     <form class="form-card" data-kcmc-form="groups" data-subject="KCMC Connection / Group Interest" novalidate><div class="eyebrow">Find Your People</div><h2>Help me get connected.</h2><label>Name<input name="name" autocomplete="name" required></label><label>Email<input type="email" name="email" autocomplete="email" required></label><label>I’m looking for<select name="interest"><option>Small group / Bible study</option><option>Kids / family connection</option><option>Youth</option><option>Care / support</option><option>Men’s ministry</option><option>Women’s ministry</option><option>I’m new and not sure yet</option></select></label><label>Anything else?<textarea name="message" rows="4"></textarea></label><button class="btn gold" type="submit">Help me connect</button><p class="form-status" role="status" aria-live="polite"></p></form>

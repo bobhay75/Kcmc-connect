@@ -1,0 +1,56 @@
+{
+  "slide": {
+    "index.php": {
+      "before": "9dc7c5fb9f83b1a6d7dfebc03d3ea6471717859ad265ad9a6508524d250a33c6",
+      "after": "972161b6b1e4d77f7f9c9f719e1d2ac55b61680d37822dd7abd421be7287a897"
+    },
+    "events.php": {
+      "before": "e51c902409bd9bc08b763a1d881ff25ffe6960ef53895077f5d59133f808db25",
+      "after": "511faceb2670f547141927fabfc04abd4c08272e4d01e494c53924a9a2ec97fd"
+    },
+    "bulletin.php": {
+      "before": "5b27a1f19808add71b1cd342807b19deb8b910a1c25b4fc70ad215771ecd655b",
+      "after": "a9fbc6cd440dca1db6be6f5cf30700ada60341dbfef4575412102d30c7c3cc88"
+    },
+    "home-welcome.css": {
+      "before": "ff632664fc79ebd1d3facc250ad555c24da7619f422e423e4ce690880743bef0",
+      "after": "cc47d2cf0204fdc30647de520c287c12d61debd6ed0c3dfa4047a3396ea52880"
+    }
+  },
+  "navigation": {
+    "index.php": {
+      "before": "e591f27ed342ef2e3258eef1012ef171eb1576ba595b8c8cfa9e4eb10561878f",
+      "after": "972161b6b1e4d77f7f9c9f719e1d2ac55b61680d37822dd7abd421be7287a897"
+    },
+    "events.php": {
+      "before": "29bfa1037555f4a72707defbf07b5b01ea79c91512b9c2f192ed055ff34745f8",
+      "after": "511faceb2670f547141927fabfc04abd4c08272e4d01e494c53924a9a2ec97fd"
+    },
+    "bulletin.php": {
+      "before": "5b27a1f19808add71b1cd342807b19deb8b910a1c25b4fc70ad215771ecd655b",
+      "after": "a9fbc6cd440dca1db6be6f5cf30700ada60341dbfef4575412102d30c7c3cc88"
+    },
+    "home-welcome.css": {
+      "before": "ff632664fc79ebd1d3facc250ad555c24da7619f422e423e4ce690880743bef0",
+      "after": "cc47d2cf0204fdc30647de520c287c12d61debd6ed0c3dfa4047a3396ea52880"
+    }
+  },
+  "actions": {
+    "index.php": {
+      "before": "1db2ccd28e7d119c45d6fd2ec387d266b8100708994257b2618fb656e2b9c094",
+      "after": "972161b6b1e4d77f7f9c9f719e1d2ac55b61680d37822dd7abd421be7287a897"
+    },
+    "events.php": {
+      "before": "29bfa1037555f4a72707defbf07b5b01ea79c91512b9c2f192ed055ff34745f8",
+      "after": "511faceb2670f547141927fabfc04abd4c08272e4d01e494c53924a9a2ec97fd"
+    },
+    "bulletin.php": {
+      "before": "5b27a1f19808add71b1cd342807b19deb8b910a1c25b4fc70ad215771ecd655b",
+      "after": "a9fbc6cd440dca1db6be6f5cf30700ada60341dbfef4575412102d30c7c3cc88"
+    },
+    "home-welcome.css": {
+      "before": "ff632664fc79ebd1d3facc250ad555c24da7619f422e423e4ce690880743bef0",
+      "after": "cc47d2cf0204fdc30647de520c287c12d61debd6ed0c3dfa4047a3396ea52880"
+    }
+  }
+}
