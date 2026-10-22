@@ -53,6 +53,8 @@ usort($kcmcAnnouncements, fn($a,$b)=>(int)($b['priority']??0)<=>(int)($a['priori
 <link rel="apple-touch-icon" href="assets/icons/icon-192.png?v=20261019">
 <?php require_once __DIR__ . '/lib/screen-navigation.php'; echo kcmc_screen_assets(); ?>
 <link rel="stylesheet" href="home-welcome.css?v=20261019">
+<link rel="stylesheet" href="event-details.css?v=20261022">
+<script src="event-details.js?v=20261022" defer></script>
 </head>
 <body class="kcmc-welcome-design" data-office-email="<?=kcmc_h($kcmcEmail)?>">
 <a class="skip-link" href="#mainContent">Skip to content</a>
@@ -99,7 +101,7 @@ usort($kcmcAnnouncements, fn($a,$b)=>(int)($b['priority']??0)<=>(int)($a['priori
     <img class="home-cover-photo" data-authentic-building src="./assets/visuals/kcmc-building-original-20261018.jpg" alt="Original photograph of Kimberling City Methodist Church with its natural sky and clouds" loading="eager" decoding="async" fetchpriority="high" width="1536" height="1229">
     <div class="wrap home-cover-layout"><div class="home-cover-card">
       <h1>Welcome Home</h1>
-      <div class="welcome-hero-actions"><a class="btn gold" href="#visit" data-route="visit">Plan Your Visit <span aria-hidden="true">&#160;›</span></a><a class="btn secondary" href="#watch" data-route="watch">Watch Online <span aria-hidden="true">&#160;›</span></a></div>
+      <div class="welcome-hero-actions"><a class="btn gold" href="#visit" data-route="visit">Plan Your Visit <span aria-hidden="true">&#160;›</span></a><a class="btn secondary" href="#watch" data-route="watch">Watch Online <span aria-hidden="true">&#160;›</span></a><a class="btn gold" href="https://www.simplechurchgiving.net/app/giving/umckc" target="_blank" rel="noopener noreferrer">Give Online <span aria-hidden="true">&#160;›</span></a></div>
     </div></div>
   </section>
   <section class="home-worship-strip" aria-label="Sunday worship at KCMC"><div class="wrap home-worship-strip-inner"><div class="home-worship-times"><span class="eyebrow">Sunday Services</span><strong>8:00 AM <span aria-hidden="true">•</span> 9:15 AM <span aria-hidden="true">•</span> 10:30 AM</strong></div></div></section>
@@ -250,7 +252,7 @@ usort($kcmcAnnouncements, fn($a,$b)=>(int)($b['priority']??0)<=>(int)($a['priori
         data-end-time="<?=kcmc_h($eventEndTime)?>"
         data-location="<?=kcmc_h($calendarLocation)?>"
         data-description="<?=kcmc_h((string)($event['description']??''))?>">
-        <?php if($hasEventImage): ?><img class="event-image" src="<?=kcmc_h($eventImage)?>" alt="<?=kcmc_h((string)($event['image_alt']??''))?>" loading="lazy" decoding="async"><?php endif; ?>
+        <?php if($hasEventImage): ?><a data-event-details href="<?=kcmc_h($eventImage)?>" target="_blank" rel="noopener noreferrer" aria-label="View announcement and details for <?=kcmc_h($eventTitle)?>"><img class="event-image" src="<?=kcmc_h($eventImage)?>" alt="<?=kcmc_h((string)($event['image_alt']??''))?>" loading="lazy" decoding="async"></a><?php endif; ?>
         <div class="event-card-copy">
           <div class="event-pills"><time class="pill" datetime="<?=kcmc_h($eventDate)?>"><?=kcmc_h(date('D, M j',strtotime($eventDate)))?></time><?php if(!empty($event['label'])): ?><span class="pill important"><?=kcmc_h((string)$event['label'])?></span><?php endif; ?></div>
           <h3><?=kcmc_h($eventTitle)?></h3>
@@ -273,11 +275,7 @@ usort($kcmcAnnouncements, fn($a,$b)=>(int)($b['priority']??0)<=>(int)($a['priori
 
 <section class="view" data-view="partner">
   <div class="wrap partner-hero"><div class="eyebrow">Partner Hub</div><h1 style="font-family:Georgia,serif;font-size:clamp(3rem,7vw,5rem);font-weight:400;margin:.1em 0">Your church week, in one place.</h1><p class="lead muted">Find your next step, ask for support, and get connected with our church team.</p></div>
-  <section class="section"><div class="wrap announcement-stack">
-
-    <article class="announcement"><span class="pill">This week</span><h3>Use the app for worship, care and current links</h3><p>The official livestream, online giving, visit planning, office contact and current service information are all one tap away.</p></article>
-    <article class="announcement"><span class="pill">Find Your People</span><h3>Groups and connection</h3><p>Looking for a small group, care connection, Bible study or ministry community? Send an interest note below and the church can help connect you.</p></article>
-  </div><div class="wrap connection-grid form-wrap">
+  <section class="section"><div class="wrap connection-grid form-wrap">
     <article class="form-card"><div class="eyebrow">Prayer &amp; care</div><h2>You don’t have to do life alone.</h2><p class="muted">Reach out to the church office for prayer or support. Personal prayer details are not displayed on the public app.</p><div class="btns"><a class="btn gold" href="<?=kcmc_h($kcmcPhoneHref)?>">Call the church</a><a class="btn secondary" href="care.php">Prayer &amp; care</a></div></article>
     <form class="form-card" data-kcmc-form="groups" data-subject="KCMC Connection / Group Interest" novalidate><div class="eyebrow">Find Your People</div><h2>Help me get connected.</h2><label>Name<input name="name" autocomplete="name" required></label><label>Email<input type="email" name="email" autocomplete="email" required></label><label>I’m looking for<select name="interest"><option>Small group / Bible study</option><option>Kids / family connection</option><option>Youth</option><option>Care / support</option><option>Men’s ministry</option><option>Women’s ministry</option><option>I’m new and not sure yet</option></select></label><label>Anything else?<textarea name="message" rows="4"></textarea></label><button class="btn gold" type="submit">Help me connect</button><p class="form-status" role="status" aria-live="polite"></p></form>
   </div><div class="wrap preferences"><div><div class="eyebrow">This device</div><h2>Remember my preferred service</h2><p class="muted">Optional preference is stored only on this device.</p></div><label>Preferred Sunday service<select id="preferredService"><option value="">No preference</option><option>8:00 AM — Front Porch Gospel</option><option>9:15 AM — Traditional Worship</option><option>10:30 AM — Contemporary Worship</option></select></label></div></section>
