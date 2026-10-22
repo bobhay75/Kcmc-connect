@@ -99,7 +99,7 @@ usort($kcmcAnnouncements, fn($a,$b)=>(int)($b['priority']??0)<=>(int)($a['priori
     <img class="home-cover-photo" data-authentic-building src="./assets/visuals/kcmc-building-original-20261018.jpg" alt="Original photograph of Kimberling City Methodist Church with its natural sky and clouds" loading="eager" decoding="async" fetchpriority="high" width="1536" height="1229">
     <div class="wrap home-cover-layout"><div class="home-cover-card">
       <h1>Welcome Home</h1>
-      <div class="welcome-hero-actions"><a class="btn gold" href="#visit" data-route="visit">Plan Your Visit <span aria-hidden="true">&#160;›</span></a><a class="btn secondary" href="#watch" data-route="watch">Watch Online <span aria-hidden="true">&#160;›</span></a></div>
+      <div class="welcome-hero-actions"><a class="btn gold" href="#visit" data-route="visit">Plan Your Visit <span aria-hidden="true">&#160;›</span></a><a class="btn secondary" href="#watch" data-route="watch">Watch Online <span aria-hidden="true">&#160;›</span></a><a class="btn gold" href="https://www.simplechurchgiving.net/app/giving/umckc" target="_blank" rel="noopener noreferrer">Donate <span aria-hidden="true">&#160;›</span></a></div>
     </div></div>
   </section>
   <section class="home-worship-strip" aria-label="Sunday worship at KCMC"><div class="wrap home-worship-strip-inner"><div class="home-worship-times"><span class="eyebrow">Sunday Services</span><strong>8:00 AM <span aria-hidden="true">•</span> 9:15 AM <span aria-hidden="true">•</span> 10:30 AM</strong></div></div></section>
