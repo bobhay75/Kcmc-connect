@@ -10,7 +10,7 @@ if (($_SERVER['REQUEST_METHOD'] ?? 'GET') === 'POST') {
     else {
         try {
             $action = (string)($_POST['action'] ?? '');
-            if (!in_array($action, ['start','stop','note'], true)) throw new RuntimeException('Invalid action.');
+            if (!in_array($action, ['start','stop','note','break_start','break_end'], true)) throw new RuntimeException('Invalid action.');
             $note = trim((string)($_POST['note'] ?? ''));
             if (strlen($note) > 1000) throw new RuntimeException('Note too long.');
             kcmc_update_json_store($path, ['sessions'=>[], 'events'=>[]], function (&$data) use ($action,$note,$user) {
@@ -21,9 +21,20 @@ if (($_SERVER['REQUEST_METHOD'] ?? 'GET') === 'POST') {
                 foreach ($data['sessions'] as $i=>$session) if (empty($session['ended_at'])) $open=$i;
                 if ($action === 'start') {
                     if ($open !== null) throw new RuntimeException('A session is already running.');
-                    $data['sessions'][]=['id'=>bin2hex(random_bytes(12)),'started_at'=>$now,'ended_at'=>null,'note'=>$note,'actor_id'=>(string)$user['id']];
+                    $data['sessions'][]=['id'=>bin2hex(random_bytes(12)),'started_at'=>$now,'ended_at'=>null,'note'=>$note,'actor_id'=>(string)$user['id'],'breaks'=>[]];
+                } elseif ($action === 'break_start' || $action === 'break_end') {
+                    if ($open === null) throw new RuntimeException('No running session.');
+                    $breaks =& $data['sessions'][$open]['breaks'];
+                    if (!is_array($breaks)) $breaks=[];
+                    $last=count($breaks)-1;
+                    $active=$last>=0 && empty($breaks[$last]['ended_at']);
+                    if ($action === 'break_start') { if ($active) throw new RuntimeException('Break already running.'); $breaks[]=['started_at'=>$now,'ended_at'=>null]; }
+                    else { if (!$active) throw new RuntimeException('No running break.'); $breaks[$last]['ended_at']=$now; }
+                    unset($breaks);
                 } elseif ($action === 'stop') {
                     if ($open === null) throw new RuntimeException('No running session.');
+                    foreach ($data['sessions'][$open]['breaks'] as &$break) if (empty($break['ended_at'])) $break['ended_at']=$now;
+                    unset($break);
                     $data['sessions'][$open]['ended_at']=$now;
                     $data['sessions'][$open]['close_note']=$note;
                 } else {
@@ -43,7 +54,11 @@ $open=false;$seconds=0;
 foreach ($sessions as $s) {
     if (empty($s['ended_at'])) {$open=true;continue;}
     $start=strtotime((string)$s['started_at']);$end=strtotime((string)$s['ended_at']);
-    if ($start!==false&&$end!==false&&$end>$start) $seconds+=$end-$start;
+    if ($start!==false&&$end!==false&&$end>$start) {
+        $net=$end-$start;
+        foreach (($s['breaks']??[]) as $break) { $bs=strtotime((string)($break['started_at']??''));$be=strtotime((string)($break['ended_at']??''));if($bs!==false&&$be!==false)$net-=max(0,min($end,$be)-max($start,$bs)); }
+        $seconds+=max(0,$net);
+    }
 }
 ?><!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="robots" content="noindex,nofollow"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Private KCMC Development Ledger</title></head>
 <body style="font:16px system-ui;max-width:720px;margin:30px auto;padding:16px">
@@ -51,11 +66,11 @@ foreach ($sessions as $s) {
 <?php if ($error): ?><p role="alert"><?=kcmc_h($error)?></p><?php endif; ?>
 <?php if ($message): ?><p role="status"><?=kcmc_h($message)?></p><?php endif; ?>
 <h2><?=$open?'Session running':'No active session'?></h2>
-<p>Completed session elapsed time: <?=number_format($seconds/3600,2)?> hours (before breaks and billable review)</p>
+<p>Completed session net time: <?=number_format($seconds/3600,2)?> hours (before breaks and billable review)</p>
 <form method="post"><input type="hidden" name="csrf" value="<?=kcmc_h(kcmc_csrf())?>">
 <label>Activity / evidence reference <textarea name="note" maxlength="1000" rows="3" style="display:block;width:100%"></textarea></label>
 <button type="submit" name="action" value="<?=$open?'stop':'start'?>"><?=$open?'Stop session':'Start session'?></button>
-<?php if($open): ?><button type="submit" name="action" value="note">Log activity</button><?php endif; ?>
+<?php if($open): ?><button type="submit" name="action" value="note">Log activity</button><button type="submit" name="action" value="break_start">Start break</button><button type="submit" name="action" value="break_end">End break</button><?php endif; ?>
 </form><h2>Recent sessions</h2><ol>
 <?php foreach(array_reverse(array_slice($sessions,-30)) as $s): ?><li><?=kcmc_h((string)$s['started_at'])?> → <?=kcmc_h((string)($s['ended_at']??'Open'))?> — <?=kcmc_h((string)($s['note']??''))?></li><?php endforeach; ?>
 </ol></body></html>
