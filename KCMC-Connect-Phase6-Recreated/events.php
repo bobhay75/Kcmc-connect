@@ -37,7 +37,7 @@ $events = $calendar['events'];
     $timeLabel = $endTime !== '' ? $time . '–' . $endTime : $time;
   ?>
     <article class="eventx">
-      <?php if($hasImage): ?><img src="<?=kcmc_h($image)?>" alt="<?=kcmc_h((string)($event['image_alt'] ?? ''))?>" loading="lazy" decoding="async"><?php endif; ?>
+      <?php if($hasImage): ?><a href="<?=kcmc_h($image)?>" target="_blank" rel="noopener noreferrer" aria-label="Open announcement slide for <?=kcmc_h((string)($event['title'] ?? ''))?> in a new tab"><img src="<?=kcmc_h($image)?>" alt="<?=kcmc_h((string)($event['image_alt'] ?? ''))?>" loading="lazy" decoding="async"></a><?php endif; ?>
       <div class="eventx-copy">
         <?php if(!empty($event['label'])): ?><span class="label"><?=kcmc_h((string)$event['label'])?></span><?php endif; ?>
         <small><time datetime="<?=kcmc_h((string)($event['date'] ?? ''))?>"><?=kcmc_h(date('l, F j, Y', strtotime((string)($event['date'] ?? ''))))?></time> • <?=kcmc_h($timeLabel)?></small>
