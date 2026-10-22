@@ -53,6 +53,8 @@ usort($kcmcAnnouncements, fn($a,$b)=>(int)($b['priority']??0)<=>(int)($a['priori
 <link rel="apple-touch-icon" href="assets/icons/icon-192.png?v=20261019">
 <?php require_once __DIR__ . '/lib/screen-navigation.php'; echo kcmc_screen_assets(); ?>
 <link rel="stylesheet" href="home-welcome.css?v=20261019">
+<link rel="stylesheet" href="event-details.css?v=20261022">
+<script src="event-details.js?v=20261022" defer></script>
 </head>
 <body class="kcmc-welcome-design" data-office-email="<?=kcmc_h($kcmcEmail)?>">
 <a class="skip-link" href="#mainContent">Skip to content</a>
@@ -250,7 +252,7 @@ usort($kcmcAnnouncements, fn($a,$b)=>(int)($b['priority']??0)<=>(int)($a['priori
         data-end-time="<?=kcmc_h($eventEndTime)?>"
         data-location="<?=kcmc_h($calendarLocation)?>"
         data-description="<?=kcmc_h((string)($event['description']??''))?>">
-        <?php if($hasEventImage): ?><a href="<?=kcmc_h($eventImage)?>" target="_blank" rel="noopener noreferrer" aria-label="Open announcement slide for <?=kcmc_h($eventTitle)?> in a new tab"><img class="event-image" src="<?=kcmc_h($eventImage)?>" alt="<?=kcmc_h((string)($event['image_alt']??''))?>" loading="lazy" decoding="async"></a><?php endif; ?>
+        <?php if($hasEventImage): ?><a data-event-details href="<?=kcmc_h($eventImage)?>" target="_blank" rel="noopener noreferrer" aria-label="View announcement and details for <?=kcmc_h($eventTitle)?>"><img class="event-image" src="<?=kcmc_h($eventImage)?>" alt="<?=kcmc_h((string)($event['image_alt']??''))?>" loading="lazy" decoding="async"></a><?php endif; ?>
         <div class="event-card-copy">
           <div class="event-pills"><time class="pill" datetime="<?=kcmc_h($eventDate)?>"><?=kcmc_h(date('D, M j',strtotime($eventDate)))?></time><?php if(!empty($event['label'])): ?><span class="pill important"><?=kcmc_h((string)$event['label'])?></span><?php endif; ?></div>
           <h3><?=kcmc_h($eventTitle)?></h3>

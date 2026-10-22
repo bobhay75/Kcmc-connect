@@ -17,6 +17,8 @@ $events = $calendar['events'];
     .page{width:min(900px,calc(100% - 30px));margin:45px auto 80px}.eventx{background:var(--kcmc-panel, #fff);color:var(--kcmc-text, #18232c);border:1px solid var(--kcmc-line, #dfe5e8);border-radius:18px;margin:18px 0;overflow:hidden;box-shadow:0 10px 32px rgba(0,0,0,.12)}.eventx img{display:block;width:100%;height:auto}.eventx-copy{padding:22px}.eventx small{font-weight:800;color:var(--kcmc-muted, #476477)}.eventx h2{margin:.3em 0}.eventx p{color:var(--kcmc-muted, #41515b);margin:.45em 0}.eventx .detail{font-weight:750}.eventx .label{display:inline-block;margin-bottom:8px;padding:5px 9px;border-radius:999px;background:var(--kcmc-warning-bg, #fff0d1);color:var(--kcmc-warning, #744d10);font-size:.76rem;font-weight:850;text-transform:uppercase;letter-spacing:.06em}
   </style>
 <?php require_once __DIR__ . '/lib/screen-navigation.php'; echo kcmc_screen_assets(); ?>
+<link rel="stylesheet" href="event-details.css?v=20261022">
+<script src="event-details.js?v=20261022" defer></script>
 </head>
 <body><?php echo kcmc_screen_navigation('', false); ?>
 <main class="page" id="events">
@@ -37,14 +39,14 @@ $events = $calendar['events'];
     $timeLabel = $endTime !== '' ? $time . '–' . $endTime : $time;
   ?>
     <article class="eventx">
-      <?php if($hasImage): ?><a href="<?=kcmc_h($image)?>" target="_blank" rel="noopener noreferrer" aria-label="Open announcement slide for <?=kcmc_h((string)($event['title'] ?? ''))?> in a new tab"><img src="<?=kcmc_h($image)?>" alt="<?=kcmc_h((string)($event['image_alt'] ?? ''))?>" loading="lazy" decoding="async"></a><?php endif; ?>
+      <?php if($hasImage): ?><a data-event-details href="<?=kcmc_h($image)?>" target="_blank" rel="noopener noreferrer" aria-label="View announcement and details for <?=kcmc_h((string)($event['title'] ?? ''))?>"><img src="<?=kcmc_h($image)?>" alt="<?=kcmc_h((string)($event['image_alt'] ?? ''))?>" loading="lazy" decoding="async"></a><?php endif; ?>
       <div class="eventx-copy">
         <?php if(!empty($event['label'])): ?><span class="label"><?=kcmc_h((string)$event['label'])?></span><?php endif; ?>
         <small><time datetime="<?=kcmc_h((string)($event['date'] ?? ''))?>"><?=kcmc_h(date('l, F j, Y', strtotime((string)($event['date'] ?? ''))))?></time> • <?=kcmc_h($timeLabel)?></small>
         <h2><?=kcmc_h((string)($event['title'] ?? ''))?></h2>
         <p class="detail"><?=kcmc_h((string)($event['location'] ?? 'KCMC'))?></p>
         <?php if(!empty($event['address'])): ?><p><?=kcmc_h((string)$event['address'])?></p><?php endif; ?>
-        <?php if(!empty($event['description'])): ?><p><?=kcmc_h((string)$event['description'])?></p><?php endif; ?>
+        <?php if(!empty($event['description'])): ?><p class="event-description"><?=kcmc_h((string)$event['description'])?></p><?php endif; ?>
       </div>
     </article>
   <?php endforeach; ?>
