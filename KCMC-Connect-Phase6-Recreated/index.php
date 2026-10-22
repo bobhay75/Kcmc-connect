@@ -222,13 +222,21 @@ usort($kcmcAnnouncements, fn($a,$b)=>(int)($b['priority']??0)<=>(int)($a['priori
   </div></section>
 </section>
 <section class="view" data-view="events">
-  <div class="wrap partner-hero"><div class="eyebrow">Events</div><h1 class="display-title">What’s next at KCMC.</h1><p class="lead muted">Upcoming gatherings, studies and community events, with one-tap calendar saves and easy ways to connect.</p></div>
-  <div class="wrap"><nav class="btns" aria-label="Event calendar view">
-      <a class="btn <?= $calendar['view']==='upcoming'?'gold':'secondary' ?>" href="?event_view=upcoming#events"<?= $calendar['view']==='upcoming'?' aria-current="page"':'' ?>>Upcoming</a>
-      <a class="btn <?= $calendar['view']==='next-week'?'gold':'secondary' ?>" href="?event_view=next-week#events"<?= $calendar['view']==='next-week'?' aria-current="page"':'' ?>>Next week</a>
-    </nav>
-    <p class="muted"><?= $calendar['view']==='next-week'?'Next week: '.kcmc_h($calendar['range']).' · Sunday–Saturday · Central time':'Showing the next occurrence of each published event.' ?></p></div>
-  <section class="section"><div class="wrap grid3 event-grid">
+  <div class="wrap partner-hero"><div class="eyebrow">Events</div><h1 class="display-title">What’s next at KCMC.</h1><p class="lead muted">Select a date to see event slides and details.</p></div>
+  <div class="wrap" id="eventCalendar">
+    <div class="btns" style="justify-content:space-between;align-items:center"><button class="btn secondary" id="calPrev" type="button">‹</button><h2 id="calTitle" aria-live="polite">October 2026</h2><button class="btn secondary" id="calNext" type="button">›</button></div>
+    <div id="calDays" class="cal-days" aria-label="Monthly events calendar"></div><div id="calDetail" aria-live="polite"></div>
+  </div>
+  <style>
+  .cal-days{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:5px;margin:15px 0}
+  .cal-days button{padding:12px 2px;border-radius:8px;background:#17324b;color:#fff;border:1px solid #708397}
+  .cal-days button.has-event{border:2px solid #d6ad58;font-weight:bold}
+  .cal-days button[aria-pressed=true]{background:#d6ad58;color:#10243a}
+  .cal-days span{text-align:center}
+  .cal-detail{padding:16px;border:1px solid #708397;border-radius:12px;margin:12px 0}
+  .cal-detail img{display:block;max-width:100%;max-height:70vh;object-fit:contain;margin:12px auto}
+  </style>
+  <section class="section"><div class="wrap grid3 event-grid" id="eventCards">
     <?php if(!$kcmcEvents): ?><p><?= $calendar['view']==='next-week'?'No events are published for next week. Choose Upcoming to see other dates.':'No current events are published.' ?></p><?php endif; ?>
     <?php foreach($kcmcEvents as $event):
       $eventTitle=(string)($event['title']??'');
@@ -298,4 +306,36 @@ usort($kcmcAnnouncements, fn($a,$b)=>(int)($b['priority']??0)<=>(int)($a['priori
 </div>
 <script src="app.js?v=visitor-welcome-20261008" defer></script>
 <script src="public-presentation.js?v=blue-fish-menu-20261009" defer></script>
-</body></html>
+<script>
+document.addEventListener('DOMContentLoaded',()=>{
+const cards=[...document.querySelectorAll('#eventCards .event-card')],days=document.getElementById('calDays'),detail=document.getElementById('calDetail'),title=document.getElementById('calTitle');
+let year=2026,month=9;
+function show(date){
+ detail.replaceChildren();
+ const events=cards.filter(c=>c.dataset.date===date);
+ if(!events.length){detail.textContent='No published events on this date.';return;}
+ for(const c of events){
+ const article=document.createElement('article');article.className='cal-detail';
+ const h=document.createElement('h3');h.textContent=c.dataset.event;article.append(h);
+ const original=c.querySelector('.event-image');
+ if(original){const link=document.createElement('a');link.href=original.getAttribute('src');link.target='_blank';link.rel='noopener';link.setAttribute('aria-label','Open full-size event slide');const img=original.cloneNode(true);img.loading='eager';link.append(img);article.append(link);}
+ for(const value of [[c.dataset.date,c.dataset.time,c.dataset.endTime,c.dataset.location].filter(Boolean).join(' • '),c.dataset.description||'']){const p=document.createElement('p');p.textContent=value;article.append(p);}
+ detail.append(article);
+ }
+}
+function render(){
+ title.textContent=new Date(year,month,1).toLocaleDateString('en-US',{month:'long',year:'numeric'});days.replaceChildren();
+ for(const d of ['Sun','Mon','Tue','Wed','Thu','Fri','Sat']){const label=document.createElement('span');label.textContent=d;days.append(label);}
+ for(let i=0;i<new Date(year,month,1).getDay();i++)days.append(document.createElement('span'));
+ for(let d=1;d<=new Date(year,month+1,0).getDate();d++){
+ const date=year+'-'+String(month+1).padStart(2,'0')+'-'+String(d).padStart(2,'0'),matching=cards.filter(c=>c.dataset.date===date);
+ const button=document.createElement('button');button.type='button';button.textContent=d;button.setAttribute('aria-label',date+(matching.length?' '+matching.map(c=>c.dataset.event).join(', '):''));button.setAttribute('aria-pressed','false');
+ if(matching.length)button.classList.add('has-event');
+ button.addEventListener('click',()=>{days.querySelectorAll('button').forEach(b=>b.setAttribute('aria-pressed','false'));button.setAttribute('aria-pressed','true');show(date);});days.append(button);
+ }
+}
+document.getElementById('calPrev').addEventListener('click',()=>{month--;if(month<0){month=11;year--;}render();});
+document.getElementById('calNext').addEventListener('click',()=>{month++;if(month>11){month=0;year++;}render();});
+render();show('2026-10-31');
+});
+</script></body></html>
