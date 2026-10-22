@@ -40,6 +40,11 @@ MODIFIED = frozenset([
 ])
 
 
+# Exact October 22 event-artwork overlay, reversed only for historical proofs.
+EVENT_ART_BEFORE = 'b77c7e84a01c7a588a772fce0628fabff6b1a5b91a3598220535f6913f8811f9'
+EVENT_ART_AFTER = 'b77422f4b6f9ca488f7b23f047995ef2f8b5b09e8d93eb83646a7ad6562f75fe'
+EVENT_ART_DELTA = b"    // Restore the established artwork when Trunk or Treat has no assigned image.\n    if ($image === '' && preg_match('/trunk\\s*(?:or|&)\\s*treat/i', (string)($event['title'] ?? ''))) {\n      $image = 'assets/visuals/trunk-or-treat-2026.svg';\n    }\n"
+
 def require(ok, message):
     if not ok:
         raise AssertionError(message)
@@ -214,7 +219,14 @@ class ManualClockLayer:
     def post_clock_before(self, name):
         if name in self.health_actions.preimages:
             return self.health_actions.preimages[name]
-        return self.workflow_followup.before(name)
+        raw = self.workflow_followup.before(name)
+        if name == 'events.php':
+            require(sha256(raw) == EVENT_ART_AFTER and raw.count(EVENT_ART_DELTA) == 1,
+                    'events.php: exact reviewed Trunk or Treat artwork overlay required')
+            raw = raw.replace(EVENT_ART_DELTA, b'', 1)
+            require(sha256(raw) == EVENT_ART_BEFORE,
+                    'events.php: exact pre-artwork source required')
+        return raw
 
     def before(self, name):
         require(name in self.baseline_tree, name + ': unknown manual-clock source path')
@@ -235,6 +247,7 @@ class ManualClockLayer:
             (destination / name).write_bytes(data)
         for name, data in self.preimages.items():
             (destination / name).write_bytes(data)
+        (destination / 'events.php').write_bytes(self.post_clock_before('events.php'))
         (destination / 'data/content.json').write_bytes(self.editorial_preimage)
         recovered = {p.relative_to(destination).as_posix() for p in destination.rglob('*') if p.is_file()}
         require(recovered == set(self.baseline_tree),
