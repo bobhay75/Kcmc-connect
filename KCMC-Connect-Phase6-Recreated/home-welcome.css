@@ -34,8 +34,46 @@ body.kcmc-welcome-design[data-office-email] [data-view="home"] .home-worship-tim
 /* Keep the existing family photographs available below the approved opening view. */
 .kcmc-welcome-design [data-view="home"]>.section{background:#0d2235;color:#f5f7fa}
 @media(max-width:1000px){.welcome-nav{gap:10px}.welcome-nav a{font-size:1rem}.welcome-quicklinks a{padding:16px;gap:12px}.welcome-quicklinks svg{width:36px;height:36px}}
-@media(max-width:760px){.kcmc-welcome-design .topbar .inner{min-height:68px;width:calc(100% - 24px);gap:12px}.welcome-brand{font-size:1.15rem}.welcome-nav{display:none}.kcmc-welcome-design .fish-menu summary,.kcmc-welcome-design .fish-menu summary img{width:54px;height:54px;min-height:54px}body.kcmc-welcome-design[data-office-email] [data-view="home"] .home-cover .home-cover-photo{height:auto;aspect-ratio:1536/1229;object-fit:contain;object-position:center}body.kcmc-welcome-design[data-office-email] [data-view="home"] .home-cover-layout{position:static;padding:22px 18px 26px}body.kcmc-welcome-design[data-office-email] [data-view="home"] .home-cover h1{color:#fff;text-shadow:none;font-size:clamp(2.5rem,10vw,4rem);margin-bottom:18px}.welcome-hero-actions{gap:10px}.welcome-hero-actions .btn{padding:12px 18px;flex:1;white-space:normal;text-align:center}body.kcmc-welcome-design[data-office-email] [data-view="home"] .home-worship-strip-inner{padding:18px 12px}body.kcmc-welcome-design[data-office-email] [data-view="home"] .home-worship-times{gap:10px}body.kcmc-welcome-design[data-office-email] [data-view="home"] .home-worship-times strong{padding-left:0;border-left:0;font-size:clamp(1.05rem,4.6vw,1.5rem);white-space:normal;text-align:center}.welcome-quicklinks{grid-template-columns:1fr;width:calc(100% - 32px);gap:12px;margin-bottom:24px}.welcome-quicklinks a{min-height:78px;font-size:1.4rem}.welcome-design-footer{font-size:.65rem;letter-spacing:.12em}}
+@media(max-width:760px){.kcmc-welcome-design .topbar .inner{min-height:68px;width:calc(100% - 24px);gap:12px}.welcome-brand{font-size:1.15rem}.welcome-nav{display:none}.kcmc-welcome-design .fish-menu summary,.kcmc-welcome-design .fish-menu summary img{width:54px;height:54px;min-height:54px}body.kcmc-welcome-design[data-office-email] [data-view="home"] .home-cover .home-cover-photo{height:auto;aspect-ratio:2135/737;object-fit:contain;object-position:center}body.kcmc-welcome-design[data-office-email] [data-view="home"] .home-cover-layout{position:static;padding:22px 18px 26px}body.kcmc-welcome-design[data-office-email] [data-view="home"] .home-cover h1{color:#fff;text-shadow:none;font-size:clamp(2.5rem,10vw,4rem);margin-bottom:18px}.welcome-hero-actions{gap:10px}.welcome-hero-actions .btn{padding:12px 18px;flex:1;white-space:normal;text-align:center}body.kcmc-welcome-design[data-office-email] [data-view="home"] .home-worship-strip-inner{padding:18px 12px}body.kcmc-welcome-design[data-office-email] [data-view="home"] .home-worship-times{gap:10px}body.kcmc-welcome-design[data-office-email] [data-view="home"] .home-worship-times strong{padding-left:0;border-left:0;font-size:clamp(1.05rem,4.6vw,1.5rem);white-space:normal;text-align:center}.welcome-quicklinks{grid-template-columns:1fr;width:calc(100% - 32px);gap:12px;margin-bottom:24px}.welcome-quicklinks a{min-height:78px;font-size:1.4rem}.welcome-design-footer{font-size:.65rem;letter-spacing:.12em}}
 @media(prefers-reduced-motion:reduce){.kcmc-welcome-design *{scroll-behavior:auto;transition:none!important}}
 
 body.kcmc-welcome-design[data-office-email] [data-view="home"] .home-cover-card>:is(h1,.welcome-hero-actions){display:block}
 body.kcmc-welcome-design[data-office-email] [data-view="home"] .home-cover-card>.welcome-hero-actions{display:flex}
+
+/* KCMC logo-blue display treatment. Body copy, controls and layout remain unchanged. */
+body.kcmc-welcome-design{
+  --kcmc-logo-blue-top:#35c8f5;
+  --kcmc-logo-blue-mid:#168fd5;
+  --kcmc-logo-blue-low:#1454b6;
+  --kcmc-logo-blue-deep:#17198d;
+}
+.kcmc-welcome-design :is(
+  .welcome-brand,
+  .fish-menu .menu-home strong,
+  .home-cover h1,
+  .partner-hero>h1,
+  .section-head h2,
+  .footer strong:first-child
+){color:#168fd5}
+@supports ((-webkit-background-clip:text) or (background-clip:text)){
+  .kcmc-welcome-design :is(
+    .welcome-brand,
+    .fish-menu .menu-home strong,
+    .home-cover h1,
+    .partner-hero>h1,
+    .section-head h2,
+    .footer strong:first-child
+  ){
+    background:linear-gradient(180deg,var(--kcmc-logo-blue-top) 0%,var(--kcmc-logo-blue-mid) 42%,var(--kcmc-logo-blue-low) 72%,var(--kcmc-logo-blue-deep) 100%);
+    -webkit-background-clip:text;
+    background-clip:text;
+    color:transparent;
+    -webkit-text-fill-color:transparent;
+    filter:drop-shadow(0 1px 0 rgba(255,255,255,.3)) drop-shadow(0 2px 2px rgba(0,0,0,.22));
+  }
+}
+@media (forced-colors:active){
+  .kcmc-welcome-design :is(.welcome-brand,.fish-menu .menu-home strong,.home-cover h1,.partner-hero>h1,.section-head h2,.footer strong:first-child){
+    background:none;color:CanvasText;-webkit-text-fill-color:CanvasText;filter:none
+  }
+}

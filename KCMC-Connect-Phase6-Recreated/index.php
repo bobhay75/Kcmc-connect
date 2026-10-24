@@ -41,18 +41,18 @@ usort($kcmcAnnouncements, fn($a,$b)=>(int)($b['priority']??0)<=>(int)($a['priori
 <meta property="og:title" content="KCMC Connect | Kimberling City Methodist Church">
 <meta property="og:description" content="Plan a visit, watch worship, find events, request prayer and connect with KCMC.">
 <meta property="og:type" content="website">
-<meta property="og:image" content="assets/visuals/kcmc-building-original-20261018.jpg">
+<meta property="og:image" content="assets/visuals/kcmc-bridge-logo-sunset-hero-20261023.webp">
 <meta name="twitter:card" content="summary_large_image">
 <script type="application/ld+json"><?=$kcmcSchema?></script>
 <title>KCMC Connect</title>
 <link rel="manifest" href="manifest.webmanifest?v=20261019">
-<link rel="preload" as="image" href="assets/visuals/kcmc-building-original-20261018.jpg" type="image/jpeg" fetchpriority="high">
+<link rel="preload" as="image" href="assets/visuals/kcmc-bridge-logo-sunset-hero-20261023.webp" type="image/webp" fetchpriority="high">
 <link rel="stylesheet" href="styles.css?v=3.0.3">
 <link rel="stylesheet" href="public-presentation.css?v=fish-only-home-20261014">
 <link rel="icon" href="assets/icons/icon-192.png?v=20261019">
 <link rel="apple-touch-icon" href="assets/icons/icon-192.png?v=20261019">
 <?php require_once __DIR__ . '/lib/screen-navigation.php'; echo kcmc_screen_assets(); ?>
-<link rel="stylesheet" href="home-welcome.css?v=20261019">
+<link rel="stylesheet" href="home-welcome.css?v=20261023-bridge-gradient">
 </head>
 <body class="kcmc-welcome-design" data-office-email="<?=kcmc_h($kcmcEmail)?>">
 <a class="skip-link" href="#mainContent">Skip to content</a>
@@ -96,7 +96,7 @@ usort($kcmcAnnouncements, fn($a,$b)=>(int)($b['priority']??0)<=>(int)($a['priori
 <main id="mainContent">
 <section class="view active" data-view="home">
   <section class="hero hero-imagery home-cover" aria-label="Welcome to KCMC">
-    <img class="home-cover-photo" data-authentic-building src="./assets/visuals/kcmc-building-original-20261018.jpg" alt="Original photograph of Kimberling City Methodist Church with its natural sky and clouds" loading="eager" decoding="async" fetchpriority="high" width="1536" height="1229">
+    <img class="home-cover-photo" data-authentic-building src="./assets/visuals/kcmc-bridge-logo-sunset-hero-20261023.webp" alt="KCMC bridge logo over a warm Table Rock Lake sunset" loading="eager" decoding="async" fetchpriority="high" width="2135" height="737">
     <div class="wrap home-cover-layout"><div class="home-cover-card">
       <h1>Welcome Home</h1>
       <div class="welcome-hero-actions"><a class="btn gold" href="#visit" data-route="visit">Plan Your Visit <span aria-hidden="true">&#160;›</span></a><a class="btn secondary" href="#watch" data-route="watch">Watch Online <span aria-hidden="true">&#160;›</span></a></div>

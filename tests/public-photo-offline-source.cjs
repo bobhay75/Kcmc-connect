@@ -116,8 +116,8 @@ async function worker(source) {
   fixed.offline();
   const index = fs.readFileSync(path.join(APP, 'index.php'), 'utf8');
   const heroPaths = [...index.matchAll(/data-authentic-building[^>]*src="([^"]+)"/g)].map(match => match[1]);
-  assert.deepEqual(heroPaths, ['./assets/visuals/kcmc-building-original-20261018.jpg']);
-  assert.ok(heroPaths.every(path => !/stage-2014|ministry-group|bridge-/.test(path)));
+  assert.deepEqual(heroPaths, ['./assets/visuals/kcmc-bridge-logo-sunset-hero-20261023.webp']);
+  assert.ok(heroPaths.every(path => !/stage-2014|ministry-group/.test(path)));
   for (const asset of heroPaths) assert.equal((await fixed.request(asset)).status, 200, asset + ' is available offline');
   console.log('PASS: fixed original church photograph is anonymously cached and available offline');
   for (const name of ['kcmc-ministry-group.jpg', 'kcmc-bridge-logo.jpg', 'kcmc-bridge-wordmark.png', 'kcmc-bridge-logo-composite.png']) {
