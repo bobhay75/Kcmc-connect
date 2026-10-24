@@ -9,9 +9,9 @@ ROOT=Path(__file__).resolve().parents[1]
 PREFIX='KCMC-Connect-Phase6-Recreated/'
 CANONICAL='b0c257edb8a42fc89fd6371c1bce7ee3efbd5ed9'
 FIXTURE='tests/fixtures/welcome-home-reviewed.json'
-PIN='578e741467d6868ff63b7542be24c18a6db540dd91e6dc8be81042e1d3ef1961'
+PIN='ac237be30e21272ac2fe446bd9fb2974ccc063c2dddb195afe67dc0041fa2e4f'
 MODIFIED=frozenset(['index.php','sw.js','manifest.webmanifest','assets/icons/icon-192.png','assets/icons/icon-512.png'])
-ADDED=frozenset(['home-welcome.css','assets/visuals/kcmc-building-original-20261018.jpg'])
+ADDED=frozenset(['home-welcome.css','assets/visuals/kcmc-building-original-20261018.jpg','assets/visuals/kcmc-bridge-logo-sunset-hero-20261023.webp'])
 
 def require(ok,message):
     if not ok: raise AssertionError(message)
@@ -26,7 +26,7 @@ class WelcomeLayer:
         require(hashlib.sha256(raw).hexdigest()==PIN,'Immutable welcome-design fixture hash required')
         self.fixture=json.loads(raw)
         require(set(self.fixture)=={'source_commit','modified','added'} and self.fixture['source_commit']=='1d14b582b73780c020ba3d489a3a2d58cf5f45e5','Exact welcome-design source context required')
-        require(set(self.fixture['modified'])==MODIFIED and set(self.fixture['added'])==ADDED,'Exact five modified/two added public assets required')
+        require(set(self.fixture['modified'])==MODIFIED and set(self.fixture['added'])==ADDED,'Exact five modified/three added public assets required')
         for group in ['modified','added']:
             for name,record in self.fixture[group].items():
                 for parent in (self.app/name).parents:

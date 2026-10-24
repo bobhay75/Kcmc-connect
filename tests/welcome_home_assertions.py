@@ -7,8 +7,8 @@ def welcome_home(page, width, check):
     photo = home.locator('[data-authentic-building]')
     check(photo.count() == 1 and photo.is_visible(), 'one fixed original church photograph is visible')
     page.wait_for_function('img=>img.complete&&img.naturalWidth>0', arg=photo.element_handle())
-    check(photo.evaluate('el=>el.naturalWidth===1536&&el.naturalHeight===1229'), 'original photograph dimensions are preserved')
-    check(photo.get_attribute('src') == './assets/visuals/kcmc-building-original-20261018.jpg', 'homepage uses the unmodified original photograph')
+    check(photo.evaluate('el=>el.naturalWidth===2135&&el.naturalHeight===737'), 'original photograph dimensions are preserved')
+    check(photo.get_attribute('src') == './assets/visuals/kcmc-bridge-logo-sunset-hero-20261023.webp', 'homepage uses the unmodified original photograph')
     check(home.locator('[data-hero-gallery],[data-hero-controls]').count() == 0, 'fixed building is never replaced by automatic rotation')
     check(page.locator('body').evaluate("el=>getComputedStyle(el).backgroundColor==='rgb(13, 34, 53)'"), 'public background matches the app icon navy')
     for text in ['Plan Your Visit', 'Watch Online', 'Upcoming Events', 'Prayer Requests', 'Church Family']:
