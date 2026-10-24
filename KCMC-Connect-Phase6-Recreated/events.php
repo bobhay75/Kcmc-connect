@@ -31,6 +31,10 @@ $events = $calendar['events'];
   <?php if(!$events): ?><p><?= $calendar['view']==='next-week'?'No events are published for next week. Choose Upcoming to see other dates.':'No current events are published.' ?></p><?php endif; ?>
   <?php foreach($events as $event):
     $image = (string)($event['image'] ?? '');
+    // Restore the established artwork when Trunk or Treat has no assigned image.
+    if ($image === '' && preg_match('/trunk\s*(?:or|&)\s*treat/i', (string)($event['title'] ?? ''))) {
+      $image = 'assets/visuals/trunk-or-treat-2026.svg';
+    }
     $hasImage = preg_match('#\Aassets/visuals/[A-Za-z0-9][A-Za-z0-9._-]*\z#', $image) === 1;
     $time = (string)($event['time'] ?? '');
     $endTime = (string)($event['end_time'] ?? '');
