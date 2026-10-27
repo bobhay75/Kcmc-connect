@@ -1,0 +1,28 @@
+name: Prepare PHP 8.2 test runtime
+on:
+  pull_request:
+    paths:
+      - '.github/workflows/basic-handoff-php82-runtime.yml'
+permissions:
+  contents: read
+jobs:
+  runtime:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - name: Collect official PHP 8.2 runtime
+        run: |
+          set -euo pipefail
+          mkdir -p runtime/lib
+          docker pull php:8.2-cli
+          docker run --rm -v "$PWD/runtime:/out" php:8.2-cli sh -c '
+            cp /usr/local/bin/php /out/php
+            ldd /usr/local/bin/php | awk '"'"'/=> \/.* / {print $3} /^\// {print $1}'"'"' | while read -r lib; do cp -L "$lib" /out/lib/; done
+            /usr/local/bin/php -n -v
+          '
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: php82-test-runtime
+          path: runtime/
+          retention-days: 1
+          if-no-files-found: error
