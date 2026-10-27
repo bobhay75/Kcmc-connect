@@ -44,7 +44,7 @@ if ($setupEnabled && $_SERVER['REQUEST_METHOD'] === 'POST') {
         } else {
             kcmc_login_user($user);
             kcmc_audit('auth.recovery_admin_created', ['role' => 'recovery_admin']);
-            header('Location: ' . kcmc_url('admin/users.php?setup=1'));
+            header('Location: ' . kcmc_url('admin/'));
             exit;
         }
     }
