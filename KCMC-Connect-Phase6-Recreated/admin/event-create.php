@@ -74,7 +74,7 @@ body{background:var(--kcmc-panel-muted, #eef2f4);color:var(--kcmc-text, #17324c)
 </head>
 <body><?php echo kcmc_screen_navigation('admin/home.php', true); ?>
 <main class="shell">
-<a href="<?=kcmc_h(kcmc_url('admin/'))?>">← Publishing Desk</a>
+<a href="<?=kcmc_h(kcmc_url('admin/'))?>">← church content</a>
 <p class="eyebrow">KCMC EVENTS</p>
 <h1>Add an event</h1>
 <p class="muted">Create a new public or hidden event. Publishing creates an automatic content backup.</p>
