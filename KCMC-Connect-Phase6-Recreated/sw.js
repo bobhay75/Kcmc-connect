@@ -1,4 +1,4 @@
-const CACHE='kcmc-connect-v3.0.3-public-only-welcome-home-20261023-bridge-gradient';
+const CACHE='kcmc-connect-basic-handoff-20261026';
 // Connection-intake client refresh: worker install reruns cache:'reload' and overwrites cached app.js.
 const CORE=[
   './','./home-welcome.css?v=20261023-bridge-gradient','./styles.css?v=3.0.3','./public-presentation.css?v=fish-only-home-20261014','./public-presentation.js?v=blue-fish-menu-20261009','./app.js?v=visitor-welcome-20261008','./manifest.webmanifest?v=20261019',
@@ -28,20 +28,6 @@ function cacheableResponse(response){
     !/no-store|private|no-cache/i.test(policy)&&!response.headers.has('Set-Cookie');
 }
 
-function safePushPayload(event){
-  let data={};
-  try{ data=event.data?event.data.json():{}; }catch(_){ data={}; }
-  const title=typeof data.title==='string'&&data.title.trim()?data.title.trim().slice(0,80):'KCMC Connect';
-  const body=typeof data.body==='string'?data.body.trim().slice(0,180):'There is a new KCMC update.';
-  let target=new URL('./',self.location.href);
-  try{
-    const candidate=new URL(typeof data.url==='string'?data.url:'./',self.location.href);
-    const privateRoute=/\/(?:member|admin|api|data|backups)(?:\/|$)/.test(candidate.pathname);
-    if(candidate.origin===self.location.origin&&!candidate.search&&!candidate.hash&&!privateRoute) target=candidate;
-  }catch(_){ /* use public app root */ }
-  return {title,body,url:target.href};
-}
-
 self.addEventListener('install',event=>{
   event.waitUntil(
     caches.open(CACHE)
@@ -61,30 +47,6 @@ self.addEventListener('activate',event=>{
       .then(keys=>Promise.all(keys.filter(key=>key.startsWith('kcmc-connect-')&&key!==CACHE).map(key=>caches.delete(key))))
       .then(()=>self.clients.claim())
   );
-});
-
-self.addEventListener('push',event=>{
-  const payload=safePushPayload(event);
-  event.waitUntil(self.registration.showNotification(payload.title,{
-    body:payload.body,
-    icon:'./assets/icons/icon-192.png',
-    badge:'./assets/icons/icon-192.png',
-    data:{url:payload.url},
-    tag:'kcmc-update',
-    renotify:true
-  }));
-});
-
-self.addEventListener('notificationclick',event=>{
-  event.notification.close();
-  const fallback=new URL('./',self.location.href).href;
-  const target=typeof event.notification?.data?.url==='string'?event.notification.data.url:fallback;
-  event.waitUntil(self.clients.matchAll({type:'window',includeUncontrolled:true}).then(clients=>{
-    for(const client of clients){
-      if('focus' in client&&client.url===target) return client.focus();
-    }
-    return self.clients.openWindow?self.clients.openWindow(target):undefined;
-  }));
 });
 
 self.addEventListener('fetch',event=>{
