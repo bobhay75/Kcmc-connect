@@ -14,6 +14,9 @@ HASHES = {
  'lib/screen-navigation.php':'693c2317f8502f08968098570b637598cfc98f6668f4311236f8efa5b56f5993',
  'admin/index.php':'b20795e066136ef165656353bf74e2c23f9cb8379939f8823855f40291e6124b',
  'admin/home.php':'782cfd64cbfe83ba047f650bacd3d32e374de5065fb880acd515845f69d1ce63',
+ 'lib/bootstrap.php':'19a932424250b6bc33a5e844bfb942fb33a8194aa8bf912bf4494f1e27ba354e',
+ 'member/login.php':'c3a0b359d97be1ff0ba03660e114a426ee6a3ac8d51f53c7bd7449c69d5fcc91',
+ 'care.php':'e7055519d6efed05c363e75e27f14c4a4d570bc811a6ca2f65ec98a239987442',
 }
 
 def replace(s, old, new):
@@ -31,6 +34,8 @@ if source in a.output.absolute().parents or a.output.absolute() in source.parent
 files={}
 for name,digest in HASHES.items():
  path=source/name
+ if name in ('lib/bootstrap.php','member/login.php','care.php') and not path.exists():
+  path=Path(__file__).resolve().parents[1]/'kcmc-manual-timeclock-oct16'/'evidence'/'prerequisite'/name
  if path.is_symlink() or not path.is_file(): raise ValueError('Missing or linked file: '+name)
  raw=path.read_bytes()
  if hashlib.sha256(raw).hexdigest()!=digest: raise ValueError('Snapshot mismatch: '+name)
@@ -49,6 +54,35 @@ s=replace(s,' <a class="btnx" style="display:inline-block;text-decoration:none" 
 files['admin/index.php']=s
 files['admin/home.php']="<?php\nrequire_once __DIR__ . '/../lib/bootstrap.php';\nkcmc_require_role(['pastor_admin', 'recovery_admin']);\nheader('Location: ' . kcmc_url('admin/'));\nexit;\n"
 s=files['sw.js'];s=replace(s,'kcmc-connect-v3.0.3-public-only-tony-functions-20261020','kcmc-connect-v3.0.3-public-only-basic-handoff-tony-functions-20261026');s=cut(s,'function safePushPayload(',"self.addEventListener('install'");s=cut(s,"self.addEventListener('push'", "self.addEventListener('fetch'");files['sw.js']=s
+
+s=files['lib/bootstrap.php']
+anchor="require_once __DIR__ . '/post-controls.php';\n"
+guard="""
+// Basic handoff profile: retain public endpoints and basic administration only.
+if (PHP_SAPI !== 'cli') {
+    $route = str_replace('\\\\', '/', (string)($_SERVER['SCRIPT_NAME'] ?? ''));
+    if (preg_match('~/(admin|member|api)/([^/]+\\.php)$~', $route, $match)) {
+        $allowed = [
+            'admin' => ['index.php', 'home.php', 'login.php', 'setup.php', 'save.php', 'posts.php', 'event-create.php', 'connections.php', 'connections-export.php', 'rsvps.php', 'rsvps-export.php'],
+            'member' => ['login.php', 'logout.php'],
+            'api' => ['content.php', 'connection.php', 'rsvp.php'],
+        ];
+        if (!in_array($match[2], $allowed[$match[1]], true)) {
+            http_response_code(404); header('Cache-Control: no-store'); exit('Not found.');
+        }
+    }
+}
+"""
+files['lib/bootstrap.php']=replace(s,anchor,anchor+guard)
+s=files['member/login.php']
+s=replace(s,"$next = kcmc_safe_next((string)($_GET['next'] ?? $_POST['next'] ?? ''), 'member/');", "$next = kcmc_url('admin/');")
+s=replace(s,"if (kcmc_current_user()) {\n    header('Location: ' . $next);\n    exit;\n}","if ($existing = kcmc_current_user()) {\n    if (kcmc_has_role(['pastor_admin', 'recovery_admin'], $existing)) { header('Location: ' . $next); exit; }\n    kcmc_logout_user();\n}")
+s=replace(s,"if ($user && !empty($user['active']) && password_verify", "if ($user && !empty($user['active']) && in_array(kcmc_role($user), ['pastor_admin', 'recovery_admin'], true) && password_verify")
+s=replace(s,'Staff and authorized ministry teams sign in here.', 'Church administrators sign in here.')
+s=replace(s,'<p class="portal-fine"><strong>Forgot your password?</strong> Ask a KCMC Connect administrator for a recipient-bound, one-time password-reset link.</p>', '<p class="portal-fine">For sign-in help, contact the church office.</p>')
+s=replace(s,'    <p class="portal-fine"><strong>Need staff or authorized ministry access?</strong> Use the recipient-bound, one-time invitation issued by a KCMC Connect administrator to create your password.</p>\n','')
+files['member/login.php']=s
+s=files['care.php'];files['care.php']=cut(s,'<div class="privacy-lock">','<p class="portal-fine">')
 
 for name,content in files.items():
  out=a.output/name;out.parent.mkdir(parents=True,exist_ok=True);out.write_text(content,encoding='utf-8')
