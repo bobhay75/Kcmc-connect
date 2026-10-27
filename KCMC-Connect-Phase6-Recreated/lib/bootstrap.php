@@ -10,6 +10,24 @@ const KCMC_RETIRED_CONTENT_IDS = ['backpack-blessing-2026'];
 const KCMC_LOCAL_TIMEZONE = 'America/Chicago';
 require_once __DIR__ . '/post-controls.php';
 
+// Handoff profile: serve only the church's public and basic administration routes.
+// This does not delete private records or files and must not be treated as a host cleanup.
+if (PHP_SAPI !== 'cli') {
+    $route = str_replace('\\', '/', (string)($_SERVER['SCRIPT_NAME'] ?? ''));
+    if (preg_match('~/(admin|member|api)/([^/]+\.php)$~', $route, $match)) {
+        $allowed = [
+            'admin' => ['index.php', 'home.php', 'login.php', 'setup.php', 'save.php', 'posts.php', 'event-create.php', 'connections.php', 'connections-export.php', 'rsvps.php', 'rsvps-export.php'],
+            'member' => ['login.php', 'logout.php'],
+            'api' => ['content.php', 'connection.php', 'rsvp.php'],
+        ];
+        if (!in_array($match[2], $allowed[$match[1]], true)) {
+            http_response_code(404);
+            header('Cache-Control: no-store');
+            exit('Not found.');
+        }
+    }
+}
+
 $privateDataDir = trim((string)(getenv('KCMC_PRIVATE_DATA_DIR') ?: ''));
 define('KCMC_PRIVATE_DATA', $privateDataDir !== '' ? rtrim($privateDataDir, '/') : KCMC_ROOT . '/data/private');
 define('KCMC_USERS', KCMC_PRIVATE_DATA . '/users.json');
