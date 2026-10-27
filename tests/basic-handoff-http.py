@@ -47,6 +47,41 @@ with tempfile.TemporaryDirectory(prefix='kcmc-basic-') as tmp:
         status,_,body=request(admin,'/admin/'); assert status==200 and 'Church content' in body,(status,body[:200])
         for path in ['/admin/publication-designer.php','/member/timeclock.php','/api/team-workspace.php']:
             status,_,_=request(admin,path); assert status==404,(path,status)
-        print('PASS: public pages, administrator login, member denial and extra-route denial')
+        # Exercise real content writes only against the temporary synthetic package.
+        content_path = root / 'data/content.json'
+        before_bytes = content_path.read_bytes()
+        content = json.loads(before_bytes)
+        version = re.search(r'name="version" value="([a-f0-9]{64})', body).group(1)
+        csrf = re.search(r'name="csrf" value="([^"]+)', body).group(1)
+        announcement_id = re.search(r'name="announcement_id" value="([^"]*)', body).group(1)
+        announcement = next((a for a in content['announcements'] if a.get('id') == announcement_id), {})
+        contact = content['contact']; bulletin = content['bulletin']
+        payload = {'csrf':csrf, 'version':version, 'confirm_publish':'1',
+                   'contact_email':contact['email'], 'contact_phone':contact.get('phone',''),
+                   'contact_hours':contact.get('office_hours',''), 'contact_address':contact.get('address',''),
+                   'announcement_id':announcement_id, 'announcement_title':announcement.get('title',''),
+                   'announcement_body':announcement.get('body',''), 'announcement_priority':announcement.get('priority',50),
+                   'announcement_status':announcement.get('status','hidden'), 'announcement_expires':'',
+                   'bulletin_title':bulletin.get('title',''), 'bulletin_date':bulletin.get('date',''),
+                   'bulletin_welcome':'Synthetic acceptance update', 'bulletin_notes':'\n'.join(bulletin.get('notes',[]))}
+        invalid = dict(payload, csrf='invalid')
+        status,_,_=request(admin,'/admin/save.php',invalid); assert status==403, status
+        assert content_path.read_bytes()==before_bytes, 'invalid CSRF changed content'
+        status,_,_=request(admin,'/admin/save.php',payload); assert status==302, status
+        assert json.loads(content_path.read_text())['bulletin']['welcome']=='Synthetic acceptance update'
+        assert any(p.read_bytes()==before_bytes for p in (root/'backups').glob('content-*.json')), 'original content backup missing'
+        status,_,_=request(admin,'/admin/save.php',payload); assert status==409, status
+        after_save=content_path.read_bytes()
+        assert json.loads(after_save)['bulletin']['welcome']=='Synthetic acceptance update'
+        status,_,body=request(admin,'/admin/event-create.php'); assert status==200
+        csrf=re.search(r'name="csrf" value="([^"]+)',body).group(1)
+        event={'csrf':csrf,'title':'Synthetic acceptance event','date':'2035-01-01','time':'4:30 PM','end_time':'6:30 PM','location':'Test hall','description':'Synthetic data','priority':'50','status':'published','expires':''}
+        status,_,_=request(admin,'/admin/event-create.php',event); assert status==302, status
+        assert any(e.get('title')=='Synthetic acceptance event' for e in json.loads(content_path.read_text())['events'])
+        assert any(p.read_bytes()==after_save for p in (root/'backups').glob('content-*.json')), 'event backup missing'
+        status,_,_=request(admin,'/admin/event-create.php',event); assert status==409, status
+        status,_,_=request(admin,'/member/logout.php',{'csrf':csrf}); assert status==302, status
+        status,_,_=request(admin,'/admin/'); assert status==302, status
+        print('PASS: public pages, administrator authentication, extra-route denial, CSRF, content backup, stale-edit rejection, event creation and sign-out')
     finally:
         server.terminate(); server.wait(timeout=5)
