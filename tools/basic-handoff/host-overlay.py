@@ -61,7 +61,10 @@ guard="""
 // Basic handoff profile: retain public endpoints and basic administration only.
 if (PHP_SAPI !== 'cli') {
     $route = str_replace('\\\\', '/', (string)($_SERVER['SCRIPT_NAME'] ?? ''));
-    if (preg_match('~/(admin|member|api)/([^/]+\\.php)$~', $route, $match)) {
+    if (preg_match('~/(admin|member|api)/~i', $route)) {
+        if (!preg_match('~/(admin|member|api)/([^/]+\\.php)(?:/|$)~', $route, $match)) {
+            http_response_code(404); header('Cache-Control: no-store'); exit('Not found.');
+        }
         $allowed = [
             'admin' => ['index.php', 'home.php', 'login.php', 'setup.php', 'save.php', 'posts.php', 'event-create.php', 'connections.php', 'connections-export.php', 'rsvps.php', 'rsvps-export.php'],
             'member' => ['login.php', 'logout.php'],
