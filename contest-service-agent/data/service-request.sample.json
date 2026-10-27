@@ -1,0 +1,10 @@
+{
+  "service_name": "Sunday Front Porch Demo",
+  "service_style": "Front Porch",
+  "songs": [
+    {
+      "title": "Sample Worship Song",
+      "lyrics": "Sample worship line one\nSample worship line two\n\nSample chorus line one\nSample chorus line two"
+    }
+  ]
+}
