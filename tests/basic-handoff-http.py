@@ -6,7 +6,11 @@ from pathlib import Path
 repo = Path(__file__).resolve().parents[1]
 with tempfile.TemporaryDirectory(prefix='kcmc-basic-') as tmp:
     root = Path(tmp) / 'app'
-    shutil.copytree(repo / 'KCMC-Connect-Phase6-Recreated', root)
+    subprocess.run(['python3', str(repo / 'tools/basic-handoff/build.py'), str(root)], check=True)
+    assert not (root / 'admin/publication-designer.php').exists()
+    assert not (root / 'member/timeclock.php').exists()
+    assert not (root / 'data/private').exists()
+    assert not (root / 'config.php').exists()
     private = Path(tmp) / 'private'; private.mkdir(mode=0o700)
     password = 'synthetic-test-password-123'
     digest = subprocess.check_output(['php', '-r', 'echo password_hash($argv[1], PASSWORD_DEFAULT);', password], text=True)
