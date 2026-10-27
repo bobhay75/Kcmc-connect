@@ -1,4 +1,4 @@
-const CACHE='kcmc-connect-basic-handoff-20261026';
+const CACHE='kcmc-connect-v3.0.3-public-only-basic-handoff-welcome-home-20261023-bridge-gradient';
 // Connection-intake client refresh: worker install reruns cache:'reload' and overwrites cached app.js.
 const CORE=[
   './','./home-welcome.css?v=20261023-bridge-gradient','./styles.css?v=3.0.3','./public-presentation.css?v=fish-only-home-20261014','./public-presentation.js?v=blue-fish-menu-20261009','./app.js?v=visitor-welcome-20261008','./manifest.webmanifest?v=20261019',
