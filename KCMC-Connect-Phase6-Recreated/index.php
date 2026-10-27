@@ -65,7 +65,7 @@ usort($kcmcAnnouncements, fn($a,$b)=>(int)($b['priority']??0)<=>(int)($a['priori
         <img src="./assets/icons/icon-192.png" alt="" aria-hidden="true" width="56" height="56">
       </summary>
       <nav id="siteMenuLinks" aria-label="KCMC Connect navigation">
-        <?=kcmc_screen_back($member ? 'member/' : '')?>
+        <?=kcmc_screen_back('')?>
         <a class="menu-home" href="#home" data-route="home" aria-label="Home"><strong>KCMC CONNECT</strong><small>Kimberling City Methodist Church</small></a>
         <a href="#visit" data-route="visit">Plan a visit</a>
         <a href="#watch" data-route="watch">Watch messages</a>
@@ -83,13 +83,11 @@ usort($kcmcAnnouncements, fn($a,$b)=>(int)($b['priority']??0)<=>(int)($a['priori
         <a class="header-give" href="https://www.simplechurchgiving.net/app/giving/umckc" target="_blank" rel="noopener">Give online</a>
         <button type="button" data-install-app>Save app</button>
         <button type="button" data-share-app>Share KCMC Connect</button>
-        <a class="menu-account" href="<?=kcmc_h(kcmc_url($member ? 'member/' : 'admin/login.php'))?>"><?=$member ? 'My account' : 'Staff Sign In'?></a>
-        <?php if($member): ?><a href="<?=kcmc_h(kcmc_url('member/timeclock.php'))?>">Time clock</a><?php endif; ?>
-        <?php if($member && kcmc_has_role(['pastor_admin', 'recovery_admin'], $member)): ?><a href="<?=kcmc_h(kcmc_url('admin/home.php'))?>">Administration</a><?php endif; ?>
+        <a class="menu-account" href="<?=kcmc_h(kcmc_url('admin/login.php'))?>">Administration</a>
       </nav>
     </details>
     <a class="welcome-brand" href="#home" data-route="home" aria-label="KCMC Connect home">KCMC CONNECT</a>
-    <nav class="welcome-nav" aria-label="Main pages"><a href="#home" data-route="home">Home</a><a href="#visit" data-route="visit">Visit</a><a href="#events" data-route="events">Events</a><a href="care.php">Prayer</a><a href="<?=kcmc_h(kcmc_url($member ? 'member/' : 'admin/login.php'))?>"><?=$member ? 'My account' : 'Sign In'?></a></nav>
+    <nav class="welcome-nav" aria-label="Main pages"><a href="#home" data-route="home">Home</a><a href="#visit" data-route="visit">Visit</a><a href="#events" data-route="events">Events</a><a href="care.php">Prayer</a><a href="<?=kcmc_h(kcmc_url('admin/login.php'))?>">Administration</a></nav>
   </div>
 </header>
 
