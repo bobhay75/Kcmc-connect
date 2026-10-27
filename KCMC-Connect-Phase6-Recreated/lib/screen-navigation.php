@@ -25,10 +25,6 @@ function kcmc_screen_back(string $fallback = ''): string {
 function kcmc_screen_navigation(string $fallback = '', bool $signedIn = false): string {
     $links = kcmc_screen_back($fallback)
         . '<a href="' . kcmc_h(kcmc_url()) . '">Home</a>';
-    if ($signedIn) {
-        $links .= '<a href="' . kcmc_h(kcmc_url('member/')) . '">My account</a>'
-            . '<a href="' . kcmc_h(kcmc_url('member/timeclock.php')) . '">Time clock</a>';
-    }
     return '<nav class="screen-navigation" aria-label="Page controls">' . $links . '</nav>';
 }
 
