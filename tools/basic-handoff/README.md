@@ -23,3 +23,9 @@ From the repository root, run `python3 tools/basic-handoff/build.py /path/to/new
 5. Complete a church-facing admin guide and credential-transfer process. Verify production after an approved deployment. Do not send payment demands or make claims of completion until the handoff and hours have been independently reconciled.
 
 The source-level route restriction and package exclusion do not disable old files already present on an existing server. A service-worker update removes the push handler in this candidate, but previously installed workers and browser subscriptions require separate real-device verification.
+
+## Read-only host comparison
+
+After the package is built, `python3 tools/basic-handoff/preflight.py /path/to/installed/app /path/to/review-package` compares a fixed set of application file hashes and reports only whether protected paths exist. It does not read their contents or write to either directory. It does not check scheduled jobs, web-server rules, account access or mail, and it is not an installer. Review every difference; the tool cannot determine whether a host file contains an approved change.
+
+The candidate branch disables the repository's automatic cPanel deployment. This is a guard, not a deployment mechanism. A separate host-specific plan and approval remain necessary.
