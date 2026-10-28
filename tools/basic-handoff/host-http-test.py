@@ -44,6 +44,19 @@ with tempfile.TemporaryDirectory(prefix='kcmc-basic-') as tmp:
         status,_,body=request(admin,'/admin/'); assert status==200 and 'Church content' in body,(status,body[:200])
         for path in ['/admin/publication-designer.php','/member/timeclock.php','/api/team-workspace.php']:
             status,_,_=request(admin,path); assert status==404,(path,status)
+        allowed = {'admin': {'index.php','home.php','login.php','setup.php','save.php','posts.php','event-create.php','connections.php','connections-export.php','rsvps.php','rsvps-export.php'}, 'member': {'login.php','logout.php'}, 'api': {'content.php','connection.php','rsvp.php'}}
+        excluded = []
+        for folder, retained in allowed.items():
+            for entry in (root / folder).glob('*.php'):
+                if entry.name not in retained:
+                    path = '/' + folder + '/' + entry.name
+                    for actor in (public, admin):
+                        for data in (None, {'action':'synthetic'}):
+                            status, _, _ = request(actor,path,data)
+                            assert status == 404, (path, status, 'GET' if data is None else 'POST')
+                    excluded.append(path)
+        assert len(excluded) >= 30, len(excluded)
+        print('PASS: excluded PHP entry points checked for anonymous and admin GET/POST:',len(excluded))
         # Exercise real content writes only against the temporary synthetic package.
         content_path = root / 'data/content.json'
         before_bytes = content_path.read_bytes()
