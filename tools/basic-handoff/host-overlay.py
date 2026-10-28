@@ -45,6 +45,9 @@ s=files['index.php']
 s=replace(s,"<?=kcmc_screen_back($member ? 'member/' : '')?>", "<?=kcmc_screen_back('')?>")
 s=cut(s,'        <a class="menu-account"','\n      </nav>', '''        <a class="menu-account" href="<?=kcmc_h(kcmc_url('admin/login.php'))?>">Administration</a>''')
 s=replace(s,"<a href=\"<?=kcmc_h(kcmc_url($member ? 'member/' : 'admin/login.php'))?>\"><?=$member ? 'My account' : 'Sign In'?></a>","<a href=\"<?=kcmc_h(kcmc_url('admin/login.php'))?>\">Administration</a>")
+s=replace(s, '<img class="home-cover-photo" src="./assets/visuals/kcmc-gold-hero.webp" alt="KCMC inside a left-facing gold Christian fish on rich blue" loading="eager" decoding="async" fetchpriority="high" width="1672" height="941">', '<img class="home-cover-photo" src="./assets/visuals/kcmc-bridge-logo.jpg" alt="Kimberling City Methodist Church" loading="eager" decoding="async" fetchpriority="high" width="1156" height="1156">')
+s=replace(s, '<link rel="stylesheet" href="kcmc-gold-theme.css?v=gold-fish-v1">', '<link rel="stylesheet" href="kcmc-gold-theme.css?v=gold-fish-v1">\n<link rel="stylesheet" href="kcmc-website-hero.css?v=20261028">')
+s=replace(s, '<link rel="preload" as="image" href="assets/visuals/kcmc-building-original-20261018.jpg" type="image/jpeg" fetchpriority="high">', '<link rel="preload" as="image" href="assets/visuals/kcmc-bridge-logo.jpg" type="image/jpeg" fetchpriority="high">')
 files['index.php']=s
 s=files['bulletin.php'];files['bulletin.php']=replace(s,'Prayer requests and prayer details are available only after verified member sign-in.','For prayer or support, contact the church office.')
 s=files['lib/screen-navigation.php'];files['lib/screen-navigation.php']=cut(s,'    if ($signedIn) {',"    return '<nav")
@@ -53,7 +56,7 @@ s=cut(s,'<div><a href="<?=kcmc_h(kcmc_url(\'admin/home.php\'))?>">← Administra
 s=replace(s,' <a class="btnx" style="display:inline-block;text-decoration:none" href="<?=kcmc_h(kcmc_url(\'admin/backup.php\'))?>">Download backup</a>','')
 files['admin/index.php']=s
 files['admin/home.php']="<?php\nrequire_once __DIR__ . '/../lib/bootstrap.php';\nkcmc_require_role(['pastor_admin', 'recovery_admin']);\nheader('Location: ' . kcmc_url('admin/'));\nexit;\n"
-s=files['sw.js'];s=replace(s,'kcmc-connect-v3.0.3-public-only-tony-functions-20261020','kcmc-connect-v3.0.3-public-only-basic-handoff-tony-functions-20261026');s=cut(s,'function safePushPayload(',"self.addEventListener('install'");s=cut(s,"self.addEventListener('push'", "self.addEventListener('fetch'");files['sw.js']=s
+s=files['sw.js'];s=replace(s, "  './','./home-welcome.css?v=tony-functions-20261020'", "  './','./kcmc-website-hero.css?v=20261028','./assets/visuals/kcmc-bridge-logo.jpg','./home-welcome.css?v=tony-functions-20261020'");s=replace(s,'kcmc-connect-v3.0.3-public-only-tony-functions-20261020','kcmc-connect-v3.0.3-public-only-basic-handoff-tony-functions-20261026');s=cut(s,'function safePushPayload(',"self.addEventListener('install'");s=cut(s,"self.addEventListener('push'", "self.addEventListener('fetch'");files['sw.js']=s
 
 s=files['lib/bootstrap.php']
 anchor="require_once __DIR__ . '/post-controls.php';\n"
@@ -87,7 +90,12 @@ s=replace(s,'    <p class="portal-fine"><strong>Need staff or authorized ministr
 files['member/login.php']=s
 s=files['care.php'];files['care.php']=cut(s,'<div class="privacy-lock">','<p class="portal-fine">')
 
+logo=Path(__file__).resolve().parents[2]/'KCMC-Connect-Phase6-Recreated'/'assets'/'visuals'/'kcmc-bridge-logo.jpg'
+logo_bytes=logo.read_bytes()
+if hashlib.sha256(logo_bytes).hexdigest()!='9926f5ee356f67aa076fd6912b9a4cea8e458f4e4202a6af2c49360c06ecc082': raise ValueError('Unexpected logo asset')
+files['kcmc-website-hero.css']=Path(__file__).with_name('website-hero.css').read_text(encoding='utf-8')
 for name,content in files.items():
  out=a.output/name;out.parent.mkdir(parents=True,exist_ok=True);out.write_text(content,encoding='utf-8')
+logo_out=a.output/'assets'/'visuals'/'kcmc-bridge-logo.jpg';logo_out.parent.mkdir(parents=True,exist_ok=True);logo_out.write_bytes(logo_bytes)
 print('Review-only overlay created:', a.output)
 print('Not an installer. Additional route restrictions, dependencies, and testing are required.')
