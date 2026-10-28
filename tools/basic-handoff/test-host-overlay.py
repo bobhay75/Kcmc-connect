@@ -10,7 +10,9 @@ with tempfile.TemporaryDirectory(prefix='kcmc-overlay-test-') as tmp:
     out=Path(tmp)/'out'
     subprocess.run([sys.executable,str(script),str(snapshot),str(out)],check=True,stdout=subprocess.DEVNULL)
     home=(out/'index.php').read_text(); old=(snapshot/'index.php').read_text()
-    assert 'kcmc-gold-hero.webp' in home and 'kcmc-gold-hero.webp' in old
+    assert 'kcmc-bridge-logo.jpg' in home and 'kcmc-gold-hero.webp' in old
+    assert (out/'assets/visuals/kcmc-bridge-logo.jpg').is_file()
+    assert (out/'kcmc-website-hero.css').is_file()
     assert 'member/timeclock.php' not in home and 'My account' not in home
     editor=(out/'admin/index.php').read_text()
     assert 'worship_streams[' in editor and 'public_event' in editor
