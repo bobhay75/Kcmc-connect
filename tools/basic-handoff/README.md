@@ -29,3 +29,11 @@ The source-level route restriction and package exclusion do not disable old file
 After the package is built, `python3 tools/basic-handoff/preflight.py /path/to/installed/app /path/to/review-package` compares a fixed set of application file hashes and reports only whether protected paths exist. It does not read their contents or write to either directory. It does not check scheduled jobs, web-server rules, account access or mail, and it is not an installer. Review every difference; the tool cannot determine whether a host file contains an approved change.
 
 The candidate branch disables the repository's automatic cPanel deployment. This is a guard, not a deployment mechanism. A separate host-specific plan and approval remain necessary.
+
+## CI triage and release safety (October 29)
+
+The dedicated basic-handoff and host-hero fixture workflows pass at commit `81891fccd7a2`. The legacy security-contract job reports `FAIL: Deployment does not preserve private data`, because the branch intentionally disables the original cPanel deployment mechanism. **Do not change .cpanel.yml to satisfy this legacy assertion.** It currently terminates with `/bin/false`, preventing automatic deployment. The replacement release must use the reviewed protected-backup and narrow-file plan in [HOST-ACCEPTANCE-ROLLBACK.md](HOST-ACCEPTANCE-ROLLBACK.md).
+
+The legacy password-lifecycle job reports `FAIL: administrator reset console remains on the role-protected administration hub`. The old hub was deliberately replaced by a reduced editor. This particular UI assertion is not a reason to restore the hub, but **verified, authorized administrator recovery remains a release gate**. Test the retained account recovery mechanism on staging, and document the church-controlled recovery path before handoff.
+
+Do not re-enable excluded Publisher, member, payroll, time-clock, team, or push features to make old workflows green. Do not suppress the remaining security, session, privacy, or route failures without examining their exact assertions.
