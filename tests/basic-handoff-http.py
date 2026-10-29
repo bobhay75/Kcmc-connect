@@ -38,6 +38,17 @@ with tempfile.TemporaryDirectory(prefix='kcmc-basic-') as tmp:
             status,_,_=request(public,path); assert status==200,(path,status)
         for path in ['/member/index.php','/member/timeclock.php','/member/prayer-care.php','/member/work.php','/member/activate.php','/admin/publication-designer.php','/admin/publication-media.php','/admin/publication-projects.php','/admin/timecards.php','/admin/users.php','/admin/push.php','/api/team-workspace.php','/api/push-subscription.php']:
             status,_,_=request(public,path); assert status==404,(path,status)
+        # Excluded endpoints must remain absent for both verbs and both roles.
+        # These tests exercise the built candidate, not an existing live host.
+        excluded = ['/member/index.php','/member/timeclock.php','/member/prayer-care.php',
+                    '/member/work.php','/member/activate.php','/admin/publication-designer.php',
+                    '/admin/publication-media.php','/admin/publication-projects.php',
+                    '/admin/timecards.php','/admin/users.php','/admin/push.php',
+                    '/api/team-workspace.php','/api/push-subscription.php']
+        for path in excluded:
+            for payload in (None, {'synthetic':'1'}):
+                status,_,_=request(public,path,payload)
+                assert status==404,(path,'POST' if payload else 'GET',status)
         status,_,body=request(public,'/member/login.php'); csrf=re.search(r'name="csrf" value="([^"]+)',body).group(1)
         status,_,body=request(public,'/member/login.php',{'csrf':csrf,'email':'member@example.test','password':password})
         assert status==200 and 'not recognized' in body, 'member account must not sign in'
@@ -47,6 +58,10 @@ with tempfile.TemporaryDirectory(prefix='kcmc-basic-') as tmp:
         status,_,body=request(admin,'/admin/'); assert status==200 and 'Church content' in body,(status,body[:200])
         for path in ['/admin/publication-designer.php','/member/timeclock.php','/api/team-workspace.php']:
             status,_,_=request(admin,path); assert status==404,(path,status)
+        for path in excluded:
+            for payload in (None, {'synthetic':'1'}):
+                status,_,_=request(admin,path,payload)
+                assert status==404,(path,'admin POST' if payload else 'admin GET',status)
         # Exercise real content writes only against the temporary synthetic package.
         content_path = root / 'data/content.json'
         before_bytes = content_path.read_bytes()
