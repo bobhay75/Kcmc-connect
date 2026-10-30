@@ -51,3 +51,14 @@ Review artifact from commit `9123456157b8d3d907f2eb25a040d99048d94c13`.
 - The isolated Apache results are not authorization to install or overwrite production.
 
 Release decision remains **pending owner approval and host-specific acceptance**. Keep automatic deployment disabled and PR #169 in draft.
+
+## Read-only production host inspection — October 30, 2026
+Evidence supplied from cPanel terminal at `/home/bobsome1/public_html/kcmc-connect`:
+- PHP CLI: 8.2.35.
+- The public installation directory is not a Git working tree; `.cpanel.yml` is absent there.
+- `.htaccess` exists, contains `Options -Indexes`, file-level JSON denial, and a `data|backups` rewrite deny rule.
+- Public HTTP probes returned **403** for `data/content.json`, `data/private/users.json`, and `backups/test-nonexistent.json`.
+- These observations verify the tested production URL restrictions, **not** the candidate installation, authentication, or full host security.
+- No live files were changed by this inspection.
+
+**Next:** deploy the candidate only to an explicitly authorized, isolated staging document root with separate synthetic storage; verify the exact archive, Apache behavior, session expiry, backup restore, mobile/desktop layout, and church content. Do not overwrite the production directory.
