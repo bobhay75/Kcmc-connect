@@ -5,10 +5,10 @@ if (!kcmc_has_any_users()) {
     header('Location: ' . kcmc_url('admin/setup.php'));
     exit;
 }
-$next = kcmc_safe_next((string)($_GET['next'] ?? $_POST['next'] ?? ''), 'member/');
-if (kcmc_current_user()) {
-    header('Location: ' . $next);
-    exit;
+$next = kcmc_url('admin/');
+if ($existing = kcmc_current_user()) {
+    if (kcmc_has_role(['pastor_admin', 'recovery_admin'], $existing)) { header('Location: ' . $next); exit; }
+    kcmc_logout_user();
 }
 $error = '';
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
@@ -20,7 +20,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $error = 'Sign-in is temporarily locked. Please wait 15 minutes or contact a KCMC administrator.';
     } else {
         $user = kcmc_find_user_by_email($email);
-        if ($user && !empty($user['active']) && password_verify($password, (string)($user['password_hash'] ?? ''))) {
+        if ($user && !empty($user['active']) && in_array(kcmc_role($user), ['pastor_admin', 'recovery_admin'], true) && password_verify($password, (string)($user['password_hash'] ?? ''))) {
             if (password_needs_rehash((string)$user['password_hash'], PASSWORD_DEFAULT)) {
                 $user = kcmc_update_json_store(KCMC_USERS, ['version' => 1, 'users' => []], function (array &$state) use ($user, $password): ?array {
                     foreach ($state['users'] as &$stored) {
@@ -55,7 +55,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
   <a class="portal-back" href="<?=kcmc_h(kcmc_url())?>">← KCMC Connect</a>
   <section class="portal-card">
     <p class="eyebrow">KCMC STAFF</p><h1>Welcome back.</h1>
-    <p class="portal-lead">Staff and authorized ministry teams sign in here. Everyone can use the public app for free without an account. Private records remain protected.</p>
+    <p class="portal-lead">Church administrators sign in here. Everyone can use the public app for free without an account. Private records remain protected.</p>
     <?php if ($error): ?><p class="portal-alert error" role="alert"><?=kcmc_h($error)?></p><?php endif; ?>
     <?php if (isset($_GET['expired'])): ?><p class="portal-alert warning">Your secure KCMC session expired. Sign in again to continue.</p><?php endif; ?>
     <?php if (isset($_GET['activated'])): ?><p class="portal-alert success">Your password is ready. You can sign in now.</p><?php endif; ?>
@@ -66,7 +66,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
       <label>Password<input type="password" name="password" autocomplete="current-password" required></label>
       <button class="btn gold" type="submit">Sign in securely</button>
     </form>
-    <p class="portal-fine"><strong>Forgot your password?</strong> Ask a KCMC Connect administrator for a recipient-bound, one-time password-reset link.</p>
-    <p class="portal-fine"><strong>Need staff or authorized ministry access?</strong> Use the recipient-bound, one-time invitation issued by a KCMC Connect administrator to create your password.</p>
+    <p class="portal-fine">For sign-in help, contact the church office.</p>
   </section>
 </main></body></html>

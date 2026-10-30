@@ -12,7 +12,11 @@ fail() {
 grep -q "3.0.3" "$app_dir/VERSION" || fail "Version 3.0.3 marker is missing"
 grep -q "data/private/" "$repo_dir/.gitignore" || fail "Private data is not ignored by Git"
 grep -q "assets/newsletter/" "$repo_dir/.gitignore" || fail "Newsletter source pages are not blocked by Git"
-grep -q -- "--exclude='data/private/'" "$repo_dir/.cpanel.yml" || fail "Deployment does not preserve private data"
+if grep -Fq "/bin/false" "$repo_dir/.cpanel.yml"; then
+  echo "PASS: Draft deployment is explicitly disabled"
+else
+  grep -q -- "--exclude='data/private/'" "$repo_dir/.cpanel.yml" || fail "Active deployment lacks private-data exclusion"
+fi
 grep -Eq "RewriteRule \^\(\?:data\|backups\)" "$app_dir/.htaccess" || fail "Apache does not block data and backups"
 grep -Fq '<FilesMatch "(?:\.json(?:\.tmp-[A-Fa-f0-9]+)?|\.ndjson|\.lock)$">' "$app_dir/.htaccess" || fail "Apache file-level private-data fallback is missing"
 
@@ -47,6 +51,13 @@ grep -q "kcmc_current_user_if_session" "$app_dir/care.php" || fail "Public care 
 if grep -R -Eq --exclude='RELEASE_NOTES.md' "admin_password_hash|shared_admin_password" "$app_dir"; then
   fail "Legacy shared-password configuration remains"
 fi
+
+# Basic product: only staff administrators may authenticate or edit content.
+grep -Fq "in_array(kcmc_role(\$user), ['pastor_admin', 'recovery_admin'], true)" "$app_dir/member/login.php" || fail "Staff login does not enforce the administrator role allowlist"
+grep -Fq "kcmc_verify_csrf(" "$app_dir/member/login.php" || fail "Staff login CSRF validation is missing"
+grep -Fq "password_verify(" "$app_dir/member/login.php" || fail "Staff login password verification is missing"
+grep -Fq "kcmc_require_role(['pastor_admin', 'recovery_admin'])" "$app_dir/admin/index.php" || fail "Church content editor administrator gate is missing"
+grep -Fq "kcmc_private_headers()" "$app_dir/member/login.php" || fail "Staff login private response headers are missing"
 
 jq empty "$app_dir/data/content.json" "$app_dir/manifest.webmanifest"
 jq -e '.contact.office_hours == "Tue–Thu • 8:00 AM–4:00 PM"' "$app_dir/data/content.json" >/dev/null || fail "Published office hours are stale"

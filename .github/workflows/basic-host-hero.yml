@@ -1,0 +1,31 @@
+name: KCMC host hero fixture
+on:
+  pull_request:
+    paths:
+      - 'tools/basic-handoff/website-hero.css'
+      - 'tests/basic-host-hero-browser.py'
+      - 'tests/fixtures/basic-handoff/**'
+      - '.github/workflows/basic-host-hero.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  preview:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          persist-credentials: false
+      - run: |
+          python3 -m pip install --disable-pip-version-check playwright==1.55.0
+          python3 -m playwright install --with-deps chromium
+      - run: python3 tests/basic-host-hero-browser.py
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        if: always()
+        with:
+          name: basic-host-hero
+          path: test-artifacts/host-hero/
+          retention-days: 7
+          if-no-files-found: ignore

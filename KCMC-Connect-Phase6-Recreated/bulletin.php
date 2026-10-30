@@ -44,7 +44,7 @@ body{background:linear-gradient(180deg,#0d2235 0,#17384f 25rem,var(--kcmc-panel-
 <section class="bulletin-section">
 <h2>Stay connected</h2>
 <div class="bulletin-actions"><a href="./#watch">Watch KCMC</a><a class="alt" href="care.php">Prayer &amp; care</a><a class="alt" href="./#events">Events</a></div>
-<p class="bulletin-fine">Prayer requests and prayer details are available only after verified member sign-in.</p>
+<p class="bulletin-fine">For prayer or support, contact the church office.</p>
 </section>
 </article>
 </main>

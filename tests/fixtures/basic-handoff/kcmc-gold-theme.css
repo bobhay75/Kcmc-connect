@@ -1,0 +1,38 @@
+/* KCMC approved gold fish theme. Public welcome shell only. */
+body.kcmc-welcome-design{--gold:#f2c45d;--ink:#f8f5ec;--muted:#d1dce9;background:#03182f;color:var(--ink)}
+body.kcmc-welcome-design .topbar{background:#03182f;border-bottom:1px solid var(--gold)}
+body.kcmc-welcome-design .welcome-brand{display:flex;align-items:center}
+body.kcmc-welcome-design .welcome-brand img{display:block;width:150px;height:76px;object-fit:contain}
+body.kcmc-welcome-design[data-office-email] [data-view="home"] .home-cover.hero.hero-imagery{background:#03182f;padding:16px 0 30px}
+body.kcmc-welcome-design[data-office-email] [data-view="home"] .home-cover .home-cover-photo{width:min(100%,1100px);height:auto;aspect-ratio:1672/941;object-fit:contain;object-position:center;display:block;margin:0 auto}
+body.kcmc-welcome-design[data-office-email] [data-view="home"] .home-cover-layout{position:static;width:100%;padding:0 20px;margin:0 auto}
+body.kcmc-welcome-design[data-office-email] [data-view="home"] .home-cover-card{width:100%;max-width:100%}
+body.kcmc-welcome-design .welcome-hero-actions{justify-content:center;gap:18px}
+body.kcmc-welcome-design .btn,body.kcmc-welcome-design button,body.kcmc-welcome-design input,body.kcmc-welcome-design select,body.kcmc-welcome-design textarea{font-size:1rem}
+body.kcmc-welcome-design .btn{border:1px solid #d5ab53;border-radius:8px;min-height:48px;color:#f8f5ec;background:#08233f;font-family:Georgia,serif;text-decoration:none}
+body.kcmc-welcome-design .btn.gold{color:#102039;background:linear-gradient(135deg,#ffe390,#e6ac36);border-color:#f8d778}
+body.kcmc-welcome-design .welcome-hero-actions .btn{min-width:240px;min-height:56px;font-size:clamp(1.1rem,2vw,1.6rem)}
+body.kcmc-welcome-design .welcome-hero-actions .btn.secondary{color:#f8f5ec;background:#051b34}
+body.kcmc-welcome-design[data-office-email] [data-view="home"] .home-worship-strip{background:#03182f;border-block:1px solid #cf9e40;margin-bottom:26px}
+body.kcmc-welcome-design[data-office-email] [data-view="home"] .home-worship-times strong{color:#f7cd70}
+body.kcmc-welcome-design .welcome-quicklinks a{background:linear-gradient(135deg,#0a294a,#041a33);border-color:#77899e;font-weight:400}
+body.kcmc-welcome-design .welcome-design-footer{color:#e9e7e2;font-family:Georgia,serif}
+body.kcmc-welcome-design .view:not([data-view="home"]){background:radial-gradient(ellipse at top,#0b315b 0,#03182f 65%);min-height:70vh}
+body.kcmc-welcome-design .view .section,body.kcmc-welcome-design .view .section.alt{background:transparent;color:#f8f5ec}
+body.kcmc-welcome-design .partner-hero{padding-top:38px;padding-bottom:24px}
+body.kcmc-welcome-design .display-title,body.kcmc-welcome-design .partner-hero h1{font-family:Georgia,serif!important;color:#f7d98b;font-weight:400!important;font-size:clamp(2.25rem,5vw,3.7rem)!important;line-height:1.15}
+body.kcmc-welcome-design .view h2,body.kcmc-welcome-design .view h3{font-family:Georgia,serif;color:#f8f5ec}
+body.kcmc-welcome-design .view .muted,body.kcmc-welcome-design .view .lead{color:#d1dce9}
+body.kcmc-welcome-design .view :is(.card,.sermon-card,.form-card,.event-card,.invite-neighbor-card){background:linear-gradient(140deg,#0b2a4c,#051a32);border:1px solid #667e98;border-radius:10px;color:#f8f5ec;box-shadow:none;overflow:hidden}
+body.kcmc-welcome-design .view :is(input,select,textarea){background:#04182e;color:#fff;border:1px solid #8a9bb0;border-radius:6px;min-height:44px}
+body.kcmc-welcome-design .view option{background:#04182e;color:#fff}
+body.kcmc-welcome-design .view .disclosure-row{color:#f8f5ec;border-bottom:1px solid #647c96;background:transparent}
+body.kcmc-welcome-design .view .disclosure-row>summary::after{color:#f2c45d}
+body.kcmc-welcome-design .view .pill{color:#f7d98b;background:#071d36;border:1px solid #9a804c}
+body.kcmc-welcome-design .service-photo{display:block;width:100%;height:auto;aspect-ratio:4/3;object-fit:cover;object-position:center}
+body.kcmc-welcome-design .sermon-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:22px}
+body.kcmc-welcome-design .sermon-card>div{padding:22px}
+body.kcmc-welcome-design .view a:not(.btn){color:#f7d98b}
+body.kcmc-welcome-design .welcome-nav a{color:#f8f5ec}
+body.kcmc-welcome-design [hidden]{display:none!important}
+@media(max-width:760px){body.kcmc-welcome-design .welcome-brand img{width:110px;height:56px}body.kcmc-welcome-design[data-office-email] [data-view="home"] .home-cover.hero.hero-imagery{padding-top:10px}body.kcmc-welcome-design[data-office-email] [data-view="home"] .home-cover-layout{padding:12px 16px 0}body.kcmc-welcome-design .welcome-hero-actions .btn{min-width:0;flex:1;font-size:1rem;padding:12px 10px}body.kcmc-welcome-design .sermon-grid{grid-template-columns:1fr}body.kcmc-welcome-design .partner-hero{padding-top:26px}body.kcmc-welcome-design .welcome-quicklinks{grid-template-columns:1fr}}
