@@ -39,5 +39,18 @@ for folder, keep in allow.items():
             else: item.unlink()
 for name in ['payroll.php','timeclock.php','team-workspace.php','publication-drafts.php','prayer-care.php','push-subscriptions.php','invitation-delivery.php','invitation-mailer.php','password-lifecycle.php']:
     (dest / 'lib' / name).unlink(missing_ok=True)
+# Fail closed if any excluded private or development material is present.
+for forbidden in ('config.php', 'SETUP-CREDENTIALS.txt', 'data/private', 'admin/publication-designer.php',
+                  'member/timeclock.php', 'admin/timecards.php', 'api/team-workspace.php'):
+    if (dest / forbidden).exists():
+        parser.error(f'forbidden release material present: {forbidden}')
+if not (dest / '.htaccess').is_file():
+    parser.error('Apache access-control rules missing from release candidate')
+rules = (dest / '.htaccess').read_text()
+if 'RewriteRule ^(?:data|backups)(?:/|$) - [F,L,NC]' not in rules:
+    parser.error('Apache private-data and backup deny rule missing')
+if not (dest / 'admin/index.php').is_file() or not (dest / 'member/login.php').is_file():
+    parser.error('administrator entry points missing')
+
 (dest / 'HANDOFF-STATUS.txt').write_text('REVIEW CANDIDATE ONLY. Not production-ready. Do not deploy or overwrite live data.\n')
 print(f'Created review candidate: {dest}')
