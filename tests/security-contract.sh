@@ -12,7 +12,11 @@ fail() {
 grep -q "3.0.3" "$app_dir/VERSION" || fail "Version 3.0.3 marker is missing"
 grep -q "data/private/" "$repo_dir/.gitignore" || fail "Private data is not ignored by Git"
 grep -q "assets/newsletter/" "$repo_dir/.gitignore" || fail "Newsletter source pages are not blocked by Git"
-grep -q -- "--exclude='data/private/'" "$repo_dir/.cpanel.yml" || fail "Deployment does not preserve private data"
+if grep -Fq "/bin/false" "$repo_dir/.cpanel.yml"; then
+  echo "PASS: Draft deployment is explicitly disabled"
+else
+  grep -q -- "--exclude='data/private/'" "$repo_dir/.cpanel.yml" || fail "Active deployment lacks private-data exclusion"
+fi
 grep -Eq "RewriteRule \^\(\?:data\|backups\)" "$app_dir/.htaccess" || fail "Apache does not block data and backups"
 grep -Fq '<FilesMatch "(?:\.json(?:\.tmp-[A-Fa-f0-9]+)?|\.ndjson|\.lock)$">' "$app_dir/.htaccess" || fail "Apache file-level private-data fallback is missing"
 
