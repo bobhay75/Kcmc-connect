@@ -50,7 +50,7 @@ jobs:
           with zipfile.ZipFile(archive, 'w', compression=zipfile.ZIP_DEFLATED) as z:
               for p in files:
                   z.write(p, (Path('KCMC-Connect-Review') / p.relative_to(app)).as_posix())
-          (root / 'SHA256SUMS.txt').write_text(hashlib.sha256(archive.read_bytes()).hexdigest() + '  ' + archive.name + '\\n')
+          (root / 'SHA256SUMS.txt').write_text(hashlib.sha256(archive.read_bytes()).hexdigest() + '  ' + archive.name + '\n')
           print(f'Review archive created: {len(files)} files')
           PY
       - name: Upload review archive (not deployed)
