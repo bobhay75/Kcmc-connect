@@ -34,6 +34,10 @@ with tempfile.TemporaryDirectory(prefix='kcmc-basic-') as tmp:
             try: request(client(),'/'); break
             except OSError: time.sleep(.1)
         public=client()
+        # Event artwork fallback is a public presentation requirement, not a data mutation.
+        events_source=(repo / 'KCMC-Connect-Phase6-Recreated/events.php').read_text()
+        assert "trunk-or-treat-2026.svg" in events_source, 'Trunk or Treat fallback artwork missing'
+        assert (root / 'assets/visuals/trunk-or-treat-2026.svg').is_file(), 'fallback artwork absent from release candidate'
         for path in ['/','/care.php','/events.php','/bulletin.php','/member/login.php']:
             status,_,_=request(public,path); assert status==200,(path,status)
         for path in ['/member/index.php','/member/timeclock.php','/member/prayer-care.php','/member/work.php','/member/activate.php','/admin/publication-designer.php','/admin/publication-media.php','/admin/publication-projects.php','/admin/timecards.php','/admin/users.php','/admin/push.php','/api/team-workspace.php','/api/push-subscription.php']:
