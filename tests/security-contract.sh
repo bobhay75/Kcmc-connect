@@ -52,6 +52,13 @@ if grep -R -Eq --exclude='RELEASE_NOTES.md' "admin_password_hash|shared_admin_pa
   fail "Legacy shared-password configuration remains"
 fi
 
+# Basic product: only staff administrators may authenticate or edit content.
+grep -Fq "in_array(kcmc_role($user), ['pastor_admin', 'recovery_admin'], true)" "$app_dir/member/login.php" || fail "Staff login does not enforce the administrator role allowlist"
+grep -Fq "kcmc_verify_csrf(" "$app_dir/member/login.php" || fail "Staff login CSRF validation is missing"
+grep -Fq "password_verify(" "$app_dir/member/login.php" || fail "Staff login password verification is missing"
+grep -Fq "kcmc_require_role(['pastor_admin', 'recovery_admin'])" "$app_dir/admin/index.php" || fail "Church content editor administrator gate is missing"
+grep -Fq "kcmc_private_headers()" "$app_dir/member/login.php" || fail "Staff login private response headers are missing"
+
 jq empty "$app_dir/data/content.json" "$app_dir/manifest.webmanifest"
 jq -e '.contact.office_hours == "Tue–Thu • 8:00 AM–4:00 PM"' "$app_dir/data/content.json" >/dev/null || fail "Published office hours are stale"
 jq -e '.contact.office_hours == "Tue–Thu • 9:00 AM–4:00 PM"' "$app_dir/data/releases/3.0.0.json" >/dev/null || fail "Release seed office hours are stale"
