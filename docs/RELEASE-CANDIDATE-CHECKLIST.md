@@ -41,3 +41,13 @@ Demonstrate the working product to KCMC first. Define whether the offer is a lic
 | Final customer demonstration | Owner acceptance | Pending |
 
 **Release decision: NOT YET APPROVED.** The three priority CI workflows are green; staging and customer acceptance are still required. Do not interpret historical-feature workflow failures as automatically relevant or irrelevant without triage.
+
+## Candidate staging evidence — October 30, 2026
+Review artifact from commit `9123456157b8d3d907f2eb25a040d99048d94c13`.
+- GitHub Basic church handoff, Security contract and Hero preview: passed.
+- Review archive integrity: SHA-256 matched after checksum format correction.
+- Isolated Apache 2.4 tests reported: administrator sign-in/dashboard, idle-session expiry, protected JSON/backup URL denial, publishing and backup creation, and isolated backup restore.
+- **Not verified:** actual cPanel configuration, production data migration, church approval of public content, final device visual acceptance.
+- The isolated Apache results are not authorization to install or overwrite production.
+
+Release decision remains **pending owner approval and host-specific acceptance**. Keep automatic deployment disabled and PR #169 in draft.
