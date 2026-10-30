@@ -101,6 +101,11 @@ with tempfile.TemporaryDirectory(prefix='kcmc-basic-') as tmp:
         original_snapshot=next((p for p in saved_backups if p.read_bytes()==before_bytes),None)
         assert original_snapshot is not None, 'pre-edit snapshot cannot be recovered'
         assert json.loads(original_snapshot.read_text())==content, 'backup recovery content mismatch'
+        # Restore drill on an isolated copy; never overwrite the running candidate.
+        restored = Path(tmp) / 'restored-content.json'
+        shutil.copyfile(original_snapshot, restored)
+        assert restored.read_bytes() == before_bytes, 'restored snapshot differs from original content'
+        assert json.loads(restored.read_text()) == content, 'restored JSON is invalid or incomplete'
 
         status,_,_=request(admin,'/admin/save.php',payload); assert status==409, status
         after_save=content_path.read_bytes()
