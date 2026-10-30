@@ -95,6 +95,13 @@ with tempfile.TemporaryDirectory(prefix='kcmc-basic-') as tmp:
         status,_,_=request(admin,'/admin/save.php',payload); assert status==302, status
         assert json.loads(content_path.read_text())['bulletin']['welcome']=='Synthetic acceptance update'
         assert any(p.read_bytes()==before_bytes for p in (root/'backups').glob('content-*.json')), 'original content backup missing'
+        # Recovery proof: the saved pre-edit snapshot must parse and preserve its original bytes.
+        saved_backups=list((root/'backups').glob('content-*.json'))
+        assert saved_backups, 'no backup snapshot to restore'
+        original_snapshot=next((p for p in saved_backups if p.read_bytes()==before_bytes),None)
+        assert original_snapshot is not None, 'pre-edit snapshot cannot be recovered'
+        assert json.loads(original_snapshot.read_text())==content, 'backup recovery content mismatch'
+
         status,_,_=request(admin,'/admin/save.php',payload); assert status==409, status
         after_save=content_path.read_bytes()
         assert json.loads(after_save)['bulletin']['welcome']=='Synthetic acceptance update'
