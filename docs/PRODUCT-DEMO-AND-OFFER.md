@@ -25,3 +25,10 @@
 - Written license and intellectual-property terms are agreed before source-code transfer.
 
 KCMC receives the first opportunity to evaluate the completed application. Development-hour records remain private and are not part of the commercial package.
+
+## Product release decisions — October 30, 2026
+- Retain the working Upcoming / Next week calendar. A monthly slide calendar is an optional future enhancement, not a release blocker.
+- Retain the event artwork fallback for Trunk or Treat and its release-package regression test.
+- Treat older PRs as source material only; do not merge their divergent branches into the candidate without focused review.
+- Public church data must be checked for factual currency before any customer demonstration. Passing CI does not verify event dates or service links.
+- The release candidate must remain a separate, reviewable build with no automatic production deployment.
