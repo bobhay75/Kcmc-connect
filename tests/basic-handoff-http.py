@@ -52,6 +52,16 @@ with tempfile.TemporaryDirectory(prefix='kcmc-basic-') as tmp:
         status,_,body=request(public,'/member/login.php'); csrf=re.search(r'name="csrf" value="([^"]+)',body).group(1)
         status,_,body=request(public,'/member/login.php',{'csrf':csrf,'email':'member@example.test','password':password})
         assert status==200 and 'not recognized' in body, 'member account must not sign in'
+        # A failed staff login must not create an authenticated administrator session.
+        bad_admin=client()
+        _,_,bad_form=request(bad_admin,'/member/login.php')
+        bad_csrf=re.search(r'name="csrf" value="([^"]+)',bad_form).group(1)
+        bad_status,_,bad_body=request(bad_admin,'/member/login.php',{'csrf':bad_csrf,'email':'admin@example.test','password':'incorrect-synthetic-password'})
+        assert bad_status==200 and 'not recognized' in bad_body, 'invalid administrator credentials accepted'
+        denied_status,_,_=request(bad_admin,'/admin/')
+        assert denied_status==302, ('failed login reached administrator content',denied_status)
+        anonymous_status,_,_=request(public,'/admin/')
+        assert anonymous_status==302, ('anonymous visitor reached administrator content',anonymous_status)
         admin=client(); _,_,body=request(admin,'/member/login.php'); csrf=re.search(r'name="csrf" value="([^"]+)',body).group(1)
         status,headers,_=request(admin,'/member/login.php',{'csrf':csrf,'email':'admin@example.test','password':password,'next':'/member/timeclock.php'})
         assert status==302 and headers.get('Location')=='/admin/', (status,headers.get('Location'))
