@@ -27,3 +27,17 @@ Do not label production-ready until staging Apache access controls, backup resto
 
 ## Sales preparation
 Demonstrate the working product to KCMC first. Define whether the offer is a license or transfer, included support, hosting, maintenance, and price. Review any employment or IP agreements before asserting exclusive ownership. Development hours are private reference only.
+
+## Final acceptance record (fill from observed evidence, not assumptions)
+| Gate | Evidence | Result |
+| --- | --- | --- |
+| Basic church handoff CI | Exact commit GitHub Actions | Verified on e8d805a |
+| Security contract CI | Exact commit GitHub Actions | Verified on e8d805a |
+| Hero concept preview CI | Exact commit GitHub Actions | Verified on e8d805a |
+| Apache denial of data and backups | Separate staging host HTTP 403/404 | Pending |
+| Administrator session expiry | Separate staging test | Pending |
+| Operational backup restore | Separate staging restore drill | Pending |
+| Current event and service facts | Church-approved content review | Pending |
+| Final customer demonstration | Owner acceptance | Pending |
+
+**Release decision: NOT YET APPROVED.** The three priority CI workflows are green; staging and customer acceptance are still required. Do not interpret historical-feature workflow failures as automatically relevant or irrelevant without triage.
