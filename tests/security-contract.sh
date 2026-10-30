@@ -53,7 +53,7 @@ if grep -R -Eq --exclude='RELEASE_NOTES.md' "admin_password_hash|shared_admin_pa
 fi
 
 # Basic product: only staff administrators may authenticate or edit content.
-grep -Fq "in_array(kcmc_role($user), ['pastor_admin', 'recovery_admin'], true)" "$app_dir/member/login.php" || fail "Staff login does not enforce the administrator role allowlist"
+grep -Fq "in_array(kcmc_role(\$user), ['pastor_admin', 'recovery_admin'], true)" "$app_dir/member/login.php" || fail "Staff login does not enforce the administrator role allowlist"
 grep -Fq "kcmc_verify_csrf(" "$app_dir/member/login.php" || fail "Staff login CSRF validation is missing"
 grep -Fq "password_verify(" "$app_dir/member/login.php" || fail "Staff login password verification is missing"
 grep -Fq "kcmc_require_role(['pastor_admin', 'recovery_admin'])" "$app_dir/admin/index.php" || fail "Church content editor administrator gate is missing"
