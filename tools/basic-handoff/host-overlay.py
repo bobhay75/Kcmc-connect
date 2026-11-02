@@ -56,7 +56,11 @@ s=cut(s,'<div><a href="<?=kcmc_h(kcmc_url(\'admin/home.php\'))?>">← Administra
 s=replace(s,' <a class="btnx" style="display:inline-block;text-decoration:none" href="<?=kcmc_h(kcmc_url(\'admin/backup.php\'))?>">Download backup</a>','')
 files['admin/index.php']=s
 files['admin/home.php']="<?php\nrequire_once __DIR__ . '/../lib/bootstrap.php';\nkcmc_require_role(['pastor_admin', 'recovery_admin']);\nheader('Location: ' . kcmc_url('admin/'));\nexit;\n"
-s=files['sw.js'];s=replace(s, "  './','./home-welcome.css?v=tony-functions-20261020'", "  './','./kcmc-website-hero.css?v=20261028','./assets/visuals/kcmc-bridge-logo.jpg','./home-welcome.css?v=tony-functions-20261020'");s=replace(s,'kcmc-connect-v3.0.3-public-only-tony-functions-20261020','kcmc-connect-v3.0.3-public-only-basic-handoff-tony-functions-20261026');s=cut(s,'function safePushPayload(',"self.addEventListener('install'");s=cut(s,"self.addEventListener('push'", "self.addEventListener('fetch'");files['sw.js']=s
+s=files['sw.js'];s=replace(s, "  './','./home-welcome.css?v=tony-functions-20261020'", "  './','./kcmc-website-hero.css?v=20261028','./assets/visuals/kcmc-bridge-logo.jpg','./home-welcome.css?v=tony-functions-20261020'");s=replace(s,'kcmc-connect-v3.0.3-public-only-tony-functions-20261020','kcmc-connect-v3.0.3-public-only-basic-handoff-tony-functions-20261026');s=cut(s,'function safePushPayload(',"self.addEventListener('install'");s=cut(s,"self.addEventListener('push'", "self.addEventListener('fetch'");
+# Cache cleanup is limited to this worker's URL scope, never to other same-origin apps.
+s=replace(s,"const CACHE='kcmc-connect-v3.0.3-public-only-basic-handoff-tony-functions-20261026';", "const CACHE_NAMESPACE='kcmc-connect-scope-'+encodeURIComponent(new URL('./',self.location.href).pathname)+'-';\nconst CACHE=CACHE_NAMESPACE+'v3.0.3-public-only-basic-handoff-tony-functions-20261026';")
+s=replace(s,"key.startsWith('kcmc-connect-')&&key!==CACHE", "key.startsWith(CACHE_NAMESPACE)&&key!==CACHE")
+files['sw.js']=s
 
 s=files['lib/bootstrap.php']
 anchor="require_once __DIR__ . '/post-controls.php';\n"
