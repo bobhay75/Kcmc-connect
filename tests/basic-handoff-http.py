@@ -19,7 +19,19 @@ with tempfile.TemporaryDirectory(prefix='kcmc-basic-') as tmp:
     with socket.socket() as sock:
         sock.bind(('127.0.0.1',0)); port=sock.getsockname()[1]
     env=os.environ.copy(); env['KCMC_PRIVATE_DATA_DIR']=str(private)
-    server=subprocess.Popen(['php','-S',f'127.0.0.1:{port}','-t',str(root)],stdout=subprocess.DEVNULL,stderr=subprocess.DEVNULL,env=env)
+    # The PHP CLI server otherwise walks up to admin/index.php for a missing
+    # filename, unlike the file-serving configuration this fixture models.
+    # Refuse only nonexistent PHP paths; existing routes execute normally.
+    router=Path(tmp) / 'router.php'
+    router.write_text("""<?php
+$path = parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH);
+if (str_ends_with($path, '.php') && !is_file($_SERVER['DOCUMENT_ROOT'] . $path)) {
+    http_response_code(404);
+    return true;
+}
+return false;
+""")
+    server=subprocess.Popen(['php','-S',f'127.0.0.1:{port}','-t',str(root),str(router)],stdout=subprocess.DEVNULL,stderr=subprocess.DEVNULL,env=env)
     base=f'http://127.0.0.1:{port}'
     class NoRedirect(urllib.request.HTTPRedirectHandler):
         def redirect_request(self,*args,**kwargs): return None

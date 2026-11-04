@@ -6,10 +6,13 @@ permissions:
   contents: read
 jobs:
   handoff:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 10
     steps:
       - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          persist-credentials: false
       - name: PHP syntax
         run: find KCMC-Connect-Phase6-Recreated -name '*.php' -print0 | xargs -0 -n1 php -l
       - name: Basic handoff HTTP acceptance
@@ -66,10 +69,13 @@ jobs:
 
   mobile:
     name: Android Chrome and iPhone WebKit acceptance
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 12
     steps:
       - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          persist-credentials: false
       - name: Install browser engines
         run: |
           npm install --no-save --no-package-lock playwright@1.55.0
