@@ -20,7 +20,11 @@ with tempfile.TemporaryDirectory(prefix='kcmc-visitor-review-') as td:
     configure(True)
     # A local sendmail replacement captures the actual PHP mail() handoff. No SMTP or external mail.
     mailer=work/'capture.py'
-    mailer.write_text('import pathlib,sys\np=pathlib.Path('+repr(str(capture))+')\nbody=sys.stdin.buffer.read()\nif (p/"fail").exists(): sys.exit(75)\n(p/("mail-%s.eml"%len(list(p.glob("*.eml"))))).write_bytes(body)\n')
+    # EX_TEMPFAIL (75) can mean accepted for retry to PHP mail(), including
+    # PHP 8.5's decoded wait status. Use EX_UNAVAILABLE (69) to simulate an
+    # actual rejection consistently; do not weaken the saved-visit assertion.
+    # https://github.com/php/php-src/blob/PHP-8.5/ext/standard/mail.c
+    mailer.write_text('import pathlib,sys\np=pathlib.Path('+repr(str(capture))+')\nbody=sys.stdin.buffer.read()\nif (p/"fail").exists(): sys.exit(69)\n(p/("mail-%s.eml"%len(list(p.glob("*.eml"))))).write_bytes(body)\n')
     executable=work/'sendmail'
     executable.write_text('#!/bin/sh\nexec '+sys.executable+' '+str(mailer)+' "$@"\n');executable.chmod(0o700)
     with socket.socket() as sock:sock.bind(('127.0.0.1',0));port=sock.getsockname()[1]
@@ -101,7 +105,7 @@ with tempfile.TemporaryDirectory(prefix='kcmc-visitor-review-') as td:
             check(status==200 and result['duplicate'] and len(list(capture.glob('*.eml')))==1,'repeat submit saves no duplicate and sends no extra email')
             (capture/'fail').touch()
             status,result=submit('failure@example.invalid')
-            check(status==201 and result['welcome_email']=='unavailable','transport failure still returns a saved visit')
+            check(status==201 and result['welcome_email']=='unavailable','transport failure still returns a saved visit: '+json.dumps({'http_status':status,'result':result}))
             check('could not send' in form.locator('.form-status').inner_text(),'visitor gets honest email-failure feedback')
             check(form.get_by_role('link',name='Find a group').is_visible(),'email failure does not remove connection options')
             (capture/'fail').unlink();configure(False)

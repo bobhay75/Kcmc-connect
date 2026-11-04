@@ -26,7 +26,7 @@ jobs:
           php tests/password-lifecycle-contract.php
           php tests/session-lifetime-contract.php
           php tests/session-credential-contract.php
-          python3 tests/session-credential-http.py
+          python3 tests/session-credential-http.py --app KCMC-Connect-Phase6-Recreated
       - name: Release package build guard
         run: |
           python3 -m py_compile tools/basic-handoff/build.py tests/basic-handoff-http.py
