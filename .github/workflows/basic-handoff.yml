@@ -21,6 +21,12 @@ jobs:
         run: python3 tests/basic-handoff-profile.py
       - name: Basic package offline cache privacy
         run: node --test tests/basic-pwa-cache-privacy.cjs
+      - name: Retained full-product authentication regression
+        run: |
+          php tests/password-lifecycle-contract.php
+          php tests/session-lifetime-contract.php
+          php tests/session-credential-contract.php
+          python3 tests/session-credential-http.py
       - name: Release package build guard
         run: |
           python3 -m py_compile tools/basic-handoff/build.py tests/basic-handoff-http.py
