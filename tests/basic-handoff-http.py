@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """Exercise the handoff profile over HTTP using synthetic accounts and storage."""
-import http.cookiejar, json, os, re, shutil, socket, subprocess, tempfile, time, urllib.error, urllib.parse, urllib.request
+import http.cookiejar, json, os, re, shutil, socket, subprocess, tempfile, time, hashlib, urllib.error, urllib.parse, urllib.request
 from pathlib import Path
 
 repo = Path(__file__).resolve().parents[1]
@@ -15,10 +15,9 @@ with tempfile.TemporaryDirectory(prefix='kcmc-basic-') as tmp:
     password = 'synthetic-test-password-123'
     digest = subprocess.check_output(['php', '-r', 'echo password_hash($argv[1], PASSWORD_DEFAULT);', password], text=True)
     users = [{'id': 'admin-1', 'email': 'admin@example.test', 'email_normalized': 'admin@example.test', 'display_name':'Test Admin', 'role':'recovery_admin', 'password_hash':digest, 'active':True}, {'id':'member-1','email':'member@example.test','email_normalized':'member@example.test','display_name':'Test Member','role':'member','password_hash':digest,'active':True}]
-    (private / 'users.json').write_text(json.dumps({'version':1,'users':users}))
     with socket.socket() as sock:
         sock.bind(('127.0.0.1',0)); port=sock.getsockname()[1]
-    env=os.environ.copy(); env['KCMC_PRIVATE_DATA_DIR']=str(private)
+    env=os.environ.copy(); env['KCMC_PRIVATE_DATA_DIR']=str(private); env['KCMC_SETUP_KEY']='synthetic-local-setup-key'
     # The PHP CLI server otherwise walks up to admin/index.php for a missing
     # filename, unlike the file-serving configuration this fixture models.
     # Refuse only nonexistent PHP paths; existing routes execute normally.
@@ -47,6 +46,25 @@ return false;
         for _ in range(50):
             try: request(client(),'/'); break
             except OSError: time.sleep(.1)
+        # First-run setup, with an empty isolated account store. The key is
+        # synthetic and never read from the host or a repository secret.
+        first=client()
+        code,_,setup=request(first,'/admin/setup.php')
+        assert code==200 and 'name="setup_key"' in setup, 'setup form unavailable on empty store'
+        setup_csrf=re.search(r'name="csrf" value="([^"]+)',setup).group(1)
+        setup_form={'csrf':setup_csrf,'setup_key':'synthetic-local-setup-key','display_name':'Test Admin',
+                    'email':'admin@example.test','password':password,'confirm':password}
+        for wrong in (dict(setup_form,csrf='wrong'),dict(setup_form,setup_key='wrong'),dict(setup_form,confirm='wrong')):
+            assert request(first,'/admin/setup.php',wrong)[0]==200
+            assert not (private/'users.json').exists(), 'rejected setup created a user'
+        assert request(first,'/admin/setup.php',setup_form)[0]==302, 'valid setup not accepted'
+        user_store=private/'users.json'
+        configured=json.loads(user_store.read_text())
+        assert len(configured['users'])==1 and configured['users'][0]['role']=='recovery_admin'
+        assert request(client(),'/admin/setup.php')[0]==302, 'setup still available after initial account'
+        configured['users'].append(users[1])
+        user_store.write_text(json.dumps(configured))
+        print('PASS: setup rejects invalid CSRF/key/confirmation, creates recovery admin once and locks')
         public=client()
         # Event artwork fallback is a public presentation requirement, not a data mutation.
         events_source=(repo / 'KCMC-Connect-Phase6-Recreated/events.php').read_text()
@@ -63,6 +81,11 @@ return false;
                     '/admin/publication-media.php','/admin/publication-projects.php',
                     '/admin/timecards.php','/admin/users.php','/admin/push.php',
                     '/api/team-workspace.php','/api/push-subscription.php']
+        # Include every removed PHP endpoint in the source tree, not only the examples.
+        full_source=repo/'KCMC-Connect-Phase6-Recreated'
+        excluded=sorted(set(excluded) | {'/'+p.relative_to(full_source).as_posix()
+                        for folder in ('admin','api','member') for p in (full_source/folder).rglob('*.php')
+                        if not (root/p.relative_to(full_source)).is_file()})
         for path in excluded:
             for payload in (None, {'synthetic':'1'}):
                 status,_,_=request(public,path,payload)
@@ -172,6 +195,31 @@ return false;
             code,_,result=request(admin,path)
             assert code==200 and rsvp['email'] in result, (path,code)
         assert rsvp['email'] not in request(public,'/api/content.php')[2]
+        for path,label in (('/admin/connections.php','Connection request'),('/admin/rsvps.php','RSVP')):
+            code,_,row=request(admin,path)
+            row_id=re.search(r'name="id" value="([^"]+)',row).group(1)
+            form_csrf=re.search(r'name="csrf" value="([^"]+)',row).group(1)
+            fields={'id':row_id,'csrf':form_csrf,'status':'contacted'}
+            code,_,rejected=request(admin,path,dict(fields,csrf='wrong'))
+            assert 'reload and try again' in rejected.lower(),(path,code)
+            code,_,changed=request(admin,path,fields)
+            assert code==200 and label+' updated to ' in changed, (path,code)
+        post_id=next(e['id'] for e in json.loads(content_path.read_text())['events'] if e['title']==event['title'])
+        def change_event(action, **fields):
+            before=content_path.read_bytes()
+            data={'csrf':csrf,'version':hashlib.sha256(before).hexdigest(),'section':'events','id':post_id,
+                  'action':action,'confirm':'1',**fields}
+            assert request(admin,'/admin/posts.php',dict(data,csrf='wrong'))[0]==403
+            assert content_path.read_bytes()==before
+            status,_,body=request(admin,'/admin/posts.php',data)
+            assert status==302,(action,status,body[:200])
+            return next(e for e in json.loads(content_path.read_text())['events'] if e['id']==post_id)
+        assert change_event('repeat',repeat='weekly')['repeat']=='weekly'
+        assert not change_event('repeat',repeat='').get('repeat')
+        assert change_event('delete')['deleted_at']
+        assert change_event('restore')['status']=='hidden'
+        assert change_event('publish')['status']=='published'
+        print('PASS: inbox follow-up, event repeat/once, trash, hidden restore and republish')
         print('PASS: RSVP validation, event availability, private save, duplicate detection and export')
         status,_,_=request(admin,'/member/logout.php',{'csrf':csrf}); assert status==302, status
         status,_,_=request(admin,'/admin/'); assert status==302, status

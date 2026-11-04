@@ -18,5 +18,11 @@ if(sw.includes('public-only-basic-handoff-')){
 }else{
   assert(sw.includes('renotify:true'),'full product retains notification display');
 }
-assert(html.includes("kcmc_has_role(['pastor_admin', 'recovery_admin'], $member)"),'retain admin navigation access controls');
+if(sw.includes('public-only-basic-handoff-')){
+  assert(html.includes("kcmc_url('admin/login.php')"),'basic navigation exposes the staff sign-in entry');
+  assert(read('admin/index.php').includes("kcmc_require_role(['pastor_admin', 'recovery_admin'])"),'publishing retains role authorization');
+  assert(read('member/login.php').includes("in_array(kcmc_role($user), ['pastor_admin', 'recovery_admin'], true)"),'basic login rejects non-admin roles');
+}else{
+  assert(html.includes("kcmc_has_role(['pastor_admin', 'recovery_admin'], $member)"),'retain admin navigation access controls');
+}
 console.log('PASS: original image identity, fixed hero, public styles, cache refresh and retained guards');
