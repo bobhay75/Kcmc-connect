@@ -4,6 +4,8 @@
 Never reads or writes the live host; not an installer or a migration tool.
 """
 import argparse
+import hashlib
+import json
 import shutil
 from pathlib import Path
 
@@ -17,6 +19,28 @@ if dest.exists() or dest == source or source in dest.parents or dest in source.p
 if any(p.is_symlink() for p in source.rglob('*')):
     parser.error('source contains symlinks; inspect before building')
 
+# Keep full-product regression source intact. The basic profile is applied only
+# to the new output tree, after validating both sides of each replacement.
+profile_root = Path(__file__).with_name('profile')
+profile = json.loads(Path(__file__).with_name('profile.json').read_text())
+replacements = {}
+if profile_root.is_symlink() or any(p.is_symlink() for p in profile_root.rglob('*')):
+    parser.error('profile contains symlinks; inspect before building')
+actual_files = {p.relative_to(profile_root).as_posix() for p in profile_root.rglob('*') if p.is_file()}
+if actual_files != set(profile['files']):
+    parser.error('profile file list differs from its manifest')
+for name, record in profile['files'].items():
+    relative = Path(name)
+    if relative.is_absolute() or '..' in relative.parts or relative.as_posix() != name:
+        parser.error('invalid profile path')
+    original = (source / relative).read_bytes()
+    replacement = (profile_root / relative).read_bytes()
+    if hashlib.sha256(original).hexdigest() != record['source_sha256']:
+        parser.error('shared source changed; reconcile profile before building: ' + name)
+    if hashlib.sha256(replacement).hexdigest() != record['candidate_sha256']:
+        parser.error('profile bytes differ from the manifest: ' + name)
+    replacements[name] = replacement
+
 def ignore(directory, names):
     relative = Path(directory).relative_to(source)
     excluded = set()
@@ -27,6 +51,8 @@ def ignore(directory, names):
     return excluded.intersection(names)
 
 shutil.copytree(source, dest, ignore=ignore)
+for name, content in replacements.items():
+    (dest / name).write_bytes(content)
 allow = {
     'admin': {'index.php','home.php','login.php','setup.php','save.php','posts.php','event-create.php','connections.php','connections-export.php','rsvps.php','rsvps-export.php','event-descriptions.js','publishing-desk.js'},
     'member': {'login.php','logout.php'},

@@ -67,7 +67,7 @@ return false;
         print('PASS: setup rejects invalid CSRF/key/confirmation, creates recovery admin once and locks')
         public=client()
         # Event artwork fallback is a public presentation requirement, not a data mutation.
-        events_source=(repo / 'KCMC-Connect-Phase6-Recreated/events.php').read_text()
+        events_source=(root / 'events.php').read_text()
         assert "trunk-or-treat-2026.svg" in events_source, 'Trunk or Treat fallback artwork missing'
         assert (root / 'assets/visuals/trunk-or-treat-2026.svg').is_file(), 'fallback artwork absent from release candidate'
         for path in ['/','/care.php','/events.php','/bulletin.php','/member/login.php']:

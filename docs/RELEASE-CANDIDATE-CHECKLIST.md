@@ -8,10 +8,17 @@ Public church information, bulletin, service links, announcements, events, and b
 ## Build and local acceptance
 1. Use the PR branch in an isolated checkout. Do not pull into the live cPanel working tree.
 2. Run `python3 tests/basic-handoff-http.py`.
-3. Run `bash tests/security-contract.sh`.
+3. Run `bash tests/security-contract.sh` for the full-product regression source;
+   run `python3 tests/basic-handoff-profile.py` and
+   `node --test tests/basic-pwa-cache-privacy.cjs` for the built basic profile.
 4. Build into a new empty destination with `python3 tools/basic-handoff/build.py /tmp/kcmc-release-candidate`.
 5. Confirm `config.php`, `data/private/`, private ledgers, and excluded routes are absent.
 6. Verify the GitHub Basic church handoff, Security contract, and Hero preview checks on the exact release commit.
+
+The source app directory is the full product. Only the builder's output is the
+basic handoff candidate. The 15 profile replacements retain staff-only login,
+excluded-route denial and installation-specific cache isolation. Never deploy the
+source directory by copying it directly. `.cpanel.yml` remains disabled.
 
 ## Staging-only host acceptance (requires owner's approval)
 Use a separate staging document root and independent synthetic credentials/data. Never point staging at production's private storage.

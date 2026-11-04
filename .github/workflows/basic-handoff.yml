@@ -17,6 +17,10 @@ jobs:
         run: find KCMC-Connect-Phase6-Recreated -name '*.php' -print0 | xargs -0 -n1 php -l
       - name: Basic handoff HTTP acceptance
         run: python3 tests/basic-handoff-http.py
+      - name: Package profile and source isolation
+        run: python3 tests/basic-handoff-profile.py
+      - name: Basic package offline cache privacy
+        run: node --test tests/basic-pwa-cache-privacy.cjs
       - name: Release package build guard
         run: |
           python3 -m py_compile tools/basic-handoff/build.py tests/basic-handoff-http.py

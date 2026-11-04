@@ -18,6 +18,7 @@ import unittest
 from unittest import mock
 
 from visual_source_layer import FIXTURE as VISUAL_FIXTURE, FIXTURE_SHA256 as VISUAL_FIXTURE_SHA256
+from welcome_home_source_layer import WelcomeLayer
 
 ROOT = Path(__file__).resolve().parents[1]
 HELPER = ROOT / 'tools/check-deployment-divergence.py'
@@ -135,10 +136,11 @@ class DeploymentGuardTests(unittest.TestCase):
         # The reviewed follow-up changes the administration destination and
         # notification worker. Keep the installed historical tuple unchanged:
         # broad deployment must still refuse it against this exact new source.
-        followup_sha = {
-            'index.php': 'ce49b8c05e602175223dfcf0e6f7c64e29c9b8c9930aaf2c172121340874f330',
-            'sw.js': '459c6c13be36bf9f9189267f6038513a803c931a06eef542c7a48a652165d754',
-        }
+        # Validate the later approved welcome design through its immutable
+        # fixture, rather than pinning the superseded October 16 page here.
+        welcome = WelcomeLayer(ROOT)
+        followup_sha = {name: welcome.fixture['modified'][name]['after_sha256']
+                       for name in ('index.php', 'sw.js')}
         for name, historical in canonical_bundle.items():
             canonical = (ROOT / 'KCMC-Connect-Phase6-Recreated' / name).read_bytes()
             expected_sha = followup_sha[name] if name in followup_sha else (
@@ -293,13 +295,13 @@ class DeploymentGuardTests(unittest.TestCase):
         self.assertEqual(result, 1)
         self.assertNotIn('SYNTHETIC_SECRET', out + err)
 
-    def test_cpanel_adds_only_first_isolated_python_task(self):
+    def test_historical_cpanel_adds_only_first_isolated_python_task(self):
         fixture_path = ROOT / 'tests/fixtures/deployment-preflight-reviewed.json'
         fixture = json.loads(fixture_path.read_text())
         self.assertEqual(set(fixture), {'source_commit', 'files'})
         self.assertEqual(set(fixture['files']), {'.cpanel.yml'})
         f = fixture['files']['.cpanel.yml']
-        current = (ROOT / '.cpanel.yml').read_bytes()
+        current = (ROOT / 'tests/fixtures/cpanel-before-basic.yml').read_bytes()
         self.assertEqual(hashlib.sha256(current).hexdigest(), f['after_sha256'])
         self.assertEqual(f['replacements'], [['deployment:\n  tasks:\n', 'deployment:\n  tasks:\n' + TASK]])
         self.assertEqual(current.count(TASK.encode()), 1)
@@ -309,6 +311,16 @@ class DeploymentGuardTests(unittest.TestCase):
         self.assertEqual(tasks[0], TASK.rstrip('\n'))
         self.assertEqual(len(tasks), 9)
         self.assertEqual([line for line in previous.decode().splitlines() if line.startswith('    - ')], tasks[1:])
+
+    def test_current_cpanel_cannot_deploy_either_product(self):
+        current = (ROOT / '.cpanel.yml').read_text()
+        self.assertEqual(current, "---\ndeployment:\n  tasks:\n"
+            "    - /bin/echo 'Basic handoff draft: automatic deployment is disabled; review a host-specific release plan.'\n"
+            "    - /bin/false\n")
+        # cPanel stops on a failed task. Both listed commands have no file side
+        # effects, and there are no later copy/sync tasks to accidentally run.
+        result = subprocess.run(['/bin/false'])
+        self.assertNotEqual(result.returncode, 0)
 
     def test_explicit_task_exit_stops_following_commands_without_shell_errexit(self):
         # Only this test driver overrides fixed roots through the module API.

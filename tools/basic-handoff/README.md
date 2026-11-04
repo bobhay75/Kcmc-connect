@@ -14,6 +14,28 @@ Member account features and prayer wall, staff time clock and payroll, publicati
 
 From the repository root, run `python3 tools/basic-handoff/build.py /path/to/new-directory`. The destination must not already exist. The build rejects source symlinks, omits private stores, backups and configuration, and removes excluded endpoints and libraries. The included content JSON is a repository fixture and may be stale. Never replace current host data with this copy.
 
+### Separate source and package profiles — November 4
+
+`KCMC-Connect-Phase6-Recreated/` retains the full-product regression source. It is
+**not the basic release directory**. The builder validates the 15 replacements in
+`profile.json`, applies `profile/` only to a new output directory, then removes
+excluded routes and libraries. Changes to either a shared input or a profile
+file require explicit reconciliation of its hash; unexpected files and symlinks
+are refused before output is created. Automatic cPanel deployment stays disabled.
+
+This separation preserves the previously tested basic package byte for byte
+while allowing the original password, session, payroll and source-history tests
+to continue exercising the full product. No legacy workflow is skipped. Run
+`python3 tests/basic-handoff-profile.py` and
+`node --test tests/basic-pwa-cache-privacy.cjs` for the package-specific guards;
+HTTP and Chromium/WebKit tests also build and test the actual basic package.
+The full-product cache test remains separate; its historical behavior does not
+stand in for the package's stricter installation-scoped cleanup checks.
+
+The older nine-file `host-overlay.py` is still a separate, review-only host
+experiment. It is not the clean package builder and must not be copied over a
+live installation as an installer.
+
 ## Outstanding release work
 
 1. Confirm PHP syntax and the HTTP acceptance workflow on the exact candidate commit. Exercise login and logout, administrator role denial, content edits, event creation, conflict handling, connections and RSVPs, and backup recovery using synthetic data. Check phone layouts and public navigation.

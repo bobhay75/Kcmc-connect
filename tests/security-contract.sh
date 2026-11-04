@@ -52,13 +52,6 @@ if grep -R -Eq --exclude='RELEASE_NOTES.md' "admin_password_hash|shared_admin_pa
   fail "Legacy shared-password configuration remains"
 fi
 
-# Basic product: only staff administrators may authenticate or edit content.
-grep -Fq "in_array(kcmc_role(\$user), ['pastor_admin', 'recovery_admin'], true)" "$app_dir/member/login.php" || fail "Staff login does not enforce the administrator role allowlist"
-grep -Fq "kcmc_verify_csrf(" "$app_dir/member/login.php" || fail "Staff login CSRF validation is missing"
-grep -Fq "password_verify(" "$app_dir/member/login.php" || fail "Staff login password verification is missing"
-grep -Fq "kcmc_require_role(['pastor_admin', 'recovery_admin'])" "$app_dir/admin/index.php" || fail "Church content editor administrator gate is missing"
-grep -Fq "kcmc_private_headers()" "$app_dir/member/login.php" || fail "Staff login private response headers are missing"
-
 jq empty "$app_dir/data/content.json" "$app_dir/manifest.webmanifest"
 jq -e '.contact.office_hours == "Tue–Thu • 8:00 AM–4:00 PM"' "$app_dir/data/content.json" >/dev/null || fail "Published office hours are stale"
 jq -e '.contact.office_hours == "Tue–Thu • 9:00 AM–4:00 PM"' "$app_dir/data/releases/3.0.0.json" >/dev/null || fail "Release seed office hours are stale"
@@ -94,10 +87,10 @@ if grep -q "Version 3 content migration" "$app_dir/lib/bootstrap.php"; then
   fail "Public content reads can still trigger a release migration write"
 fi
 grep -q "ignoreSearch:true" "$app_dir/sw.js" || fail "Offline cache does not normalize versioned asset requests"
-grep -Eq "^const CACHE=(CACHE_NAMESPACE\+)?'([a-z-]*connect-)?v3\.0\.3-public-only[^']*';$" "$app_dir/sw.js" || fail "Service worker cache was not bumped for 3.0.3"
+grep -q "kcmc-connect-v3.0.3-public-only" "$app_dir/sw.js" || fail "Service worker cache was not bumped for 3.0.3"
 grep -Fq "app.js?v=visitor-welcome-20261008" "$app_dir/sw.js" || fail "Service worker does not precache the reviewed visitor client"
 grep -Fq "app.js?v=visitor-welcome-20261008" "$app_dir/index.php" || fail "Homepage and worker client versions differ"
-grep -Fq "key.startsWith(CACHE_NAMESPACE)" "$app_dir/sw.js" || fail "Service worker cache cleanup must use its installation namespace"
+grep -q "key.startsWith('kcmc-connect-')" "$app_dir/sw.js" || fail "Service worker cache cleanup is not isolated to KCMC Connect"
 node --check "$app_dir/app.js"
 node --check "$app_dir/sw.js"
 node --test "$repo_dir/tests/client-resilience.cjs"
