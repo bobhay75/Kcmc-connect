@@ -1,0 +1,72 @@
+name: KCMC Contemporary Worship refresh
+on:
+  push:
+    branches: ['fix/contemporary-worship-2026-10-02']
+  pull_request:
+    paths:
+      - 'tools/contemporary_refresh.py'
+      - 'tests/contemporary-refresh-*.py'
+      - '.github/workflows/contemporary-refresh.yml'
+permissions:
+  contents: read
+jobs:
+  review:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          persist-credentials: false
+      - name: Stage isolated exact-source fixtures
+        run: |
+          set -euo pipefail
+          mkdir -p /tmp/kcmc-contemporary/repo review-artifacts
+          git archive HEAD | tar -x -C /tmp/kcmc-contemporary/repo
+          cp tools/contemporary_refresh.py /tmp/kcmc-contemporary/
+          cp tests/contemporary-refresh-unit.py /tmp/kcmc-contemporary/test_contemporary.py
+          cp tests/contemporary-refresh-browser.py /tmp/kcmc-contemporary/test_browser.py
+          git rev-parse HEAD > review-artifacts/SOURCE-COMMIT.txt
+          git diff --check
+      - name: Installer safety and compatibility tests
+        run: |
+          set -euo pipefail
+          python3 /tmp/kcmc-contemporary/test_contemporary.py 2>&1 | tee review-artifacts/unit-tests.txt
+      - name: Install browser dependencies
+        run: |
+          python3 -m pip install --disable-pip-version-check --no-cache-dir playwright
+          python3 -m playwright install --with-deps chromium
+      - name: PHP page and real-browser acceptance
+        run: |
+          set -euo pipefail
+          export KCMC_CHROMIUM_PATH="$(python3 -c 'from playwright.sync_api import sync_playwright; p=sync_playwright().start(); print(p.chromium.executable_path); p.stop()')"
+          python3 /tmp/kcmc-contemporary/test_browser.py 2>&1 | tee review-artifacts/browser-tests.txt
+      - name: Existing contracts on generated runtime
+        run: |
+          set -euo pipefail
+          cd /tmp/kcmc-contemporary
+          python3 - <<'PY'
+          from pathlib import Path
+          import contemporary_refresh as m
+          app=Path('repo/KCMC-Connect-Phase6-Recreated')
+          source={n:(app/n).read_bytes() for n in m.FILES}
+          for n,data in m.transform(source).items(): (app/n).write_bytes(data)
+          PY
+          cd repo
+          bash tests/security-contract.sh
+          bash tests/production-smoke-contract.sh
+          for f in tests/*contract.php; do php "$f"; done
+      - name: Retain review evidence and deployable source
+        if: always()
+        run: |
+          mkdir -p review-artifacts
+          cp tools/contemporary_refresh.py review-artifacts/
+          if [ -d /tmp/kcmc-contemporary/screenshots ]; then cp -a /tmp/kcmc-contemporary/screenshots review-artifacts/; fi
+          git diff --binary > review-artifacts/worktree.patch
+          sha256sum tools/contemporary_refresh.py > review-artifacts/INSTALLER-SHA256.txt
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: kcmc-contemporary-review
+          path: review-artifacts/
+          retention-days: 5
