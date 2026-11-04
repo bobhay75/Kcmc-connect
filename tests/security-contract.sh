@@ -94,10 +94,10 @@ if grep -q "Version 3 content migration" "$app_dir/lib/bootstrap.php"; then
   fail "Public content reads can still trigger a release migration write"
 fi
 grep -q "ignoreSearch:true" "$app_dir/sw.js" || fail "Offline cache does not normalize versioned asset requests"
-grep -q "kcmc-connect-v3.0.3-public-only" "$app_dir/sw.js" || fail "Service worker cache was not bumped for 3.0.3"
+grep -Eq "^const CACHE=(CACHE_NAMESPACE\+)?'([a-z-]*connect-)?v3\.0\.3-public-only[^']*';$" "$app_dir/sw.js" || fail "Service worker cache was not bumped for 3.0.3"
 grep -Fq "app.js?v=visitor-welcome-20261008" "$app_dir/sw.js" || fail "Service worker does not precache the reviewed visitor client"
 grep -Fq "app.js?v=visitor-welcome-20261008" "$app_dir/index.php" || fail "Homepage and worker client versions differ"
-grep -q "key.startsWith('kcmc-connect-')" "$app_dir/sw.js" || fail "Service worker cache cleanup is not isolated to KCMC Connect"
+grep -Fq "key.startsWith(CACHE_NAMESPACE)" "$app_dir/sw.js" || fail "Service worker cache cleanup must use its installation namespace"
 node --check "$app_dir/app.js"
 node --check "$app_dir/sw.js"
 node --test "$repo_dir/tests/client-resilience.cjs"

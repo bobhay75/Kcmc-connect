@@ -13,7 +13,8 @@ function harness(options={}){
   const listeners={};
   const stores=new Map();
   const calls={fetch:[],put:[],match:[],deleted:[],skip:0,claim:0};
-  const workerURL=PUBLIC_URL+'sw.js';
+  const installURL=options.installURL||PUBLIC_URL;
+  const workerURL=installURL+'sw.js';
   const urlOf=input=>new URL(typeof input==='string'?input:input.url,workerURL).href;
 
   async function fetcher(input){
@@ -65,7 +66,7 @@ function harness(options={}){
   }
 
   async function dispatch(relative,opts={}){
-    const request=new Request(new URL(relative,PUBLIC_URL),{method:opts.method||'GET',credentials:'include'});
+    const request=new Request(new URL(relative,installURL),{method:opts.method||'GET',credentials:'include'});
     if(opts.navigate) Object.defineProperty(request,'mode',{value:'navigate'});
     let responsePromise;
     const jobs=[];
@@ -164,16 +165,20 @@ test('non-GET and cross-origin requests are untouched',async()=>{
   assert.equal(h.calls.fetch.length,0);
 });
 
-test('activation removes only old KCMC caches',async()=>{
-  const h=harness();
-  await h.seed('kcmc-connect-v3.0.1-public-only','./');
-  await h.seed('project-unveiled-cache','./');
-  await h.seed(h.cacheName,'./');
-  await h.lifecycle('activate');
-  assert.deepEqual(h.calls.deleted,['kcmc-connect-v3.0.1-public-only']);
-  assert.ok(h.stores.has('project-unveiled-cache'));
-  assert.ok(h.stores.has(h.cacheName));
-  assert.equal(h.calls.claim,1);
+test('activation deletes only previous caches belonging to the same installation',async()=>{
+  const prod=harness();
+  const stage=harness({installURL:'https://bobsome1.com/kcmc-connect-stage/'});
+  assert.notEqual(stage.cacheName,prod.cacheName);
+  for(const [current,sibling] of [[prod,stage],[stage,prod]]){
+    const prior=current.cacheName.replace('v3.0.3-public-only','v3.0.2-public-only');
+    assert.notEqual(prior,current.cacheName);
+    const protectedNames=[sibling.cacheName,'kcmc-connect-v3.0.1-public-only','project-unveiled-cache',current.cacheName];
+    for(const name of [prior,...protectedNames]) await current.seed(name,'./');
+    await current.lifecycle('activate');
+    assert.deepEqual(current.calls.deleted,[prior]);
+    for(const name of protectedNames) assert.ok(current.stores.has(name),name);
+    assert.equal(current.calls.claim,1);
+  }
 });
 
 test('event artwork upgrade precaches the SVG and never the photographed flyer',async()=>{

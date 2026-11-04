@@ -24,8 +24,10 @@ with tempfile.TemporaryDirectory(prefix='kcmc-basic-') as tmp:
     class NoRedirect(urllib.request.HTTPRedirectHandler):
         def redirect_request(self,*args,**kwargs): return None
     def client(): return urllib.request.build_opener(urllib.request.HTTPCookieProcessor(http.cookiejar.CookieJar()),NoRedirect())
-    def request(opener,path,data=None):
-        req=urllib.request.Request(base+path,data=urllib.parse.urlencode(data).encode() if data is not None else None)
+    def request(opener,path,data=None,headers=None):
+        headers = headers or {}
+        raw = None if data is None else (json.dumps(data).encode() if headers.get('Content-Type') == 'application/json' else urllib.parse.urlencode(data).encode())
+        req=urllib.request.Request(base+path,data=raw,headers=headers)
         try:
             with opener.open(req,timeout=5) as res: return res.status,res.headers,res.read().decode('utf-8','replace')
         except urllib.error.HTTPError as err: return err.code,err.headers,err.read().decode('utf-8','replace')
@@ -76,6 +78,32 @@ with tempfile.TemporaryDirectory(prefix='kcmc-basic-') as tmp:
             for payload in (None, {'synthetic':'1'}):
                 status,_,_=request(admin,path,payload)
                 assert status==404,(path,'admin POST' if payload else 'admin GET',status)
+        # Public forms use the real APIs and the isolated private store.
+        connection_headers={'Content-Type':'application/json','X-KCMC-Connection':'1','Sec-Fetch-Site':'same-origin'}
+        def post_json(path,payload,headers,expected):
+            code,response,raw=request(public,path,payload,headers)
+            assert code==expected,(path,code,raw[:240])
+            assert 'no-store' in response.get('Cache-Control',''), (path,'private cache header absent')
+            return json.loads(raw)
+        forms=[
+            {'kind':'visit','firstName':'Synthetic','lastName':'Visitor','email':'visit@example.test','service':'9:15 AM — Traditional Worship'},
+            {'kind':'serve','name':'Synthetic Volunteer','email':'serve@example.test','interest':'Hospitality / Welcome'},
+            {'kind':'groups','name':'Synthetic Group','email':'group@example.test','interest':'Small group / Bible study'},
+        ]
+        for form in forms:
+            assert post_json('/api/connection.php',form,{'Content-Type':'application/json'},403)['ok'] is False
+            assert post_json('/api/connection.php',dict(form,email='bad-email'),connection_headers,422)['ok'] is False
+            result=post_json('/api/connection.php',form,connection_headers,201)
+            assert result['ok'] and not result['duplicate']
+            assert post_json('/api/connection.php',form,connection_headers,200)['duplicate']
+            assert form['email'] not in request(public,'/api/content.php')[2]
+        code,_,inbox=request(admin,'/admin/connections.php')
+        assert code==200 and all(form['email'] in inbox for form in forms), 'connections not visible to authorized admin'
+        code,_,csv=request(admin,'/admin/connections-export.php')
+        assert code==200 and all(form['email'] in csv for form in forms), 'connections export is incomplete'
+        for path in ('/admin/connections.php','/admin/connections-export.php','/admin/rsvps.php','/admin/rsvps-export.php'):
+            assert request(public,path)[0] in (302,403), (path,'anonymous inbox access')
+        print('PASS: visit, serve and group form validation, save, duplicate refusal, private inbox and export')
         # Exercise real content writes only against the temporary synthetic package.
         content_path = root / 'data/content.json'
         before_bytes = content_path.read_bytes()
@@ -121,6 +149,18 @@ with tempfile.TemporaryDirectory(prefix='kcmc-basic-') as tmp:
         assert any(e.get('title')=='Synthetic acceptance event' for e in json.loads(content_path.read_text())['events'])
         assert any(p.read_bytes()==after_save for p in (root/'backups').glob('content-*.json')), 'event backup missing'
         status,_,_=request(admin,'/admin/event-create.php',event); assert status==409, status
+        rsvp_headers={'Content-Type':'application/json','X-KCMC-RSVP':'1','Sec-Fetch-Site':'same-origin'}
+        rsvp={'event':event['title'],'event_date':event['date'],'name':'Synthetic RSVP','email':'rsvp@example.test'}
+        assert post_json('/api/rsvp.php',rsvp,{'Content-Type':'application/json'},403)['ok'] is False
+        assert post_json('/api/rsvp.php',dict(rsvp,email='bad-email'),rsvp_headers,422)['ok'] is False
+        assert post_json('/api/rsvp.php',dict(rsvp,event='Missing synthetic event'),rsvp_headers,409)['ok'] is False
+        assert post_json('/api/rsvp.php',rsvp,rsvp_headers,201)['ok']
+        assert post_json('/api/rsvp.php',rsvp,rsvp_headers,200)['duplicate']
+        for path in ('/admin/rsvps.php','/admin/rsvps-export.php'):
+            code,_,result=request(admin,path)
+            assert code==200 and rsvp['email'] in result, (path,code)
+        assert rsvp['email'] not in request(public,'/api/content.php')[2]
+        print('PASS: RSVP validation, event availability, private save, duplicate detection and export')
         status,_,_=request(admin,'/member/logout.php',{'csrf':csrf}); assert status==302, status
         status,_,_=request(admin,'/admin/'); assert status==302, status
         print('PASS: public pages, administrator authentication, extra-route denial, CSRF, content backup, stale-edit rejection, event creation and sign-out')

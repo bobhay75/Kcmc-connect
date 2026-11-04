@@ -63,3 +63,16 @@ jobs:
           retention-days: 7
       - name: JavaScript syntax
         run: node --check KCMC-Connect-Phase6-Recreated/sw.js
+
+  mobile:
+    name: Android Chrome and iPhone WebKit acceptance
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install browser engines
+        run: |
+          npm install --no-save --no-package-lock playwright@1.55.0
+          npx playwright install --with-deps chromium webkit
+      - name: Run mobile browser acceptance on a local candidate
+        run: node tests/basic-handoff-mobile.cjs
