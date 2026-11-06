@@ -2,7 +2,7 @@
 """Verify optional modules are informational and excluded from the Core package."""
 from pathlib import Path
 import tempfile, subprocess, sys
-root=Path(__file__).resolve().parents[2]
+root=Path(__file__).resolve().parents[1]
 with tempfile.TemporaryDirectory(prefix='kcmc-upgrade-catalog-') as tmp:
     candidate=Path(tmp)/'core'
     subprocess.run([sys.executable, str(root/'tools/basic-handoff/build.py'), str(candidate)], check=True)
