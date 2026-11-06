@@ -45,7 +45,7 @@ class BasicProfileTests(unittest.TestCase):
         transformations = {
             'index.php': (
                 '<link rel="stylesheet" href="home-welcome.css?v=20261023-bridge-gradient">',
-                '<link rel="stylesheet" href="home-welcome.css?v=20261023-bridge-gradient">\\n'
+                '<link rel="stylesheet" href="home-welcome.css?v=20261023-bridge-gradient">\n'
                 '<link rel="stylesheet" href="bridge-theme.css?v=core-bridge-20261106">'
             ),
             'sw.js': (
@@ -58,7 +58,7 @@ class BasicProfileTests(unittest.TestCase):
             ),
             'admin/index.php': (
                 '<h1>Church content</h1>',
-                '<h1>Church content</h1><p><a href="<?=kcmc_h(kcmc_url(\\'admin/upgrades.php\\'))?>">Available upgrades</a></p>'
+                """<h1>Church content</h1><p><a href="<?=kcmc_h(kcmc_url('admin/upgrades.php'))?>">Available upgrades</a></p>"""
             ),
         }
         for name, record in manifest['files'].items():
