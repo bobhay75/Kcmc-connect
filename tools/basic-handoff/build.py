@@ -74,6 +74,16 @@ catalog_text = catalog.read_text(encoding='utf-8')
 if 'kcmc_require_role' not in catalog_text or 'kcmc_private_headers()' not in catalog_text:
     parser.error('upgrade catalog must enforce administrator authentication and private headers')
 (dest / 'admin' / 'upgrades.php').write_text(catalog_text, encoding='utf-8')
+# The profile restricts every admin route; explicitly allow only this new
+# protected catalog endpoint in the generated package, not in full-product source.
+bootstrap = dest / 'lib' / 'bootstrap.php'
+bootstrap_text = bootstrap.read_text(encoding='utf-8')
+old_allow = "'admin' => ['index.php', 'home.php', 'login.php'"
+new_allow = "'admin' => ['index.php', 'home.php', 'upgrades.php', 'login.php'"
+if bootstrap_text.count(old_allow) != 1:
+    parser.error('basic administrator route allowlist missing or ambiguous')
+bootstrap.write_text(bootstrap_text.replace(old_allow, new_allow, 1), encoding='utf-8')
+
 admin_home = dest / 'admin' / 'index.php'
 admin_text = admin_home.read_text(encoding='utf-8')
 original = '<h1>Church content</h1>'
