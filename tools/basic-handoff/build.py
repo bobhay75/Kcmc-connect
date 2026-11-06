@@ -87,5 +87,29 @@ if 'RewriteRule ^(?:data|backups)(?:/|$) - [F,L,NC]' not in rules:
 if not (dest / 'admin/index.php').is_file() or not (dest / 'member/login.php').is_file():
     parser.error('administrator entry points missing')
 
+# Give Core the bridge-forward visual identity, overriding inherited blue-gold
+# homepage rules without modifying the full-product regression source.
+bridge_css = Path(__file__).with_name('bridge-theme.css')
+if bridge_css.is_symlink() or not bridge_css.is_file():
+    parser.error('bridge theme asset missing or linked')
+bridge_theme = bridge_css.read_text(encoding='utf-8')
+if 'body.kcmc-welcome-design' not in bridge_theme:
+    parser.error('bridge theme is missing scoped homepage styles')
+(dest / 'bridge-theme.css').write_text(bridge_theme, encoding='utf-8')
+homepage = dest / 'index.php'
+homepage_text = homepage.read_text(encoding='utf-8')
+old_style = '<link rel="stylesheet" href="home-welcome.css?v=20261023-bridge-gradient">'
+new_style = old_style + '\n<link rel="stylesheet" href="bridge-theme.css?v=core-bridge-20261106">'
+if homepage_text.count(old_style) != 1:
+    parser.error('expected one homepage bridge stylesheet anchor')
+homepage.write_text(homepage_text.replace(old_style, new_style, 1), encoding='utf-8')
+service_worker = dest / 'sw.js'
+worker_text = service_worker.read_text(encoding='utf-8')
+old_cache = "'./home-welcome.css?v=20261023-bridge-gradient'"
+new_cache = old_cache + ",'./bridge-theme.css?v=core-bridge-20261106'"
+if worker_text.count(old_cache) != 1:
+    parser.error('expected one service worker CSS cache anchor')
+service_worker.write_text(worker_text.replace(old_cache, new_cache, 1), encoding='utf-8')
+
 (dest / 'HANDOFF-STATUS.txt').write_text('REVIEW CANDIDATE ONLY. Not production-ready. Do not deploy or overwrite live data.\n')
 print(f'Created review candidate: {dest}')
