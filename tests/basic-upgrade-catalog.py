@@ -10,6 +10,9 @@ with tempfile.TemporaryDirectory(prefix='kcmc-upgrade-catalog-') as tmp:
     admin=(candidate/'admin/index.php').read_text()
     assert 'kcmc_require_role' in page and 'kcmc_private_headers()' in page
     assert 'Available upgrades' in page and 'admin/upgrades.php' in admin
+    guard=(candidate/'lib/bootstrap.php').read_text()
+    assert "'upgrades.php'" in guard
+    assert "'member' => ['login.php', 'logout.php']" in guard
     assert 'payment' in page.lower() and 'automatic installation' in page.lower()
     forbidden=['admin/publication-designer.php','admin/payroll-setup.php','member/timeclock.php','member/work.php','api/push-subscription.php','api/team-workspace.php','config.php','data/private']
     for item in forbidden: assert not (candidate/item).exists(), item
