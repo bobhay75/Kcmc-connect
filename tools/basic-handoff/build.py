@@ -80,16 +80,22 @@ bootstrap = dest / 'lib' / 'bootstrap.php'
 bootstrap_text = bootstrap.read_text(encoding='utf-8')
 old_allow = "'admin' => ['index.php', 'home.php', 'login.php'"
 new_allow = "'admin' => ['index.php', 'home.php', 'upgrades.php', 'login.php'"
-if bootstrap_text.count(old_allow) != 1:
+if bootstrap_text.count(old_allow) == 1:
+    bootstrap_text = bootstrap_text.replace(old_allow, new_allow, 1)
+elif bootstrap_text.count(new_allow) != 1:
     parser.error('basic administrator route allowlist missing or ambiguous')
-bootstrap.write_text(bootstrap_text.replace(old_allow, new_allow, 1), encoding='utf-8')
+bootstrap.write_text(bootstrap_text, encoding='utf-8')
 admin_home = dest / 'admin' / 'index.php'
 admin_text = admin_home.read_text(encoding='utf-8')
 original = '<h1>Church content</h1>'
 updated = '<h1>Church content</h1><p><a href="<?=kcmc_h(kcmc_url(\'admin/upgrades.php\'))?>">Available upgrades</a></p>'
-if admin_text.count(original) != 1:
+if admin_text.count(updated) == 1:
+    pass  # The hash-validated profile already contains the catalog link.
+elif admin_text.count(original) == 1:
+    admin_text = admin_text.replace(original, updated, 1)
+else:
     parser.error('administrator heading anchor missing or ambiguous')
-admin_home.write_text(admin_text.replace(original, updated, 1), encoding='utf-8')
+admin_home.write_text(admin_text, encoding='utf-8')
 # Fail closed if any excluded private or development material is present.
 for forbidden in ('config.php', 'SETUP-CREDENTIALS.txt', 'data/private', 'admin/publication-designer.php',
                   'member/timeclock.php', 'admin/timecards.php', 'api/team-workspace.php'):
