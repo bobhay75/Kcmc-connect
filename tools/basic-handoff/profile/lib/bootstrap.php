@@ -16,7 +16,7 @@ if (PHP_SAPI !== 'cli') {
     $route = str_replace('\\', '/', (string)($_SERVER['SCRIPT_NAME'] ?? ''));
     if (preg_match('~/(admin|member|api)/([^/]+\.php)$~', $route, $match)) {
         $allowed = [
-            'admin' => ['index.php', 'home.php', 'login.php', 'setup.php', 'save.php', 'posts.php', 'event-create.php', 'connections.php', 'connections-export.php', 'rsvps.php', 'rsvps-export.php'],
+            'admin' => ['index.php', 'home.php', 'upgrades.php', 'login.php', 'setup.php', 'save.php', 'posts.php', 'event-create.php', 'connections.php', 'connections-export.php', 'rsvps.php', 'rsvps-export.php'],
             'member' => ['login.php', 'logout.php'],
             'api' => ['content.php', 'connection.php', 'rsvp.php'],
         ];
