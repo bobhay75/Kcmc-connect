@@ -107,6 +107,9 @@ return false;
         status,headers,_=request(admin,'/member/login.php',{'csrf':csrf,'email':'admin@example.test','password':password,'next':'/member/timeclock.php'})
         assert status==302 and headers.get('Location')=='/admin/', (status,headers.get('Location'))
         status,_,body=request(admin,'/admin/'); assert status==200 and 'Church content' in body,(status,body[:200])
+        status,_,_=request(public,'/admin/upgrades.php'); assert status in (302,403),(status,'upgrade catalog must require login')
+        status,_,catalog=request(admin,'/admin/upgrades.php'); assert status==200 and 'Available upgrades' in catalog,(status,catalog[:200])
+        assert 'No payment or automatic installation occurs here.' in catalog
         for path in ['/admin/publication-designer.php','/member/timeclock.php','/api/team-workspace.php']:
             status,_,_=request(admin,path); assert status==404,(path,status)
         for path in excluded:
