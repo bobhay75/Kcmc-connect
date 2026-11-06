@@ -74,6 +74,22 @@ catalog_text = catalog.read_text(encoding='utf-8')
 if 'kcmc_require_role' not in catalog_text or 'kcmc_private_headers()' not in catalog_text:
     parser.error('upgrade catalog must enforce administrator authentication and private headers')
 (dest / 'admin' / 'upgrades.php').write_text(catalog_text, encoding='utf-8')
+# The new page is not part of the pinned historical profile: restrict it
+# explicitly in the generated Core bootstrap and link only from basic admin.
+bootstrap = dest / 'lib' / 'bootstrap.php'
+bootstrap_text = bootstrap.read_text(encoding='utf-8')
+old_allow = "'admin' => ['index.php', 'home.php', 'login.php'"
+new_allow = "'admin' => ['index.php', 'home.php', 'upgrades.php', 'login.php'"
+if bootstrap_text.count(old_allow) != 1:
+    parser.error('basic administrator route allowlist missing or ambiguous')
+bootstrap.write_text(bootstrap_text.replace(old_allow, new_allow, 1), encoding='utf-8')
+admin_home = dest / 'admin' / 'index.php'
+admin_text = admin_home.read_text(encoding='utf-8')
+original = '<h1>Church content</h1>'
+updated = '<h1>Church content</h1><p><a href="<?=kcmc_h(kcmc_url(\'admin/upgrades.php\'))?>">Available upgrades</a></p>'
+if admin_text.count(original) != 1:
+    parser.error('administrator heading anchor missing or ambiguous')
+admin_home.write_text(admin_text.replace(original, updated, 1), encoding='utf-8')
 # Fail closed if any excluded private or development material is present.
 for forbidden in ('config.php', 'SETUP-CREDENTIALS.txt', 'data/private', 'admin/publication-designer.php',
                   'member/timeclock.php', 'admin/timecards.php', 'api/team-workspace.php'):
