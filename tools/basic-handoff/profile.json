@@ -1,0 +1,66 @@
+{
+  "source_commit": "ff948840c7437efc41bc2846774f792ffe6bf654",
+  "candidate_commit": "73a190376a542dfb0ff394ee0ae9098b7850f759",
+  "files": {
+    "admin/connections.php": {
+      "source_sha256": "4d2203f54b3b3b4726b7c98ab906ff3d4e9ed1984247cba9aa417dd198ce6066",
+      "candidate_sha256": "d86ccf8f76ae4d09c04f3cb02fa75acc5dc9223e244d332f091ce71f8532c5f1"
+    },
+    "admin/event-create.php": {
+      "source_sha256": "0ad6dda06c11196c08d9e6701dee6df073609c4d0b1554e54529fd931e3a625e",
+      "candidate_sha256": "5cb4c708bde9639c05f90a1ce8cffb7857a0422ad00f9dc3b8561b6dce6f1214"
+    },
+    "admin/home.php": {
+      "source_sha256": "3080c5cb157ed174a9c90b8b2d0a5a59c37f8b8a8f50585dcb48e44be7e496c3",
+      "candidate_sha256": "4e73e2fe810ac2112cff1174b770f93e350a42ec9d97ac77cab8e6b6a0f3c161"
+    },
+    "admin/index.php": {
+      "source_sha256": "e457c1d32b018b1020008e3f66a35f2bcb727ae3f082e6ca090ec24b4b2f9b76",
+      "candidate_sha256": "4ba3bf219b955ce2c06cfeb5c4f7623f0abe1f3949a8499db97f6f570656ee52"
+    },
+    "admin/posts.php": {
+      "source_sha256": "c0dfbe03ba6818887129555f97bf2b98fafafd12d5fd572c7c3ea9b4be6c6d0e",
+      "candidate_sha256": "48f6cb296a7906fcbb6a0006ccebd341bfe86fa0525aea4fd343ab621ae104d3"
+    },
+    "admin/rsvps.php": {
+      "source_sha256": "4841142ace3fbd7bfdb6f31dd1945eeef7dbf0ee4424c7529109736bd3a0fc83",
+      "candidate_sha256": "c23ae29a33a6006f10b14d2319df2aa0057d1e498bf3ed999a1d4e2af068b02e"
+    },
+    "admin/setup.php": {
+      "source_sha256": "6a26dabdaf6ec72c12bc2d3ebb2bf32d5b18daa9f430ad2420d404aa36721ca7",
+      "candidate_sha256": "7a42c3b74f1b08873af92ce87b353a3b728814a117210604c5d7dd918dd042e2"
+    },
+    "bulletin.php": {
+      "source_sha256": "f524d48e6b59b482c150223b5ee15885a2c7178db89c343167f09a05a770269d",
+      "candidate_sha256": "8a1d867262e2d9d0789e2ee018b57fe7df36b46cf2567e94605ea9c594df5c62"
+    },
+    "care.php": {
+      "source_sha256": "e7055519d6efed05c363e75e27f14c4a4d570bc811a6ca2f65ec98a239987442",
+      "candidate_sha256": "bdf3064402129cb81c54eb0a729108d60c8375db8146a7c750bb10c710286829"
+    },
+    "events.php": {
+      "source_sha256": "b77c7e84a01c7a588a772fce0628fabff6b1a5b91a3598220535f6913f8811f9",
+      "candidate_sha256": "e49976b9400ef14cf2f674fe62bd4e69ee0b7cc39cd3dbdad632eeb5a4d5c46f"
+    },
+    "index.php": {
+      "source_sha256": "03f1c66ebe5c8fe89fcfcc3e2c584afffe137e9b885891dec7d26370a23c72ce",
+      "candidate_sha256": "5a0a54a5e0c7f309e434d9581b8e9c0289a4f06c564ced4854d4c7ace857dc4f"
+    },
+    "lib/bootstrap.php": {
+      "source_sha256": "19a932424250b6bc33a5e844bfb942fb33a8194aa8bf912bf4494f1e27ba354e",
+      "candidate_sha256": "7ebfebff7a8f2cce84aa3aef14c7e5ef62058edaa0d122899dbaac204a426efb"
+    },
+    "lib/screen-navigation.php": {
+      "source_sha256": "e614e218d17e53c687d994b33415a7991d80ed56b3148521c7fc6ea2a66bf0f0",
+      "candidate_sha256": "9ef97e3df111adf3cbdf0e3240941af9367f2aa5fb5752efcb751964f4334e16"
+    },
+    "member/login.php": {
+      "source_sha256": "c3a0b359d97be1ff0ba03660e114a426ee6a3ac8d51f53c7bd7449c69d5fcc91",
+      "candidate_sha256": "d936661cad525284649e02899f2f773e5668da048fdb4426af2d4b7e5a201f6c"
+    },
+    "sw.js": {
+      "source_sha256": "49e6370c39bc33fca4f62755b6cdf004a05ec0494983179cf60c0979e3df2cc5",
+      "candidate_sha256": "414d71c067e8b6d3e695de01af21d740d05b4155b07ea715da5141729586a6c2"
+    }
+  }
+}

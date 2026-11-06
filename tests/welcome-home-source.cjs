@@ -11,7 +11,18 @@ assert(html.indexOf('home-welcome.css')>html.indexOf('kcmc_screen_assets()'),'ne
 assert(css.includes('#0d2235')&&css.includes('object-fit:contain'));
 assert(css.includes('--kcmc-logo-blue-top:#35c8f5')&&css.includes('.partner-hero>h1'),'logo-blue display treatment is present');
 assert(sw.includes("'./home-welcome.css?v=20261023-bridge-gradient'")&&sw.includes("'./assets/visuals/kcmc-bridge-logo-sunset-hero-20261023.webp'"));
-assert(sw.includes('public-only-welcome-home-20261023-bridge-gradient')&&sw.includes('credentials:\'omit\''),'refresh anonymous public cache only');
-assert(sw.includes("renotify:true")&&sw.includes('!PUBLIC_PATHS.has(url.pathname)'),'retain notification display and cache privacy');
-assert(html.includes("kcmc_has_role(['pastor_admin', 'recovery_admin'], $member)"),'retain admin navigation access controls');
+assert(/public-only-(?:basic-handoff-)?welcome-home-20261023-bridge-gradient/.test(sw)&&sw.includes('credentials:\'omit\''),'refresh anonymous public cache only');
+assert(sw.includes('!PUBLIC_PATHS.has(url.pathname)'),'retain cache privacy');
+if(sw.includes('public-only-basic-handoff-')){
+  assert(!/addEventListener\(['"](?:push|notificationclick)['"]/.test(sw),'handoff does not register notification listeners');
+}else{
+  assert(sw.includes('renotify:true'),'full product retains notification display');
+}
+if(sw.includes('public-only-basic-handoff-')){
+  assert(html.includes("kcmc_url('admin/login.php')"),'basic navigation exposes the staff sign-in entry');
+  assert(read('admin/index.php').includes("kcmc_require_role(['pastor_admin', 'recovery_admin'])"),'publishing retains role authorization');
+  assert(read('member/login.php').includes("in_array(kcmc_role($user), ['pastor_admin', 'recovery_admin'], true)"),'basic login rejects non-admin roles');
+}else{
+  assert(html.includes("kcmc_has_role(['pastor_admin', 'recovery_admin'], $member)"),'retain admin navigation access controls');
+}
 console.log('PASS: original image identity, fixed hero, public styles, cache refresh and retained guards');
