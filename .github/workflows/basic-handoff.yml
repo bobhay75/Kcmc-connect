@@ -21,6 +21,8 @@ jobs:
         run: python3 tests/basic-handoff-profile.py
       - name: Protected optional-upgrade catalog
         run: python3 tests/basic-upgrade-catalog.py
+      - name: Bridge-forward Core theme and hero
+        run: python3 tests/basic-bridge-theme.py
       - name: Basic package offline cache privacy
         run: node --test tests/basic-pwa-cache-privacy.cjs
       - name: Retained full-product authentication regression
