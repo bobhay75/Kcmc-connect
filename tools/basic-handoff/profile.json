@@ -16,7 +16,7 @@
     },
     "admin/index.php": {
       "source_sha256": "e457c1d32b018b1020008e3f66a35f2bcb727ae3f082e6ca090ec24b4b2f9b76",
-      "candidate_sha256": "c90f918784ee3196be36d2c0a611681be7a47480373f8dd52836a8c77ad68f75"
+      "candidate_sha256": "4ba3bf219b955ce2c06cfeb5c4f7623f0abe1f3949a8499db97f6f570656ee52"
     },
     "admin/posts.php": {
       "source_sha256": "c0dfbe03ba6818887129555f97bf2b98fafafd12d5fd572c7c3ea9b4be6c6d0e",
@@ -48,7 +48,7 @@
     },
     "lib/bootstrap.php": {
       "source_sha256": "19a932424250b6bc33a5e844bfb942fb33a8194aa8bf912bf4494f1e27ba354e",
-      "candidate_sha256": "cb8cf74b5f3d1c8ce90f1c6fa2899ea06bc4360f72a2c8c995c7557ee6f233e3"
+      "candidate_sha256": "7ebfebff7a8f2cce84aa3aef14c7e5ef62058edaa0d122899dbaac204a426efb"
     },
     "lib/screen-navigation.php": {
       "source_sha256": "e614e218d17e53c687d994b33415a7991d80ed56b3148521c7fc6ea2a66bf0f0",
