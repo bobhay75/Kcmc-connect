@@ -40,9 +40,40 @@ class BasicProfileTests(unittest.TestCase):
                     for p in (self.root / APP).rglob('*') if p.is_file()}
         result = self.build()
         self.assertEqual(result.returncode, 0, result.stderr)
+        # Profile inputs remain pinned. Core-only additions have exact expected
+        # transformations, never a blanket waiver of manifest integrity.
+        transformations = {
+            'index.php': (
+                '<link rel="stylesheet" href="home-welcome.css?v=20261023-bridge-gradient">',
+                '<link rel="stylesheet" href="home-welcome.css?v=20261023-bridge-gradient">\\n'
+                '<link rel="stylesheet" href="bridge-theme.css?v=core-bridge-20261106">'
+            ),
+            'sw.js': (
+                "'./home-welcome.css?v=20261023-bridge-gradient'",
+                "'./home-welcome.css?v=20261023-bridge-gradient','./bridge-theme.css?v=core-bridge-20261106'"
+            ),
+            'lib/bootstrap.php': (
+                "'admin' => ['index.php', 'home.php', 'login.php'",
+                "'admin' => ['index.php', 'home.php', 'upgrades.php', 'login.php'"
+            ),
+            'admin/index.php': (
+                '<h1>Church content</h1>',
+                '<h1>Church content</h1><p><a href="<?=kcmc_h(kcmc_url(\\'admin/upgrades.php\\'))?>">Available upgrades</a></p>'
+            ),
+        }
         for name, record in manifest['files'].items():
-            self.assertEqual(hashlib.sha256((self.output / name).read_bytes()).hexdigest(),
-                             record['candidate_sha256'])
+            actual = (self.output / name).read_bytes()
+            if name in transformations:
+                before, after = transformations[name]
+                expected = (self.root / PROFILE / name).read_text()
+                self.assertEqual(expected.count(before), 1, name)
+                expected = expected.replace(before, after, 1).encode('utf-8')
+                self.assertEqual(actual, expected, name)
+            else:
+                self.assertEqual(hashlib.sha256(actual).hexdigest(),
+                                 record['candidate_sha256'], name)
+        self.assertEqual((self.output / 'bridge-theme.css').read_bytes(),
+                         (self.root / 'tools/basic-handoff/bridge-theme.css').read_bytes())
         for name, data in original.items():
             self.assertEqual((self.root / APP / name).read_bytes(), data)
         for name in ('member/timeclock.php', 'admin/password-resets.php', 'admin/users.php',
