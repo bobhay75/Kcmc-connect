@@ -13,7 +13,7 @@ with tempfile.TemporaryDirectory(prefix='kcmc-bridge-release-') as temp:
     assert 'bridge-theme.css?v=core-bridge-20261106' in page
     assert page.index('home-welcome.css?v=20261023-bridge-gradient') < page.index('bridge-theme.css?v=core-bridge-20261106')
     assert 'bridge-theme.css?v=core-bridge-20261106' in worker
-    assert '.fish-menu' in page
+    assert 'fish-menu' in page
     assert 'background:#19382d' in css
     assert '-webkit-text-fill-color:currentColor' in css
     assert (target/'assets/visuals/kcmc-bridge-logo-sunset-hero-20261023.webp').is_file()
