@@ -54,7 +54,7 @@ shutil.copytree(source, dest, ignore=ignore)
 for name, content in replacements.items():
     (dest / name).write_bytes(content)
 allow = {
-    'admin': {'index.php','home.php','login.php','setup.php','save.php','posts.php','event-create.php','connections.php','connections-export.php','rsvps.php','rsvps-export.php','event-descriptions.js','publishing-desk.js'},
+    'admin': {'index.php','home.php','upgrades.php','login.php','setup.php','save.php','posts.php','event-create.php','connections.php','connections-export.php','rsvps.php','rsvps-export.php','event-descriptions.js','publishing-desk.js'},
     'member': {'login.php','logout.php'},
     'api': {'content.php','connection.php','rsvp.php'},
 }
@@ -65,6 +65,23 @@ for folder, keep in allow.items():
             else: item.unlink()
 for name in ['payroll.php','timeclock.php','team-workspace.php','publication-drafts.php','prayer-care.php','push-subscriptions.php','invitation-delivery.php','invitation-mailer.php','password-lifecycle.php']:
     (dest / 'lib' / name).unlink(missing_ok=True)
+# Add a protected, informational upgrade catalog only to the Core output.
+# The full-product source remains unchanged and premium modules stay absent.
+catalog = Path(__file__).with_name('upgrade-catalog.php')
+if catalog.is_symlink() or not catalog.is_file():
+    parser.error('upgrade catalog source missing or linked')
+catalog_text = catalog.read_text(encoding='utf-8')
+if 'kcmc_require_role' not in catalog_text or 'kcmc_private_headers()' not in catalog_text:
+    parser.error('upgrade catalog must enforce administrator authentication and private headers')
+(dest / 'admin' / 'upgrades.php').write_text(catalog_text, encoding='utf-8')
+admin_home = dest / 'admin' / 'index.php'
+admin_text = admin_home.read_text(encoding='utf-8')
+original = '<h1>Church content</h1>'
+updated = '<h1>Church content</h1><p><a href="<?=kcmc_h(kcmc_url(\'admin/upgrades.php\'))?>">Available upgrades</a></p>'
+if admin_text.count(original) != 1:
+    parser.error('administrator heading anchor missing or ambiguous')
+admin_home.write_text(admin_text.replace(original, updated, 1), encoding='utf-8')
+
 # Fail closed if any excluded private or development material is present.
 for forbidden in ('config.php', 'SETUP-CREDENTIALS.txt', 'data/private', 'admin/publication-designer.php',
                   'member/timeclock.php', 'admin/timecards.php', 'api/team-workspace.php'):
