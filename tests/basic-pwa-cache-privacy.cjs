@@ -1,0 +1,237 @@
+'use strict';
+const test=require('node:test');
+const assert=require('node:assert/strict');
+const fs=require('node:fs');
+const path=require('node:path');
+const vm=require('node:vm');
+const os=require('node:os');
+const {execFileSync}=require('node:child_process');
+
+const root=path.resolve(__dirname,'..');
+const temp=fs.mkdtempSync(path.join(os.tmpdir(),'kcmc-basic-cache-'));
+let swSource;
+try {
+  const candidate=path.join(temp,'candidate');
+  execFileSync('python3',[path.join(root,'tools/basic-handoff/build.py'),candidate]);
+  swSource=fs.readFileSync(path.join(candidate,'sw.js'),'utf8');
+} finally { fs.rmSync(temp,{recursive:true,force:true}); }
+const PUBLIC_URL='https://bobsome1.com/kcmc-connect/';
+
+function harness(options={}){
+  const listeners={};
+  const stores=new Map();
+  const calls={fetch:[],put:[],match:[],deleted:[],skip:0,claim:0};
+  const installURL=options.installURL||PUBLIC_URL;
+  const workerURL=installURL+'sw.js';
+  const urlOf=input=>new URL(typeof input==='string'?input:input.url,workerURL).href;
+
+  async function fetcher(input){
+    const request=input instanceof Request?input:new Request(urlOf(input));
+    calls.fetch.push(request);
+    if(options.offline) throw new Error('offline');
+    return options.response?options.response(request):new Response('public',{status:200});
+  }
+
+  async function open(name){
+    if(!stores.has(name)) stores.set(name,new Map());
+    const store=stores.get(name);
+    return {
+      async put(request,response){
+        const url=urlOf(request);
+        store.set(url,response.clone());
+        calls.put.push({name,url});
+      },
+      async match(request,settings={}){
+        const url=urlOf(request);
+        calls.match.push({name,url,settings});
+        for(const [key,response] of store){
+          if(key===url||(settings.ignoreSearch&&key.split('?')[0]===url.split('?')[0])) return response.clone();
+        }
+        return undefined;
+      }
+    };
+  }
+
+  const caches={
+    open,
+    keys:async()=>[...stores.keys()],
+    delete:async name=>{calls.deleted.push(name);return stores.delete(name);}
+  };
+  const self={
+    location:new URL(workerURL),
+    clients:{claim:async()=>{calls.claim++;}},
+    skipWaiting:async()=>{calls.skip++;},
+    addEventListener:(type,fn)=>{listeners[type]=fn;}
+  };
+  const context=vm.createContext({self,caches,fetch:fetcher,URL,Request,Response});
+  vm.runInContext(swSource,context);
+  const cacheName=vm.runInContext('CACHE',context);
+
+  async function lifecycle(type){
+    let task;
+    listeners[type]({waitUntil:p=>{task=p;}});
+    await task;
+  }
+
+  async function dispatch(relative,opts={}){
+    const request=new Request(new URL(relative,installURL),{method:opts.method||'GET',credentials:'include'});
+    if(opts.navigate) Object.defineProperty(request,'mode',{value:'navigate'});
+    let responsePromise;
+    const jobs=[];
+    listeners.fetch({
+      request,
+      respondWith:p=>{responsePromise=p;},
+      waitUntil:p=>{jobs.push(p);}
+    });
+    if(!responsePromise) return {handled:false};
+    const response=await responsePromise;
+    await Promise.all(jobs);
+    return {handled:true,response};
+  }
+
+  async function seed(name,relative,body='cached'){
+    const store=await open(name);
+    await store.put(urlOf(relative),new Response(body));
+    calls.put.length=0;
+    calls.match.length=0;
+  }
+
+  return {calls,stores,cacheName,lifecycle,dispatch,seed};
+}
+
+test('precache fetches anonymously and reloads from network',async()=>{
+  const h=harness();
+  await h.lifecycle('install');
+  assert.ok(h.calls.fetch.length>0);
+  assert.ok(h.calls.fetch.every(request=>request.credentials==='omit'&&request.cache==='reload'));
+  assert.ok(h.calls.fetch.some(request=>request.url.endsWith('/app.js?v=visitor-welcome-20261008')));
+});
+
+for(const policy of ['no-store','private, max-age=0','no-cache']){
+  test(`precache refuses ${policy} responses`,async()=>{
+    const h=harness({response:()=>new Response('private',{headers:{'Cache-Control':policy}})});
+    await h.lifecycle('install');
+    assert.equal(h.calls.put.length,0);
+    assert.equal(h.calls.skip,1);
+  });
+}
+
+test('runtime refuses to cache a private public-route response',async()=>{
+  const h=harness({response:()=>new Response('private',{headers:{'Cache-Control':'no-store, private'}})});
+  const result=await h.dispatch('events.php');
+  assert.equal(await result.response.text(),'private');
+  assert.equal(h.calls.put.length,0);
+});
+
+for(const route of [
+  'member/',
+  'admin/backup.php',
+  'api/content.php',
+  'data/private/accounts.json',
+  'backups/sample.json',
+  './?token=TEST_SECRET',
+  'index.php?code=TEST_SECRET',
+  'app.js?v=3.0.2&token=TEST_SECRET',
+  'unknown.php'
+]){
+  test(`${route} is network-only and receives no offline fallback`,async()=>{
+    const h=harness({offline:true});
+    await h.seed(h.cacheName,'./','PUBLIC HOME');
+    await h.seed('other-project-cache',route,'PRIVATE');
+    await assert.rejects(h.dispatch(route,{navigate:true}),/offline/);
+    assert.equal(h.calls.match.length,0);
+  });
+}
+
+test('versioned static asset offline lookup stays inside the current KCMC cache',async()=>{
+  const h=harness({offline:true});
+  await h.seed('other-project-cache','app.js?v=old','WRONG');
+  await h.seed(h.cacheName,'app.js?v=3.0.2','EXPECTED');
+  const result=await h.dispatch('app.js?v=3.0.3');
+  assert.equal(await result.response.text(),'EXPECTED');
+  assert.ok(h.calls.match.every(call=>call.name===h.cacheName));
+});
+
+test('offline public navigation falls back only to current public home',async()=>{
+  const h=harness({offline:true});
+  await h.seed(h.cacheName,'./','PUBLIC HOME');
+  const result=await h.dispatch('news.php',{navigate:true});
+  assert.equal(await result.response.text(),'PUBLIC HOME');
+  assert.ok(h.calls.match.every(call=>call.name===h.cacheName));
+});
+
+test('successful public runtime response is cached and awaited',async()=>{
+  const h=harness();
+  await h.dispatch('events.php');
+  assert.equal(h.calls.put.length,1);
+});
+
+test('non-GET and cross-origin requests are untouched',async()=>{
+  const h=harness();
+  assert.equal((await h.dispatch('./',{method:'POST'})).handled,false);
+  assert.equal((await h.dispatch('https://example.org/')).handled,false);
+  assert.equal(h.calls.fetch.length,0);
+});
+
+test('activation deletes only previous caches belonging to the same installation',async()=>{
+  const prod=harness();
+  const stage=harness({installURL:'https://bobsome1.com/kcmc-connect-stage/'});
+  assert.notEqual(stage.cacheName,prod.cacheName);
+  for(const [current,sibling] of [[prod,stage],[stage,prod]]){
+    const prior=current.cacheName.replace('v3.0.3-public-only','v3.0.2-public-only');
+    assert.notEqual(prior,current.cacheName);
+    const protectedNames=[sibling.cacheName,'kcmc-connect-v3.0.1-public-only','project-unveiled-cache',current.cacheName];
+    for(const name of [prior,...protectedNames]) await current.seed(name,'./');
+    await current.lifecycle('activate');
+    assert.deepEqual(current.calls.deleted,[prior]);
+    for(const name of protectedNames) assert.ok(current.stores.has(name),name);
+    assert.equal(current.calls.claim,1);
+  }
+});
+
+test('event artwork upgrade precaches the SVG and never the photographed flyer',async()=>{
+  const h=harness();
+  await h.lifecycle('install');
+  assert.match(h.cacheName,/welcome-home-20261023-bridge-gradient$/);
+  assert.ok(h.calls.fetch.some(request=>request.url.endsWith('/home-welcome.css?v=20261023-bridge-gradient')));
+  assert.ok(h.calls.fetch.some(request=>request.url.endsWith('/kcmc-bridge-logo-sunset-hero-20261023.webp')));
+  assert.ok(h.calls.fetch.some(request=>request.url.endsWith('/public-presentation.css?v=fish-only-home-20261014')));
+  assert.ok(h.calls.fetch.some(request=>request.url.endsWith('/trunk-or-treat-2026.svg')));
+  assert.ok(h.calls.fetch.every(request=>!request.url.endsWith('/trunk-or-treat-2026.webp')));
+});
+
+test('older event markup requests the illustration instead of the flyer online',async()=>{
+  const h=harness({response:request=>new Response(request.url)});
+  const result=await h.dispatch('assets/visuals/trunk-or-treat-2026.webp');
+  assert.equal(await result.response.text(),PUBLIC_URL+'assets/visuals/trunk-or-treat-2026.svg');
+  assert.equal(h.calls.fetch.length,1);
+  assert.equal(h.calls.fetch[0].credentials,'omit');
+  assert.ok(h.calls.put.every(call=>call.url.endsWith('/trunk-or-treat-2026.svg')));
+});
+
+test('current and older event markup share the same approved artwork offline',async()=>{
+  const h=harness({offline:true});
+  await h.seed(h.cacheName,'assets/visuals/trunk-or-treat-2026.svg','ILLUSTRATION');
+  await h.seed('kcmc-connect-old','assets/visuals/trunk-or-treat-2026.webp','PHOTOGRAPHED FLYER');
+  for(const name of ['trunk-or-treat-2026.svg','trunk-or-treat-2026.svg?v=20261011','trunk-or-treat-2026.webp']){
+    const result=await h.dispatch('assets/visuals/'+name);
+    assert.equal(await result.response.text(),'ILLUSTRATION');
+  }
+  assert.ok(h.calls.match.every(call=>call.name===h.cacheName&&!call.url.endsWith('.webp')));
+});
+
+for(const name of ['trunk-or-treat-2026.svg?token=TEST_SECRET','trunk-or-treat-2026.webp?token=TEST_SECRET','unrelated.svg']){
+  test(`artwork changes do not permit ${name} into the public cache`,async()=>{
+    const h=harness({offline:true});
+    await h.seed(h.cacheName,'assets/visuals/trunk-or-treat-2026.svg','ILLUSTRATION');
+    await assert.rejects(h.dispatch('assets/visuals/'+name),/offline/);
+    assert.equal(h.calls.match.length,0);
+  });
+}
+
+test('legacy artwork rewriting never touches another origin',async()=>{
+  const h=harness();
+  const result=await h.dispatch('https://example.org/kcmc-connect/assets/visuals/trunk-or-treat-2026.webp');
+  assert.equal(result.handled,false);
+  assert.equal(h.calls.fetch.length,0);
+});

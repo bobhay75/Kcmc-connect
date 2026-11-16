@@ -605,9 +605,14 @@ check(hashlib.sha256(deployment_bytes).hexdigest() == '5983e3965249361d1e99afd68
 deployment = json.loads(deployment_bytes)
 check(set(deployment) == {'source_commit', 'files'} and deployment['source_commit'] == BASE, 'deployment preflight baseline remains historical source')
 check(set(deployment['files']) == {'.cpanel.yml'}, 'deployment interlock changes only the root task list')
+check((ROOT / '.cpanel.yml').read_text() == "---\ndeployment:\n  tasks:\n"
+      "    - /bin/echo 'Basic handoff draft: automatic deployment is disabled; review a host-specific release plan.'\n"
+      "    - /bin/false\n", 'current deployment is disabled with no copy or sync task')
 for path, record in deployment['files'].items():
     check(set(record) == {'before_sha256', 'after_sha256', 'replacements'}, path + ': explicit deployment byte pins')
-    content = (ROOT / path).read_bytes()
+    # Retain the complete original interlock proof against its exact archived
+    # task list. The current fail-closed replacement is verified above.
+    content = (ROOT / 'tests/fixtures/cpanel-before-basic.yml').read_bytes()
     check(hashlib.sha256(content).hexdigest() == record['after_sha256'], path + ': exact deployment interlock target')
     for old, new in reversed(record['replacements']):
         check(content.count(new.encode()) == 1, path + ': unique reverse deployment task anchor')

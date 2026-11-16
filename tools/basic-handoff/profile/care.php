@@ -1,0 +1,10 @@
+<?php
+require_once __DIR__ . '/lib/bootstrap.php';
+$data = kcmc_content();
+$contact = $data['contact'] ?? [];
+$user = kcmc_current_user_if_session();
+$userCanPray = $user !== null && kcmc_has_role(['member', 'prayer_team', 'pastor_admin'], $user);
+$phone = (string)($contact['phone'] ?? '417-739-4395');
+$phoneHref = 'tel:' . preg_replace('/[^0-9+]/', '', $phone);
+?><!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="description" content="Contact the KCMC church team for prayer and support. Personal details stay private."><title>Prayer & Care • KCMC Connect</title><link rel="stylesheet" href="styles.css?v=3.0.0"><?php require_once __DIR__ . '/lib/screen-navigation.php'; echo kcmc_screen_assets(); ?>
+</head><body class="portal-body"><?php echo kcmc_screen_navigation('', false); ?><main class="portal-shell portal-narrow"><a class="portal-back" href="./">← KCMC Connect</a><section class="portal-card"><p class="eyebrow">PRAYER & CARE</p><h1>We’re here for you.</h1><p>Call our church team for prayer or support. The public app is free to use. No account is needed to call the church office for prayer or support.</p><div class="portal-actions"><a class="btn gold" href="<?=kcmc_h($phoneHref)?>">Call the church office</a></div><p class="portal-fine">Church office: <?=kcmc_h($phone)?> • <?=kcmc_h((string)($contact['office_hours'] ?? 'Tuesday–Thursday'))?></p></section></main></body></html>

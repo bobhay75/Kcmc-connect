@@ -1,0 +1,93 @@
+/* Core bridge identity — intentionally supersedes the old blue-and-gold fish theme.
+   The small fish/menu icon remains unchanged. Bridge sunset artwork stays the hero. */
+body.kcmc-welcome-design {
+  --ink:#f5f6ef;
+  --muted:#d4e1d3;
+  --gold:#d8b775;
+  --navy:#203d34;
+  --navy2:#315846;
+  --card:#234338;
+  --line:rgba(236,239,221,.22);
+  background:#203d34;
+  color:var(--ink);
+  color-scheme:dark;
+}
+.kcmc-welcome-design .topbar {
+  background:#19382d;
+  border-bottom:1px solid #587260;
+}
+.kcmc-welcome-design .site-menu nav {
+  background:#19382d;
+  border-color:#587260;
+}
+.kcmc-welcome-design .site-menu nav a:hover,
+.kcmc-welcome-design .site-menu nav button:hover {background:#305746}
+.kcmc-welcome-design :is(.welcome-brand,.fish-menu .menu-home strong,.home-cover h1,.partner-hero>h1,.section-head h2,.footer strong:first-child) {
+  background:none;
+  color:#f5f6ef;
+  -webkit-text-fill-color:currentColor;
+  filter:none;
+  text-shadow:none;
+}
+body.kcmc-welcome-design[data-office-email] [data-view="home"] .home-cover.hero.hero-imagery {
+  background:#203d34;
+}
+body.kcmc-welcome-design[data-office-email] [data-view="home"] .home-cover .home-cover-photo {
+  filter:none;
+  opacity:1;
+}
+body.kcmc-welcome-design[data-office-email] [data-view="home"] .home-cover h1 {
+  color:#19382d;
+  -webkit-text-fill-color:#19382d;
+  text-shadow:0 1px 12px rgba(255,255,255,.75);
+}
+body.kcmc-welcome-design[data-office-email] [data-view="home"] .home-worship-strip {
+  background:#19382d;
+  border-top:1px solid #587260;
+}
+body.kcmc-welcome-design[data-office-email] [data-view="home"] .home-worship-times strong {
+  border-left-color:#d8b775;
+}
+.welcome-hero-actions .btn.gold {
+  background:#e4c88e;
+  border-color:#ba9452;
+  color:#19382d;
+}
+.welcome-hero-actions .btn.secondary {
+  background:#faf9f2;
+  border-color:#d1d9cc;
+  color:#19382d;
+}
+.welcome-quicklinks a {
+  border-color:#698675;
+  background:#294c3d;
+  color:#f5f6ef;
+}
+.welcome-quicklinks a:hover,
+.welcome-quicklinks a:focus-visible {
+  background:#365e4b;
+  border-color:#d8b775;
+}
+.welcome-quicklinks svg {stroke:#e4c88e}
+.welcome-quicklinks .welcome-arrow {color:#e4c88e}
+.kcmc-welcome-design [data-view="home"]>.section {
+  background:#203d34;
+  color:#f5f6ef;
+}
+.kcmc-welcome-design :where(a,button,summary):focus-visible {
+  outline:3px solid #e4c88e;
+  outline-offset:3px;
+}
+@media(max-width:760px) {
+  body.kcmc-welcome-design[data-office-email] [data-view="home"] .home-cover h1 {
+    color:#f5f6ef;
+    -webkit-text-fill-color:#f5f6ef;
+    text-shadow:none;
+  }
+}
+@media(forced-colors:active) {
+  .kcmc-welcome-design :is(.welcome-brand,.fish-menu .menu-home strong,.home-cover h1,.partner-hero>h1,.section-head h2,.footer strong:first-child){
+    color:CanvasText;
+    -webkit-text-fill-color:CanvasText;
+  }
+}
