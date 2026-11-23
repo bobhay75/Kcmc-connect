@@ -2,6 +2,10 @@
   "source_commit": "ff948840c7437efc41bc2846774f792ffe6bf654",
   "candidate_commit": "73a190376a542dfb0ff394ee0ae9098b7850f759",
   "files": {
+    ".htaccess": {
+      "source_sha256": "993e7a8936737dbf9ba852e60604141de15e24d7399e644393282ed99b7ff690",
+      "candidate_sha256": "9d42b27ad5855f2485fd1e72149c41b6f267e9b80d46de7fe5ca97579f3a4a2c"
+    },
     "admin/connections.php": {
       "source_sha256": "4d2203f54b3b3b4726b7c98ab906ff3d4e9ed1984247cba9aa417dd198ce6066",
       "candidate_sha256": "d86ccf8f76ae4d09c04f3cb02fa75acc5dc9223e244d332f091ce71f8532c5f1"
@@ -28,7 +32,7 @@
     },
     "admin/setup.php": {
       "source_sha256": "6a26dabdaf6ec72c12bc2d3ebb2bf32d5b18daa9f430ad2420d404aa36721ca7",
-      "candidate_sha256": "7a42c3b74f1b08873af92ce87b353a3b728814a117210604c5d7dd918dd042e2"
+      "candidate_sha256": "7068ebe85b5248e73b20d2517aded284b9d56cb82f3c7ca3996788239ff069e4"
     },
     "bulletin.php": {
       "source_sha256": "f524d48e6b59b482c150223b5ee15885a2c7178db89c343167f09a05a770269d",
@@ -44,11 +48,11 @@
     },
     "index.php": {
       "source_sha256": "03f1c66ebe5c8fe89fcfcc3e2c584afffe137e9b885891dec7d26370a23c72ce",
-      "candidate_sha256": "5a0a54a5e0c7f309e434d9581b8e9c0289a4f06c564ced4854d4c7ace857dc4f"
+      "candidate_sha256": "5c23d50fba5a986a08af1160ced6464534be9ece3bf094790b6c0291ee0ad4e9"
     },
     "lib/bootstrap.php": {
       "source_sha256": "19a932424250b6bc33a5e844bfb942fb33a8194aa8bf912bf4494f1e27ba354e",
-      "candidate_sha256": "7ebfebff7a8f2cce84aa3aef14c7e5ef62058edaa0d122899dbaac204a426efb"
+      "candidate_sha256": "01271b260e23d2581b02e4814646ed2d398d4eb753bd3648cb75f1a56d2a644f"
     },
     "lib/screen-navigation.php": {
       "source_sha256": "e614e218d17e53c687d994b33415a7991d80ed56b3148521c7fc6ea2a66bf0f0",
@@ -60,7 +64,7 @@
     },
     "sw.js": {
       "source_sha256": "49e6370c39bc33fca4f62755b6cdf004a05ec0494983179cf60c0979e3df2cc5",
-      "candidate_sha256": "414d71c067e8b6d3e695de01af21d740d05b4155b07ea715da5141729586a6c2"
+      "candidate_sha256": "f21b4869741ed4087d359b9aacbf2050d93bf4bf62c09f514c7617d1f148c075"
     }
   }
 }

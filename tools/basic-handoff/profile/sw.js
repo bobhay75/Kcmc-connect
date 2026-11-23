@@ -1,8 +1,8 @@
 const CACHE_NAMESPACE='kcmc-connect-scope-'+encodeURIComponent(new URL('./',self.location.href).pathname)+'-';
-const CACHE=CACHE_NAMESPACE+'v3.0.3-public-only-basic-handoff-welcome-home-20261023-bridge-gradient';
+const CACHE=CACHE_NAMESPACE+'v3.0.4-public-only-core-bridge-20261118';
 // Connection-intake client refresh: worker install reruns cache:'reload' and overwrites cached app.js.
 const CORE=[
-  './','./home-welcome.css?v=20261023-bridge-gradient','./styles.css?v=3.0.3','./public-presentation.css?v=fish-only-home-20261014','./public-presentation.js?v=blue-fish-menu-20261009','./app.js?v=visitor-welcome-20261008','./manifest.webmanifest?v=20261019',
+  './','./home-welcome.css?v=20261023-bridge-gradient','./styles.css?v=3.0.3','./public-presentation.css?v=core-bridge-20261118','./public-presentation.js?v=core-bridge-20261118','./app.js?v=visitor-welcome-20261008','./manifest.webmanifest?v=20261019',
   './bulletin.php','./news.php','./events.php','./care.php','./connect.php',
   './assets/icons/icon-192.png','./assets/icons/icon-512.png',
   './assets/visuals/kcmc-bridge-logo-sunset-hero-20261023.webp','./assets/visuals/kcmc-building-retouched-20261009.jpg','./assets/visuals/kcmc-worship-2017.webp',

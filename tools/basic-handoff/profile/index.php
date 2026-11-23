@@ -48,7 +48,7 @@ usort($kcmcAnnouncements, fn($a,$b)=>(int)($b['priority']??0)<=>(int)($a['priori
 <link rel="manifest" href="manifest.webmanifest?v=20261019">
 <link rel="preload" as="image" href="assets/visuals/kcmc-bridge-logo-sunset-hero-20261023.webp" type="image/webp" fetchpriority="high">
 <link rel="stylesheet" href="styles.css?v=3.0.3">
-<link rel="stylesheet" href="public-presentation.css?v=fish-only-home-20261014">
+<link rel="stylesheet" href="public-presentation.css?v=core-bridge-20261118">
 <link rel="icon" href="assets/icons/icon-192.png?v=20261019">
 <link rel="apple-touch-icon" href="assets/icons/icon-192.png?v=20261019">
 <?php require_once __DIR__ . '/lib/screen-navigation.php'; echo kcmc_screen_assets(); ?>
@@ -295,5 +295,5 @@ usort($kcmcAnnouncements, fn($a,$b)=>(int)($b['priority']??0)<=>(int)($a['priori
   </div>
 </div>
 <script src="app.js?v=visitor-welcome-20261008" defer></script>
-<script src="public-presentation.js?v=blue-fish-menu-20261009" defer></script>
+<script src="public-presentation.js?v=core-bridge-20261118" defer></script>
 </body></html>

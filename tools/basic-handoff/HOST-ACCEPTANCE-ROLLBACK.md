@@ -19,6 +19,21 @@ Compare production files with the pinned recovered snapshot and candidate using 
 
 Legacy workflows for excluded functions may be marked *not applicable* only after reviewing the failing assertion. Security, session, privacy and deployment-divergence failures remain unresolved until reproduced or explained against this reduced contract.
 
+## HTTPS origin precondition
+
+The Core `.htaccess` redirects HTTP requests for `bobsome1.com` and `www.bobsome1.com` to the same path and query at `https://bobsome1.com`. Localhost and other development hosts are outside that rule. The redirect uses Apache's native `HTTPS` connection state and never trusts a client-supplied `X-Forwarded-Proto` header.
+
+**Before installing this override, verify that the origin handles TLS for HTTPS requests.** Direct TLS and a proxy that connects to the origin over TLS satisfy this precondition. A proxy that terminates TLS and sends HTTP to the origin does not: the native check would cause a redirect loop. For an HTTP backend, configure the redirect at the trusted ingress or review an origin rule against verified proxy addresses and headers that the proxy always overwrites. Do not add a blanket forwarded-header bypass.
+
+The local Apache regression tests the built rules with real HTTP/TLS and fixture files. Acceptance on the actual Namecheap Apache/LiteSpeed configuration is still pending and must establish all of the following:
+
+- HTTP home, administrator sign-in and public routes redirect to HTTPS before serving their page; the same HTTPS requests complete without a loop.
+- Both the production and isolated staging directory prefixes, encoded paths and query strings survive the redirect. Spoofed forwarded headers cannot bypass it.
+- Inherited rules, aliases, certificate validation and any trusted proxy configuration are compatible with the Core override.
+- Private files, data and backup paths remain denied; the two legacy Wikimedia image redirects retain the intended filename and resolve successfully.
+
+References: [Apache HTTPS and trusted proxy guidance](https://httpd.apache.org/docs/2.4/rewrite/remapping.html#https), [Namecheap cPanel HTTPS redirects](https://www.namecheap.com/support/knowledgebase/article.aspx/9770/38/how-to-use-htaccess-to-redirect-to-https-in-cpanel/).
+
 ## Backup prerequisite
 
 With hosting authorization, create a timestamped, access-restricted, **actual-byte** backup outside public_html of the current application code, .htaccess and inherited server rules, configuration, editorial JSON, and private stores. Record hashes, permissions, ownership, PHP/runtime versions and an inventory manifest in a protected location. Keep the developer's private work ledger separate and out of the church handoff. Do not upload secrets or personal records to GitHub. Validate backup integrity and rehearse restore in a separate staging tree.
@@ -39,6 +54,7 @@ Stage candidate code into a new, isolated directory. Compare against current pro
 
 - [ ] Full host inventory and extra routes reviewed
 - [ ] Server-level exclusions validated
+- [ ] Origin TLS/proxy topology verified; HTTPS redirects and Apache/LiteSpeed rules accepted on staging
 - [ ] Account recovery and authorized mail tested
 - [ ] Exact staged PHP/HTTP/device tests passed
 - [ ] Actual-byte backup and isolated restore rehearsal passed
@@ -46,4 +62,4 @@ Stage candidate code into a new, isolated directory. Compare against current pro
 - [ ] Authorized deployment and rollback owner identified
 - [ ] User approved deployment explicitly
 
-Until all items pass, keep PR #169 in draft and do not deploy.
+Repository merge does not establish host acceptance. Keep deployment blocked until these gates pass and the authorized deployment owner approves the verified release.

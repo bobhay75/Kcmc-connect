@@ -19,6 +19,17 @@ jobs:
         run: python3 tests/basic-handoff-http.py
       - name: Package profile and source isolation
         run: python3 tests/basic-handoff-profile.py
+      - name: Core Apache HTTPS and access rules
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends apache2-bin openssl
+          python3 tests/basic-handoff-apache.py
+      - name: Preserve stored Core editorial content
+        run: |
+          core_check_dir=$(mktemp -d)
+          trap 'rm -rf "$core_check_dir"' EXIT
+          python3 tools/basic-handoff/build.py "$core_check_dir/core"
+          php tests/basic-content-preservation.php "$core_check_dir/core"
       - name: Protected optional-upgrade catalog
         run: python3 tests/basic-upgrade-catalog.py
       - name: Bridge-forward Core theme and hero
