@@ -39,6 +39,11 @@ class ExactManualClockSource(unittest.TestCase):
         self.assertGreaterEqual(raw.count(old), count, 'Mutation must change a real source anchor')
         path.write_bytes(raw.replace(old, new, count))
 
+    def test_event_artwork_overlay_cannot_hide_other_changes(self):
+        self.replace('events.php', b'<h1>Upcoming events</h1>', b'<h1>Changed events</h1>')
+        with self.assertRaisesRegex(AssertionError, 'exact reviewed Trunk or Treat artwork overlay'):
+            self.verify()
+
     def test_disabled_review_library_gate_cannot_be_replaced_with_success(self):
         self.replace('lib/timeclock.php',
                      b"throw new RuntimeException('Time cards do not need submission or approval. Recorded time is available directly.');",
