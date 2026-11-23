@@ -12,8 +12,16 @@ async function main(){
   try{
     const mount=path.join(tmp,'kcmc-connect-stage');
     const privateDir=path.join(tmp,'private');
+    const sessions=path.join(tmp,'sessions');
     fs.mkdirSync(privateDir,{mode:0o700});
+    fs.mkdirSync(sessions,{mode:0o700});
     execFileSync('python3',[path.join(root,'tools/basic-handoff/build.py'),mount],{stdio:'inherit'});
+    const password='synthetic-mobile-password-123';
+    const passwordHash=execFileSync('php',['-r','echo password_hash($argv[1], PASSWORD_DEFAULT);',password],{encoding:'utf8'});
+    fs.writeFileSync(path.join(privateDir,'users.json'),JSON.stringify({version:1,users:[{
+      id:'synthetic-mobile-admin',email:'mobile-admin@example.test',email_normalized:'mobile-admin@example.test',
+      display_name:'Synthetic Mobile Admin',role:'recovery_admin',password_hash:passwordHash,active:true
+    }]}),{mode:0o600});
     const port=await new Promise((resolve,reject)=>{
       const s=net.createServer();
       s.on('error',reject);
@@ -21,7 +29,7 @@ async function main(){
     });
     const origin='http://127.0.0.1:'+port;
     const base=origin+'/kcmc-connect-stage/';
-    server=spawn('php',['-S','127.0.0.1:'+port,'-t',tmp],{env:{...process.env,KCMC_PRIVATE_DATA_DIR:privateDir},stdio:'ignore'});
+    server=spawn('php',['-d','output_buffering=0','-d','session.save_path='+sessions,'-S','127.0.0.1:'+port,'-t',tmp],{env:{...process.env,KCMC_PRIVATE_DATA_DIR:privateDir},stdio:'ignore'});
     for(let attempt=0;;attempt++){
       try{assert.equal((await fetch(base)).status,200);break;}
       catch(e){if(attempt>=39)throw e;await new Promise(r=>setTimeout(r,100));}
@@ -61,8 +69,26 @@ async function main(){
         for(const route of ['bulletin.php','events.php','care.php','member/login.php']){
           assert.equal((await page.goto(base+route)).status(),200,device+' '+route);
         }
+        // Use the actual phone menu and login button, not only a GET of a page
+        // that could redirect to setup. All accounts and sessions are synthetic.
+        await page.goto(base);
+        await page.locator('#siteMenu > summary').click();
+        await page.locator('#siteMenuLinks').getByRole('link',{name:'Administration',exact:true}).click();
+        await page.waitForURL('**/member/login.php?next=*');
+        await page.locator('input[name=email]').fill('mobile-admin@example.test');
+        await page.locator('input[name=password]').fill(password);
+        await page.getByRole('button',{name:'Sign in securely',exact:true}).click();
+        await page.waitForURL(base+'admin/');
+        await page.getByRole('heading',{name:'Church content',exact:true}).waitFor({state:'visible'});
+        assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1),device+' administration overflow');
+        const adminResponse=await context.request.get(base+'admin/');
+        assert.match(adminResponse.headers()['cache-control'],/no-store/);
+        await page.getByRole('button',{name:'Sign out',exact:true}).click();
+        await page.waitForURL(base+'member/login.php');
+        const denied=await context.request.get(base+'admin/',{maxRedirects:0});
+        assert.equal(denied.status(),302,device+' signed-out administration must require login');
         assert.deepEqual(errors,[]);
-        console.log('PASS: '+device+' emulation: manifest, icon, route layout, visit submission and public/staff entry pages');
+        console.log('PASS: '+device+' emulation: manifest, icon, route layout, visit submission, menu-to-admin login, private headers and sign-out');
       } finally {await browser.close();}
     }
   } finally{

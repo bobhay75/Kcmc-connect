@@ -19,6 +19,13 @@ jobs:
         run: python3 tests/basic-handoff-http.py
       - name: Package profile and source isolation
         run: python3 tests/basic-handoff-profile.py
+      - name: Preserve current church content through reads, publishing and restore
+        run: |
+          candidate=$(mktemp -d)
+          trap 'rm -rf "$candidate"' EXIT
+          python3 tools/basic-handoff/build.py "$candidate/core"
+          php tests/basic-content-preservation.php "$candidate/core"
+          php -l tools/basic-handoff/recover-admin.php
       - name: Protected optional-upgrade catalog
         run: python3 tests/basic-upgrade-catalog.py
       - name: Bridge-forward Core theme and hero

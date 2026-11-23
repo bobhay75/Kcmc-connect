@@ -1,6 +1,7 @@
 <?php
 require_once __DIR__ . '/../lib/bootstrap.php';
 kcmc_private_headers();
+kcmc_session_start();
 if (kcmc_has_any_users()) {
     header('Location: ' . kcmc_url('member/login.php?next=' . rawurlencode(kcmc_url('admin/'))));
     exit;
