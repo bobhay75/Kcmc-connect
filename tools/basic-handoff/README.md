@@ -1,6 +1,35 @@
-# Basic church handoff — review candidate
+# Basic church handoff — Core release candidate
 
-Status: incomplete; do not merge or deploy. The package is generated into a new local directory and is not an installer.
+Status: source fixes have been recovered from the November 20 candidate and verified locally. Hosted acceptance and installation remain outstanding. The package is generated into a new local directory and is not an installer.
+
+## Current source recovery — November 23, 2026
+
+PR #169 is already merged at `6623c7694ce853b72930dacb48fb5718a327a014`.
+The later candidate fixes, previously saved only in the private operator bundle,
+are now part of this source branch:
+
+- Start the Core setup session before HTML output so the browser receives its
+  CSRF session cookie with unbuffered PHP.
+- Preserve stored church content exactly during reads and restore, including
+  intentional empty fields, tombstones, custom artwork and old bulletin dates.
+- Retain the bridge/sunset artwork, forest-green Core theme and updated cache
+  generation from the saved candidate.
+- Include the terminal-only administrator recovery utility outside the generated
+  web package. It requires an existing active administrator and revokes earlier
+  authenticated sessions through the changed credential binding.
+
+Run the Core HTTP suite with `python3 tests/basic-handoff-http.py`. It uses a
+private temporary session directory and explicitly disables PHP output buffering.
+Build a temporary Core tree and run
+`php tests/basic-content-preservation.php /absolute/path/to/core` for the 64
+editorial preservation checks; this is also included in the handoff CI workflow.
+The mobile suite follows the actual phone menu through staff sign-in, the
+administration screen and sign-out using synthetic accounts.
+
+These tests do not establish the current hosted account credentials, effective
+Apache rules, outbound email delivery or physical-device installation. Refresh
+the host inventory and backup before the authorized production work. Never copy
+the fixture `data/content.json` over current church records.
 
 ## Included
 

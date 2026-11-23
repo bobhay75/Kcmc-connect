@@ -12,6 +12,7 @@ with tempfile.TemporaryDirectory(prefix='kcmc-basic-') as tmp:
     assert not (root / 'data/private').exists()
     assert not (root / 'config.php').exists()
     private = Path(tmp) / 'private'; private.mkdir(mode=0o700)
+    sessions = Path(tmp) / 'sessions'; sessions.mkdir(mode=0o700)
     password = 'synthetic-test-password-123'
     digest = subprocess.check_output(['php', '-r', 'echo password_hash($argv[1], PASSWORD_DEFAULT);', password], text=True)
     users = [{'id': 'admin-1', 'email': 'admin@example.test', 'email_normalized': 'admin@example.test', 'display_name':'Test Admin', 'role':'recovery_admin', 'password_hash':digest, 'active':True}, {'id':'member-1','email':'member@example.test','email_normalized':'member@example.test','display_name':'Test Member','role':'member','password_hash':digest,'active':True}]
@@ -30,7 +31,7 @@ if (str_ends_with($path, '.php') && !is_file($_SERVER['DOCUMENT_ROOT'] . $path))
 }
 return false;
 """)
-    server=subprocess.Popen(['php','-d','output_buffering=0','-S',f'127.0.0.1:{port}','-t',str(root),str(router)],stdout=subprocess.DEVNULL,stderr=subprocess.DEVNULL,env=env)
+    server=subprocess.Popen(['php','-d','output_buffering=0','-d',f'session.save_path={sessions}','-S',f'127.0.0.1:{port}','-t',str(root),str(router)],stdout=subprocess.DEVNULL,stderr=subprocess.DEVNULL,env=env)
     base=f'http://127.0.0.1:{port}'
     class NoRedirect(urllib.request.HTTPRedirectHandler):
         def redirect_request(self,*args,**kwargs): return None
@@ -232,7 +233,7 @@ return false;
         def operator_recovery(email):
             master, terminal = pty.openpty()
             try:
-                result = subprocess.run(['php', str(repo/'tools/basic-handoff/recover-admin.php'), str(root), email],
+                result = subprocess.run(['php', '-d', f'session.save_path={sessions}', str(repo/'tools/basic-handoff/recover-admin.php'), str(root), email],
                                         stdin=terminal, stdout=terminal, stderr=subprocess.DEVNULL, env=env)
                 return os.read(master, 256).decode() if result.returncode == 0 else ''
             finally:

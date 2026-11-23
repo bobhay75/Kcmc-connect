@@ -62,4 +62,8 @@ Stage candidate code into a new, isolated directory. Compare against current pro
 - [ ] Authorized deployment and rollback owner identified
 - [ ] User approved deployment explicitly
 
-Repository merge does not establish host acceptance. Keep deployment blocked until these gates pass and the authorized deployment owner approves the verified release.
+PR #169 was merged on November 16, 2026 (UTC). Its merge does not establish host
+acceptance. Record current results for the exact candidate before installation;
+older completed checks are historical evidence, not evidence of current host state.
+Keep deployment blocked until these gates pass and the authorized deployment owner
+approves the verified release.

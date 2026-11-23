@@ -24,12 +24,13 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y --no-install-recommends apache2-bin openssl
           python3 tests/basic-handoff-apache.py
-      - name: Preserve stored Core editorial content
+      - name: Preserve current church content through reads, publishing and restore
         run: |
-          core_check_dir=$(mktemp -d)
-          trap 'rm -rf "$core_check_dir"' EXIT
-          python3 tools/basic-handoff/build.py "$core_check_dir/core"
-          php tests/basic-content-preservation.php "$core_check_dir/core"
+          candidate=$(mktemp -d)
+          trap 'rm -rf "$candidate"' EXIT
+          python3 tools/basic-handoff/build.py "$candidate/core"
+          php tests/basic-content-preservation.php "$candidate/core"
+          php -l tools/basic-handoff/recover-admin.php
       - name: Protected optional-upgrade catalog
         run: python3 tests/basic-upgrade-catalog.py
       - name: Bridge-forward Core theme and hero
