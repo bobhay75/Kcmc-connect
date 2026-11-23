@@ -1,0 +1,36 @@
+Options -Indexes
+
+<FilesMatch "^(config(?:\.example)?\.php|SETUP-CREDENTIALS\.txt|DEPLOY\.md|VERSION(?:\.txt)?|RELEASE-MANIFEST\.txt|.*\.bundle)$">
+  Require all denied
+</FilesMatch>
+
+<FilesMatch "(?:\.json(?:\.tmp-[A-Fa-f0-9]+)?|\.ndjson|\.lock)$">
+  Require all denied
+</FilesMatch>
+
+<IfModule mod_rewrite.c>
+  RewriteEngine On
+
+  # Core public hosts require TLS at this origin (including proxy-to-origin TLS).
+  # With an HTTP-only backend, enforce HTTPS at a verified trusted ingress instead;
+  # see HOST-ACCEPTANCE-ROLLBACK.md. Never trust a client-supplied forwarded scheme.
+  # The fixed target avoids reflecting Host, and localhost development stays HTTP.
+  RewriteCond %{HTTP_HOST} ^(?:www\.)?bobsome1\.com(?::80)?$ [NC]
+  RewriteCond %{HTTPS} !=on
+  RewriteRule ^ https://bobsome1.com%{REQUEST_URI} [R=301,L]
+
+  # Place-specific KCMC imagery must depict the real Kimberling City / Table Rock Lake location.
+  # Temporary verified source: 2024 Kimberling City Bridge photo by Avalon1101, CC0/public domain.
+  # Use a literal comma: mod_rewrite interprets %2 in %2C as a condition backreference.
+  RewriteRule ^assets/visuals/table-rock-bridge-v2\.webp$ https://upload.wikimedia.org/wikipedia/commons/d/d0/Kimberling_City,_Missouri_Bridge.jpg [R=302,L,NE]
+  RewriteRule ^assets/visuals/cross-over-lake\.jpg$ https://upload.wikimedia.org/wikipedia/commons/d/d0/Kimberling_City,_Missouri_Bridge.jpg [R=302,L,NE]
+  RewriteRule ^(?:data|backups)(?:/|$) - [F,L,NC]
+</IfModule>
+
+<IfModule mod_headers.c>
+  Header always set X-Content-Type-Options "nosniff"
+  Header always set Referrer-Policy "strict-origin-when-cross-origin"
+  Header always set X-Frame-Options "SAMEORIGIN"
+  Header always set Permissions-Policy "camera=(), microphone=(), geolocation=(), payment=()"
+  Header always set Cross-Origin-Opener-Policy "same-origin"
+</IfModule>

@@ -19,6 +19,11 @@ jobs:
         run: python3 tests/basic-handoff-http.py
       - name: Package profile and source isolation
         run: python3 tests/basic-handoff-profile.py
+      - name: Core Apache HTTPS and access rules
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends apache2-bin openssl
+          python3 tests/basic-handoff-apache.py
       - name: Preserve current church content through reads, publishing and restore
         run: |
           candidate=$(mktemp -d)

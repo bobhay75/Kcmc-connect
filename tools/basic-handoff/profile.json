@@ -2,6 +2,10 @@
   "source_commit": "ff948840c7437efc41bc2846774f792ffe6bf654",
   "candidate_commit": "73a190376a542dfb0ff394ee0ae9098b7850f759",
   "files": {
+    ".htaccess": {
+      "source_sha256": "993e7a8936737dbf9ba852e60604141de15e24d7399e644393282ed99b7ff690",
+      "candidate_sha256": "9d42b27ad5855f2485fd1e72149c41b6f267e9b80d46de7fe5ca97579f3a4a2c"
+    },
     "admin/connections.php": {
       "source_sha256": "4d2203f54b3b3b4726b7c98ab906ff3d4e9ed1984247cba9aa417dd198ce6066",
       "candidate_sha256": "d86ccf8f76ae4d09c04f3cb02fa75acc5dc9223e244d332f091ce71f8532c5f1"
