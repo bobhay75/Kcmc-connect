@@ -178,7 +178,7 @@ test('activation deletes only previous caches belonging to the same installation
   const stage=harness({installURL:'https://bobsome1.com/kcmc-connect-stage/'});
   assert.notEqual(stage.cacheName,prod.cacheName);
   for(const [current,sibling] of [[prod,stage],[stage,prod]]){
-    const prior=current.cacheName.replace('v3.0.3-public-only','v3.0.2-public-only');
+    const prior=current.cacheName.replace('v3.0.4-public-only-core-bridge-20261118','v3.0.3-public-only-basic-handoff-welcome-home-20261023-bridge-gradient');
     assert.notEqual(prior,current.cacheName);
     const protectedNames=[sibling.cacheName,'kcmc-connect-v3.0.1-public-only','project-unveiled-cache',current.cacheName];
     for(const name of [prior,...protectedNames]) await current.seed(name,'./');
@@ -192,10 +192,10 @@ test('activation deletes only previous caches belonging to the same installation
 test('event artwork upgrade precaches the SVG and never the photographed flyer',async()=>{
   const h=harness();
   await h.lifecycle('install');
-  assert.match(h.cacheName,/welcome-home-20261023-bridge-gradient$/);
+  assert.match(h.cacheName,/core-bridge-20261118$/);
   assert.ok(h.calls.fetch.some(request=>request.url.endsWith('/home-welcome.css?v=20261023-bridge-gradient')));
   assert.ok(h.calls.fetch.some(request=>request.url.endsWith('/kcmc-bridge-logo-sunset-hero-20261023.webp')));
-  assert.ok(h.calls.fetch.some(request=>request.url.endsWith('/public-presentation.css?v=fish-only-home-20261014')));
+  assert.ok(h.calls.fetch.some(request=>request.url.endsWith('/public-presentation.css?v=core-bridge-20261118')));
   assert.ok(h.calls.fetch.some(request=>request.url.endsWith('/trunk-or-treat-2026.svg')));
   assert.ok(h.calls.fetch.every(request=>!request.url.endsWith('/trunk-or-treat-2026.webp')));
 });

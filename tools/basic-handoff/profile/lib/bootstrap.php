@@ -211,71 +211,10 @@ function kcmc_update_json_store(string $path, array $default, callable $callback
 }
 
 function kcmc_apply_required_public_content(array &$data): bool {
-    $requiredEvents = [
-        [
-            'id' => 'trunk-or-treat-2026',
-            'title' => 'Trunk or Treat!',
-            'date' => '2026-10-31',
-            'time' => '4:30 PM',
-            'end_time' => '6:30 PM',
-            'location' => 'KCMC parking lot',
-            'address' => '57 Kimberling City Center Lane, Kimberling City, MO 65686',
-            'label' => 'Free community event',
-            'description' => 'Free candy, hot dogs, chips and drinks, plus music and family fun. All are welcome.',
-            'image' => 'assets/visuals/trunk-or-treat-2026.svg',
-            'image_alt' => 'Bright autumn Trunk or Treat illustration with decorated car trunks, pumpkins, wrapped candy, lollipops and festive bunting.',
-            'rsvp' => false,
-            'priority' => 100,
-            'status' => 'published',
-            'expires_at' => '2026-10-31T23:59:59-05:00',
-        ],
-    ];
-
-    $changed = false;
-
-    // cPanel preserves production data/content.json across deployments. Supply
-    // a default only when hours are missing: later Publishing Desk corrections
-    // and temporary closures must survive every public read and restore.
-    if (!isset($data['contact']) || !is_array($data['contact'])) {
-        $data['contact'] = [];
-        $changed = true;
-    }
-    $defaultOfficeHours = 'Tue–Thu • 9:00 AM–4:00 PM';
-    $savedOfficeHours = $data['contact']['office_hours'] ?? null;
-    if (!is_string($savedOfficeHours) || trim($savedOfficeHours) === '') {
-        $data['contact']['office_hours'] = $defaultOfficeHours;
-        $changed = true;
-    }
-
-    if (!isset($data['events']) || !is_array($data['events'])) $data['events'] = [];
-    $existingIds = [];
-    foreach ($data['events'] as $event) {
-        if (is_array($event) && isset($event['id'])) $existingIds[(string)$event['id']] = true;
-    }
-
-    // Keep the approved Trunk or Treat visual current even when production
-    // preserves an older event record in data/content.json across deploys.
-    foreach ($data['events'] as &$existingEvent) {
-        if (!is_array($existingEvent) || ($existingEvent['id'] ?? '') !== 'trunk-or-treat-2026') continue;
-        $freshImage = 'assets/visuals/trunk-or-treat-2026.svg';
-        $freshAlt = 'Bright autumn Trunk or Treat illustration with decorated car trunks, pumpkins, wrapped candy, lollipops and festive bunting.';
-        if (($existingEvent['image'] ?? '') !== $freshImage) {
-            $existingEvent['image'] = $freshImage;
-            $changed = true;
-        }
-        if (($existingEvent['image_alt'] ?? '') !== $freshAlt) {
-            $existingEvent['image_alt'] = $freshAlt;
-            $changed = true;
-        }
-    }
-    unset($existingEvent);
-
-    foreach ($requiredEvents as $event) {
-        if (isset($existingIds[$event['id']])) continue;
-        $data['events'][] = $event;
-        $changed = true;
-    }
-    return $changed;
+    // Core keeps this shared restore hook without applying bundled editorial
+    // migrations. Restored records, empty sections and church edits are owned
+    // by the operator; a code release must not add or rewrite their content.
+    return false;
 }
 
 function kcmc_featured_announcement_index(array $announcements): ?int {
@@ -323,26 +262,9 @@ function kcmc_audit(string $action, array $context = []): void {
 function kcmc_content(): array {
     $raw = @file_get_contents(KCMC_DATA);
     $data = $raw ? json_decode($raw, true) : null;
-    if (!is_array($data)) return [];
-    if (($data['meta']['content_release'] ?? '') !== '3.0.0' && is_file(KCMC_RELEASE_CONTENT)) {
-        $releaseRaw = @file_get_contents(KCMC_RELEASE_CONTENT);
-        $release = $releaseRaw ? json_decode($releaseRaw, true) : null;
-        if (is_array($release) && ($release['version'] ?? '') === '3.0.0') {
-            foreach (['announcements', 'events', 'news'] as $section) {
-                if (isset($release[$section]) && is_array($release[$section])) $data[$section] = $release[$section];
-            }
-            // Contact hours belong to the Publishing Desk. The shared fallback
-            // below supplies missing hours without replacing approved changes.
-            $data['meta']['content_release'] = '3.0.0';
-        }
-    }
-    // Serve migrations and approved release content without writing during a
-    // public request. The Publishing Desk persists the layered view on publish.
-    kcmc_apply_required_public_content($data);
-    $date = (string)($data['bulletin']['date'] ?? '');
-    if ($date !== '' && strtotime($date . ' 23:59:59') < strtotime('-7 days')) $data['bulletin']['date'] = '';
-    $data['meta']['effective_version'] = '3.0.0';
-    return $data;
+    // Editors persist this value. Return the stored document without layering
+    // release fixtures, defaults or date changes onto unrelated publications.
+    return is_array($data) ? $data : [];
 }
 
 function kcmc_write_content(array $data, string $actor = 'system', ?string $expectedHash = null, bool $requireValidCurrent = false): string {

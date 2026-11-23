@@ -46,4 +46,6 @@ Stage candidate code into a new, isolated directory. Compare against current pro
 - [ ] Authorized deployment and rollback owner identified
 - [ ] User approved deployment explicitly
 
-Until all items pass, keep PR #169 in draft and do not deploy.
+PR #169 was merged on November 16, 2026 (UTC). Its merge does not establish host
+acceptance. Record current results for the exact candidate before installation;
+older completed checks are historical evidence, not evidence of current host state.
